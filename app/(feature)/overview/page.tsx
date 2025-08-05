@@ -2,23 +2,15 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Header from '../../../components/Header';
-import ModuleGrid from '../../../components/ModuleGrid';
-
-const PageContainer = styled.div`
-  min-height: 100vh;
-  background-color: #f9fafb;
-`;
-
-const ContentWrapper = styled.main`
-  padding-bottom: 2rem;
-`;
+import Header from '../../../components/header/Header';
+import ModuleGrid from '../../../components/header/module-grid/ModuleGrid';
+import { ContentWrapper, PageContainer } from "./overviewStyle";
+import { useRouter } from "next/navigation";
 
 const OverviewPage: React.FC = () => {
-  const handleModuleClick = (moduleId: string) => {
-    // Tạm thời chỉ log, sau này sẽ implement navigation và phân quyền
-    console.log(`Navigating to module: ${moduleId}`);
-    alert(`Module "${moduleId}" will be available after permission setup`);
+  const router = useRouter();
+  const handleModuleClick = (modulePath: string) => {
+    router.push(modulePath);
   };
 
   return (

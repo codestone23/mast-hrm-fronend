@@ -15,7 +15,7 @@ const OverviewPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Header userName="Admin User" />
+      <Header userName="Trung Thu" />
       <ContentWrapper>
         <ModuleGrid onModuleClick={handleModuleClick} />
       </ContentWrapper>

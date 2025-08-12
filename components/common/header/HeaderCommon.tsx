@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Bell, Grid3X3, Settings, User } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { Bell, Grid3X3, Settings, User, User as UserIcon, Lock, LogOut, ChevronDown } from "lucide-react";
 import {
   HeaderContainer,
   Logo,
@@ -10,6 +10,14 @@ import {
   UserSection,
   IconButton,
   UserAvatar,
+  UserDropdown,
+  DropdownHeader,
+  DropdownUserName,
+  DropdownUserEmail,
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuLink,
+  DropdownDivider
 } from "./headerCommonStyle";
 import IMAGES from "@/config/images";
 import Image from "next/image";
@@ -21,18 +29,58 @@ interface HeaderCommonProps {
 
 const HeaderCommon = (props: HeaderCommonProps) => {
   const { activeTab = "dashboard", onTabChange } = props;
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const navItems = [
-    { id: "dashboard", label: "Dashboard" },
-    { id: "member-info", label: "Thông tin member" },
+    { id: "personal", label: "Dashboard" },
+    { id: "personal-info", label: "Thông tin cá nhân" },
     { id: "assets", label: "Tài sản số hữu" },
     { id: "projects", label: "Dự án tham gia" },
     { id: "attendance", label: "Chấm công" },
     { id: "company", label: "Công ty" },
   ];
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const handleTabClick = (tabId: string) => {
     if (onTabChange) {
       onTabChange(tabId);
+    }
+  };
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleMenuClick = (action: string) => {
+    setIsDropdownOpen(false);
+    
+    switch (action) {
+      case 'profile':
+        window.location.href = '/personal-info';
+        break;
+      case 'password':
+        window.location.href = '/change-password';
+        break;
+      case 'logout':
+        // Handle logout logic here
+        window.location.href = '/login';
+        break;
+      default:
+        break;
     }
   };
 
@@ -64,8 +112,39 @@ const HeaderCommon = (props: HeaderCommonProps) => {
         <IconButton>
           <Settings size={18} />
         </IconButton>
-        <UserAvatar>
+        <UserAvatar ref={dropdownRef} onClick={toggleDropdown}>
           <User size={16} color="white" />
+          <UserDropdown $isOpen={isDropdownOpen}>
+            <DropdownHeader>
+              <DropdownUserName>Phạm Gia Đạt</DropdownUserName>
+              <DropdownUserEmail>dat.phamgia@amela.vn</DropdownUserEmail>
+            </DropdownHeader>
+            
+            <DropdownMenu>
+              <DropdownMenuItem>
+                <DropdownMenuLink onClick={() => handleMenuClick('profile')}>
+                  <UserIcon size={16} />
+                  Thông tin cá nhân
+                </DropdownMenuLink>
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem>
+                <DropdownMenuLink onClick={() => handleMenuClick('password')}>
+                  <Lock size={16} />
+                  Đổi mật khẩu
+                </DropdownMenuLink>
+              </DropdownMenuItem>
+              
+              <DropdownDivider />
+              
+              <DropdownMenuItem>
+                <DropdownMenuLink onClick={() => handleMenuClick('logout')}>
+                  <LogOut size={16} />
+                  Đăng xuất
+                </DropdownMenuLink>
+              </DropdownMenuItem>
+            </DropdownMenu>
+          </UserDropdown>
         </UserAvatar>
       </UserSection>
     </HeaderContainer>

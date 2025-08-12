@@ -5,7 +5,7 @@ export const HeaderContainer = styled.header`
   justify-content: space-between;
   align-items: center;
   padding: 0.25rem 1.5rem;
-  background-color: var(--primary-300);
+  background-color: #6262c1;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   position: sticky;
   top: 0;
@@ -38,7 +38,7 @@ export const UserInfo = styled.div`
 
 export const UserName = styled.span`
   font-size: 0.9rem;
-  color: #475569;
+  color: #fff;
   font-weight: 500;
 `;
 

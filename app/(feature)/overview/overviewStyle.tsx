@@ -5,6 +5,6 @@ export const PageContainer = styled.div`
 `;
 
 export const ContentWrapper = styled.main`
-  padding-bottom: 2rem;
-  height: calc(100vh - 80px);
+  margin-top: 60px;
+  overflow: hidden;
 `;

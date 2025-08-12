@@ -121,6 +121,7 @@ export const UserAvatar = styled.div`
   border: 2px solid var(--gray-600);
   transition: all 0.2s ease;
   box-shadow: var(--shadow-sm);
+  position: relative;
   
   &:hover {
     border-color: var(--secondary-500);
@@ -134,4 +135,80 @@ export const UserAvatar = styled.div`
     border-radius: 50%;
     object-fit: cover;
   }
+`;
+
+export const UserDropdown = styled.div<{ $isOpen: boolean }>`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border);
+  min-width: 200px;
+  z-index: 1000;
+  opacity: ${props => props.$isOpen ? 1 : 0};
+  visibility: ${props => props.$isOpen ? 'visible' : 'hidden'};
+  transform: ${props => props.$isOpen ? 'translateY(0)' : 'translateY(-10px)'};
+  transition: all 0.2s ease;
+`;
+
+export const DropdownHeader = styled.div`
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--background-secondary);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+`;
+
+export const DropdownUserName = styled.div`
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+`;
+
+export const DropdownUserEmail = styled.div`
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+`;
+
+export const DropdownMenu = styled.ul`
+  list-style: none;
+  padding: 0.5rem 0;
+  margin: 0;
+`;
+
+export const DropdownMenuItem = styled.li`
+  padding: 0;
+  margin: 0;
+`;
+
+export const DropdownMenuLink = styled.button`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: var(--background-secondary);
+    color: var(--primary-600);
+  }
+  
+  &:active {
+    background: var(--background-secondary);
+  }
+`;
+
+export const DropdownDivider = styled.div`
+  height: 1px;
+  background: var(--border);
+  margin: 0.5rem 0;
 `;

@@ -1,0 +1,230 @@
+import styled from "styled-components";
+import IMAGES from "@/config/images";
+
+export const LoginContainer = styled.div`
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+export const LeftSection = styled.div`
+  flex: 2;
+  background-image: url(${IMAGES.common.backgroundLogin.src});
+  background-size: contain;
+  background-color: #597596;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (max-width: 1024px) {
+    flex: 1;
+  }
+  
+  @media (max-width: 768px) {
+    min-height: 200px;
+    flex: none;
+    
+    &::after {
+      display: none;
+    }
+  }
+`;
+
+export const LeftContent = styled.div`
+  text-align: center;
+  color: #fff;
+  z-index: 2;
+  position: relative;
+  
+  h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  p {
+    font-size: 1.25rem;
+    opacity: 0.9;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+  
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 2rem;
+    }
+    
+    p {
+      font-size: 1rem;
+    }
+  }
+`;
+
+export const RightSection = styled.div`
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--background);
+  padding: 2rem;
+  border-left: 1px solid var(--border);
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+`;
+
+export const LoginCard = styled.div`
+  padding: 3rem;
+  width: 100%;
+  max-width: 450px;
+  
+  @media (max-width: 768px) {
+    padding: 2rem;
+    max-width: 100%;
+  }
+`;
+
+export const Logo = styled.div`
+  text-align: center;
+  margin-bottom: 2rem;
+`;
+
+export const LogoText = styled.h1`
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+`;
+
+export const LogoSubtext = styled.p`
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+`;
+
+export const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+export const InputGroup = styled.div`
+  position: relative;
+`;
+
+export const InputLabel = styled.label`
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+`;
+
+export const InputWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+`;
+
+export const Input = styled.input`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  padding-left: 2.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: #fff;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
+`;
+
+export const InputIcon = styled.div`
+  position: absolute;
+  left: 0.75rem;
+  color: var(--text-muted);
+  z-index: 1;
+`;
+
+export const PasswordToggle = styled.button`
+  position: absolute;
+  right: 0.75rem;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  
+  &:hover {
+    color: var(--text-primary);
+  }
+`;
+
+export const LoginButton = styled.button`
+  width: 100%;
+  background-color: var(--primary-500);
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--primary-600);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  &:disabled {
+    background-color: var(--text-muted);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+`;
+
+export const ForgotPassword = styled.a`
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--primary-500);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--primary-600);
+    text-decoration: underline;
+  }
+`;
+
+export const ErrorMessage = styled.div`
+  background-color: var(--error-50);
+  color: var(--error-600);
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  border: 1px solid var(--error-100);
+`;

@@ -4,7 +4,6 @@ export const PersonalContainer = styled.div`
   background-color: var(--background-secondary);
   min-height: 100vh;
   padding: 1.5rem;
-  padding-top: calc(60px + 1.5rem);
 `;
 
 export const DashboardGrid = styled.div`

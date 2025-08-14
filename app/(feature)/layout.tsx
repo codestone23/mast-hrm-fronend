@@ -1,6 +1,6 @@
 "use client";
 import StyledComponentsRegistry from "@/components/StyledComponentsRegistry";
-import { ContentWrapper } from "./overview/overviewStyle";
+import { ContentWrapper } from "../overview/overviewStyle";
 import { PersonalPageContainer } from "./personal/personalStyle";
 import HeaderCommon from "@/components/common/header/HeaderCommon";
 import { usePathname, useRouter } from "next/navigation";

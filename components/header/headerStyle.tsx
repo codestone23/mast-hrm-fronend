@@ -5,7 +5,7 @@ export const HeaderContainer = styled.header`
   justify-content: space-between;
   align-items: center;
   padding: 0.25rem 1.5rem;
-  background-color: #6262c1;
+  background-color: var(--header-background);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   position: sticky;
   top: 0;
@@ -28,10 +28,10 @@ export const UserInfo = styled.div`
   border-radius: 12px;
   transition: all 0.2s ease;
   border: 1px solid transparent;
-  
+
   &:hover {
-    background-color: #f8fafc;
-    border-color: #e2e8f0;
+    background-color: #16385d;
+    border-color: #18395c;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
 `;

@@ -44,7 +44,7 @@ export const LeftContent = styled.div`
   position: relative;
   
   h1 {
-    font-size: 3rem;
+    font-size: 5rem;
     font-weight: 800;
     margin-bottom: 1rem;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -73,14 +73,34 @@ export const RightSection = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--background);
-  padding: 2rem;
-  border-left: 1px solid var(--border);
+  padding: 3rem 2rem;
+  min-height: 100vh;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(241, 245, 249, 0.6) 100%);
+    pointer-events: none;
+  }
+  
+  @media (max-width: 1024px) {
+    padding: 2.5rem 1.5rem;
+  }
   
   @media (max-width: 768px) {
-    padding: 1rem;
+    padding: 2rem 1rem;
     border-left: none;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.05);
+    min-height: auto;
+    
+    &::before {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(241, 245, 249, 0.6) 100%);
+    }
   }
 `;
 
@@ -88,23 +108,52 @@ export const LoginCard = styled.div`
   padding: 3rem;
   width: 100%;
   max-width: 450px;
+  background: rgba(255, 255, 255, 0.95);
+  position: relative;
+  z-index: 1;
   
   @media (max-width: 768px) {
     padding: 2rem;
     max-width: 100%;
+    border-radius: 16px;
+    box-shadow: 
+      0 10px 15px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05),
+      0 0 0 1px rgba(255, 255, 255, 0.5);
   }
 `;
 
 export const Logo = styled.div`
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 2px;
+  }
 `;
 
 export const LogoText = styled.h1`
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
+  font-size: 3rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.025em;
+  
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
 `;
 
 export const LogoSubtext = styled.p`
@@ -145,6 +194,7 @@ export const Input = styled.input`
   font-size: 0.875rem;
   transition: border-color 0.2s, box-shadow 0.2s;
   background-color: #fff;
+  color: #000;
 
   &:focus {
     outline: none;

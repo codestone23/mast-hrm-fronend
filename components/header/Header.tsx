@@ -20,7 +20,7 @@ const Header: React.FC<HeaderProps> = ({ userName = "Admin User" }) => {
   return (
     <HeaderContainer>
       <Logo>
-        <Image src={IMAGES.common.logo} alt="logo" height={46} />
+        <Image src={IMAGES.common.logoWhite} alt="logo" height={46} />
       </Logo>
       <UserInfo>
         <UserName>{userName}</UserName>

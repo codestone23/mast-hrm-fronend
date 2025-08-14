@@ -5,6 +5,10 @@ export const PageContainer = styled.div`
 `;
 
 export const ContentWrapper = styled.main`
-  margin-top: 60px;
+  overflow: hidden;
+  margin-top: 60px; 
+`;
+
+export const ContentHeader = styled.div`
   overflow: hidden;
 `;

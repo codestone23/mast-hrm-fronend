@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import IMAGES from "@/config/images";
 
-export const LoginContainer = styled.div`
+export const ForgotPasswordContainer = styled.div`
   min-height: 100vh;
   display: flex;
   align-items: stretch;
@@ -12,6 +12,46 @@ export const LoginContainer = styled.div`
 `;
 
 export const LeftSection = styled.div`
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 3rem 2rem;
+  border-right: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: inset -4px 0 8px rgba(0, 0, 0, 0.05);
+  min-height: 100vh;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(241, 245, 249, 0.6) 100%);
+    pointer-events: none;
+  }
+  
+  @media (max-width: 1024px) {
+    padding: 2.5rem 1.5rem;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 2rem 1rem;
+    border-right: none;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: inset 0 -4px 8px rgba(0, 0, 0, 0.05);
+    min-height: auto;
+    
+    &::before {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(241, 245, 249, 0.6) 100%);
+    }
+  }
+`;
+
+export const RightSection = styled.div`
   flex: 2;
   background-image: url(${IMAGES.common.backgroundLogin.src});
   background-size: contain;
@@ -30,14 +70,10 @@ export const LeftSection = styled.div`
   @media (max-width: 768px) {
     min-height: 200px;
     flex: none;
-    
-    &::after {
-      display: none;
-    }
   }
 `;
 
-export const LeftContent = styled.div`
+export const RightContent = styled.div`
   text-align: center;
   color: #fff;
   z-index: 2;
@@ -67,50 +103,13 @@ export const LeftContent = styled.div`
   }
 `;
 
-export const RightSection = styled.div`
-  position: relative;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  padding: 3rem 2rem;
-  min-height: 100vh;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(241, 245, 249, 0.6) 100%);
-    pointer-events: none;
-  }
-  
-  @media (max-width: 1024px) {
-    padding: 2.5rem 1.5rem;
-  }
-  
-  @media (max-width: 768px) {
-    padding: 2rem 1rem;
-    border-left: none;
-    border-top: 1px solid rgba(148, 163, 184, 0.2);
-    box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.05);
-    min-height: auto;
-    
-    &::before {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(241, 245, 249, 0.6) 100%);
-    }
-  }
-`;
-
-export const LoginCard = styled.div`
+export const ForgotPasswordCard = styled.div`
   padding: 3rem;
   width: 100%;
   max-width: 450px;
   position: relative;
   z-index: 1;
+  
 `;
 
 export const Logo = styled.div`
@@ -149,6 +148,22 @@ export const LogoText = styled.h1`
 export const LogoSubtext = styled.p`
   color: var(--text-secondary);
   font-size: 0.875rem;
+`;
+
+export const Title = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 0.5rem;
+`;
+
+export const Subtitle = styled.p`
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  line-height: 1.5;
 `;
 
 export const Form = styled.form`
@@ -204,23 +219,7 @@ export const InputIcon = styled.div`
   z-index: 1;
 `;
 
-export const PasswordToggle = styled.button`
-  position: absolute;
-  right: 0.75rem;
-  color: var(--text-muted);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  
-  &:hover {
-    color: var(--text-primary);
-  }
-`;
-
-export const LoginButton = styled.button`
+export const SubmitButton = styled.button`
   width: 100%;
   background-color: var(--primary-500);
   color: white;
@@ -246,7 +245,7 @@ export const LoginButton = styled.button`
   }
 `;
 
-export const ForgotPassword = styled.a`
+export const BackToLogin = styled.a`
   background-color: transparent;
   border: none;
   text-align: center;
@@ -260,6 +259,15 @@ export const ForgotPassword = styled.a`
     color: var(--primary-600);
     text-decoration: underline;
   }
+`;
+
+export const SuccessMessage = styled.div`
+  background-color: var(--success-50);
+  color: var(--success-600);
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  border: 1px solid var(--success-100);
 `;
 
 export const ErrorMessage = styled.div`

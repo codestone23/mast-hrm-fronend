@@ -16,6 +16,10 @@ const NotFoundPage = () => {
     router.push("/");
   };
 
+  const handleGoBack = () => {
+    router.back();
+  };
+
   return (
     <NotFoundContainer>
       <NotFoundRow>
@@ -25,12 +29,17 @@ const NotFoundPage = () => {
           </FourZeroFourBg>
 
           <ContentBox404>
-            <h3>Look like you&apos;re lost</h3>
-            <p>The page you are looking for is not available!</p>
+            <h3>Có vẻ như bạn đã lạc đường</h3>
+            <p>Trang bạn đang tìm kiếm không tồn tại!</p>
 
-            <Link404 onClick={handleGoHome}>
-              Go to Home
-            </Link404>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Link404 onClick={handleGoBack}>
+                Quay lại
+              </Link404>
+              <Link404 onClick={handleGoHome}>
+                Về trang chủ
+              </Link404>
+            </div>
           </ContentBox404>
         </NotFoundContent>
       </NotFoundRow>

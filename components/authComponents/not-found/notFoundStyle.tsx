@@ -3,7 +3,6 @@ import styled from 'styled-components';
 export const NotFoundContainer = styled.div`
   padding: 40px 0;
   background: #fff;
-  font-family: 'Arvo', serif;
   min-height: 100vh;
   display: flex;
   align-items: center;

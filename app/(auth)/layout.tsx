@@ -1,0 +1,25 @@
+
+import type { Metadata } from "next";
+import StyledComponentsRegistry from "../../components/StyledComponentsRegistry";
+import "../../app/globals.css";
+
+export const metadata: Metadata = {
+  title: "Mast HRM - Hệ thống quản lý nhân sự",
+  description: "Hệ thống quản lý nhân sự hiện đại và hiệu quả",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="vi">
+      <body>
+        <StyledComponentsRegistry>
+          {children}
+        </StyledComponentsRegistry>
+      </body>
+    </html>
+  );
+}

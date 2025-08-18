@@ -16,7 +16,8 @@ interface HeaderProps {
   userName?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ userName = "Admin User" }) => {
+const Header = (props: HeaderProps) => {
+  const { userName = "Admin User" } = props;
   return (
     <HeaderContainer>
       <Logo>

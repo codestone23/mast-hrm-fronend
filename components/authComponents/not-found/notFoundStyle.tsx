@@ -65,6 +65,7 @@ export const ContentBox404 = styled.div`
 `;
 
 export const Link404 = styled.a`
+  cursor: pointer;
   color: #fff !important;
   padding: 12px 24px;
   background: var(--success-500);

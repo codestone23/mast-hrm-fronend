@@ -35,7 +35,7 @@ const HeaderCommon = (props: HeaderCommonProps) => {
   const navItems = [
     { id: "personal", label: "Dashboard" },
     { id: "personal-info", label: "Thông tin cá nhân" },
-    { id: "assets", label: "Tài sản số hữu" },
+    // { id: "assets", label: "Tài sản số hữu" },
     { id: "projects", label: "Dự án tham gia" },
     { id: "attendance", label: "Chấm công" },
     { id: "company", label: "Công ty" },

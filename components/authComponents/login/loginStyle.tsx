@@ -263,10 +263,6 @@ export const ForgotPassword = styled.a`
 `;
 
 export const ErrorMessage = styled.div`
-  background-color: var(--error-50);
   color: var(--error-600);
-  padding: 0.75rem;
-  border-radius: var(--radius-md);
   font-size: 0.875rem;
-  border: 1px solid var(--error-100);
 `;

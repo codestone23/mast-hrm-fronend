@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
 import { User, Lock, Eye, EyeOff } from "lucide-react";
 import {
   LoginContainer,
@@ -22,44 +23,57 @@ import {
   ErrorMessage,
   Input,
 } from "./loginStyle";
+import { useRouter } from "next/navigation";
 
 interface LoginProps {
   onForgotPassword: () => void;
 }
 
+interface LoginFormData {
+  username: string;
+  password: string;
+}
+
 const Login = (props: LoginProps) => {
   const { onForgotPassword } = props;
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-  });
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    if (error) setError("");
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+    clearErrors,
+  } = useForm<LoginFormData>({
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    setError("");
+    clearErrors();
 
     try {
-      if (formData.username === "admin" && formData.password === "admin123") {
-        alert("Đăng nhập thành công! Chuyển hướng đến trang chính...");
-        window.location.href = "/overview";
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      if (data.username === "admin" && data.password === "admin123") {
+        router.push("/overview");
       } else {
-        setError("Tên đăng nhập hoặc mật khẩu không đúng");
+        setError("root", {
+          type: "manual",
+          message: "Tên đăng nhập hoặc mật khẩu không đúng",
+        });
       }
     } catch (err) {
-      setError("Có lỗi xảy ra. Vui lòng thử lại sau.");
+      setError("root", {
+        type: "manual",
+        message: "Có lỗi xảy ra. Vui lòng thử lại sau.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -81,8 +95,8 @@ const Login = (props: LoginProps) => {
             <LogoSubtext>Hệ thống quản lý nhân sự</LogoSubtext>
           </Logo>
 
-          <Form onSubmit={handleSubmit}>
-            {error && <ErrorMessage>{error}</ErrorMessage>}
+          <Form onSubmit={handleSubmit(onSubmit)}>
+            {errors.root && <ErrorMessage>{errors.root.message}</ErrorMessage>}
 
             <InputGroup>
               <InputLabel htmlFor="username">Tên đăng nhập</InputLabel>
@@ -92,14 +106,20 @@ const Login = (props: LoginProps) => {
                 </InputIcon>
                 <Input
                   id="username"
-                  name="username"
                   type="text"
                   placeholder="Nhập tên đăng nhập"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  required
+                  {...register("username", {
+                    required: "Vui lòng nhập tên đăng nhập",
+                    minLength: {
+                      value: 3,
+                      message: "Tên đăng nhập phải có ít nhất 3 ký tự",
+                    },
+                  })}
                 />
               </InputWrapper>
+              {errors.username && (
+                <ErrorMessage>{errors.username.message}</ErrorMessage>
+              )}
             </InputGroup>
 
             <InputGroup>
@@ -110,12 +130,15 @@ const Login = (props: LoginProps) => {
                 </InputIcon>
                 <Input
                   id="password"
-                  name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Nhập mật khẩu"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  required
+                  {...register("password", {
+                    required: "Vui lòng nhập mật khẩu",
+                    minLength: {
+                      value: 6,
+                      message: "Mật khẩu phải có ít nhất 6 ký tự",
+                    },
+                  })}
                 />
                 <PasswordToggle
                   type="button"
@@ -124,6 +147,9 @@ const Login = (props: LoginProps) => {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </PasswordToggle>
               </InputWrapper>
+              {errors.password && (
+                <ErrorMessage>{errors.password.message}</ErrorMessage>
+              )}
             </InputGroup>
 
             <LoginButton type="submit" disabled={isLoading}>

@@ -23,15 +23,16 @@ export const DashboardGrid = styled.div`
 
 export const Card = styled.div<{ span?: number }>`
   background: var(--card-background);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   border: 1px solid var(--border);
   grid-column: span ${(props) => props.span || 1};
-  transition: box-shadow 0.2s ease;
+  transition: all 0.3s ease;
   
   &:hover {
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
   }
 `;
 
@@ -40,6 +41,12 @@ export const WelcomeCard = styled(Card)`
   color: white;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.15), 0 4px 10px -3px rgba(0, 0, 0, 0.1);
+  
+  &:hover {
+    box-shadow: 0 20px 40px -7px rgba(0, 0, 0, 0.2), 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+  }
   
   &::before {
     content: '';
@@ -88,6 +95,12 @@ export const ProfileCard = styled(Card)`
   display: flex;
   align-items: center;
   gap: 1rem;
+  box-shadow: 0 8px 25px -5px rgba(99, 102, 241, 0.3), 0 4px 10px -3px rgba(99, 102, 241, 0.2);
+  
+  &:hover {
+    box-shadow: 0 20px 40px -7px rgba(99, 102, 241, 0.4), 0 8px 16px -4px rgba(99, 102, 241, 0.3);
+    transform: translateY(-3px);
+  }
 `;
 
 export const ProfileAvatar = styled.div`
@@ -110,6 +123,9 @@ export const ProfileAvatar = styled.div`
 
 export const ProfileInfo = styled.div`
   flex: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   
   h3 {
     font-size: 1.25rem;
@@ -126,6 +142,36 @@ export const ProfileInfo = styled.div`
   .role {
     font-size: 0.8rem;
     opacity: 0.8;
+  }
+`;
+
+export const ProfileDetailRight = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: flex-end;
+  font-size: 0.85rem;
+`;
+
+export const CardWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+`;
+
+export const ButtonDetail = styled.button`
+  background: var(--primary-600);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  &:hover {
+    background: var(--primary-700);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   }
 `;
 
@@ -147,13 +193,29 @@ export const ProgressBar = styled.div`
 
 export const StatsCard = styled(Card)`
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  
+  &.compact {
+    padding: 1rem 0.75rem;
+  }
 `;
 
 export const StatsNumber = styled.div`
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+  line-height: 1;
+  
+  &.large {
+    font-size: 3rem;
+    background: linear-gradient(135deg, var(--primary-600), var(--primary-500));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 `;
 
 export const StatsLabel = styled.div`
@@ -203,6 +265,13 @@ export const AttendanceStatus = styled.div`
   border-radius: var(--radius-md);
   padding: 1rem;
   margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(34, 197, 94, 0.1);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 8px rgba(34, 197, 94, 0.15);
+    transform: translateY(-1px);
+  }
   
   .date {
     font-size: 0.9rem;
@@ -289,7 +358,29 @@ export const ResourcesCard = styled(Card)`
 `;
 
 export const EffortSection = styled.div`
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: var(--card-background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+    border-radius: 2px 0 0 2px;
+  }
+  
+  &:last-child {
+    margin-bottom: 0.5rem;
+  }
   
   .date-label {
     font-size: 0.85rem;
@@ -329,6 +420,12 @@ export const NoDataMessage = styled.div`
   background: var(--error-50);
   border-radius: var(--radius-sm);
   border: 1px solid var(--error-100);
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.1);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.15);
+  }
 `;
 
 // Header Components
@@ -381,11 +478,11 @@ export const ProgressText = styled.div<{
   text-align: ${(props) => props.$textAlign || "left"};
 `;
 
-export const StatsHeader = styled.div<{ marginBottom?: string }>`
+export const StatsHeader = styled.div<{ $marginBottom?: string }>`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: ${(props) => props.marginBottom || "1rem"};
+  margin-bottom: ${(props) => props.$marginBottom || "0.75rem"};
 `;
 
 export const StatsNewest = styled.div<{ marginTop?: string }>`
@@ -420,9 +517,16 @@ export const WorkStatsMonth = styled.span`
 export const AssetsGradientBox = styled.div`
   background: linear-gradient(135deg, #06b6d4, var(--primary-500));
   color: white;
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
   text-align: center;
+  box-shadow: 0 6px 20px -5px rgba(6, 182, 212, 0.3), 0 3px 8px -2px rgba(6, 182, 212, 0.2);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 12px 30px -7px rgba(6, 182, 212, 0.4), 0 6px 12px -3px rgba(6, 182, 212, 0.3);
+    transform: translateY(-2px);
+  }
 `;
 
 export const AssetsNumber = styled.div`
@@ -485,12 +589,18 @@ export const EffortDisplay = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
+  padding: 0;
 `;
 
 export const EffortNumber = styled.span`
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 700;
   color: var(--error-600);
+  background: linear-gradient(135deg, var(--error-500), var(--error-600));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
 `;
 
 export const EffortLabel = styled.span`
@@ -499,9 +609,18 @@ export const EffortLabel = styled.span`
 `;
 
 export const EffortPercentage = styled.span<{ color?: string }>`
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.4rem;
+  font-weight: 700;
   color: ${(props) => props.color || "var(--success-600)"};
+  background: ${(props) => 
+    props.color === "var(--warning-500)" 
+      ? "linear-gradient(135deg, var(--warning-500), var(--warning-600))"
+      : "linear-gradient(135deg, var(--success-500), var(--success-600))"
+  };
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
 `;
 
 export const EffortText = styled.span<{ fontSize?: string; color?: string }>`
@@ -510,9 +629,15 @@ export const EffortText = styled.span<{ fontSize?: string; color?: string }>`
 `;
 
 export const EffortNote = styled.div`
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+  font-size: 0.8rem;
+  color: var(--warning-600);
   margin-top: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--warning-50);
+  border: 1px solid var(--warning-200);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  display: inline-block;
 `;
 
 export const ResourcesInfo = styled.div<{ $marginBottom?: string }>`
@@ -552,13 +677,19 @@ export const ReportButton = styled.button`
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   
   &:hover {
     background: var(--secondary-600);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 `;
-
 // Following Team Components
 export const FollowingHeader = styled.div`
   display: flex;
@@ -570,4 +701,11 @@ export const FollowingHeader = styled.div`
 export const FollowingTitle = styled.span`
   font-weight: 600;
   color: var(--text-primary);
+`;
+
+export const DashboardCol = styled.div<{ $span?: number }> `
+  display: flex;
+  flex-direction: column;
+  grid-column: span ${(props) => props.$span || 1};
+  gap: 1rem;
 `;

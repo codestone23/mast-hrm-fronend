@@ -57,25 +57,14 @@ const PersonalInfo = () => {
 
   return (
     <PersonalInfoContainer>
-      {/* Left Sidebar */}
       <LeftSidebar>
         <UserProfile>
           <UserAvatar>
-            <Image src={IMAGES.common.logo} alt="User Avatar" width={120} height={120} />
+            <Image src={IMAGES.common.backgroundLogin} alt="User Avatar" width={120} height={120} />
           </UserAvatar>
           <UserName>Phạm Gia Đạt</UserName>
           <UserRole>Developer</UserRole>
         </UserProfile>
-
-        <ProfileProgress>
-          <ProgressLabel>
-            <span>Hoàn thiện hồ sơ</span>
-            <span>100%</span>
-          </ProgressLabel>
-          <ProgressBar>
-            <ProgressFill />
-          </ProgressBar>
-        </ProfileProgress>
 
         <UserDetails>
           <DetailItem>
@@ -122,7 +111,6 @@ const PersonalInfo = () => {
         </StatCard>
       </LeftSidebar>
 
-      {/* Main Content */}
       <MainContent>
         <ContentTabs>
           <TabItem 
@@ -148,7 +136,6 @@ const PersonalInfo = () => {
         <TabContent>
           {activeTab === 'basic' && (
             <>
-              {/* Personal Information Section */}
               <SectionHeader>
                 <SectionTitle>Thông tin cá nhân</SectionTitle>
                 <SectionAction>
@@ -207,7 +194,6 @@ const PersonalInfo = () => {
                 </InfoItem>
               </InfoGrid>
 
-              {/* Family Information Section */}
               <SectionHeader>
                 <SectionTitle>Thông tin thân nhân</SectionTitle>
                 <SectionAction>

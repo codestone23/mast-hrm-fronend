@@ -2,6 +2,15 @@
 
 import { useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
+import styled from 'styled-components';
+
+const ForgotPasswordContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+`;
 
 const ForgotPasswordRedirect = () => {
   const router = useRouter();
@@ -15,15 +24,9 @@ const ForgotPasswordRedirect = () => {
 
 const ForgotPasswordFallback = () => {
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: 'system-ui, sans-serif'
-    }}>
+    <ForgotPasswordContainer>
       <p>Đang chuyển hướng...</p>
-    </div>
+    </ForgotPasswordContainer>
   );
 };
 

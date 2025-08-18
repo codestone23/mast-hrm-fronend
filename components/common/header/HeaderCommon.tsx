@@ -28,20 +28,20 @@ interface HeaderCommonProps {
 }
 
 const HeaderCommon = (props: HeaderCommonProps) => {
-  const { activeTab = "dashboard", onTabChange } = props;
+  const { activeTab = "personal", onTabChange } = props;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  console.log(activeTab);
 
   const navItems = [
     { id: "personal", label: "Dashboard" },
     { id: "personal-info", label: "Thông tin cá nhân" },
-    // { id: "assets", label: "Tài sản số hữu" },
     { id: "projects", label: "Dự án tham gia" },
-    { id: "attendance", label: "Chấm công" },
+    { id: "timekeeping/time-sheets", label: "Chấm công" },
     { id: "company", label: "Công ty" },
   ];
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -76,7 +76,6 @@ const HeaderCommon = (props: HeaderCommonProps) => {
         window.location.href = '/change-password';
         break;
       case 'logout':
-        // Handle logout logic here
         window.location.href = '/login';
         break;
       default:

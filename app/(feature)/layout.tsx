@@ -10,15 +10,17 @@ export default function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname().split("/")[1];
   const router = useRouter();
+  const pathname = usePathname().split("/");
+  const activeTab = pathname.slice(1, pathname.length).join("/");
+  console.log(activeTab);
   const onTabChange = (tab: string) => {
     router.push(`/${tab}`);
   };
   return (
     <StyledComponentsRegistry>
       <PersonalPageContainer>
-        <HeaderCommon activeTab={pathname} onTabChange={onTabChange} />
+        <HeaderCommon activeTab={activeTab} onTabChange={onTabChange} />
         <ContentWrapper>{children}</ContentWrapper>
       </PersonalPageContainer>
     </StyledComponentsRegistry>

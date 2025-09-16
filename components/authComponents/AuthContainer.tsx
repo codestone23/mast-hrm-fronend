@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import styled, { keyframes, css } from 'styled-components';
+import styled, { css } from 'styled-components';
 import Login from './login/Login';
 import ForgotPassword from './forgot-password/ForgotPassword';
 
@@ -28,7 +28,7 @@ ${({ $isVisible, direction }) => {
       `;
     } else {
       return css`
-        transform: translateX(${direction === 'left' ? '-100%' : '100%'});
+        transform: translateX(${direction === 'left' ? '-100%' : '33.333%'});
         opacity: 0;
         z-index: 1;
       `;
@@ -57,21 +57,40 @@ const AuthContainer = (props: AuthContainerProps) => {
     setCurrentView(AuthView.LOGIN);
   };
 
+  const handleForgotPasswordSuccess = (userEmail: string) => {
+    // Redirect đến trang OTP với email parameter
+    window.location.href = `/verify-otp?email=${encodeURIComponent(userEmail)}`;
+  };
+
+  const viewOrder = {
+    [AuthView.LOGIN]: 0,
+    [AuthView.FORGOT]: 1
+  };
+
+  const getSlideDirection = (view: AuthView): 'left' | 'right' => {
+    const currentIndex = viewOrder[currentView];
+    const targetIndex = viewOrder[view];
+    return currentIndex < targetIndex ? 'right' : 'left';
+  };
+
   return (
     <Container>
       <SlideContainer 
-        $isVisible={currentView === AuthView.FORGOT} 
-        direction="right"       
-      >
-        <ForgotPassword onBackToLogin={switchToLogin} />
-      </SlideContainer>
-      <SlideContainer 
         $isVisible={currentView === AuthView.LOGIN} 
-        direction="left"
+        direction={getSlideDirection(AuthView.LOGIN)}
       >
         <Login onForgotPassword={switchToForgotPassword} />
       </SlideContainer>
       
+      <SlideContainer 
+        $isVisible={currentView === AuthView.FORGOT} 
+        direction={getSlideDirection(AuthView.FORGOT)}
+      >
+        <ForgotPassword 
+          onBackToLogin={switchToLogin}
+          onEmailSent={handleForgotPasswordSuccess}
+        />
+      </SlideContainer>
     </Container>
   );
 };

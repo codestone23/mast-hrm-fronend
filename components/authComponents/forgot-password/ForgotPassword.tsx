@@ -25,9 +25,10 @@ import {
 
 interface ForgotPasswordProps {
   onBackToLogin: () => void;
+  onEmailSent?: (email: string) => void;
 }
 
-const ForgotPasswordPage: React.FC<ForgotPasswordProps> = ({ onBackToLogin }) => {
+const ForgotPasswordPage: React.FC<ForgotPasswordProps> = ({ onBackToLogin, onEmailSent }) => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -56,8 +57,15 @@ const ForgotPasswordPage: React.FC<ForgotPasswordProps> = ({ onBackToLogin }) =>
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       setSuccess(true);
-      setEmail('');
-    } catch (err) {
+      // Chuyển sang màn OTP nếu có callback
+      if (onEmailSent) {
+        setTimeout(() => {
+          onEmailSent(email);
+        }, 1500);
+      } else {
+        setEmail('');
+      }
+    } catch {
       setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Bell, Grid3X3, Settings, User, User as UserIcon, Lock, LogOut, ChevronDown } from "lucide-react";
+import { ChangePasswordModal } from "@/components/common";
 import {
   HeaderContainer,
   Logo,
@@ -30,6 +31,7 @@ interface HeaderCommonProps {
 const HeaderCommon = (props: HeaderCommonProps) => {
   const { activeTab = "personal", onTabChange } = props;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   console.log(activeTab);
@@ -73,7 +75,7 @@ const HeaderCommon = (props: HeaderCommonProps) => {
         window.location.href = '/personal-info';
         break;
       case 'password':
-        window.location.href = '/change-password';
+        setIsChangePasswordModalOpen(true);
         break;
       case 'logout':
         window.location.href = '/login';
@@ -84,69 +86,76 @@ const HeaderCommon = (props: HeaderCommonProps) => {
   };
 
   return (
-    <HeaderContainer>
-      <Logo>
-        <Image src={IMAGES.common.logoWhite} alt="logo" height={46} />
-      </Logo>
+    <>
+      <HeaderContainer>
+        <Logo>
+          <Image src={IMAGES.common.logoWhite} alt="logo" height={46} />
+        </Logo>
 
-      <Navigation>
-        {navItems.map((item) => (
-          <NavItem
-            key={item.id}
-            $active={activeTab === item.id}
-            onClick={() => handleTabClick(item.id)}
-          >
-            {item.label}
-          </NavItem>
-        ))}
-      </Navigation>
+        <Navigation>
+          {navItems.map((item) => (
+            <NavItem
+              key={item.id}
+              $active={activeTab === item.id}
+              onClick={() => handleTabClick(item.id)}
+            >
+              {item.label}
+            </NavItem>
+          ))}
+        </Navigation>
 
-      <UserSection>
-        <IconButton>
-          <Bell size={18} />
-        </IconButton>
-        <IconButton>
-          <Grid3X3 size={18} />
-        </IconButton>
-        <IconButton>
-          <Settings size={18} />
-        </IconButton>
-        <UserAvatar ref={dropdownRef} onClick={toggleDropdown}>
-          <User size={16} color="white" />
-          <UserDropdown $isOpen={isDropdownOpen}>
-            <DropdownHeader>
-              <DropdownUserName>Phạm Gia Đạt</DropdownUserName>
-              <DropdownUserEmail>dat.phamgia@amela.vn</DropdownUserEmail>
-            </DropdownHeader>
-            
-            <DropdownMenu>
-              <DropdownMenuItem>
-                <DropdownMenuLink onClick={() => handleMenuClick('profile')}>
-                  <UserIcon size={16} />
-                  Thông tin cá nhân
-                </DropdownMenuLink>
-              </DropdownMenuItem>
+        <UserSection>
+          <IconButton>
+            <Bell size={18} />
+          </IconButton>
+          <IconButton>
+            <Grid3X3 size={18} />
+          </IconButton>
+          <IconButton>
+            <Settings size={18} />
+          </IconButton>
+          <UserAvatar ref={dropdownRef} onClick={toggleDropdown}>
+            <User size={16} color="white" />
+            <UserDropdown $isOpen={isDropdownOpen}>
+              <DropdownHeader>
+                <DropdownUserName>Phạm Gia Đạt</DropdownUserName>
+                <DropdownUserEmail>dat.phamgia@amela.vn</DropdownUserEmail>
+              </DropdownHeader>
               
-              <DropdownMenuItem>
-                <DropdownMenuLink onClick={() => handleMenuClick('password')}>
-                  <Lock size={16} />
-                  Đổi mật khẩu
-                </DropdownMenuLink>
-              </DropdownMenuItem>
-              
-              <DropdownDivider />
-              
-              <DropdownMenuItem>
-                <DropdownMenuLink onClick={() => handleMenuClick('logout')}>
-                  <LogOut size={16} />
-                  Đăng xuất
-                </DropdownMenuLink>
-              </DropdownMenuItem>
-            </DropdownMenu>
-          </UserDropdown>
-        </UserAvatar>
-      </UserSection>
-    </HeaderContainer>
+              <DropdownMenu>
+                <DropdownMenuItem>
+                  <DropdownMenuLink onClick={() => handleMenuClick('profile')}>
+                    <UserIcon size={16} />
+                    Thông tin cá nhân
+                  </DropdownMenuLink>
+                </DropdownMenuItem>
+                
+                <DropdownMenuItem>
+                  <DropdownMenuLink onClick={() => handleMenuClick('password')}>
+                    <Lock size={16} />
+                    Đổi mật khẩu
+                  </DropdownMenuLink>
+                </DropdownMenuItem>
+                
+                <DropdownDivider />
+                
+                <DropdownMenuItem>
+                  <DropdownMenuLink onClick={() => handleMenuClick('logout')}>
+                    <LogOut size={16} />
+                    Đăng xuất
+                  </DropdownMenuLink>
+                </DropdownMenuItem>
+              </DropdownMenu>
+            </UserDropdown>
+          </UserAvatar>
+        </UserSection>
+      </HeaderContainer>
+
+      <ChangePasswordModal
+        isOpen={isChangePasswordModalOpen}
+        onClose={() => setIsChangePasswordModalOpen(false)}
+      />
+    </>
   );
 };
 

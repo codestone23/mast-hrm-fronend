@@ -54,19 +54,22 @@ const Login = (props: LoginProps) => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
+    setIsLoading(true);
+    clearErrors();
+
     router.push("/overview");
-    // setIsLoading(true);
-    // clearErrors();
+    return;
 
     // try {
     //   if (data.username === "admin" && data.password === "Password@123") {
+    //     router.push("/overview");
     //   } else {
     //     setError("root", {
     //       type: "manual",
     //       message: "Tên đăng nhập hoặc mật khẩu không đúng",
     //     });
     //   }
-    // } catch (err) {
+    // } catch {
     //   setError("root", {
     //     type: "manual",
     //     message: "Có lỗi xảy ra. Vui lòng thử lại sau.",

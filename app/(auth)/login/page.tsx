@@ -1,14 +1,14 @@
 'use client';
 
 import React, { Suspense } from 'react';
-import AuthContainer, { AuthView } from '@/components/authComponents/AuthContainer';
+import AuthContainer from '@/components/authComponents/AuthContainer';
 import { useSearchParams } from 'next/navigation';
 
 const LoginContent = () => {
   const searchParams = useSearchParams();
-  const forgot: AuthView = searchParams.get('forgot') as AuthView;
+  const forgot = searchParams.get('forgot');
 
-  return <AuthContainer forgot={forgot} />;
+  return <AuthContainer forgot={forgot || undefined} />;
 };
 
 const LoginFallback = () => {

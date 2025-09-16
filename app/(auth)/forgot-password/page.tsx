@@ -1,41 +1,24 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import styled from 'styled-components';
 
-const ForgotPasswordContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-`;
-
-const ForgotPasswordRedirect = () => {
+export default function ForgotPasswordRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.push('/login?forgot=true');
+    router.replace('/login?forgot=true');
   }, [router]);
 
-  return null;
-};
-
-const ForgotPasswordFallback = () => {
   return (
-    <ForgotPasswordContainer>
-      <p>Đang chuyển hướng...</p>
-    </ForgotPasswordContainer>
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      height: '100vh',
+      fontFamily: 'system-ui'
+    }}>
+      Đang chuyển hướng...
+    </div>
   );
-};
-
-const ForgotPasswordPage = () => {
-  return (
-    <Suspense fallback={<ForgotPasswordFallback />}>
-      <ForgotPasswordRedirect />
-    </Suspense>
-  );
-};
-
-export default ForgotPasswordPage;
+}

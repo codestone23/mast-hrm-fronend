@@ -33,6 +33,7 @@ export const ModalOverlay = styled.div`
   z-index: 1000;
   animation: ${fadeIn} 0.2s ease-out;
   padding: 1rem;
+  overflow: hidden;
 `;
 
 const getSizeStyles = (size: string) => {
@@ -93,7 +94,7 @@ export const ModalContainer = styled.div<{ size?: string }>`
 export const ModalContent = styled.div`
   display: flex;
   flex-direction: column;
-  max-height: 90vh;
+  max-height: 80vh;
 `;
 
 export const ModalHeader = styled.div`
@@ -141,6 +142,20 @@ export const ModalBody = styled.div`
   padding: 1.5rem;
   overflow-y: auto;
   flex: 1;
+  &::-webkit-scrollbar {
+    display: block;
+    width: 10px;
+  }
+  &::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    width: 10px;
+    border-radius: 50px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    width: 10px;
+    border-radius: 50px;
+  }
 `;
 
 export const ModalFooter = styled.div`

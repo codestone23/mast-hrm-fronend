@@ -22,6 +22,8 @@ import {
 } from "./headerCommonStyle";
 import IMAGES from "@/config/images";
 import Image from "next/image";
+import Link from "next/link";
+import ROUTERS from "@/config/router";
 
 interface HeaderCommonProps {
   activeTab?: string;
@@ -29,15 +31,13 @@ interface HeaderCommonProps {
 }
 
 const HeaderCommon = (props: HeaderCommonProps) => {
-  const { activeTab = "personal", onTabChange } = props;
+  const { activeTab = "staff", onTabChange } = props;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  console.log(activeTab);
-
   const navItems = [
-    { id: "personal", label: "Dashboard" },
+    { id: "staff", label: "Dashboard" },
     { id: "personal-info", label: "Thông tin cá nhân" },
     { id: "projects", label: "Dự án tham gia" },
     { id: "timekeeping/time-sheets", label: "Chấm công" },
@@ -72,7 +72,7 @@ const HeaderCommon = (props: HeaderCommonProps) => {
     
     switch (action) {
       case 'profile':
-        window.location.href = '/personal-info';
+        window.location.href = ROUTERS.PERSONAL.INFO;
         break;
       case 'password':
         setIsChangePasswordModalOpen(true);
@@ -96,7 +96,7 @@ const HeaderCommon = (props: HeaderCommonProps) => {
           {navItems.map((item) => (
             <NavItem
               key={item.id}
-              $active={activeTab === item.id}
+              $active={activeTab.startsWith(item.id)}
               onClick={() => handleTabClick(item.id)}
             >
               {item.label}
@@ -105,15 +105,15 @@ const HeaderCommon = (props: HeaderCommonProps) => {
         </Navigation>
 
         <UserSection>
-          <IconButton>
+          {/* <IconButton>
             <Bell size={18} />
-          </IconButton>
+          </IconButton> */}
           <IconButton>
-            <Grid3X3 size={18} />
+            <Link href={ROUTERS.OVERVIEW.BASE}><Grid3X3 size={18} /></Link>
           </IconButton>
-          <IconButton>
+          {/* <IconButton>
             <Settings size={18} />
-          </IconButton>
+          </IconButton> */}
           <UserAvatar ref={dropdownRef} onClick={toggleDropdown}>
             <User size={16} color="white" />
             <UserDropdown $isOpen={isDropdownOpen}>

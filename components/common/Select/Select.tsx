@@ -139,7 +139,7 @@ const Select: React.FC<SelectProps> = ({
   };
 
   return (
-    <SelectContainer className={className} fullWidth={fullWidth}>
+    <SelectContainer className={className} $fullWidth={fullWidth}>
       {label && (
         <SelectLabel htmlFor={selectId} required={required}>
           {label}
@@ -150,10 +150,10 @@ const Select: React.FC<SelectProps> = ({
       <div ref={selectRef} style={{ position: 'relative' }}>
         <SelectTrigger
           id={selectId}
-          size={size}
+          $size={size}
           disabled={disabled}
-          hasError={!!error}
-          isOpen={isOpen}
+          $hasError={!!error}
+          $isOpen={isOpen}
           onClick={handleToggle}
           onKeyDown={handleKeyDown}
           tabIndex={disabled ? -1 : 0}
@@ -161,10 +161,10 @@ const Select: React.FC<SelectProps> = ({
           aria-expanded={isOpen}
           aria-haspopup="listbox"
         >
-          <SelectValue hasValue={!!selectedOption}>
+          <SelectValue $hasValue={!!selectedOption}>
             {selectedOption ? selectedOption.label : placeholder}
           </SelectValue>
-          <SelectIcon isOpen={isOpen}>
+          <SelectIcon $isOpen={isOpen}>
             <ChevronDown size={16} />
           </SelectIcon>
         </SelectTrigger>

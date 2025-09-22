@@ -13,7 +13,7 @@ export const DashboardGrid = styled.div`
   margin: 0 auto;
   
   @media (max-width: 1200px) {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
   
   @media (max-width: 768px) {
@@ -26,7 +26,6 @@ export const Card = styled.div<{ span?: number }>`
   border-radius: var(--radius-md);
   padding: 1.5rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border: 1px solid var(--border);
   grid-column: span ${(props) => props.span || 1};
   transition: all 0.3s ease;
   

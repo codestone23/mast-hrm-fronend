@@ -5,11 +5,11 @@ import { StyledButton } from './buttonStyle';
 
 export interface ButtonProps {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   disabled?: boolean;
   loading?: boolean;
-  fullWidth?: boolean;
+  $fullWidth?: boolean;
   type?: 'button' | 'submit' | 'reset';
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   className?: string;
@@ -23,7 +23,7 @@ const Button: React.FC<ButtonProps> = ({
   size = 'md',
   disabled = false,
   loading = false,
-  fullWidth = false,
+  $fullWidth = false,
   type = 'button',
   onClick,
   className,
@@ -36,7 +36,7 @@ const Button: React.FC<ButtonProps> = ({
       variant={variant}
       size={size}
       disabled={disabled || loading}
-      fullWidth={fullWidth}
+      $fullWidth={$fullWidth}
       type={type}
       onClick={onClick}
       className={className}

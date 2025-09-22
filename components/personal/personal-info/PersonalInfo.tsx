@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { Edit, Plus, Trash2, Clock } from 'lucide-react';
+import EditPersonalInfoModal from './EditPersonalInfoModal';
+import FamilyMemberModal from './FamilyMemberModal';
+import DeleteFamilyMemberModal from './DeleteFamilyMemberModal';
 import { 
   PersonalInfoContainer,
   LeftSidebar,
@@ -7,10 +10,6 @@ import {
   UserAvatar,
   UserName,
   UserRole,
-  ProfileProgress,
-  ProgressLabel,
-  ProgressBar,
-  ProgressFill,
   UserDetails,
   DetailItem,
   DetailLabel,
@@ -40,11 +39,30 @@ import {
 import Image from "next/image";
 import IMAGES from "@/config/images";
 
+interface FamilyMemberData {
+  id: string;
+  name: string;
+  relationship: string;
+  gender: string;
+  birthDate: string;
+  phone: string;
+  dependent: string;
+  notes: string;
+}
+
 const PersonalInfo = () => {
   const [activeTab, setActiveTab] = useState('basic');
+  
+  // Modal states
+  const [isEditPersonalModalOpen, setIsEditPersonalModalOpen] = useState(false);
+  const [isFamilyModalOpen, setIsFamilyModalOpen] = useState(false);
+  const [isDeleteFamilyModalOpen, setIsDeleteFamilyModalOpen] = useState(false);
+  const [familyModalMode, setFamilyModalMode] = useState<'add' | 'edit'>('add');
+  const [selectedFamilyMember, setSelectedFamilyMember] = useState<FamilyMemberData | null>(null);
 
-  const familyMembers = [
+  const [familyMembers, setFamilyMembers] = useState<FamilyMemberData[]>([
     {
+      id: 'family_1',
       name: 'Phạm Gia AA',
       relationship: 'Bố',
       gender: 'Nam',
@@ -53,7 +71,48 @@ const PersonalInfo = () => {
       dependent: 'Không',
       notes: 'N/A'
     },
-  ];
+  ]);
+
+  const handleEditPersonalInfo = () => {
+    setIsEditPersonalModalOpen(true);
+  };
+
+  const handleAddFamilyMember = () => {
+    setFamilyModalMode('add');
+    setSelectedFamilyMember(null);
+    setIsFamilyModalOpen(true);
+  };
+
+  const handleEditFamilyMember = (member: FamilyMemberData) => {
+    setFamilyModalMode('edit');
+    setSelectedFamilyMember(member);
+    setIsFamilyModalOpen(true);
+  };
+
+  const handleDeleteFamilyMember = (member: FamilyMemberData) => {
+    setSelectedFamilyMember(member);
+    setIsDeleteFamilyModalOpen(true);
+  };
+
+  const handleSaveFamilyMember = (memberData: FamilyMemberData) => {
+    if (familyModalMode === 'add') {
+      setFamilyMembers(prev => [...prev, memberData]);
+    } else {
+      setFamilyMembers(prev => 
+        prev.map(member => 
+          member.id === memberData.id ? memberData : member
+        )
+      );
+    }
+  };
+
+  const handleConfirmDeleteFamilyMember = () => {
+    if (selectedFamilyMember) {
+      setFamilyMembers(prev => 
+        prev.filter(member => member.id !== selectedFamilyMember.id)
+      );
+    }
+  };
 
   return (
     <PersonalInfoContainer>
@@ -138,7 +197,7 @@ const PersonalInfo = () => {
             <>
               <SectionHeader>
                 <SectionTitle>Thông tin cá nhân</SectionTitle>
-                <SectionAction>
+                <SectionAction onClick={handleEditPersonalInfo}>
                   <Edit size={16} />
                 </SectionAction>
               </SectionHeader>
@@ -196,7 +255,7 @@ const PersonalInfo = () => {
 
               <SectionHeader>
                 <SectionTitle>Thông tin thân nhân</SectionTitle>
-                <SectionAction>
+                <SectionAction onClick={handleAddFamilyMember}>
                   <Plus size={16} />
                 </SectionAction>
               </SectionHeader>
@@ -224,10 +283,16 @@ const PersonalInfo = () => {
                     <TableCell>{member.notes}</TableCell>
                     <TableCell>
                       <ActionButtons>
-                        <ActionButton $type="edit">
+                        <ActionButton 
+                          $type="edit"
+                          onClick={() => handleEditFamilyMember(member)}
+                        >
                           <Edit size={14} />
                         </ActionButton>
-                        <ActionButton $type="delete">
+                        <ActionButton 
+                          $type="delete"
+                          onClick={() => handleDeleteFamilyMember(member)}
+                        >
                           <Trash2 size={14} />
                         </ActionButton>
                       </ActionButtons>
@@ -251,6 +316,27 @@ const PersonalInfo = () => {
           )}
         </TabContent>
       </MainContent>
+
+      {/* Modals */}
+      <EditPersonalInfoModal
+        isOpen={isEditPersonalModalOpen}
+        onClose={() => setIsEditPersonalModalOpen(false)}
+      />
+
+      <FamilyMemberModal
+        isOpen={isFamilyModalOpen}
+        onClose={() => setIsFamilyModalOpen(false)}
+        mode={familyModalMode}
+        initialData={selectedFamilyMember ?? undefined}
+        onSave={handleSaveFamilyMember}
+      />
+
+      <DeleteFamilyMemberModal
+        isOpen={isDeleteFamilyModalOpen}
+        onClose={() => setIsDeleteFamilyModalOpen(false)}
+        memberName={selectedFamilyMember?.name || ''}
+        onConfirm={handleConfirmDeleteFamilyMember}
+      />
     </PersonalInfoContainer>
   );
 };

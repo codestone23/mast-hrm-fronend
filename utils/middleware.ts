@@ -1,14 +1,6 @@
+import { AuthRoutes } from "@/constants/enums";
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-
-export enum AuthRoutes {
-  ROOT = '/',
-  LOGIN = '/login',
-  FORGOT_PASSWORD = '/forgot-password',
-  OVERVIEW = '/overview',
-  PERSONAL = '/personal',
-  PERSONAL_INFO = '/personal-info'
-}
 
 export const authRoutes: AuthRoutes[] = [ 
   AuthRoutes.LOGIN,

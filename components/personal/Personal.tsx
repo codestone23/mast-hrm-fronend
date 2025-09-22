@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import {
   Clock,
   User,
@@ -10,6 +11,8 @@ import {
   TrendingUp,
   BarChart3,
 } from "lucide-react";
+import DailyReports from '../timekeeping/DailyReports';
+import CreateReportModal from '../timekeeping/modals/CreateReportModal';
 import {
   PersonalContainer,
   DashboardGrid,
@@ -27,7 +30,6 @@ import {
   MetricsList,
   ResourcesCard,
   EffortSection,
-  NoDataMessage,
   CardHeader,
   CardTitle,
   CardLink,
@@ -56,25 +58,34 @@ import {
   EffortText,
   ResourcesInfo,
   ResourcesDetailLink,
-  ReportHeader,
-  ReportTitleWrapper,
-  ReportButton,
   DashboardCol,
   ButtonDetail,
   ProfileDetailRight,
   CardWrapper,
 } from "./personalStyle";
 import { useRouter } from "next/navigation";
+import ROUTERS from "@/config/router";
 
 const Personal: React.FC = () => {
   const router = useRouter();
+  const [isCreateReportModalOpen, setIsCreateReportModalOpen] = useState(false);
+  const [reports, setReports] = useState([]);
   const currentMonth = new Date().toLocaleDateString("vi-VN", {
     month: "2-digit",
     year: "numeric",
   });
 
   const handleClickDetail = () => {
-    router.push("/personal-info");
+    router.push(ROUTERS.PERSONAL.INFO);
+  };
+
+  const handleClickProjects = () => {
+    router.push(ROUTERS.PERSONAL.PROJECTS);
+  };
+
+  const handleCreateReport = (reportData: any) => {
+    console.log(reportData);
+    // setReports((prev: any) => [reportData, ...prev]);
   };
 
   const renderHeader = () => {
@@ -229,16 +240,10 @@ const Personal: React.FC = () => {
                 </WorkStatsContainer>
               </Card>
               <Card>
-                <ReportHeader>
-                  <ReportTitleWrapper>
-                    <IconWrapper>
-                      <BarChart3 size={20} />
-                    </IconWrapper>
-                    <CardTitle>Báo cáo công việc</CardTitle>
-                  </ReportTitleWrapper>
-                  <ReportButton>+ Tạo báo cáo</ReportButton>
-                </ReportHeader>
-                <NoDataMessage>Chưa có báo cáo nào</NoDataMessage>
+                <DailyReports 
+                  reports={reports}
+                  onCreateReport={() => setIsCreateReportModalOpen(true)}
+                />
               </Card>
             </DashboardCol>
             <DashboardCol>
@@ -271,7 +276,7 @@ const Personal: React.FC = () => {
               <ResourcesCard>
                 <ResourcesHeader>
                   <ResourcesTitle>Dự án hiện tại</ResourcesTitle>
-                  <ResourcesLink>Xem chi tiết</ResourcesLink>
+                  <ResourcesLink onClick={handleClickProjects}>Xem chi tiết</ResourcesLink>
                 </ResourcesHeader>
                 <EffortSection>
                   <EffortDateLabel>Tiến độ ngày 18/08/2025</EffortDateLabel>
@@ -303,6 +308,12 @@ const Personal: React.FC = () => {
           <DashboardCol $span={1}></DashboardCol>
         </DashboardCol>
       </DashboardGrid>
+
+      <CreateReportModal
+        isOpen={isCreateReportModalOpen}
+        onClose={() => setIsCreateReportModalOpen(false)}
+        onSave={handleCreateReport}
+      />
     </PersonalContainer>
   );
 };

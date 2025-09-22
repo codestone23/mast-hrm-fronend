@@ -1,11 +1,11 @@
 import styled, { css } from 'styled-components';
 
-export const SelectContainer = styled.div<{ fullWidth?: boolean }>`
+export const SelectContainer = styled.div<{ $fullWidth?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   
-  ${({ fullWidth }) => fullWidth && css`
+  ${({ $fullWidth }) => $fullWidth && css`
     width: 100%;
   `}
 `;
@@ -22,10 +22,10 @@ export const SelectLabel = styled.label<{ required?: boolean }>`
 `;
 
 export const SelectTrigger = styled.div<{
-  size?: string;
+  $size?: string;
   disabled?: boolean;
-  hasError?: boolean;
-  isOpen?: boolean;
+  $hasError?: boolean;
+  $isOpen?: boolean;
 }>`
   display: flex;
   align-items: center;
@@ -36,8 +36,8 @@ export const SelectTrigger = styled.div<{
   cursor: pointer;
   transition: all 0.2s ease;
   
-  ${({ size }) => {
-    switch (size) {
+  ${({ $size }) => {
+    switch ($size) {
       case 'sm':
         return css`
           padding: 0.5rem 0.75rem;
@@ -56,13 +56,13 @@ export const SelectTrigger = styled.div<{
     }
   }}
   
-  ${({ hasError }) => hasError && css`
+  ${({ $hasError }) => $hasError && css`
     border-color: var(--error-500);
   `}
   
-  ${({ isOpen, hasError }) => isOpen && css`
-    border-color: ${hasError ? 'var(--error-500)' : 'var(--primary-500)'};
-    box-shadow: 0 0 0 3px ${hasError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)'};
+  ${({ $isOpen, $hasError }) => $isOpen && css`
+    border-color: ${$hasError ? 'var(--error-500)' : 'var(--primary-500)'};
+    box-shadow: 0 0 0 3px ${$hasError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)'};
   `}
   
   ${({ disabled }) => disabled && css`
@@ -82,19 +82,19 @@ export const SelectTrigger = styled.div<{
   }
 `;
 
-export const SelectValue = styled.span<{ hasValue?: boolean }>`
+export const SelectValue = styled.span<{ $hasValue?: boolean }>`
   flex: 1;
   text-align: left;
-  color: ${({ hasValue }) => hasValue ? 'var(--text-primary)' : 'var(--text-muted)'};
+  color: ${({ $hasValue }) => $hasValue ? 'var(--text-primary)' : 'var(--text-muted)'};
 `;
 
-export const SelectIcon = styled.div<{ isOpen?: boolean }>`
+export const SelectIcon = styled.div<{ $isOpen?: boolean }>`
   display: flex;
   align-items: center;
   color: var(--text-muted);
   transition: transform 0.2s ease;
   
-  ${({ isOpen }) => isOpen && css`
+  ${({ $isOpen }) => $isOpen && css`
     transform: rotate(180deg);
   `}
 `;

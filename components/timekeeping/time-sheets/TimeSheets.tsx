@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import ListRequest from '../ListRequest';
+import CreateRequestModal from '../modals/CreateRequestModal';
 import {
   TimeSheetsContainer,
   Header,
@@ -51,6 +53,7 @@ interface TimeSheetData {
 const TimeSheets: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState("BẢNG CHẤM CÔNG");
+  const [isCreateRequestModalOpen, setIsCreateRequestModalOpen] = useState(false);
   const [timeSheetData] = useState<TimeSheetData>({
     "2025-08-03": { status: "work", timeIn: "12:10", timeOut: "N/A", hours: 8 },
     "2025-08-04": { status: "absent", timeIn: "N/A", timeOut: "N/A", hours: 0 },
@@ -74,7 +77,7 @@ const TimeSheets: React.FC = () => {
 
   const tabs = [
     "BẢNG CHẤM CÔNG",
-    "LỊCH BIỂU",
+    "LIST REQUEST",
     "BẢNG OT",
     "LIST ĐỀ XUẤT",
     "REQUEST OT",
@@ -174,26 +177,6 @@ const TimeSheets: React.FC = () => {
     setCurrentDate(newDate);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "work":
-        return "#4CAF50";
-      case "late":
-        return "#FFA726";
-      case "absent":
-        return "#9C27B0";
-      case "holiday":
-        return "#F44336";
-      case "leave":
-        return "#FF9800";
-      case "remote":
-        return "#795548";
-      case "ot":
-        return "#009688";
-      default:
-        return "#E0E0E0";
-    }
-  };
 
   const monthNames = [
     "Tháng 01",
@@ -224,132 +207,160 @@ const TimeSheets: React.FC = () => {
             </Tab>
           ))}
         </TabsContainer>
-        <CreateButton>
+        <CreateButton onClick={() => setIsCreateRequestModalOpen(true)}>
           <Plus size={16} />
           Tạo request
         </CreateButton>
       </Header>
 
       <MainContent>
-        <CalendarContainer>
-          <MonthNavigation>
-            <MonthButton onClick={() => navigateMonth("prev")}>
-              <ChevronLeft size={20} />
-            </MonthButton>
-            <MonthDisplay>
-              {monthNames[currentDate.getMonth()]} / {currentDate.getFullYear()}
-            </MonthDisplay>
-            <MonthButton onClick={() => navigateMonth("next")}>
-              <ChevronRight size={20} />
-            </MonthButton>
-          </MonthNavigation>
+        {activeTab === "BẢNG CHẤM CÔNG" && (
+          <>
+            <CalendarContainer>
+              <MonthNavigation>
+                <MonthButton onClick={() => navigateMonth("prev")}>
+                  <ChevronLeft size={20} />
+                </MonthButton>
+                <MonthDisplay>
+                  {monthNames[currentDate.getMonth()]} / {currentDate.getFullYear()}
+                </MonthDisplay>
+                <MonthButton onClick={() => navigateMonth("next")}>
+                  <ChevronRight size={20} />
+                </MonthButton>
+              </MonthNavigation>
 
-          <Legend>
-            {legendItems.map((item, index) => (
-              <LegendItem key={index}>
-                <LegendColor $color={item.color} />
-                {item.label}
-              </LegendItem>
-            ))}
-          </Legend>
+              <Legend>
+                {legendItems.map((item, index) => (
+                  <LegendItem key={index}>
+                    <LegendColor $color={item.color} />
+                    {item.label}
+                  </LegendItem>
+                ))}
+              </Legend>
 
-          <CalendarHeader>
-            {weekDays.map((day) => (
-              <WeekDay key={day}>{day}</WeekDay>
-            ))}
-          </CalendarHeader>
+              <CalendarHeader>
+                {weekDays.map((day) => (
+                  <WeekDay key={day}>{day}</WeekDay>
+                ))}
+              </CalendarHeader>
 
-          <CalendarGrid>
-            {getCurrentMonthDays().map((day, index) => {
-              const dayData = timeSheetData[day.fullDate];
-              const isToday =
-                day.fullDate === new Date().toISOString().split("T")[0];
+              <CalendarGrid>
+                {getCurrentMonthDays().map((day, index) => {
+                  const dayData = timeSheetData[day.fullDate];
+                  const isToday =
+                    day.fullDate === new Date().toISOString().split("T")[0];
 
-              return (
-                <DayCell
-                  key={index}
-                  $isCurrentMonth={day.isCurrentMonth}
-                  $status={dayData?.status}
-                  $isToday={isToday}
-                >
-                  <DayHeader>
-                    <DayNumber
+                  return (
+                    <DayCell
+                      key={index}
                       $isCurrentMonth={day.isCurrentMonth}
+                      $status={dayData?.status}
                       $isToday={isToday}
                     >
-                      {String(day.dayNumber).padStart(2, "0")}/
-                      {String(day.date.getMonth() + 1).padStart(2, "0")}
-                    </DayNumber>
-                    <DayMenu>...</DayMenu>
-                  </DayHeader>
+                      <DayHeader>
+                        <DayNumber
+                          $isCurrentMonth={day.isCurrentMonth}
+                          $isToday={isToday}
+                        >
+                          {String(day.dayNumber).padStart(2, "0")}/
+                          {String(day.date.getMonth() + 1).padStart(2, "0")}
+                        </DayNumber>
+                        <DayMenu>...</DayMenu>
+                      </DayHeader>
 
-                  {dayData && day.isCurrentMonth && (
-                    <DayStatus>
-                      <div>Công {dayData.hours} - Muộn 0</div>
-                      {dayData.timeIn && (
-                        <TimeDisplay>
-                          <span>In: {dayData.timeIn}</span>
-                          <span>Out: {dayData.timeOut || "N/A"}</span>
-                        </TimeDisplay>
+                      {dayData && day.isCurrentMonth && (
+                        <DayStatus>
+                          <div>Công {dayData.hours} - Muộn 0</div>
+                          {dayData.timeIn && (
+                            <TimeDisplay>
+                              <span>In: {dayData.timeIn}</span>
+                              <span>Out: {dayData.timeOut || "N/A"}</span>
+                            </TimeDisplay>
+                          )}
+                        </DayStatus>
                       )}
-                    </DayStatus>
-                  )}
-                </DayCell>
-              );
-            })}
-          </CalendarGrid>
-        </CalendarContainer>
+                    </DayCell>
+                  );
+                })}
+              </CalendarGrid>
+            </CalendarContainer>
 
-        <SidebarContainer>
-          <SidebarCard>
-            <SidebarTitle>Ca làm chuẩn</SidebarTitle>
-            <SidebarContent>
-              <WorkSchedule>08:00 - 12:00</WorkSchedule>
-              <WorkScheduleTime>13:30 - 17:30</WorkScheduleTime>
-            </SidebarContent>
-          </SidebarCard>
+            <SidebarContainer>
+              <SidebarCard>
+                <SidebarTitle>Ca làm chuẩn</SidebarTitle>
+                <SidebarContent>
+                  <WorkSchedule>08:00 - 12:00</WorkSchedule>
+                  <WorkScheduleTime>13:30 - 17:30</WorkScheduleTime>
+                </SidebarContent>
+              </SidebarCard>
 
-          <SidebarCard>
-            <SidebarTitle>
-              <Calendar size={14} />
-              Số giờ phép còn lại
-            </SidebarTitle>
-            <SidebarContent>
-              <LeaveHours>14</LeaveHours>
-            </SidebarContent>
-          </SidebarCard>
+              <SidebarCard>
+                <SidebarTitle>
+                  <Calendar size={14} />
+                  Số giờ phép còn lại
+                </SidebarTitle>
+                <SidebarContent>
+                  <LeaveHours>14</LeaveHours>
+                </SidebarContent>
+              </SidebarCard>
 
-          <SidebarCard>
-            <SidebarTitle>Tổng số công</SidebarTitle>
-            <SidebarContent>
-              <TotalWork>88/168</TotalWork>
-            </SidebarContent>
-          </SidebarCard>
+              <SidebarCard>
+                <SidebarTitle>Tổng số công</SidebarTitle>
+                <SidebarContent>
+                  <TotalWork>88/168</TotalWork>
+                </SidebarContent>
+              </SidebarCard>
 
-          <StatsGrid>
-            <StatItem>
-              <StatNumber>0</StatNumber>
-              <StatLabel>Số phút muộn</StatLabel>
-            </StatItem>
-            <StatItem>
-              <StatNumber>0/120</StatNumber>
-              <StatLabel>Quý phút đi muộn, về sớm</StatLabel>
-            </StatItem>
-            <StatItem>
-              <StatNumber>0 VNĐ</StatNumber>
-              <StatLabel>Tiền phạt</StatLabel>
-            </StatItem>
-            <StatItem>
-              <StatNumber>8</StatNumber>
-              <StatLabel>Nghỉ có lương (h)</StatLabel>
-            </StatItem>
-            <StatItem>
-              <StatNumber>8</StatNumber>
-              <StatLabel>Nghỉ không lương (h)</StatLabel>
-            </StatItem>
-          </StatsGrid>
-        </SidebarContainer>
+              <StatsGrid>
+                <StatItem>
+                  <StatNumber>0</StatNumber>
+                  <StatLabel>Số phút muộn</StatLabel>
+                </StatItem>
+                <StatItem>
+                  <StatNumber>0/120</StatNumber>
+                  <StatLabel>Quý phút đi muộn, về sớm</StatLabel>
+                </StatItem>
+                <StatItem>
+                  <StatNumber>0 VNĐ</StatNumber>
+                  <StatLabel>Tiền phạt</StatLabel>
+                </StatItem>
+                <StatItem>
+                  <StatNumber>8</StatNumber>
+                  <StatLabel>Nghỉ có lương (h)</StatLabel>
+                </StatItem>
+                <StatItem>
+                  <StatNumber>8</StatNumber>
+                  <StatLabel>Nghỉ không lương (h)</StatLabel>
+                </StatItem>
+              </StatsGrid>
+
+            </SidebarContainer>
+          </>
+        )}
+
+        {activeTab === "LIST REQUEST" && (
+          <div style={{ padding: '2rem', width: '100%' }}>
+            <ListRequest />
+          </div>
+        )}
+
+        {(activeTab === "BẢNG OT" || activeTab === "LIST ĐỀ XUẤT" || activeTab === "REQUEST OT") && (
+          <div style={{ 
+            padding: '2rem', 
+            width: '100%', 
+            textAlign: 'center',
+            color: 'var(--text-secondary)'
+          }}>
+            <h3>Tính năng {activeTab} đang được phát triển</h3>
+            <p>Vui lòng quay lại sau để sử dụng tính năng này.</p>
+          </div>
+        )}
       </MainContent>
+
+      <CreateRequestModal
+        isOpen={isCreateRequestModalOpen}
+        onClose={() => setIsCreateRequestModalOpen(false)}
+      />
     </TimeSheetsContainer>
   );
 };

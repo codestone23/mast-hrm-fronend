@@ -149,7 +149,7 @@ export const StyledButton = styled.button<Partial<ButtonProps>>`
   ${({ variant }) => getVariantStyles(variant || 'primary')}
   ${({ size }) => getSizeStyles(size || 'md')}
   
-  ${({ fullWidth }) => fullWidth && css`
+  ${({ $fullWidth }) => $fullWidth && css`
     width: 100%;
   `}
   

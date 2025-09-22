@@ -16,3 +16,6 @@ export type { DatePickerProps } from './DatePicker/DatePicker';
 
 export { default as ChangePasswordModal } from './ChangePasswordModal/ChangePasswordModal';
 export type { ChangePasswordModalProps } from './ChangePasswordModal/ChangePasswordModal';
+
+export { default as Breadcrumb } from './Breadcrumb/Breadcrumb';
+export type { BreadcrumbProps, BreadcrumbItemData } from './Breadcrumb/Breadcrumb';

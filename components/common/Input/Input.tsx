@@ -12,6 +12,7 @@ import {
   HelperText,
   TogglePasswordButton
 } from './inputStyle';
+import { StyledTextArea } from '../TextArea/textAreaStyle';
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
@@ -23,9 +24,11 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   variant?: 'default' | 'filled' | 'outline';
   fullWidth?: boolean;
   required?: boolean;
+  multiline?: boolean;
+  rows?: number;
 }
 
-const Input = forwardRef<HTMLInputElement, InputProps>(({
+const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(({
   label,
   error,
   helperText,
@@ -36,6 +39,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
   fullWidth = true,
   required = false,
   type = 'text',
+  multiline = false,
+  rows = 3,
   className,
   id,
   ...props
@@ -44,12 +49,41 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
   const [isFocused, setIsFocused] = useState(false);
   
   const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
-  const isPassword = type === 'password';
+  const isPassword = type === 'password' && !multiline;
   const inputType = isPassword && showPassword ? 'text' : type;
   
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
+  // If multiline, render as textarea
+  if (multiline) {
+    return (
+      <InputContainer className={className} $fullWidth={fullWidth}>
+        {label && (
+          <InputLabel htmlFor={inputId} required={required}>
+            {label}
+            {required && <span className="required">*</span>}
+          </InputLabel>
+        )}
+        
+        <StyledTextArea
+          ref={ref as React.Ref<HTMLTextAreaElement>}
+          id={inputId}
+          rows={rows}
+          $size={size}
+          $variant={variant}
+          $hasError={!!error}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
+        />
+        
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        {helperText && !error && <HelperText>{helperText}</HelperText>}
+      </InputContainer>
+    );
+  }
 
   return (
     <InputContainer className={className} $fullWidth={fullWidth}>
@@ -75,7 +109,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
         )}
         
         <StyledInput
-          ref={ref}
+          ref={ref as React.Ref<HTMLInputElement>}
           id={inputId}
           type={inputType}
           $size={size}
@@ -85,7 +119,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
           $hasRightIcon={!!icon && iconPosition === 'right' || isPassword}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          {...props}
+          {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
         />
         
         {icon && iconPosition === 'right' && !isPassword && (

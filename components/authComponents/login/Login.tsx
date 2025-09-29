@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { User, Lock, Eye, EyeOff } from "lucide-react";
@@ -24,6 +22,7 @@ import {
   Input,
 } from "./loginStyle";
 import { useRouter } from "next/navigation";
+import { useLogin } from "./useLogin";
 
 interface LoginProps {
   onForgotPassword: () => void;
@@ -36,15 +35,14 @@ interface LoginFormData {
 
 const Login = (props: LoginProps) => {
   const { onForgotPassword } = props;
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
+  const { loginMutation, isLoading, setIsLoading } = useLogin();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setError,
     clearErrors,
   } = useForm<LoginFormData>({
     defaultValues: {
@@ -57,26 +55,7 @@ const Login = (props: LoginProps) => {
     setIsLoading(true);
     clearErrors();
 
-    router.push("/overview");
-    return;
-
-    // try {
-    //   if (data.username === "admin" && data.password === "Password@123") {
-    //     router.push("/overview");
-    //   } else {
-    //     setError("root", {
-    //       type: "manual",
-    //       message: "Tên đăng nhập hoặc mật khẩu không đúng",
-    //     });
-    //   }
-    // } catch {
-    //   setError("root", {
-    //     type: "manual",
-    //     message: "Có lỗi xảy ra. Vui lòng thử lại sau.",
-    //   });
-    // } finally {
-    //   setIsLoading(false);
-    // }
+    loginMutation.mutate(data);
   };
 
   return (

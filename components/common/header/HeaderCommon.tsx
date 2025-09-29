@@ -24,6 +24,7 @@ import IMAGES from "@/config/images";
 import Image from "next/image";
 import Link from "next/link";
 import ROUTERS from "@/config/router";
+import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
 
 interface HeaderCommonProps {
   activeTab?: string;
@@ -33,6 +34,7 @@ interface HeaderCommonProps {
 const HeaderCommon = (props: HeaderCommonProps) => {
   const { activeTab = "staff", onTabChange } = props;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const user = LocalStorageUtil.getItemObject(LOCAL_KEY.USER);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -105,21 +107,15 @@ const HeaderCommon = (props: HeaderCommonProps) => {
         </Navigation>
 
         <UserSection>
-          {/* <IconButton>
-            <Bell size={18} />
-          </IconButton> */}
           <IconButton>
             <Link href={ROUTERS.OVERVIEW.BASE}><Grid3X3 size={18} /></Link>
           </IconButton>
-          {/* <IconButton>
-            <Settings size={18} />
-          </IconButton> */}
           <UserAvatar ref={dropdownRef} onClick={toggleDropdown}>
             <User size={16} color="white" />
             <UserDropdown $isOpen={isDropdownOpen}>
               <DropdownHeader>
-                <DropdownUserName>Phạm Gia Đạt</DropdownUserName>
-                <DropdownUserEmail>dat.phamgia@amela.vn</DropdownUserEmail>
+                <DropdownUserName>{user?.name}</DropdownUserName>
+                <DropdownUserEmail>{user?.email}</DropdownUserEmail>
               </DropdownHeader>
               
               <DropdownMenu>

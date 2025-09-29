@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import StyledComponentsRegistry from "../components/StyledComponentsRegistry";
+import { ToastProvider } from "../contexts/ToastContext";
+import QueryProvider from "../components/providers/QueryProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,7 +18,11 @@ export default function RootLayout({
     <html lang="vi">
       <body>
         <StyledComponentsRegistry>
-          {children}
+          <QueryProvider>
+            <ToastProvider>
+              {children}
+            </ToastProvider>
+          </QueryProvider>
         </StyledComponentsRegistry>
       </body>
     </html>

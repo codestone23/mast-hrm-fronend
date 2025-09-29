@@ -8,11 +8,7 @@ const LoginContent = () => {
   const searchParams = useSearchParams();
   const forgot = searchParams.get("forgot") || undefined;
 
-  return (
-    <>
-      <AuthContainer forgot={forgot} />
-    </>
-  );
+  return <AuthContainer forgot={forgot} />;
 };
 
 const LoginFallback = () => {

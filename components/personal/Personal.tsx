@@ -65,11 +65,13 @@ import {
 } from "./personalStyle";
 import { useRouter } from "next/navigation";
 import ROUTERS from "@/config/router";
+import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
 
 const Personal: React.FC = () => {
   const router = useRouter();
   const [isCreateReportModalOpen, setIsCreateReportModalOpen] = useState(false);
   const [reports, setReports] = useState([]);
+  const user = LocalStorageUtil.getItemObject(LOCAL_KEY.USER);
   const currentMonth = new Date().toLocaleDateString("vi-VN", {
     month: "2-digit",
     year: "numeric",
@@ -170,8 +172,8 @@ const Personal: React.FC = () => {
             </ProfileAvatar>
             <ProfileInfo>
               <ProfileDetail>
-                <h3>Nguyễn Văn A</h3>
-                <p>nva@company.com</p>
+                <h3>{user?.name}</h3>
+                <p>{user?.email}</p>
                 <div className="role">Frontend Developer</div>
               </ProfileDetail>
               <ProfileDetailRight>

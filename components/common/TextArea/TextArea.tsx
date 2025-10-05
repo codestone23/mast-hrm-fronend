@@ -32,7 +32,7 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
   rows = 3,
   ...props
 }, ref) => {
-  const inputId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
+  const inputId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`; 
   
   return (
     <InputContainer className={className} $fullWidth={fullWidth}>

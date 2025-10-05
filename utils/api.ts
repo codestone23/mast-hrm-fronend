@@ -88,18 +88,17 @@ export const isValidPhoneNumber = (phone: string): boolean => {
   return phoneRegex.test(phone.replace(/\s/g, ''));
 };
 
-// Helper function to generate random string
 export const generateRandomString = (length: number = 8): string => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+    result += chars.charAt(Math.floor(chars.length));
   }
   return result;
 };
 
 // Helper function to debounce API calls
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: any[]) => any>( 
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {

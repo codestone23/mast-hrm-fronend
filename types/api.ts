@@ -83,17 +83,34 @@ export interface UpdateUserRequest {
 
 // Timekeeping types
 export interface TimeSheet {
-  id: string;
-  userId: string;
-  date: string;
-  checkIn?: string;
-  checkOut?: string;
-  workHours: number;
-  overtimeHours: number;
-  status: TimeSheetStatus;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
+  id: number;
+  user_id: number;
+  work_date: string;
+  checkin: string | null;
+  checkout: string | null;
+  checkin_checkout: string | null;
+  day_off_id: number | null;
+  late_time: number;
+  late_time_approved: number | null;
+  early_time: number;
+  is_complete: boolean;
+  fines: number;
+  group_id: number | null;
+  deleted_at: string | null;
+  created_at: string;
+  updated_at: string;
+  type: string;
+  work_time_morning: number;
+  work_time_afternoon: number;
+  status: string;
+  request_type: string;
+  request_late: number | null;
+  request_early: number | null;
+  paid_leave: number | null;
+  unpaid_leave: number | null;
+  remote: string;
+  total_work_time: number | null;
+  break_time: number | null;
 }
 
 export enum TimeSheetStatus {

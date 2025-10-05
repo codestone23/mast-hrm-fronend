@@ -19,7 +19,7 @@ const OverviewPage: React.FC = () => {
     <PageContainer>
       <Header userName={data?.name ?? ''} />
       <ContentHeader>
-        <ModuleGrid onModuleClick={handleModuleClick} />
+        <ModuleGrid onModuleClick={handleModuleClick} userName={data?.name ?? ''} />
       </ContentHeader>
     </PageContainer>
   );

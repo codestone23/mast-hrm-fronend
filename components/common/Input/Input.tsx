@@ -48,7 +48,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(({
   const [showPassword, setShowPassword] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   
-  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`; 
   const isPassword = type === 'password' && !multiline;
   const inputType = isPassword && showPassword ? 'text' : type;
   

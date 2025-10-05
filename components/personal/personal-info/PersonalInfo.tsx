@@ -121,7 +121,7 @@ const PersonalInfo = () => {
           <UserAvatar>
             <Image src={IMAGES.common.backgroundLogin} alt="User Avatar" width={120} height={120} />
           </UserAvatar>
-          <UserName>Phạm Gia Đạt</UserName>
+          <UserName>Phạm Gia Đạt</UserName> 
           <UserRole>Developer</UserRole>
         </UserProfile>
 

@@ -21,13 +21,13 @@ class ProjectService {
       ...(search && { search })
     });
     
-    const response = await axiosInstance.get(`/projects?${params}`);
+    const response = await axiosInstance.get(`projects?${params}`);
     return response.data;
   }
 
   // Lấy project theo ID
   async getProjectById(projectId: string): Promise<ApiResponse<Project>> {
-    const response = await axiosInstance.get(`/projects/${projectId}`);
+    const response = await axiosInstance.get(`projects/${projectId}`);
     return response.data;
   }
 
@@ -40,7 +40,7 @@ class ProjectService {
     endDate?: string;
     teamMembers: string[];
   }): Promise<ApiResponse<Project>> {
-    const response = await axiosInstance.post('/projects', projectData);
+    const response = await axiosInstance.post('projects', projectData);
     return response.data;
   }
 
@@ -53,13 +53,13 @@ class ProjectService {
     startDate: string;
     endDate: string;
   }>): Promise<ApiResponse<Project>> {
-    const response = await axiosInstance.put(`/projects/${projectId}`, projectData);
+    const response = await axiosInstance.put(`projects/${projectId}`, projectData);
     return response.data;
   }
 
   // Xóa project
   async deleteProject(projectId: string): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.delete(`/projects/${projectId}`);
+    const response = await axiosInstance.delete(`projects/${projectId}`);
     return response.data;
   }
 
@@ -71,25 +71,25 @@ class ProjectService {
       ...(status && { status })
     });
     
-    const response = await axiosInstance.get(`/projects/my-projects?${params}`);
+    const response = await axiosInstance.get(`projects/my-projects?${params}`);
     return response.data;
   }
 
   // Thêm thành viên vào project
   async addProjectMember(projectId: string, userId: string, role: string): Promise<ApiResponse<Project>> {
-    const response = await axiosInstance.post(`/projects/${projectId}/members`, { userId, role });
+    const response = await axiosInstance.post(`projects/${projectId}/members`, { userId, role });
     return response.data;
   }
 
   // Xóa thành viên khỏi project
   async removeProjectMember(projectId: string, userId: string): Promise<ApiResponse<Project>> {
-    const response = await axiosInstance.delete(`/projects/${projectId}/members/${userId}`);
+    const response = await axiosInstance.delete(`projects/${projectId}/members/${userId}`);
     return response.data;
   }
 
   // Cập nhật role của thành viên
   async updateProjectMemberRole(projectId: string, userId: string, role: string): Promise<ApiResponse<Project>> {
-    const response = await axiosInstance.patch(`/projects/${projectId}/members/${userId}`, { role });
+    const response = await axiosInstance.patch(`projects/${projectId}/members/${userId}`, { role });
     return response.data;
   }
 
@@ -103,13 +103,13 @@ class ProjectService {
       ...(assigneeId && { assigneeId })
     });
     
-    const response = await axiosInstance.get(`/projects/${projectId}/tasks?${params}`);
+    const response = await axiosInstance.get(`projects/${projectId}/tasks?${params}`);
     return response.data;
   }
 
   // Lấy task theo ID
   async getTaskById(taskId: string): Promise<ApiResponse<Task>> {
-    const response = await axiosInstance.get(`/tasks/${taskId}`);
+    const response = await axiosInstance.get(`tasks/${taskId}`);
     return response.data;
   }
 
@@ -121,7 +121,7 @@ class ProjectService {
     assigneeId: string;
     dueDate?: string;
   }): Promise<ApiResponse<Task>> {
-    const response = await axiosInstance.post(`/projects/${projectId}/tasks`, taskData);
+    const response = await axiosInstance.post(`projects/${projectId}/tasks`, taskData);
     return response.data;
   }
 
@@ -134,13 +134,13 @@ class ProjectService {
     assigneeId: string;
     dueDate: string;
   }>): Promise<ApiResponse<Task>> {
-    const response = await axiosInstance.put(`/tasks/${taskId}`, taskData);
+    const response = await axiosInstance.put(`tasks/${taskId}`, taskData);
     return response.data;
   }
 
   // Xóa task
   async deleteTask(taskId: string): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.delete(`/tasks/${taskId}`);
+    const response = await axiosInstance.delete(`tasks/${taskId}`);
     return response.data;
   }
 
@@ -153,13 +153,13 @@ class ProjectService {
       ...(projectId && { projectId })
     });
     
-    const response = await axiosInstance.get(`/tasks/my-tasks?${params}`);
+    const response = await axiosInstance.get(`tasks/my-tasks?${params}`);
     return response.data;
   }
 
   // Cập nhật trạng thái task
   async updateTaskStatus(taskId: string, status: TaskStatus): Promise<ApiResponse<Task>> {
-    const response = await axiosInstance.patch(`/tasks/${taskId}/status`, { status });
+    const response = await axiosInstance.patch(`tasks/${taskId}/status`, { status });
     return response.data;
   }
 
@@ -172,7 +172,7 @@ class ProjectService {
     completionRate: number;
     overdueTasks: number;
   }>> {
-    const response = await axiosInstance.get(`/projects/${projectId}/stats`);
+    const response = await axiosInstance.get(`projects/${projectId}/stats`);
     return response.data;
   }
 
@@ -184,7 +184,7 @@ class ProjectService {
     pendingTasks: number;
     overdueTasks: number;
   }>> {
-    const response = await axiosInstance.get('/tasks/my-stats');
+    const response = await axiosInstance.get('tasks/my-stats');
     return response.data;
   }
 }

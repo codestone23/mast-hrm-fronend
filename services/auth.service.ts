@@ -13,7 +13,7 @@ import {
 
 class AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await axiosInstance.post('/auth/login', credentials, {
+    const response = await axiosInstance.post('auth/login', credentials, {
       withCredentials: true,
     });
   
@@ -22,13 +22,13 @@ class AuthService {
   }
 
   async register(userData: RegisterRequest): Promise<ApiResponse<User>> {
-    const response = await axiosInstance.post('/auth/register', userData);
+    const response = await axiosInstance.post('auth/register', userData);
     return response.data;
   }
 
   async logout(): Promise<ApiResponse<void>> {
     try {
-      const response = await axiosInstance.post('/auth/logout');
+      const response = await axiosInstance.post('auth/logout');
       return response.data;
     } finally {
       TokenManager.clearTokens();
@@ -36,7 +36,7 @@ class AuthService {
   }
 
   async refreshToken(refreshData: RefreshTokenRequest): Promise<ApiResponse<LoginResponse>> {
-    const response = await axiosInstance.post('/auth/refresh', refreshData);
+    const response = await axiosInstance.post('auth/refresh', refreshData);
     
     if (response.data.success && response.data.data) {
       const { accessToken, refreshToken } = response.data.data;
@@ -47,32 +47,32 @@ class AuthService {
   }
 
   async forgotPassword(data: ForgotPasswordRequest): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.post('/auth/forgot-password', data);
+    const response = await axiosInstance.post('auth/forgot-password', data);
     return response.data;
   }
 
   async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.post('/auth/reset-password', data);
+    const response = await axiosInstance.post('auth/reset-password', data);
     return response.data;
   }
 
   async verifyOTP(otp: string, email: string): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.post('/auth/verify-otp', { otp, email });
+    const response = await axiosInstance.post('auth/verify-otp', { otp, email });
     return response.data;
   }
 
   async resendOTP(email: string): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.post('/auth/resend-otp', { email });
+    const response = await axiosInstance.post('auth/resend-otp', { email });
     return response.data;
   }
 
   async getCurrentUser(): Promise<User> {
-    const response = await axiosInstance.post('/auth/me');
+    const response = await axiosInstance.post('auth/me');
     return response.data;
   }
 
   async changePassword(currentPassword: string, newPassword: string): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.put('/auth/change-password', {
+    const response = await axiosInstance.put('auth/change-password', {
       currentPassword,
       newPassword
     });
@@ -80,7 +80,7 @@ class AuthService {
   }
 
   async verifyEmail(token: string): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.post('/auth/verify-email', { token });
+    const response = await axiosInstance.post('auth/verify-email', { token });
     return response.data;
   }
 

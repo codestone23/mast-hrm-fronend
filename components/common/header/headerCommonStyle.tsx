@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const HeaderContainer = styled.header`
+export const HeaderContainer = styled.div`
   display: flex;
   align-items: center;
   padding: 0 1.5rem;
@@ -49,7 +49,7 @@ export const Logo = styled.div`
   }
 `;
 
-export const Navigation = styled.nav`
+export const Navigation = styled.div`
   display: flex;
   align-items: center;
   gap: 0;
@@ -161,13 +161,13 @@ export const DropdownHeader = styled.div`
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 `;
 
-export const DropdownUserName = styled.div`
+export const DropdownUserName = styled.span`
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 0.25rem;
 `;
 
-export const DropdownUserEmail = styled.div`
+export const DropdownUserEmail = styled.span`
   font-size: 0.875rem;
   color: var(--text-secondary);
 `;

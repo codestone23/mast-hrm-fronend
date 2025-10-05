@@ -172,8 +172,12 @@ export const DayCell = styled.div<{
   background: ${(props) => {
     if (!props.$isCurrentMonth) return "#f8f8f8";
     if (props.$status === "work") return "#c9f8c9";
+    if (props.$status === "late") return "#FFE0B2";
     if (props.$status === "absent") return "#f3a7a7";
-    if (props.$status === "holiday") return "#FFF3E0";
+    if (props.$status === "holiday") return "#FFF3E0"; 
+    if (props.$status === "leave") return "#E1F5FE"; 
+    if (props.$status === "remote") return "#F3E5F5"; 
+    if (props.$status === "ot") return "#E8F5E8"; 
     return "white";
   }};
   padding: 8px;

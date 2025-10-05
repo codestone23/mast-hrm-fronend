@@ -11,46 +11,42 @@ import {
 } from '@/types/api';
 
 class TimekeepingService {
-  // TimeSheet APIs
-  // Lấy danh sách timesheet của user hiện tại
-  async getMyTimeSheets(page: number = 1, limit: number = 10, month?: string, year?: string): Promise<PaginatedResponse<TimeSheet>> {
+  async getMyTimeSheets(start_date?: string, end_date?: string): Promise<TimeSheet[]> {
     const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-      ...(month && { month }),
-      ...(year && { year })
+      ...(start_date && { start_date }),
+      ...(end_date && { end_date })
     });
     
-    const response = await axiosInstance.get(`/timekeeping/timesheets?${params}`);
+    const response = await axiosInstance.get(`timesheet/my-timesheets?${params}`);
     return response.data;
   }
 
   // Lấy timesheet theo ID
   async getTimeSheetById(timesheetId: string): Promise<ApiResponse<TimeSheet>> {
-    const response = await axiosInstance.get(`/timekeeping/timesheets/${timesheetId}`);
+    const response = await axiosInstance.get(`timesheet/timesheets/${timesheetId}`);
     return response.data;
   }
 
   // Tạo timesheet mới
   async createTimeSheet(timesheetData: TimeSheetRequest): Promise<ApiResponse<TimeSheet>> {
-    const response = await axiosInstance.post('/timekeeping/timesheets', timesheetData);
+    const response = await axiosInstance.post('timekeeping/timesheets', timesheetData);
     return response.data;
   }
 
   // Cập nhật timesheet
   async updateTimeSheet(timesheetId: string, timesheetData: Partial<TimeSheetRequest>): Promise<ApiResponse<TimeSheet>> {
-    const response = await axiosInstance.put(`/timekeeping/timesheets/${timesheetId}`, timesheetData);
+    const response = await axiosInstance.put(`timekeeping/timesheets/${timesheetId}`, timesheetData);
     return response.data;
   }
 
   // Xóa timesheet
   async deleteTimeSheet(timesheetId: string): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.delete(`/timekeeping/timesheets/${timesheetId}`);
+    const response = await axiosInstance.delete(`timekeeping/timesheets/${timesheetId}`);
     return response.data;
   }
 
   async registerFace(data: FormData): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.post('/timesheet/register-face', data, {
+    const response = await axiosInstance.post('timesheet/register-face', data, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -60,7 +56,7 @@ class TimekeepingService {
 
   // Check in
   async checkIn(data: FormData): Promise<ApiResponse<TimeSheet>> {
-    const response = await axiosInstance.post('/timesheet/checkin', data, {
+    const response = await axiosInstance.post('timesheet/checkin', data, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -70,7 +66,7 @@ class TimekeepingService {
 
   // Check out
   async checkOut(data: FormData): Promise<ApiResponse<TimeSheet>> {
-    const response = await axiosInstance.post('/timesheet/checkout', data, {
+    const response = await axiosInstance.post('timesheet/checkout', data, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -80,7 +76,7 @@ class TimekeepingService {
 
   // Lấy timesheet theo ngày
   async getTimeSheetByDate(date: string): Promise<ApiResponse<TimeSheet | null>> {
-    const response = await axiosInstance.get(`/timekeeping/timesheets/date/${date}`);
+    const response = await axiosInstance.get(`timekeeping/timesheets/date/${date}`);
     return response.data;
   }
 
@@ -95,7 +91,7 @@ class TimekeepingService {
     if (month) params.append('month', month);
     if (year) params.append('year', year);
     
-    const response = await axiosInstance.get(`/timekeeping/stats?${params}`);
+    const response = await axiosInstance.get(`timekeeping/stats?${params}`);
     return response.data;
   }
 
@@ -108,37 +104,37 @@ class TimekeepingService {
       ...(status && { status })
     });
     
-    const response = await axiosInstance.get(`/timekeeping/leave-requests?${params}`);
+    const response = await axiosInstance.get(`timekeeping/leave-requests?${params}`);
     return response.data;
   }
 
   // Tạo leave request mới
   async createLeaveRequest(requestData: CreateLeaveRequest): Promise<ApiResponse<LeaveRequest>> {
-    const response = await axiosInstance.post('/timekeeping/leave-requests', requestData);
+    const response = await axiosInstance.post('timekeeping/leave-requests', requestData);
     return response.data;
   }
 
   // Lấy leave request theo ID
   async getLeaveRequestById(requestId: string): Promise<ApiResponse<LeaveRequest>> {
-    const response = await axiosInstance.get(`/timekeeping/leave-requests/${requestId}`);
+    const response = await axiosInstance.get(`timekeeping/leave-requests/${requestId}`);
     return response.data;
   }
 
   // Cập nhật leave request
   async updateLeaveRequest(requestId: string, requestData: Partial<CreateLeaveRequest>): Promise<ApiResponse<LeaveRequest>> {
-    const response = await axiosInstance.put(`/timekeeping/leave-requests/${requestId}`, requestData);
+    const response = await axiosInstance.put(`timekeeping/leave-requests/${requestId}`, requestData);
     return response.data;
   }
 
   // Hủy leave request
   async cancelLeaveRequest(requestId: string): Promise<ApiResponse<LeaveRequest>> {
-    const response = await axiosInstance.patch(`/timekeeping/leave-requests/${requestId}/cancel`);
+    const response = await axiosInstance.patch(`timekeeping/leave-requests/${requestId}/cancel`);
     return response.data;
   }
 
   // Xóa leave request
   async deleteLeaveRequest(requestId: string): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.delete(`/timekeeping/leave-requests/${requestId}`);
+    const response = await axiosInstance.delete(`timekeeping/leave-requests/${requestId}`);
     return response.data;
   }
 
@@ -150,13 +146,13 @@ class TimekeepingService {
       status: RequestStatus.PENDING
     });
     
-    const response = await axiosInstance.get(`/timekeeping/leave-requests/pending?${params}`);
+    const response = await axiosInstance.get(`timekeeping/leave-requests/pending?${params}`);
     return response.data;
   }
 
   // Duyệt/từ chối leave request
   async reviewLeaveRequest(requestId: string, action: 'approve' | 'reject', comments?: string): Promise<ApiResponse<LeaveRequest>> {
-    const response = await axiosInstance.patch(`/timekeeping/leave-requests/${requestId}/review`, {
+    const response = await axiosInstance.patch(`timekeeping/leave-requests/${requestId}/review`, {
       action,
       comments
     });
@@ -175,7 +171,7 @@ class TimekeepingService {
     if (month) params.append('month', month);
     if (year) params.append('year', year);
     
-    const response = await axiosInstance.get(`/timekeeping/leave-requests/stats?${params}`);
+    const response = await axiosInstance.get(`timekeeping/leave-requests/stats?${params}`);
     return response.data;
   }
 }

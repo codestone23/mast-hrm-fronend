@@ -98,10 +98,11 @@ const modules: Module[] = [
 
 interface ModuleGridProps {
   onModuleClick?: (moduleId: string) => void;
+  userName?: string;
 }
 
 const ModuleGrid: React.FC<ModuleGridProps> = (props: ModuleGridProps) => {
-  const { onModuleClick } = props;
+  const { onModuleClick, userName } = props;
   const handleModuleClick = (modulePath: string) => {
     if (onModuleClick) {
       onModuleClick(modulePath);
@@ -122,7 +123,7 @@ const ModuleGrid: React.FC<ModuleGridProps> = (props: ModuleGridProps) => {
   return (
     <GridContainer>
       <WelcomeSection>
-        <WelcomeGreeting>Chào buổi tối Phạm Gia Đạt</WelcomeGreeting>
+        <WelcomeGreeting>Chào buổi tối {userName}</WelcomeGreeting>
         <WelcomeDate>{getCurrentDate()}</WelcomeDate>
         <WelcomeDivider />
       </WelcomeSection>

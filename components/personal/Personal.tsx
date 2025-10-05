@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Clock,
   User,
@@ -67,11 +67,16 @@ import { useRouter } from "next/navigation";
 import ROUTERS from "@/config/router";
 import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
 
+interface User {
+  name?: string;
+  email?: string;
+}
+
 const Personal: React.FC = () => {
   const router = useRouter();
   const [isCreateReportModalOpen, setIsCreateReportModalOpen] = useState(false);
   const [reports, setReports] = useState([]);
-  const user = LocalStorageUtil.getItemObject(LOCAL_KEY.USER);
+  const [user, setUser] = useState<User | null>(null);  
   const currentMonth = new Date().toLocaleDateString("vi-VN", {
     month: "2-digit",
     year: "numeric",
@@ -89,6 +94,11 @@ const Personal: React.FC = () => {
     console.log(reportData);
     // setReports((prev: any) => [reportData, ...prev]);
   };
+
+  useEffect(() => {
+    const userData = LocalStorageUtil.getItemObject(LOCAL_KEY.USER);
+    setUser(userData);
+  }, []);
 
   const renderHeader = () => {
     return (

@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Calendar, ChevronLeft, ChevronRight, Plus, ScanFace, ImageUp } from "lucide-react";
 import ListRequest from '../ListRequest';
 import CreateRequestModal from '../modals/CreateRequestModal';
+import { useTimeSheet } from './useTimeSheet';
 import {
   TimeSheetsContainer,
   Header,
@@ -44,12 +45,18 @@ import {
 import FaceIdentify from "../face-identify/FaceIdentify";
 import RegisterFace from "../register-face/RegisterFace";
 
-interface TimeSheetData {
+interface ProcessedTimeSheetData {
   [date: string]: {
-    status: "work" | "late" | "absent" | "remote" | "ot" | "leave" | "holiday";
-    timeIn?: string;
-    timeOut?: string;
-    hours?: number;
+    status: string;
+    timeIn: string | null;
+    timeOut: string | null;
+    hours: number;
+    lateTime: number;
+    earlyTime: number;
+    fines: number;
+    isComplete: boolean;
+    type: string;
+    remote: string;
   };
 }
 
@@ -57,26 +64,20 @@ const TimeSheets: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState("BẢNG CHẤM CÔNG");
   const [isCreateRequestModalOpen, setIsCreateRequestModalOpen] = useState(false);
-  const [timeSheetData] = useState<TimeSheetData>({
-    "2025-08-03": { status: "work", timeIn: "12:10", timeOut: "N/A", hours: 8 },
-    "2025-08-04": { status: "absent", timeIn: "N/A", timeOut: "N/A", hours: 0 },
-    "2025-08-05": { status: "absent", timeIn: "N/A", timeOut: "N/A", hours: 0 },
-    "2025-08-06": { status: "absent", timeIn: "N/A", timeOut: "N/A", hours: 0 },
-    "2025-08-07": { status: "work", timeIn: "N/A", timeOut: "N/A", hours: 8 },
-    "2025-08-10": { status: "work", timeIn: "17:44", timeOut: "N/A", hours: 8 },
-    "2025-08-11": {
-      status: "work",
-      timeIn: "17:45",
-      timeOut: "19:15",
-      hours: 8,
-    },
-    "2025-08-12": { status: "work", timeIn: "N/A", timeOut: "N/A", hours: 8 },
-    "2025-08-13": { status: "absent", timeIn: "N/A", timeOut: "N/A", hours: 0 },
-    "2025-08-14": { status: "work", timeIn: "N/A", timeOut: "N/A", hours: 8 },
-    "2025-08-17": { status: "work", timeIn: "N/A", timeOut: "N/A", hours: 8 },
-    "2025-08-18": { status: "work", timeIn: "N/A", timeOut: "N/A", hours: 8 },
-    "2025-08-19": { status: "absent", timeIn: "N/A", timeOut: "N/A", hours: 0 },
-  });
+  
+  const { data: timeSheetData, isLoading, error, setPayload } = useTimeSheet();
+
+  useEffect(() => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const startDate = new Date(year, month, 1).toISOString().split('T')[0];
+    const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
+    
+    setPayload({
+      start_date: startDate,
+      end_date: endDate
+    });
+  }, [currentDate, setPayload]);
 
   const tabs = [
     "BẢNG CHẤM CÔNG",
@@ -130,6 +131,7 @@ const TimeSheets: React.FC = () => {
       fullDate: string;
     }> = [];
 
+    // Thêm ngày từ tháng trước (chỉ cần đủ để bắt đầu tuần)
     for (let i = daysFromPrevMonth - 1; i >= 0; i--) {
       const date = new Date(
         prevMonth.getFullYear(),
@@ -144,6 +146,7 @@ const TimeSheets: React.FC = () => {
       });
     }
 
+    // Thêm tất cả ngày trong tháng hiện tại
     for (let day = 1; day <= lastDay.getDate(); day++) {
       const date = new Date(year, month, day);
       days.push({
@@ -154,10 +157,13 @@ const TimeSheets: React.FC = () => {
       });
     }
 
-    const totalDays = days.length;
-    const nextMonthDays = 42 - totalDays;
+    // Tính số ngày cần thêm từ tháng sau để hoàn thành tuần cuối
+    const lastDayOfWeek = lastDay.getDay();
+    const adjustedLastDay = lastDayOfWeek === 0 ? 6 : lastDayOfWeek - 1;
+    const daysFromNextMonth = 6 - adjustedLastDay;
 
-    for (let day = 1; day <= nextMonthDays; day++) {
+    // Chỉ thêm đủ ngày để hoàn thành tuần cuối
+    for (let day = 1; day <= daysFromNextMonth; day++) {
       const date = new Date(year, month + 1, day);
       days.push({
         date,
@@ -257,43 +263,72 @@ const TimeSheets: React.FC = () => {
               </CalendarHeader>
 
               <CalendarGrid>
-                {getCurrentMonthDays().map((day, index) => {
-                  const dayData = timeSheetData[day.fullDate];
-                  const isToday =
-                    day.fullDate === new Date().toISOString().split("T")[0];
+                  {getCurrentMonthDays().map((day, index) => {
+                    const dayData = timeSheetData[day.fullDate];
+                    const isToday =
+                      day.fullDate === new Date().toISOString().split("T")[0];
+                    
+                    // Kiểm tra ngày trong quá khứ không có data
+                    const isPastDay = new Date(day.fullDate) < new Date();
+                    const hasNoData = !dayData && isPastDay && day.isCurrentMonth;
+                    
+                    let displayStatus = dayData?.status;
+                    if (hasNoData) {
+                      displayStatus = 'absent'; 
+                    }
 
-                  return (
-                    <DayCell
-                      key={index}
-                      $isCurrentMonth={day.isCurrentMonth}
-                      $status={dayData?.status}
-                      $isToday={isToday}
-                    >
-                      <DayHeader>
-                        <DayNumber
-                          $isCurrentMonth={day.isCurrentMonth}
-                          $isToday={isToday}
-                        >
-                          {String(day.dayNumber).padStart(2, "0")}/
-                          {String(day.date.getMonth() + 1).padStart(2, "0")}
-                        </DayNumber>
-                        <DayMenu>...</DayMenu>
-                      </DayHeader>
+                    return (
+                      <DayCell
+                        key={index}
+                        $isCurrentMonth={day.isCurrentMonth}
+                        $status={displayStatus}
+                        $isToday={isToday}
+                      >
+                        <DayHeader>
+                          <DayNumber
+                            $isCurrentMonth={day.isCurrentMonth}
+                            $isToday={isToday}
+                          >
+                            {String(day.dayNumber).padStart(2, "0")}/
+                            {String(day.date.getMonth() + 1).padStart(2, "0")}
+                          </DayNumber>
+                          <DayMenu>...</DayMenu>
+                        </DayHeader>
 
-                      {dayData && day.isCurrentMonth && (
-                        <DayStatus>
-                          <div>Công {dayData.hours} - Muộn 0</div>
-                          {dayData.timeIn && (
-                            <TimeDisplay>
-                              <span>In: {dayData.timeIn}</span>
-                              <span>Out: {dayData.timeOut || "N/A"}</span>
-                            </TimeDisplay>
-                          )}
-                        </DayStatus>
-                      )}
-                    </DayCell>
-                  );
-                })}
+                        {day.isCurrentMonth && (
+                          <DayStatus>
+                            {hasNoData ? (
+                              <>
+                                <div>Công 0 - Muộn 0</div>
+                                <TimeDisplay>
+                                  <span>In: 00:00</span>
+                                  <span>Out: 00:00</span>
+                                </TimeDisplay>
+                              </>
+                            ) : dayData ? (
+                              <>
+                                <div>
+                                  Công {dayData.hours} - Muộn {dayData.lateTime || 0}
+                                </div>
+                                {dayData.timeIn && dayData.timeIn !== 'N/A' && (
+                                  <TimeDisplay>
+                                    <span>In: {dayData.timeIn}</span>
+                                    <span>Out: {dayData.timeOut || "N/A"}</span>
+                                  </TimeDisplay>
+                                )}
+                                {dayData.fines > 0 && (
+                                  <div style={{ fontSize: '10px', color: 'var(--error-color)' }}>
+                                    Phạt: {dayData.fines} VNĐ
+                                  </div>
+                                )}
+                              </>
+                            ) : null}
+                          </DayStatus>
+                        )}
+                      </DayCell>
+                    );
+                  })
+                }
               </CalendarGrid>
             </CalendarContainer>
 
@@ -319,29 +354,65 @@ const TimeSheets: React.FC = () => {
               <SidebarCard>
                 <SidebarTitle>Tổng số công</SidebarTitle>
                 <SidebarContent>
-                  <TotalWork>88/168</TotalWork>
+                  <TotalWork>
+                    {isLoading ? '...' : 
+                      Object.values(timeSheetData).reduce((total: number, day: ProcessedTimeSheetData[string]) => 
+                        total + (day.hours || 0), 0
+                      ).toFixed(1)
+                    }/168
+                  </TotalWork>
                 </SidebarContent>
               </SidebarCard>
 
               <StatsGrid>
                 <StatItem>
-                  <StatNumber>0</StatNumber>
+                  <StatNumber>
+                    {isLoading ? '...' : 
+                      Object.values(timeSheetData).reduce((total: number, day: ProcessedTimeSheetData[string]) => 
+                        total + (day.lateTime || 0), 0
+                      )
+                    }
+                  </StatNumber>
                   <StatLabel>Số phút muộn</StatLabel>
                 </StatItem>
                 <StatItem>
-                  <StatNumber>0/120</StatNumber>
+                  <StatNumber>
+                    {isLoading ? '...' : 
+                      Object.values(timeSheetData).reduce((total: number, day: ProcessedTimeSheetData[string]) => 
+                        total + (day.earlyTime || 0), 0
+                      )
+                    }/120
+                  </StatNumber>
                   <StatLabel>Quý phút đi muộn, về sớm</StatLabel>
                 </StatItem>
                 <StatItem>
-                  <StatNumber>0 VNĐ</StatNumber>
+                  <StatNumber>
+                    {isLoading ? '...' : 
+                      Object.values(timeSheetData).reduce((total: number, day: ProcessedTimeSheetData[string]) => 
+                        total + (day.fines || 0), 0
+                      )
+                    } VNĐ
+                  </StatNumber>
                   <StatLabel>Tiền phạt</StatLabel>
                 </StatItem>
                 <StatItem>
-                  <StatNumber>8</StatNumber>
+                  <StatNumber>
+                    {isLoading ? '...' : 
+                      Object.values(timeSheetData).reduce((total: number, day: ProcessedTimeSheetData[string]) => 
+                        total + (day.status === 'leave' ? 8 : 0), 0
+                      )
+                    }
+                  </StatNumber>
                   <StatLabel>Nghỉ có lương (h)</StatLabel>
                 </StatItem>
                 <StatItem>
-                  <StatNumber>8</StatNumber>
+                  <StatNumber>
+                    {isLoading ? '...' : 
+                      Object.values(timeSheetData).reduce((total: number, day: ProcessedTimeSheetData[string]) => 
+                        total + (day.status === 'holiday' ? 8 : 0), 0
+                      )
+                    }
+                  </StatNumber>
                   <StatLabel>Nghỉ không lương (h)</StatLabel>
                 </StatItem>
               </StatsGrid>

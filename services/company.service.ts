@@ -17,13 +17,13 @@ class CompanyService {
       ...(search && { search })
     });
     
-    const response = await axiosInstance.get(`/company/departments?${params}`);
+    const response = await axiosInstance.get(`company/departments?${params}`);
     return response.data;
   }
 
   // Lấy department theo ID
   async getDepartmentById(departmentId: string): Promise<ApiResponse<Department>> {
-    const response = await axiosInstance.get(`/company/departments/${departmentId}`);
+    const response = await axiosInstance.get(`company/departments/${departmentId}`);
     return response.data;
   }
 
@@ -33,7 +33,7 @@ class CompanyService {
     description?: string;
     managerId?: string;
   }): Promise<ApiResponse<Department>> {
-    const response = await axiosInstance.post('/company/departments', departmentData);
+    const response = await axiosInstance.post('company/departments', departmentData);
     return response.data;
   }
 
@@ -43,13 +43,13 @@ class CompanyService {
     description: string;
     managerId: string;
   }>): Promise<ApiResponse<Department>> {
-    const response = await axiosInstance.put(`/company/departments/${departmentId}`, departmentData);
+    const response = await axiosInstance.put(`company/departments/${departmentId}`, departmentData);
     return response.data;
   }
 
   // Xóa department
   async deleteDepartment(departmentId: string): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.delete(`/company/departments/${departmentId}`);
+    const response = await axiosInstance.delete(`company/departments/${departmentId}`);
     return response.data;
   }
 
@@ -60,7 +60,7 @@ class CompanyService {
       limit: limit.toString()
     });
     
-    const response = await axiosInstance.get(`/company/departments/${departmentId}/employees?${params}`);
+    const response = await axiosInstance.get(`company/departments/${departmentId}/employees?${params}`);
     return response.data;
   }
 
@@ -74,13 +74,13 @@ class CompanyService {
       ...(search && { search })
     });
     
-    const response = await axiosInstance.get(`/company/employees?${params}`);
+    const response = await axiosInstance.get(`company/employees?${params}`);
     return response.data;
   }
 
   // Lấy employee theo ID
   async getEmployeeById(employeeId: string): Promise<ApiResponse<Employee>> {
-    const response = await axiosInstance.get(`/company/employees/${employeeId}`);
+    const response = await axiosInstance.get(`company/employees/${employeeId}`);
     return response.data;
   }
 
@@ -93,7 +93,7 @@ class CompanyService {
     salary?: number;
     startDate: string;
   }): Promise<ApiResponse<Employee>> {
-    const response = await axiosInstance.post('/company/employees', employeeData);
+    const response = await axiosInstance.post('company/employees', employeeData);
     return response.data;
   }
 
@@ -105,25 +105,25 @@ class CompanyService {
     startDate: string;
     endDate: string;
   }>): Promise<ApiResponse<Employee>> {
-    const response = await axiosInstance.put(`/company/employees/${employeeId}`, employeeData);
+    const response = await axiosInstance.put(`company/employees/${employeeId}`, employeeData);
     return response.data;
   }
 
   // Xóa employee
   async deleteEmployee(employeeId: string): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.delete(`/company/employees/${employeeId}`);
+    const response = await axiosInstance.delete(`company/employees/${employeeId}`);
     return response.data;
   }
 
   // Kích hoạt/vô hiệu hóa employee
   async toggleEmployeeStatus(employeeId: string): Promise<ApiResponse<Employee>> {
-    const response = await axiosInstance.patch(`/company/employees/${employeeId}/toggle-status`);
+    const response = await axiosInstance.patch(`company/employees/${employeeId}/toggle-status`);
     return response.data;
   }
 
   // Chuyển department cho employee
   async transferEmployee(employeeId: string, newDepartmentId: string, newPosition?: string): Promise<ApiResponse<Employee>> {
-    const response = await axiosInstance.patch(`/company/employees/${employeeId}/transfer`, {
+    const response = await axiosInstance.patch(`company/employees/${employeeId}/transfer`, {
       departmentId: newDepartmentId,
       position: newPosition
     });
@@ -142,7 +142,7 @@ class CompanyService {
       employeeCount: number;
     }>;
   }>> {
-    const response = await axiosInstance.get('/company/stats');
+    const response = await axiosInstance.get('company/stats');
     return response.data;
   }
 
@@ -157,7 +157,7 @@ class CompanyService {
       count: number;
     }>;
   }>> {
-    const response = await axiosInstance.get(`/company/departments/${departmentId}/stats`);
+    const response = await axiosInstance.get(`company/departments/${departmentId}/stats`);
     return response.data;
   }
 
@@ -169,7 +169,7 @@ class CompanyService {
       limit: limit.toString()
     });
     
-    const response = await axiosInstance.get(`/company/employees/search?${params}`);
+  const response = await axiosInstance.get(`company/employees/search?${params}`);
     return response.data;
   }
 
@@ -191,7 +191,7 @@ class CompanyService {
       }>;
     }>;
   }>> {
-    const response = await axiosInstance.get('/company/org-chart');
+    const response = await axiosInstance.get('company/org-chart');
     return response.data;
   }
 
@@ -206,7 +206,7 @@ class CompanyService {
     logo?: string;
     establishedDate?: string;
   }>> {
-    const response = await axiosInstance.get('/company/info');
+    const response = await axiosInstance.get('company/info');
     return response.data;
   }
 
@@ -220,7 +220,7 @@ class CompanyService {
     website?: string;
     establishedDate?: string;
   }): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.put('/company/info', companyData);
+    const response = await axiosInstance.put('company/info', companyData);
     return response.data;
   }
 
@@ -229,7 +229,7 @@ class CompanyService {
     const formData = new FormData();
     formData.append('logo', file);
     
-    const response = await axiosInstance.post('/company/logo', formData, {
+    const response = await axiosInstance.post('company/logo', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

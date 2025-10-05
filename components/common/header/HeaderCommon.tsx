@@ -1,7 +1,5 @@
-"use client";
-
 import React, { useState, useRef, useEffect } from "react";
-import { Bell, Grid3X3, Settings, User, User as UserIcon, Lock, LogOut, ChevronDown } from "lucide-react";
+import { Grid3X3, User, User as UserIcon, Lock, LogOut } from "lucide-react";
 import { ChangePasswordModal } from "@/components/common";
 import {
   HeaderContainer,
@@ -25,16 +23,23 @@ import Image from "next/image";
 import Link from "next/link";
 import ROUTERS from "@/config/router";
 import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
+import { useRouter } from "next/navigation";
 
 interface HeaderCommonProps {
   activeTab?: string;
   onTabChange?: (tab: string) => void;
 }
 
+interface User {
+  name?: string;
+  email?: string;
+}
+
 const HeaderCommon = (props: HeaderCommonProps) => {
+  const router = useRouter();
   const { activeTab = "staff", onTabChange } = props;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const user = LocalStorageUtil.getItemObject(LOCAL_KEY.USER);
+  const [user, setUser] = useState<User | null>(null);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -45,6 +50,11 @@ const HeaderCommon = (props: HeaderCommonProps) => {
     { id: "timekeeping/time-sheets", label: "Chấm công" },
     { id: "company", label: "Công ty" },
   ];
+
+  useEffect(() => {
+    const userData = LocalStorageUtil.getItemObject(LOCAL_KEY.USER);
+    setUser(userData);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -74,13 +84,13 @@ const HeaderCommon = (props: HeaderCommonProps) => {
     
     switch (action) {
       case 'profile':
-        window.location.href = ROUTERS.PERSONAL.INFO;
+        router.push(ROUTERS.PERSONAL.INFO);
         break;
       case 'password':
         setIsChangePasswordModalOpen(true);
         break;
       case 'logout':
-        window.location.href = '/login';
+        router.push(ROUTERS.AUTH.LOGIN);
         break;
       default:
         break;
@@ -114,8 +124,8 @@ const HeaderCommon = (props: HeaderCommonProps) => {
             <User size={16} color="white" />
             <UserDropdown $isOpen={isDropdownOpen}>
               <DropdownHeader>
-                <DropdownUserName>{user?.name}</DropdownUserName>
-                <DropdownUserEmail>{user?.email}</DropdownUserEmail>
+                <DropdownUserName>{user?.name || 'Loading...'}</DropdownUserName>
+                <DropdownUserEmail>{user?.email || ''}</DropdownUserEmail>
               </DropdownHeader>
               
               <DropdownMenu>

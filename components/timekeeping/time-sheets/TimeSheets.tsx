@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Plus, ScanFace, ImageUp } from "lucide-react";
 import ListRequest from '../ListRequest';
 import CreateRequestModal from '../modals/CreateRequestModal';
 import {
@@ -9,6 +9,7 @@ import {
   Header,
   TabsContainer,
   Tab,
+  HeaderButtons,
   MonthNavigation,
   MonthButton,
   MonthDisplay,
@@ -40,6 +41,8 @@ import {
   LeaveHours,
   TotalWork,
 } from "./timeSheetStyle";
+import FaceIdentify from "../face-identify/FaceIdentify";
+import RegisterFace from "../register-face/RegisterFace";
 
 interface TimeSheetData {
   [date: string]: {
@@ -207,10 +210,19 @@ const TimeSheets: React.FC = () => {
             </Tab>
           ))}
         </TabsContainer>
-        <CreateButton onClick={() => setIsCreateRequestModalOpen(true)}>
-          <Plus size={16} />
-          Tạo request
-        </CreateButton>
+        <HeaderButtons>
+          <CreateButton onClick={() => setIsCreateRequestModalOpen(true)}>
+            <Plus size={16} />
+            Tạo request
+          </CreateButton>
+          <CreateButton onClick={() => setActiveTab("FaceIdentify")}>
+            <ScanFace size={16} />
+            Quét mặt
+          </CreateButton>
+          <CreateButton onClick={() => setActiveTab("RegisterFace")}>
+            <ImageUp size={16} />
+          </CreateButton>
+         </HeaderButtons>
       </Header>
 
       <MainContent>
@@ -355,6 +367,21 @@ const TimeSheets: React.FC = () => {
             <p>Vui lòng quay lại sau để sử dụng tính năng này.</p>
           </div>
         )}
+
+        {activeTab === "FaceIdentify" && (
+          <div style={{ padding: '1rem', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <h3 style={{ marginBottom: '1rem' }}>Xác thực khuôn mặt</h3>
+            <FaceIdentify />
+          </div>
+        )}
+
+        {activeTab === "RegisterFace" && (
+          <div style={{ padding: '1rem', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <h3 style={{ marginBottom: '1rem' }}>Đăng ký khuôn mặt</h3>
+            <RegisterFace />
+          </div>
+        )}
+
       </MainContent>
 
       <CreateRequestModal

@@ -249,3 +249,28 @@ export interface ApiError {
   field?: string;
   details?: unknown;
 }
+
+export interface CheckInData {
+  location_type: string;
+  gps_latitude: string;
+  gps_longitude: string;
+  ip_address: string;
+  device_info: string;
+  note: string;
+  remote: string;
+  image: File;
+}
+
+export interface CheckOutData {
+  location_type: string;
+  gps_latitude: string;
+  gps_longitude: string;
+  ip_address: string;
+  device_info: string;
+  note: string;
+  image: File;
+}
+
+export interface RegisterFaceData {
+  image: File;
+}

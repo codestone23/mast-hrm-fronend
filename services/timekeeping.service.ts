@@ -7,7 +7,7 @@ import {
   TimeSheetStatus,
   LeaveRequest,
   CreateLeaveRequest,
-  RequestStatus
+  RequestStatus,
 } from '@/types/api';
 
 class TimekeepingService {
@@ -49,15 +49,32 @@ class TimekeepingService {
     return response.data;
   }
 
+  async registerFace(data: FormData): Promise<ApiResponse<void>> {
+    const response = await axiosInstance.post('/timesheet/register-face', data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
   // Check in
-  async checkIn(notes?: string): Promise<ApiResponse<TimeSheet>> {
-    const response = await axiosInstance.post('/timekeeping/check-in', { notes });
+  async checkIn(data: FormData): Promise<ApiResponse<TimeSheet>> {
+    const response = await axiosInstance.post('/timesheet/checkin', data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   }
 
   // Check out
-  async checkOut(notes?: string): Promise<ApiResponse<TimeSheet>> {
-    const response = await axiosInstance.post('/timekeeping/check-out', { notes });
+  async checkOut(data: FormData): Promise<ApiResponse<TimeSheet>> {
+    const response = await axiosInstance.post('/timesheet/checkout', data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   }
 

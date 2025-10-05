@@ -48,6 +48,11 @@ export const Tab = styled.div<{ $active: boolean }>`
   `}
 `;
 
+export const HeaderButtons = styled.div`
+  display: flex;
+  gap: 12px;
+`;
+
 export const CreateButton = styled.button`
   background: #2196F3;
   color: white;
@@ -67,6 +72,8 @@ export const CreateButton = styled.button`
     box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
   }
 `;
+
+
 
 export const CalendarContainer = styled.div`
   flex: 1;

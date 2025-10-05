@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { authService } from '@/services/auth.service';
-import { User } from '@/types/api';
 import TokenManager from '@/utils/token';
+import { User } from "@/constants/types";
 
 interface AuthState {
   user: User | null;

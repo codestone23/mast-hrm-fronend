@@ -65,18 +65,13 @@ import {
 } from "./personalStyle";
 import { useRouter } from "next/navigation";
 import ROUTERS from "@/config/router";
-import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
-
-interface User {
-  name?: string;
-  email?: string;
-}
+import { usePersonal } from "./usePersonal";
 
 const Personal: React.FC = () => {
   const router = useRouter();
   const [isCreateReportModalOpen, setIsCreateReportModalOpen] = useState(false);
   const [reports, setReports] = useState([]);
-  const [user, setUser] = useState<User | null>(null);  
+  const { user } = usePersonal();
   const currentMonth = new Date().toLocaleDateString("vi-VN", {
     month: "2-digit",
     year: "numeric",
@@ -95,10 +90,13 @@ const Personal: React.FC = () => {
     // setReports((prev: any) => [reportData, ...prev]);
   };
 
-  useEffect(() => {
-    const userData = LocalStorageUtil.getItemObject(LOCAL_KEY.USER);
-    setUser(userData);
-  }, []);
+  const getJoinDate = () => {
+    const totalDays = Math.floor((new Date().getTime() - new Date(user?.join_date || "").getTime()) / (1000 * 60 * 60 * 24));
+    if (user?.join_date) {
+      return `Ngày gia nhập: ${user.join_date} (${totalDays} ngày)`;
+    }
+    return `Ngày gia nhập: ${new Date().toLocaleDateString("vi-VN")} (${totalDays} ngày)`;
+  };
 
   const renderHeader = () => {
     return (
@@ -106,7 +104,7 @@ const Personal: React.FC = () => {
         <WelcomeCard>
           <WelcomeContent>
             <h3>Chào mừng bạn đến với hệ thống quản lý nhân sự</h3>
-            <p>Ngày gia nhập: 15/03/2024 (285 ngày)</p>
+            <p>{getJoinDate()}</p>
           </WelcomeContent>
         </WelcomeCard>
         <AttendanceCard>
@@ -115,10 +113,10 @@ const Personal: React.FC = () => {
             Chấm công ngày hôm nay
           </div>
           <AttendanceStatus>
-            <div className="date">18/08 - Công: 8 - Muộn: 0</div>
+            <div className="date">{user?.today_attendance?.checkin || "00:00"} - Công: {user?.today_attendance?.total_work_time || 0} - Muộn:  0</div>
             <div className="status">
-              <span className="in">Vào: 08:30</span>
-              <span className="out">Ra: 17:45</span>
+              <span className="in">Vào: {user?.today_attendance?.checkin || "00:00"}</span>
+              <span className="out">Ra: {user?.today_attendance?.checkout || "00:00"}</span>
             </div>
           </AttendanceStatus>
         </AttendanceCard>
@@ -130,7 +128,7 @@ const Personal: React.FC = () => {
             </IconWrapper>
             <CardTitle>Số giờ phép còn lại</CardTitle>
           </StatsHeader>
-          <StatsNumber className="large">8</StatsNumber>
+          <StatsNumber className="large">{user?.remaining_leave_days || 0}</StatsNumber>
           <div
             style={{
               fontSize: "0.8rem",
@@ -149,22 +147,18 @@ const Personal: React.FC = () => {
             <CardTitle>Thiết bị được cấp</CardTitle>
           </CardHeader>
           <AssetsGradientBox>
-            <AssetsNumber>3</AssetsNumber>
+            <AssetsNumber>{user?.assigned_devices?.length || 0}</AssetsNumber>
             <AssetsLabel>Tổng số thiết bị</AssetsLabel>
           </AssetsGradientBox>
           <AssetsListContainer>
             <AssetsListTitle>
               <strong>Danh sách thiết bị</strong>
             </AssetsListTitle>
-            <AssetsItem $marginBottom="0.25rem">
-              Laptop Dell Latitude 5520
-            </AssetsItem>
-            <AssetsItem $marginBottom="0.25rem">
-              Màn hình Samsung 24&quot;
-            </AssetsItem>
-            <AssetsItem $marginBottom="0.25rem">
-              Bàn phím cơ Logitech
-            </AssetsItem>
+            {user?.assigned_devices?.map((device: any) => (
+              <AssetsItem $marginBottom="0.25rem" key={device.id}>
+                {device.name}
+              </AssetsItem>
+            ))}
           </AssetsListContainer>
         </Card>
       </DashboardCol>
@@ -188,7 +182,7 @@ const Personal: React.FC = () => {
               </ProfileDetail>
               <ProfileDetailRight>
                 <div>
-                  Người quản lý: <strong>Trần Thị B</strong>
+                  Người quản lý: <strong>Không có</strong>
                 </div>
                 <ButtonDetail onClick={handleClickDetail}>
                   Xem chi tiết

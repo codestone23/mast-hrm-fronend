@@ -8,8 +8,8 @@ import {
   RefreshTokenRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
-  User
 } from '@/types/api';
+import { User } from "@/constants/types";
 
 class AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {

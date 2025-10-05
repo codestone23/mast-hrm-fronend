@@ -38,6 +38,7 @@ import {
 } from './personalInfoStyle';
 import Image from "next/image";
 import IMAGES from "@/config/images";
+import { usePersonalInfo } from './usePersonalInfo';
 
 interface FamilyMemberData {
   id: string;
@@ -52,7 +53,8 @@ interface FamilyMemberData {
 
 const PersonalInfo = () => {
   const [activeTab, setActiveTab] = useState('basic');
-  
+
+  const { data, isLoading, error, initPersonalInfo } = usePersonalInfo(); 
   // Modal states
   const [isEditPersonalModalOpen, setIsEditPersonalModalOpen] = useState(false);
   const [isFamilyModalOpen, setIsFamilyModalOpen] = useState(false);
@@ -61,16 +63,16 @@ const PersonalInfo = () => {
   const [selectedFamilyMember, setSelectedFamilyMember] = useState<FamilyMemberData | null>(null);
 
   const [familyMembers, setFamilyMembers] = useState<FamilyMemberData[]>([
-    {
-      id: 'family_1',
-      name: 'Phạm Gia AA',
-      relationship: 'Bố',
-      gender: 'Nam',
-      birthDate: '30/04/2003',
-      phone: '0974924857',
-      dependent: 'Không',
-      notes: 'N/A'
-    },
+    // {
+    //   id: '123',
+    //   name: 'Phạm Gia AA',
+    //   relationship: 'Bố',
+    //   gender: 'Nam',
+    //   birthDate: '30/04/2003',
+    //   phone: '0974924857',
+    //   dependent: 'Không',
+    //   notes: 'N/A'
+    // },
   ]);
 
   const handleEditPersonalInfo = () => {
@@ -121,48 +123,40 @@ const PersonalInfo = () => {
           <UserAvatar>
             <Image src={IMAGES.common.backgroundLogin} alt="User Avatar" width={120} height={120} />
           </UserAvatar>
-          <UserName>Phạm Gia Đạt</UserName> 
-          <UserRole>Developer</UserRole>
+          <UserName>{data?.name}</UserName> 
+          <UserRole>{data?.expertise}</UserRole>
         </UserProfile>
 
         <UserDetails>
           <DetailItem>
             <DetailLabel>Email</DetailLabel>
-            <DetailValue>abc@outlook.com</DetailValue>
+            <DetailValue>{data?.email}</DetailValue>
           </DetailItem>
           <DetailItem>
             <DetailLabel>Mã nhân viên</DetailLabel>
-            <DetailValue>NV000001</DetailValue>
+            <DetailValue>{data?.code}</DetailValue>
           </DetailItem>
           <DetailItem>
             <DetailLabel>Người quản lý</DetailLabel>
             <DetailValue>
-              <a href="#">Trung Thu</a>
+              <div>Không có</div>
             </DetailValue>
-          </DetailItem>
-          <DetailItem>
-            <DetailLabel>Loại chấm công</DetailLabel>
-            <DetailValue>Loại thường</DetailValue>
-          </DetailItem>
-          <DetailItem>
-            <DetailLabel>Loại thưởng</DetailLabel>
-            <DetailValue>-</DetailValue>
           </DetailItem>
         </UserDetails>
 
         <StatsGrid>
           <StatCard $color="#3b82f6">
-            <StatNumber>14</StatNumber>
+            <StatNumber>{initPersonalInfo?.remaining_leave_days || 0}</StatNumber>
             <StatLabel>Số giờ phép còn lại</StatLabel>
           </StatCard>
           <StatCard $color="#6b7280">
-            <StatNumber>54</StatNumber>
+            <StatNumber>0</StatNumber>
             <StatLabel>Số giờ đã nghỉ</StatLabel>
           </StatCard>
         </StatsGrid>
         
         <StatCard $color="#f59e0b">
-          <StatNumber>10.5</StatNumber>
+          <StatNumber>0</StatNumber>
           <StatLabel>
             <Clock size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
             Số giờ OT
@@ -205,23 +199,23 @@ const PersonalInfo = () => {
               <InfoGrid>
                 <InfoItem>
                   <InfoLabel>Ngày sinh</InfoLabel>
-                  <InfoValue>30/04/2003</InfoValue>
+                  <InfoValue>{data?.birthday || "Không có"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Quốc tịch</InfoLabel>
-                  <InfoValue>Việt Nam</InfoValue>
+                  <InfoValue>{data?.nationality || "Không có"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Giới tính</InfoLabel>
-                  <InfoValue>Nam</InfoValue>
+                  <InfoValue>{data?.gender || "Không có"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Trạng thái tài khoản</InfoLabel>
-                  <InfoValue>Active</InfoValue>
+                  <InfoValue>{data?.status || "Không có"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Số điện thoại</InfoLabel>
-                  <InfoValue>094545857</InfoValue>
+                  <InfoValue>{data?.phone || "Không có"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Loại nhân sự</InfoLabel>
@@ -233,11 +227,11 @@ const PersonalInfo = () => {
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Phòng ban (Nhóm)</InfoLabel>
-                  <InfoValue>44444</InfoValue>
+                  <InfoValue>{data?.office_id || "Không có"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Địa chỉ tạm trú</InfoLabel>
-                  <InfoValue> hà nội</InfoValue>
+                  <InfoValue>{data?.temp_address || "Không có"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Loại hợp đồng</InfoLabel>
@@ -245,11 +239,11 @@ const PersonalInfo = () => {
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Địa chỉ thường trú</InfoLabel>
-                  <InfoValue>Thanh Hóa</InfoValue>
+                  <InfoValue>{data?.address || "Không có"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Email cá nhân</InfoLabel>
-                  <InfoValue>abc@outlook.com</InfoValue>
+                  <InfoValue>{data?.personal_email || "Không có"}</InfoValue>
                 </InfoItem>
               </InfoGrid>
 
@@ -317,7 +311,6 @@ const PersonalInfo = () => {
         </TabContent>
       </MainContent>
 
-      {/* Modals */}
       <EditPersonalInfoModal
         isOpen={isEditPersonalModalOpen}
         onClose={() => setIsEditPersonalModalOpen(false)}

@@ -37,3 +37,35 @@ export interface UserInformation {
   created_at: string;
   updated_at: string;
 }
+
+export interface UserProfile {
+  id: number;
+  email: string;
+  personal_email: string;
+  nationality: string;
+  name: string;
+  code: string;
+  avatar: string;
+  gender: string;
+  marital: string;
+  birthday: string;
+  position_id: number;
+  office_id: number;
+  address: string;
+  temp_address: string;
+  phone: string;
+  tax_code: string;
+  role_id: number;
+  status: string;
+  description: string;
+  level_id: number;
+  social_insurance_code: string;
+  provider_id: string;
+  note: string;
+  overview: string;
+  market_type: string;
+  expertise: string;
+  technique: string;
+  main_task: string;
+  language_id: number;
+}

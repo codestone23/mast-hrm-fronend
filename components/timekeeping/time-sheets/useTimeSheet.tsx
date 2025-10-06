@@ -30,6 +30,11 @@ export const useTimeSheet = () => {
         }
     }
 
+    // Debug: Log raw data từ backend
+    if (rawTimeSheetData && rawTimeSheetData.length > 0) {
+        console.log('Raw timesheet data from backend:', rawTimeSheetData.slice(0, 3));
+    }
+
     const timeSheetData = rawTimeSheetData?.reduce((acc: Record<string, {
         status: string;
         timeIn: string | null;
@@ -42,13 +47,18 @@ export const useTimeSheet = () => {
         type: string;
         remote: string;
     }>, item: TimeSheet) => {
-        const date = dayjs(item.work_date).format('YYYY-MM-DD');
+        // Sử dụng UTC để đảm bảo consistency với backend
+        const date = dayjs.utc(item.work_date).format('YYYY-MM-DD');
         
-        const checkinTime = item.checkin ? dayjs(item.checkin)
-            .format('HH:mm') : null;
+        // Debug: Log để kiểm tra dữ liệu từ backend
+        console.log(`Backend data - work_date: ${item.work_date}, formatted: ${date}, checkin: ${item.checkin}`);
         
-        const checkoutTime = item.checkout ? dayjs(item.checkout)
-            .format('HH:mm') : null;
+        // Format time với timezone +7 để hiển thị đúng giờ địa phương
+        const checkinTime = item.checkin ? dayjs.utc(item.checkin)
+            .utcOffset(7).format('HH:mm') : null;
+        
+        const checkoutTime = item.checkout ? dayjs.utc(item.checkout)
+            .utcOffset(7).format('HH:mm') : null;
         
         let totalWorkHours = 0;
         if (item.checkin && item.checkout) {

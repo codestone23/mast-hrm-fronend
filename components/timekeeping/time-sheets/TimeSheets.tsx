@@ -1,49 +1,49 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Calendar, ChevronLeft, ChevronRight, Plus, ScanFace, ImageUp } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, ImageUp, Plus, ScanFace } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import FaceIdentify from "../face-identify/FaceIdentify";
 import ListRequest from '../ListRequest';
 import CreateRequestModal from '../modals/CreateRequestModal';
-import { useTimeSheet } from './useTimeSheet';
+import RegisterFace from "../register-face/RegisterFace";
 import {
-  TimeSheetsContainer,
-  Header,
-  TabsContainer,
-  Tab,
-  HeaderButtons,
-  MonthNavigation,
-  MonthButton,
-  MonthDisplay,
   CalendarContainer,
-  CalendarHeader,
-  WeekDay,
   CalendarGrid,
-  DayCell,
-  DayNumber,
-  DayStatus,
-  TimeDisplay,
-  Legend,
-  LegendItem,
-  LegendColor,
-  SidebarContainer,
-  SidebarCard,
-  SidebarTitle,
-  SidebarContent,
-  StatsGrid,
-  StatItem,
-  StatNumber,
-  StatLabel,
+  CalendarHeader,
   CreateButton,
-  MainContent,
+  DayCell,
   DayHeader,
   DayMenu,
+  DayNumber,
+  DayStatus,
+  Header,
+  HeaderButtons,
+  LeaveHours,
+  Legend,
+  LegendColor,
+  LegendItem,
+  MainContent,
+  MonthButton,
+  MonthDisplay,
+  MonthNavigation,
+  SidebarCard,
+  SidebarContainer,
+  SidebarContent,
+  SidebarTitle,
+  StatItem,
+  StatLabel,
+  StatNumber,
+  StatsGrid,
+  Tab,
+  TabsContainer,
+  TimeDisplay,
+  TimeSheetsContainer,
+  TotalWork,
+  WeekDay,
   WorkSchedule,
   WorkScheduleTime,
-  LeaveHours,
-  TotalWork,
 } from "./timeSheetStyle";
-import FaceIdentify from "../face-identify/FaceIdentify";
-import RegisterFace from "../register-face/RegisterFace";
+import { useTimeSheet } from './useTimeSheet';
 
 interface ProcessedTimeSheetData {
   [date: string]: {
@@ -64,6 +64,12 @@ const TimeSheets: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState("BẢNG CHẤM CÔNG");
   const [isCreateRequestModalOpen, setIsCreateRequestModalOpen] = useState(false);
+
+  const getTodayInVietnamTimezone = () => {
+    const now = new Date();
+    const vietnamTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+    return vietnamTime.toISOString().split("T")[0];
+  };
   
   const { data: timeSheetData, isLoading, error, setPayload } = useTimeSheet();
 
@@ -111,6 +117,13 @@ const TimeSheets: React.FC = () => {
     { color: "#009688", label: "OT", status: "ot" },
   ];
 
+  const formatDateToVietnamTimezone = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const getCurrentMonthDays = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -142,7 +155,7 @@ const TimeSheets: React.FC = () => {
         date,
         isCurrentMonth: false,
         dayNumber: date.getDate(),
-        fullDate: date.toISOString().split("T")[0],
+        fullDate: formatDateToVietnamTimezone(date),
       });
     }
 
@@ -153,7 +166,7 @@ const TimeSheets: React.FC = () => {
         date,
         isCurrentMonth: true,
         dayNumber: day,
-        fullDate: date.toISOString().split("T")[0],
+        fullDate: formatDateToVietnamTimezone(date),
       });
     }
 
@@ -169,7 +182,7 @@ const TimeSheets: React.FC = () => {
         date,
         isCurrentMonth: false,
         dayNumber: day,
-        fullDate: date.toISOString().split("T")[0],
+        fullDate: formatDateToVietnamTimezone(date),
       });
     }
 
@@ -265,11 +278,18 @@ const TimeSheets: React.FC = () => {
               <CalendarGrid>
                   {getCurrentMonthDays().map((day, index) => {
                     const dayData = timeSheetData[day.fullDate];
-                    const isToday =
-                      day.fullDate === new Date().toISOString().split("T")[0];
+                    
+                    const todayString = getTodayInVietnamTimezone();
+                    const isToday = day.fullDate === todayString;
+                    
+                    if (day.isCurrentMonth && day.dayNumber <= 7) {
+                      console.log(`Day ${day.dayNumber}: fullDate=${day.fullDate}, today=${todayString}, isToday=${isToday}, hasData=${!!dayData}`);
+                    }
                     
                     // Kiểm tra ngày trong quá khứ không có data
-                    const isPastDay = new Date(day.fullDate) < new Date();
+                    const dayDate = new Date(day.fullDate);
+                    const currentDate = new Date(todayString);
+                    const isPastDay = dayDate < currentDate;
                     const hasNoData = !dayData && isPastDay && day.isCurrentMonth;
                     
                     let displayStatus = dayData?.status;
@@ -299,7 +319,9 @@ const TimeSheets: React.FC = () => {
                           <DayStatus>
                             {hasNoData ? (
                               <>
-                                <div>Công 0 - Muộn 0</div>
+                                <div>Đi Muộn: 0
+                                  <br />
+                                  Về Sớm: 0</div>
                                 <TimeDisplay>
                                   <span>In: 00:00</span>
                                   <span>Out: 00:00</span>
@@ -308,7 +330,9 @@ const TimeSheets: React.FC = () => {
                             ) : dayData ? (
                               <>
                                 <div>
-                                  Công {dayData.hours} - Muộn {dayData.lateTime || 0}
+                                  Đi Muộn: {dayData.lateTime || 0}
+                                  <br />
+                                  Về Sớm: {dayData.earlyTime || 0}
                                 </div>
                                 {dayData.timeIn && dayData.timeIn !== 'N/A' && (
                                   <TimeDisplay>

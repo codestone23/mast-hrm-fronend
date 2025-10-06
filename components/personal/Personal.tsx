@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Clock,
   User,
@@ -66,16 +66,101 @@ import {
 import { useRouter } from "next/navigation";
 import ROUTERS from "@/config/router";
 import { usePersonal } from "./usePersonal";
+import { usePersonalAttendanceStats } from "@/hooks/useAttendanceStats";
 
 const Personal: React.FC = () => {
   const router = useRouter();
   const [isCreateReportModalOpen, setIsCreateReportModalOpen] = useState(false);
-  const [reports, setReports] = useState([]);
+  const [reports, setReports] = useState<any[]>([]);
   const { user } = usePersonal();
+  
+  const { data: attendanceReport, isLoading: isLoadingReport } = usePersonalAttendanceStats();
+  
   const currentMonth = new Date().toLocaleDateString("vi-VN", {
     month: "2-digit",
     year: "numeric",
   });
+
+  const formatTime = (dateTimeString: string | null | undefined): string => {
+    if (!dateTimeString) return "00:00";
+    
+    try {
+      const date = new Date(dateTimeString);
+      if (isNaN(date.getTime())) return "00:00";
+      
+      return date.toLocaleTimeString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    } catch {
+      return "00:00";
+    }
+  };
+
+  const formatDate = (dateTimeString: string | null | undefined): string => {
+    if (!dateTimeString) return new Date().toLocaleDateString("vi-VN");
+    
+    try {
+      const date = new Date(dateTimeString);
+      if (isNaN(date.getTime())) return new Date().toLocaleDateString("vi-VN");
+      
+      return date.toLocaleDateString("vi-VN");
+    } catch {
+      return new Date().toLocaleDateString("vi-VN");
+    }
+  };
+
+  const formatWorkTime = (minutes: number | null | undefined): string => {
+    if (!minutes || minutes === 0) return "0h 0m";
+    
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    
+    if (hours === 0) return `${remainingMinutes}m`;
+    if (remainingMinutes === 0) return `${hours}h`;
+    
+    return `${hours}h ${remainingMinutes}m`;
+  };
+
+  // Helper function để lấy dữ liệu thống kê từ API
+  const getAttendanceStatsData = () => {
+    if (isLoadingReport) {
+      return {
+        totalWorkDays: "...",
+        overtimeHours: "...",
+        lateMinutes: "...",
+        violationTime: "...",
+        penaltyAmount: "...",
+        paidLeaveHours: "...",
+        unpaidLeaveHours: "...",
+      };
+    }
+
+    if (attendanceReport) {
+      return {
+        totalWorkDays: attendanceReport.attendance.total_days || "0/0",
+        overtimeHours: attendanceReport.overtime.total_hours || 0,
+        lateMinutes: attendanceReport.attendance.late || 0,
+        violationTime: attendanceReport.attendance.early_leave || "0/0",
+        paidLeaveHours: attendanceReport.leave.paid_leave || 0,
+        unpaidLeaveHours: attendanceReport.leave.unpaid_leave || 0,
+      };
+    }
+
+    // Default values when no data
+    return {
+      totalWorkDays: "0/0",
+      overtimeHours: 0,
+      lateMinutes: 0,
+      violationTime: "0/0",
+      penaltyAmount: 0,
+      paidLeaveHours: 0,
+      unpaidLeaveHours: 0,
+    };
+  };
+
+  const statsData = getAttendanceStatsData();
 
   const handleClickDetail = () => {
     router.push(ROUTERS.PERSONAL.INFO);
@@ -87,13 +172,13 @@ const Personal: React.FC = () => {
 
   const handleCreateReport = (reportData: any) => {
     console.log(reportData);
-    // setReports((prev: any) => [reportData, ...prev]);
+    setReports((prev: any) => [reportData, ...prev]);
   };
 
   const getJoinDate = () => {
     const totalDays = Math.floor((new Date().getTime() - new Date(user?.join_date || "").getTime()) / (1000 * 60 * 60 * 24));
     if (user?.join_date) {
-      return `Ngày gia nhập: ${user.join_date} (${totalDays} ngày)`;
+      return `Ngày gia nhập: ${user.join_date.split("T")[0]} (${totalDays} ngày)`;
     }
     return `Ngày gia nhập: ${new Date().toLocaleDateString("vi-VN")} (${totalDays} ngày)`;
   };
@@ -113,10 +198,12 @@ const Personal: React.FC = () => {
             Chấm công ngày hôm nay
           </div>
           <AttendanceStatus>
-            <div className="date">{user?.today_attendance?.checkin || "00:00"} - Công: {user?.today_attendance?.total_work_time || 0} - Muộn:  0</div>
+            <div className="date">
+              {formatDate(user?.today_attendance?.checkin)} - Công: {formatWorkTime(user?.today_attendance?.total_work_time)} - Muộn: {user?.today_attendance?.late_time || 0} phút
+            </div>
             <div className="status">
-              <span className="in">Vào: {user?.today_attendance?.checkin || "00:00"}</span>
-              <span className="out">Ra: {user?.today_attendance?.checkout || "00:00"}</span>
+              <span className="in">Vào: {formatTime(user?.today_attendance?.checkin)}</span>
+              <span className="out">Ra: {formatTime(user?.today_attendance?.checkout)}</span>
             </div>
           </AttendanceStatus>
         </AttendanceCard>
@@ -207,40 +294,33 @@ const Personal: React.FC = () => {
                         <TrendingUp size={16} />
                         Tổng số công
                       </div>
-                      <div className="value">88/168</div>
+                      <div className="value">{statsData.totalWorkDays}</div>
                     </div>
                     <div className="metric-item">
                       <div className="label">
                         <AlertCircle size={16} />
                         Số giờ làm thêm
                       </div>
-                      <div className="value">12</div>
+                      <div className="value">{statsData.overtimeHours}</div>
                     </div>
-                    <div className="metric-item warning">
+                    <div className={`metric-item ${typeof statsData.lateMinutes === 'number' && statsData.lateMinutes > 0 ? 'warning' : ''}`}>
                       <div className="label">
                         <AlertCircle size={16} />
                         Số phút muộn
                       </div>
-                      <div className="value">0</div>
+                      <div className="value">{statsData.lateMinutes}</div>
                     </div>
                     <div className="metric-item">
                       <div className="label">Thời gian vi phạm</div>
-                      <div className="value">0/120</div>
-                    </div>
-                    <div className="metric-item">
-                      <div className="label">
-                        <CheckCircle size={16} />
-                        Khoản phạt
-                      </div>
-                      <div className="value">0</div>
+                      <div className="value">{statsData.violationTime}</div>
                     </div>
                     <div className="metric-item">
                       <div className="label">Nghỉ có phép (giờ)</div>
-                      <div className="value">16</div>
+                      <div className="value">{statsData.paidLeaveHours}</div>
                     </div>
                     <div className="metric-item">
                       <div className="label">Nghỉ không phép (giờ)</div>
-                      <div className="value">0</div>
+                      <div className="value">{statsData.unpaidLeaveHours}</div>
                     </div>
                   </MetricsList>
                 </WorkStatsContainer>

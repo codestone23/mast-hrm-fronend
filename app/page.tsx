@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styled, { keyframes } from 'styled-components';
+import ROUTERS from "@/config/router";
 
 const Container = styled.div`
   min-height: 100vh;
@@ -78,7 +79,7 @@ export default function Home() {
   useEffect(() => {
     // Redirect to login after a short delay
     const timer = setTimeout(() => {
-      router.push('/login');
+      router.push(ROUTERS.AUTH.LOGIN);
     }, 2000);
 
     return () => clearTimeout(timer);

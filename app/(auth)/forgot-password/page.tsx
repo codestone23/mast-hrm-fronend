@@ -2,12 +2,13 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import ROUTERS from "@/config/router";
 
 export default function ForgotPasswordRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/login?forgot=true');
+    router.replace(ROUTERS.AUTH.LOGIN + '?forgot=true');
   }, [router]);
 
   return (

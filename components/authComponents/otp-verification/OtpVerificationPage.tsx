@@ -26,6 +26,7 @@ import {
   ErrorMessage,
   Timer
 } from './otpVerificationStyle';
+import ROUTERS from "@/config/router";
 
 const OtpVerificationPage: React.FC = () => {
   const router = useRouter();
@@ -44,7 +45,7 @@ const OtpVerificationPage: React.FC = () => {
   useEffect(() => {
     // Kiểm tra email parameter
     if (!email) {
-      router.push('/login');
+      router.push(ROUTERS.AUTH.LOGIN);
       return;
     }
   }, [email, router]);
@@ -166,7 +167,7 @@ const OtpVerificationPage: React.FC = () => {
   };
 
   const handleBackToLogin = () => {
-    router.push('/login');
+    router.push(ROUTERS.AUTH.LOGIN);
   };
 
   const maskEmail = (email: string) => {

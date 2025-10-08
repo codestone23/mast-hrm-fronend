@@ -1,3 +1,4 @@
+import ROUTERS from "@/config/router";
 import axios, { AxiosInstance, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 // Cấu hình base URL
@@ -50,7 +51,7 @@ const refreshToken = async (): Promise<string | null> => {
     if (typeof document !== 'undefined') {
       document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      window.location.href = '/login';
+      window.location.href = ROUTERS.AUTH.LOGIN;
     }
     throw error;
   }

@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
 import Login from './login/Login';
 import ForgotPassword from './forgot-password/ForgotPassword';
+import ROUTERS from "@/config/router";
+import { useRouter } from "next/navigation";
+import CookieManager from "@/utils/cookies";
 
 const Container = styled.div`
   min-height: 100vh;
@@ -47,6 +50,7 @@ interface AuthContainerProps {
 
 const AuthContainer = (props: AuthContainerProps) => {
   const { forgot } = props;
+  const router = useRouter();
   const [currentView, setCurrentView] = useState<AuthView>(forgot ? AuthView.FORGOT : AuthView.LOGIN);
 
   const switchToForgotPassword = () => {
@@ -72,6 +76,13 @@ const AuthContainer = (props: AuthContainerProps) => {
     const targetIndex = viewOrder[view];
     return currentIndex < targetIndex ? 'right' : 'left';
   };
+
+  useEffect(() => {
+    const auth = CookieManager.getCookie('access_token');
+    if (auth) {
+      router.push(ROUTERS.OVERVIEW.BASE);
+    }
+  }, [forgot]);
 
   return (
     <Container>

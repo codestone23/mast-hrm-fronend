@@ -3,6 +3,7 @@
 import React, { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/contexts/AuthContext';
+import ROUTERS from "@/config/router";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -13,7 +14,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   fallback,
-  redirectTo = '/login'
+  redirectTo = ROUTERS.AUTH.LOGIN
 }) => {
   const { isAuthenticated, isLoading } = useAuthContext();
   const router = useRouter();

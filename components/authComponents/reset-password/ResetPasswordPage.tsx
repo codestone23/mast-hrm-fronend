@@ -31,6 +31,7 @@ import {
   ErrorMessage,
   SuccessMessage
 } from './resetPasswordStyle';
+import ROUTERS from "@/config/router";
 
 interface PasswordStrength {
   score: number;
@@ -139,7 +140,7 @@ const ResetPasswordPage: React.FC = () => {
       
       setSuccess(true);
       setTimeout(() => {
-        router.push('/login?message=password-reset-success');
+        router.push(ROUTERS.AUTH.LOGIN + '?message=password-reset-success');
       }, 2500);
     } catch {
       setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
@@ -159,7 +160,7 @@ const ResetPasswordPage: React.FC = () => {
   };
 
   const handleBackToLogin = () => {
-    router.push('/login');
+    router.push(ROUTERS.AUTH.LOGIN);
   };
 
   // Loading state khi đang validate token

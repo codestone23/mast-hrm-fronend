@@ -196,7 +196,7 @@ const Projects: React.FC = () => {
   };
 
   const handleViewDetail = (projectId: string) => {
-    router.push(`/projects/${projectId}`);
+    router.push(`${ROUTERS.PERSONAL.PROJECTS}/${projectId}`);
   };
 
   const handleViewAllProjects = () => {

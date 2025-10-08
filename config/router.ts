@@ -6,11 +6,11 @@ const ROUTERS = {
         BASE: "/overview",
     },
     PERSONAL: {
-        BASE: "/staff",
-        INFO: "/personal-info",
-        PROJECTS: "/projects",
-        TIMEKEEPING: "/timekeeping/time-sheets",
-        COMPANY: "/company",
+        BASE: "/me/staff",
+        INFO: "/me/personal-info",
+        PROJECTS: "/me/projects",
+        TIMEKEEPING: "/me/timekeeping/time-sheets",
+        COMPANY: "/me/company",
     },
 };
 

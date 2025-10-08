@@ -24,6 +24,7 @@ import Link from "next/link";
 import ROUTERS from "@/config/router";
 import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
 import { useRouter } from "next/navigation";
+import CookieManager from "@/utils/cookies";
 
 interface HeaderCommonProps {
   activeTab?: string;
@@ -44,11 +45,11 @@ const HeaderCommon = (props: HeaderCommonProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
-    { id: "staff", label: "Dashboard" },
-    { id: "personal-info", label: "Thông tin cá nhân" },
-    { id: "projects", label: "Dự án tham gia" },
-    { id: "timekeeping/time-sheets", label: "Chấm công" },
-    { id: "company", label: "Công ty" },
+    { id: "me/staff", label: "Dashboard" },
+    { id: "me/personal-info", label: "Thông tin cá nhân" },
+    { id: "me/projects", label: "Dự án tham gia" },
+    { id: "me/timekeeping/time-sheets", label: "Chấm công" },
+    { id: "me/company", label: "Công ty" },
   ];
 
   useEffect(() => {
@@ -90,6 +91,8 @@ const HeaderCommon = (props: HeaderCommonProps) => {
         setIsChangePasswordModalOpen(true);
         break;
       case 'logout':
+        CookieManager.deleteCookie('access_token');
+        CookieManager.deleteCookie('refresh_token');
         router.push(ROUTERS.AUTH.LOGIN);
         break;
       default:

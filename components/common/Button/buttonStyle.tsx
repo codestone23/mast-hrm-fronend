@@ -73,6 +73,19 @@ const getVariantStyles = (variant: string) => {
           box-shadow: var(--shadow-md);
         }
       `;
+    case 'danger':
+      return css`
+        background-color: #ef4444;
+        color: white;
+        border: 1px solid #ef4444;
+        
+        &:hover:not(:disabled) {
+          background-color: #dc2626;
+          border-color: #dc2626;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+      `;
     case 'outline':
       return css`
         background-color: transparent;

@@ -51,14 +51,11 @@ export class TokenManager {
     return this.getCookie(this.ACCESS_TOKEN_KEY);
   }
 
-  // Lấy refresh token
   static getRefreshToken(): string | null {
     return this.getCookie(this.REFRESH_TOKEN_KEY);
   }
 
-  // Lưu tokens
   static setTokens(accessToken: string, refreshToken?: string): void {
-    // Access token - 1 giờ
     this.setCookie(this.ACCESS_TOKEN_KEY, accessToken, 1/24);
     
     // Refresh token - 7 ngày

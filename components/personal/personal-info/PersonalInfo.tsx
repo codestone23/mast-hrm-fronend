@@ -124,7 +124,7 @@ const PersonalInfo = () => {
             <Image src={IMAGES.common.backgroundLogin} alt="User Avatar" width={120} height={120} />
           </UserAvatar>
           <UserName>{data?.name}</UserName> 
-          <UserRole>{data?.expertise}</UserRole>
+          <UserRole>Frontend Developer</UserRole>
         </UserProfile>
 
         <UserDetails>
@@ -134,7 +134,7 @@ const PersonalInfo = () => {
           </DetailItem>
           <DetailItem>
             <DetailLabel>Mã nhân viên</DetailLabel>
-            <DetailValue>{data?.code}</DetailValue>
+            <DetailValue>{data?.id || 'N/A'}</DetailValue>
           </DetailItem>
           <DetailItem>
             <DetailLabel>Người quản lý</DetailLabel>
@@ -199,23 +199,23 @@ const PersonalInfo = () => {
               <InfoGrid>
                 <InfoItem>
                   <InfoLabel>Ngày sinh</InfoLabel>
-                  <InfoValue>{data?.birthday || "Không có"}</InfoValue>
+                  <InfoValue>{"Không có"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Quốc tịch</InfoLabel>
-                  <InfoValue>{data?.nationality || "Không có"}</InfoValue>
+                  <InfoValue>{"Không có"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Giới tính</InfoLabel>
-                  <InfoValue>{data?.gender || "Không có"}</InfoValue>
+                  <InfoValue>{"Không có"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Trạng thái tài khoản</InfoLabel>
-                  <InfoValue>{data?.status || "Không có"}</InfoValue>
+                  <InfoValue>{"Hoạt động"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Số điện thoại</InfoLabel>
-                  <InfoValue>{data?.phone || "Không có"}</InfoValue>
+                  <InfoValue>{"Không có"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Loại nhân sự</InfoLabel>
@@ -227,11 +227,11 @@ const PersonalInfo = () => {
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Phòng ban (Nhóm)</InfoLabel>
-                  <InfoValue>{data?.office_id || "Không có"}</InfoValue>
+                  <InfoValue>{"Không có"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Địa chỉ tạm trú</InfoLabel>
-                  <InfoValue>{data?.temp_address || "Không có"}</InfoValue>
+                  <InfoValue>{"Không có"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Loại hợp đồng</InfoLabel>
@@ -239,11 +239,11 @@ const PersonalInfo = () => {
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Địa chỉ thường trú</InfoLabel>
-                  <InfoValue>{data?.address || "Không có"}</InfoValue>
+                  <InfoValue>{"Không có"}</InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Email cá nhân</InfoLabel>
-                  <InfoValue>{data?.personal_email || "Không có"}</InfoValue>
+                  <InfoValue>{"Không có"}</InfoValue>
                 </InfoItem>
               </InfoGrid>
 

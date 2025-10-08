@@ -66,15 +66,18 @@ import {
 import { useRouter } from "next/navigation";
 import ROUTERS from "@/config/router";
 import { usePersonal } from "./usePersonal";
-import { usePersonalAttendanceStats } from "@/hooks/useAttendanceStats";
+import { usePersonalAttendanceStats as usePersonalAttendanceStats } from "../../hooks/useAttendanceStats";
 
 const Personal: React.FC = () => {
   const router = useRouter();
   const [isCreateReportModalOpen, setIsCreateReportModalOpen] = useState(false);
   const [reports, setReports] = useState<any[]>([]);
   const { user } = usePersonal();
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
   
-  const { data: attendanceReport, isLoading: isLoadingReport } = usePersonalAttendanceStats();
+  const { data: attendanceReport, isLoading: isLoadingReport } = usePersonalAttendanceStats({ start_date: startOfMonth.toISOString().split('T')[0], end_date: endOfMonth.toISOString().split('T')[0] });
   
   const currentMonth = new Date().toLocaleDateString("vi-VN", {
     month: "2-digit",
@@ -131,7 +134,6 @@ const Personal: React.FC = () => {
         overtimeHours: "...",
         lateMinutes: "...",
         violationTime: "...",
-        penaltyAmount: "...",
         paidLeaveHours: "...",
         unpaidLeaveHours: "...",
       };
@@ -139,12 +141,12 @@ const Personal: React.FC = () => {
 
     if (attendanceReport) {
       return {
-        totalWorkDays: attendanceReport.attendance.total_days || "0/0",
-        overtimeHours: attendanceReport.overtime.total_hours || 0,
-        lateMinutes: attendanceReport.attendance.late || 0,
-        violationTime: attendanceReport.attendance.early_leave || "0/0",
-        paidLeaveHours: attendanceReport.leave.paid_leave || 0,
-        unpaidLeaveHours: attendanceReport.leave.unpaid_leave || 0,
+        totalWorkDays: attendanceReport.total_work_days || "0/0",
+        overtimeHours: attendanceReport.overtime_hours || 0,
+        lateMinutes: attendanceReport.late_minutes || 0,
+        violationTime: attendanceReport.violation_time || "0/0",
+        paidLeaveHours: attendanceReport.paid_leave_hours || 0,
+        unpaidLeaveHours: attendanceReport.unpaid_leave_hours || 0,
       };
     }
 
@@ -154,7 +156,6 @@ const Personal: React.FC = () => {
       overtimeHours: 0,
       lateMinutes: 0,
       violationTime: "0/0",
-      penaltyAmount: 0,
       paidLeaveHours: 0,
       unpaidLeaveHours: 0,
     };

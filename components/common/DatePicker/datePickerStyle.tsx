@@ -1,11 +1,11 @@
 import styled, { css } from 'styled-components';
 
-export const DatePickerContainer = styled.div<{ fullWidth?: boolean }>`
+export const DatePickerContainer = styled.div<{ $fullWidth?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   
-  ${({ fullWidth }) => fullWidth && css`
+  ${({ $fullWidth }) => $fullWidth && css`
     width: 100%;
   `}
 `;
@@ -22,9 +22,9 @@ export const DatePickerLabel = styled.label<{ required?: boolean }>`
 `;
 
 export const DatePickerInput = styled.input<{
-  size?: string;
-  disabled?: boolean;
-  hasError?: boolean;
+  $size?: string;
+  $disabled?: boolean;
+  $hasError?: boolean;
 }>`
   width: 100%;
   background-color: #fff;
@@ -35,8 +35,8 @@ export const DatePickerInput = styled.input<{
   transition: all 0.2s ease;
   padding-right: 2.75rem;
   
-  ${({ size }) => {
-    switch (size) {
+  ${({ $size }) => {
+    switch ($size) {
       case 'sm':
         return css`
           padding: 0.5rem 0.75rem;
@@ -55,11 +55,11 @@ export const DatePickerInput = styled.input<{
     }
   }}
   
-  ${({ hasError }) => hasError && css`
+  ${({ $hasError }) => $hasError && css`
     border-color: var(--error-500);
   `}
   
-  ${({ disabled }) => disabled && css`
+  ${({ $disabled }) => $disabled && css`
     opacity: 0.6;
     cursor: not-allowed;
     background-color: var(--gray-100);
@@ -153,10 +153,10 @@ export const CalendarDayHeader = styled.div`
 `;
 
 export const CalendarDay = styled.button<{
-  isToday?: boolean;
-  isSelected?: boolean;
-  isCurrentMonth?: boolean;
-  isDisabled?: boolean;
+  $isToday?: boolean;
+  $isSelected?: boolean;
+  $isCurrentMonth?: boolean;
+  $isDisabled?: boolean;
 }>`
   display: flex;
   align-items: center;
@@ -170,31 +170,31 @@ export const CalendarDay = styled.button<{
   cursor: pointer;
   transition: all 0.2s ease;
   
-  ${({ isCurrentMonth }) => !isCurrentMonth && css`
+  ${({ $isCurrentMonth }) => !$isCurrentMonth && css`
     color: var(--text-muted);
     opacity: 0.5;
   `}
   
-  ${({ isToday }) => isToday && css`
+  ${({ $isToday }) => $isToday && css`
     background-color: var(--primary-100);
     color: var(--primary-600);
     font-weight: 600;
   `}
   
-  ${({ isSelected }) => isSelected && css`
+  ${({ $isSelected }) => $isSelected && css`
     background-color: var(--primary-500);
     color: white;
     font-weight: 600;
   `}
   
-  ${({ isDisabled }) => isDisabled && css`
+  ${({ $isDisabled }) => $isDisabled && css`
     opacity: 0.3;
     cursor: not-allowed;
   `}
   
   &:hover:not(:disabled) {
-    background-color: ${({ isSelected }) => 
-      isSelected ? 'var(--primary-600)' : 'var(--gray-100)'
+    background-color: ${({ $isSelected }) => 
+      $isSelected ? 'var(--primary-600)' : 'var(--gray-100)'
     };
   }
 `;

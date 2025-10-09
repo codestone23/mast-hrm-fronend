@@ -162,7 +162,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const days = getDaysInMonth(viewDate);
 
   return (
-    <DatePickerContainer className={className} fullWidth={fullWidth}>
+    <DatePickerContainer className={className} $fullWidth={fullWidth}>
       {label && (
         <DatePickerLabel htmlFor={datePickerId} required={required}>
           {label}
@@ -174,9 +174,9 @@ const DatePicker: React.FC<DatePickerProps> = ({
         <DatePickerInput
           ref={inputRef}
           id={datePickerId}
-          size={size}
-          disabled={disabled}
-          hasError={!!error}
+          $size={size}
+          $disabled={disabled}
+          $hasError={!!error}
           readOnly
           value={formatDate(selectedDate)}
           placeholder={placeholder}
@@ -208,10 +208,10 @@ const DatePicker: React.FC<DatePickerProps> = ({
               {days.map((date, index) => (
                 <CalendarDay
                   key={index}
-                  isToday={isToday(date)}
-                  isSelected={isSelected(date)}
-                  isCurrentMonth={isCurrentMonth(date)}
-                  isDisabled={isDateDisabled(date)}
+                  $isToday={isToday(date)}
+                  $isSelected={isSelected(date)}
+                  $isCurrentMonth={isCurrentMonth(date)}
+                  $isDisabled={isDateDisabled(date)}
                   onClick={() => handleDateSelect(date)}
                 >
                   {date.getDate()}

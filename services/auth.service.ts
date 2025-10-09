@@ -8,6 +8,7 @@ import {
   RefreshTokenRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
+  ChangePasswordRequest,
 } from '@/types/api';
 import { User } from "@/constants/types";
 
@@ -45,11 +46,20 @@ class AuthService {
     
     return response.data;
   }
+  
+  // {
+  //   "email": "user@example.com"
+  // }
 
   async forgotPassword(data: ForgotPasswordRequest): Promise<ApiResponse<void>> {
     const response = await axiosInstance.post('auth/forgot-password', data);
     return response.data;
   }
+  // {
+  //   "email": "user@example.com",
+  //   "otp": "123456",
+  //   "newPassword": "newpassword123"
+  // }
 
   async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse<void>> {
     const response = await axiosInstance.post('auth/reset-password', data);
@@ -71,11 +81,8 @@ class AuthService {
     return response.data;
   }
 
-  async changePassword(currentPassword: string, newPassword: string): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.put('auth/change-password', {
-      currentPassword,
-      newPassword
-    });
+  async changePassword(data: ChangePasswordRequest): Promise<ApiResponse<void>> {
+    const response = await axiosInstance.post('auth/change-password', data);
     return response.data;
   }
 

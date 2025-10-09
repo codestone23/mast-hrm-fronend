@@ -6,6 +6,15 @@ import FaceIdentify from "../face-identify/FaceIdentify";
 import ListRequest from '../ListRequest';
 import CreateRequestModal from '../modals/CreateRequestModal';
 import RegisterFace from "../register-face/RegisterFace";
+import RequestTypeModal from '../modals/RequestTypeModal';
+import LateArrivalModal from '../modals/LateArrivalModal';
+import EarlyDepartureModal from '../modals/EarlyDepartureModal';
+import RemoteWorkModal from '../modals/RemoteWorkModal';
+import UnpaidLeaveModal from '../modals/UnpaidLeaveModal';
+import PaidLeaveModal from '../modals/PaidLeaveModal';
+import RegularOvertimeModal from '../modals/RegularOvertimeModal';
+import ForgotTimekeepingModal from '../modals/ForgotTimekeepingModal';
+import { RequestModalType, RequestModalState } from '../modals/modalTypes';
 import {
   CalendarContainer,
   CalendarGrid,
@@ -64,6 +73,13 @@ const TimeSheets: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState("BẢNG CHẤM CÔNG");
   const [isCreateRequestModalOpen, setIsCreateRequestModalOpen] = useState(false);
+  
+  // Request modals state - optimized with single state
+  const [requestModalState, setRequestModalState] = useState<RequestModalState>({
+    isRequestTypeModalOpen: false,
+    activeModal: RequestModalType.NONE,
+    selectedDate: ''
+  });
 
   const getTodayInVietnamTimezone = () => {
     const now = new Date();
@@ -71,7 +87,7 @@ const TimeSheets: React.FC = () => {
     return vietnamTime.toISOString().split("T")[0];
   };
   
-  const { data: timeSheetData, isLoading, error, setPayload } = useTimeSheet();
+  const { data: timeSheetData, isLoading, setPayload } = useTimeSheet();
 
   useEffect(() => {
     const year = currentDate.getFullYear();
@@ -199,6 +215,40 @@ const TimeSheets: React.FC = () => {
     setCurrentDate(newDate);
   };
 
+  // Handle day menu click
+  const handleDayMenuClick = (date: string) => {
+    setRequestModalState({
+      isRequestTypeModalOpen: true,
+      activeModal: RequestModalType.NONE,
+      selectedDate: date
+    });
+  };
+
+  // Handle request type selection
+  const handleSelectRequestType = (requestType: string) => {
+    console.log('Selected request type:', requestType);
+    const modalType = requestType as RequestModalType;
+    console.log('Modal type:', modalType);
+    setRequestModalState(prev => {
+      const newState = {
+        ...prev,
+        isRequestTypeModalOpen: false,
+        activeModal: modalType
+      };
+      console.log('Setting modal state:', newState);
+      return newState;
+    });
+  };
+
+  // Close all modals
+  const closeAllModals = () => {
+    setRequestModalState({
+      isRequestTypeModalOpen: false,
+      activeModal: RequestModalType.NONE,
+      selectedDate: ''
+    });
+  };
+
 
   const monthNames = [
     "Tháng 01",
@@ -214,6 +264,9 @@ const TimeSheets: React.FC = () => {
     "Tháng 11",
     "Tháng 12",
   ];
+
+  // Debug log
+  console.log('TimeSheets render - requestModalState:', requestModalState);
 
   return (
     <TimeSheetsContainer>
@@ -312,7 +365,7 @@ const TimeSheets: React.FC = () => {
                             {String(day.dayNumber).padStart(2, "0")}/
                             {String(day.date.getMonth() + 1).padStart(2, "0")}
                           </DayNumber>
-                          <DayMenu>...</DayMenu>
+                          <DayMenu onClick={() => handleDayMenuClick(day.fullDate)}>...</DayMenu>
                         </DayHeader>
 
                         {day.isCurrentMonth && (
@@ -482,6 +535,57 @@ const TimeSheets: React.FC = () => {
       <CreateRequestModal
         isOpen={isCreateRequestModalOpen}
         onClose={() => setIsCreateRequestModalOpen(false)}
+      />
+
+      {/* Request Type Modal */}
+      <RequestTypeModal
+        isOpen={requestModalState.isRequestTypeModalOpen}
+        onClose={closeAllModals}
+        onSelectRequestType={handleSelectRequestType}
+        selectedDate={requestModalState.selectedDate}
+      />
+
+      {/* Specific Request Modals */}
+      <LateArrivalModal
+        isOpen={requestModalState.activeModal === RequestModalType.LATE_ARRIVAL}
+        onClose={closeAllModals}
+        selectedDate={requestModalState.selectedDate}
+      />
+
+      <EarlyDepartureModal
+        isOpen={requestModalState.activeModal === RequestModalType.EARLY_DEPARTURE}
+        onClose={closeAllModals}
+        selectedDate={requestModalState.selectedDate}
+      />
+
+      <RemoteWorkModal
+        isOpen={requestModalState.activeModal === RequestModalType.REMOTE_WORK}
+        onClose={closeAllModals}
+        selectedDate={requestModalState.selectedDate}
+      />
+
+      <UnpaidLeaveModal
+        isOpen={requestModalState.activeModal === RequestModalType.UNPAID_LEAVE}
+        onClose={closeAllModals}
+        selectedDate={requestModalState.selectedDate}
+      />
+
+      <PaidLeaveModal
+        isOpen={requestModalState.activeModal === RequestModalType.PAID_LEAVE}
+        onClose={closeAllModals}
+        selectedDate={requestModalState.selectedDate}
+      />
+
+      <RegularOvertimeModal
+        isOpen={requestModalState.activeModal === RequestModalType.REGULAR_OVERTIME}
+        onClose={closeAllModals}
+        selectedDate={requestModalState.selectedDate}
+      />
+
+      <ForgotTimekeepingModal
+        isOpen={requestModalState.activeModal === RequestModalType.FORGOT_TIMEKEEPING}
+        onClose={closeAllModals}
+        selectedDate={requestModalState.selectedDate}
       />
     </TimeSheetsContainer>
   );

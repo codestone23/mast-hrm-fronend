@@ -14,6 +14,9 @@ export type { SelectProps, SelectOption } from './Select/Select';
 export { default as DatePicker } from './DatePicker/DatePicker';
 export type { DatePickerProps } from './DatePicker/DatePicker';
 
+export { default as TimePicker } from './TimePicker/TimePicker';
+export type { TimePickerProps } from './TimePicker/TimePicker';
+
 export { default as ChangePasswordModal } from './ChangePasswordModal/ChangePasswordModal';
 export type { ChangePasswordModalProps } from './ChangePasswordModal/ChangePasswordModal';
 

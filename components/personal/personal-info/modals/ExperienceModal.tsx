@@ -5,10 +5,10 @@ import {
   ModalContent,
   FormSection,
   FormGrid,
-  ErrorMessage,
-  SuccessMessage
+  ErrorMessage
 } from '../personalInfoModalStyles';
 import profileService, { Experience } from '@/services/profile.service';
+import { useToast } from '@/hooks/useToast';
 
 interface ExperienceModalProps {
   isOpen: boolean;
@@ -32,8 +32,8 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({
     end_date: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const { success: showSuccessToast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
@@ -84,18 +84,17 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({
         end_date: formData.end_date
       };
 
-      if (mode === 'add') {
-        const response = await profileService.addExperience(experienceData);
-        onSave(response);
-      } else {
-        const response = await profileService.updateExperienceById((initialData?.id || 0).toString(), experienceData);
-        onSave(response);
-      }
-      
-      setSuccess(true);
-      setTimeout(() => {
-        handleClose();
-      }, 1500);
+             if (mode === 'add') {
+               const response = await profileService.addExperience(experienceData);
+               onSave(response);
+               showSuccessToast('Kinh nghiệm đã được thêm thành công!');
+             } else {
+               const response = await profileService.updateExperienceById((initialData?.id || 0).toString(), experienceData);
+               onSave(response);
+               showSuccessToast('Kinh nghiệm đã được cập nhật thành công!');
+             }
+             
+             handleClose();
     } catch (error) {
       console.error('Error saving experience:', error);
       setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
@@ -106,7 +105,6 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({
 
   const handleClose = () => {
     setError('');
-    setSuccess(false);
     setIsLoading(false);
     onClose();
   };
@@ -148,59 +146,50 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({
       }
     >
       <ModalContent>
-        {success ? (
-          <SuccessMessage>
-            <Briefcase size={24} style={{ marginRight: '0.5rem' }} />
-            Kinh nghiệm đã được {mode === 'add' ? 'thêm' : 'cập nhật'} thành công!
-          </SuccessMessage>
-        ) : (
-          <>
-            {error && <ErrorMessage>{error}</ErrorMessage>}
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        
+        <FormSection>
+          <h4>Thông tin kinh nghiệm</h4>
+          <FormGrid>
+            <Input
+              label="Chức vụ"
+              value={formData.job_title}
+              onChange={(e) => handleInputChange('job_title', e.target.value)}
+              placeholder="Ví dụ: Frontend Developer"
+              required
+              disabled={isLoading}
+            />
             
-            <FormSection>
-              <h4>Thông tin kinh nghiệm</h4>
-              <FormGrid>
-                <Input
-                  label="Chức vụ"
-                  value={formData.job_title}
-                  onChange={(e) => handleInputChange('job_title', e.target.value)}
-                  placeholder="Ví dụ: Frontend Developer"
-                  required
-                  disabled={isLoading}
-                />
-                
-                <Input
-                  label="Công ty"
-                  value={formData.company}
-                  onChange={(e) => handleInputChange('company', e.target.value)}
-                  placeholder="Ví dụ: Công ty ABC"
-                  required
-                  disabled={isLoading}
-                />
-                
-                <Input
-                  label="Ngày bắt đầu"
-                  type="date"
-                  name="start_date"
-                  value={formData.start_date}
-                  onChange={handleDateChange}
-                  required
-                  disabled={isLoading}
-                />
-                
-                <Input
-                  label="Ngày kết thúc"
-                  type="date"
-                  name="end_date"
-                  value={formData.end_date}
-                  onChange={handleDateChange}
-                  required
-                  disabled={isLoading}
-                />
-              </FormGrid>
-            </FormSection>
-          </>
-        )}
+            <Input
+              label="Công ty"
+              value={formData.company}
+              onChange={(e) => handleInputChange('company', e.target.value)}
+              placeholder="Ví dụ: Công ty ABC"
+              required
+              disabled={isLoading}
+            />
+            
+            <Input
+              label="Ngày bắt đầu"
+              type="date"
+              name="start_date"
+              value={formData.start_date}
+              onChange={handleDateChange}
+              required
+              disabled={isLoading}
+            />
+            
+            <Input
+              label="Ngày kết thúc"
+              type="date"
+              name="end_date"
+              value={formData.end_date}
+              onChange={handleDateChange}
+              required
+              disabled={isLoading}
+            />
+          </FormGrid>
+        </FormSection>
       </ModalContent>
     </Modal>
   );

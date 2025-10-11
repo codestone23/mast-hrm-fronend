@@ -195,7 +195,7 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({
                     
                     <PasswordRequirements>
                       {passwordRequirements.map((req, index) => (
-                        <RequirementItem key={index} met={req.met}>
+                        <RequirementItem key={index} $met={req.met}>
                           <CheckCircle size={14} />
                           {req.text}
                         </RequirementItem>

@@ -122,7 +122,7 @@ const Rental: React.FC = () => {
                 { value: "Faderless", label: "Faderless" },
               ]}
               value={teamFilter}
-              onChange={(v: any) => setTeamFilter(v?.target?.value)}
+              onChange={(v: string | number) => setTeamFilter(v as string)}
             />
             <DatePicker
               placeholder="Từ ngày"

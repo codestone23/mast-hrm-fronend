@@ -131,7 +131,7 @@ const EmployeeList: React.FC = () => {
         <FilterRow>
           <Select
             value={teamFilter}
-            onChange={(v: any) => setTeamFilter(v?.target?.value)}
+            onChange={(v: string | number) => setTeamFilter(v as string)} 
             options={[
               { value: "", label: "Team" },
               ...teams.map((t) => ({ value: t, label: t })),
@@ -140,7 +140,7 @@ const EmployeeList: React.FC = () => {
 
           <Select
             value={positionFilter}
-            onChange={(v: any) => setPositionFilter(v?.target?.value)}
+            onChange={(v: string | number) => setPositionFilter(v as string)}
             options={[
               { value: "", label: "Vị trí" },
               ...positions.map((p) => ({ value: p, label: p })),
@@ -149,7 +149,7 @@ const EmployeeList: React.FC = () => {
 
           <Select
             value={skillFilter}
-            onChange={(v: any) => setSkillFilter(v?.target?.value)}
+            onChange={(v: string | number) => setSkillFilter(v as string)}
             options={[
               { value: "", label: "Kỹ năng" },
               { value: "PHP", label: "PHP" },
@@ -159,7 +159,7 @@ const EmployeeList: React.FC = () => {
 
           <Select
             value={levelFilter}
-            onChange={(v: any) => setLevelFilter(v?.target?.value)}
+            onChange={(v: string | number) => setLevelFilter(v as string)}
             options={[
               { value: "", label: "Level" },
               ...levels.map((l) => ({ value: l, label: l })),
@@ -249,7 +249,7 @@ const EmployeeList: React.FC = () => {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <RowsPerPageSelect
             value={String(pageSize)}
-            onChange={(e: any) => {
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
               setPageSize(Number(e.target.value));
               setPage(1);
             }}

@@ -82,7 +82,7 @@ const AddTeamModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
         <Row>
           <Col>
             <Label>Thêm thành viên</Label>
-            <Select multiple value={members} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setMembers(Array.from(e.target.selectedOptions).map((o: any) => o.value))}>
+            <Select multiple value={members} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setMembers(Array.from(e.target.selectedOptions).map((o: HTMLOptionElement) => o.value))}>   
               <option value="NV0001">Nguyễn Văn 1</option>
               <option value="NV0002">Nguyễn Văn 2</option>
               <option value="NV0003">Nguyễn Văn 3</option>

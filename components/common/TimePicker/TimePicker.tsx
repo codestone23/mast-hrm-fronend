@@ -10,7 +10,7 @@ import {
   TimePickerLabel
 } from './timePickerStyle';
 
-interface TimePickerProps {
+export interface TimePickerProps {
   value?: string;
   onChange?: (value: string) => void;
   placeholder?: string;

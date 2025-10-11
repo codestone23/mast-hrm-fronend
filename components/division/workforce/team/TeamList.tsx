@@ -35,14 +35,25 @@ const makeTeams = () => new Array(10).fill(0).map((_, i) => ({
   createdAt: "2022-01-25",
 }));
 
+interface Team {
+  id: number;
+  name: string;
+  manager: string;
+  managerAvatar: string;
+  members: number;
+  resource: number;
+  projects: string;
+  createdAt: string;
+}
+
 const TeamList: React.FC = () => {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [editOpen, setEditOpen] = React.useState(false);
   const [teams, setTeams] = React.useState(makeTeams);
-  const [editing, setEditing] = React.useState<any | null>(null);
+  const [editing, setEditing] = React.useState<Team | null>(null);
 
-  const handleCreate = (data: { name: string }) => {
+  const handleCreate = (data: { name: string; manager?: string; members?: string[]; startDate?: string }) => {
     const newTeam = {
       id: teams.length + 1,
       name: data.name,
@@ -52,18 +63,18 @@ const TeamList: React.FC = () => {
       resource: 0,
       projects: "",
       createdAt: data.startDate || new Date().toISOString().slice(0,10),
-    } as any;
+    } as Team;
     setTeams((t) => [newTeam, ...t]);
     setOpen(false);
   };
 
-  const handleEditSave = (team: any) => {
-    setTeams((t) => t.map((x) => (x.id === team.id ? team : x)));
+  const handleEditSave = (team: { id: number; name: string; manager: string; createdAt?: string }) => {
+    setTeams((t) => t.map((x) => (x.id === team.id ? { ...x, name: team.name, manager: team.manager, createdAt: team.createdAt || x.createdAt } : x)));
     setEditOpen(false);
     setEditing(null);
   };
 
-  const openEdit = (e: React.MouseEvent, team: any) => {
+  const openEdit = (e: React.MouseEvent, team: Team) => {
     e.stopPropagation();
     setEditing(team);
     setEditOpen(true);

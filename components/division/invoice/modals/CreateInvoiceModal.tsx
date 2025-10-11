@@ -55,7 +55,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
-  const handleInputChange = (field: keyof InvoiceData, value: any) => {
+  const handleInputChange = (field: keyof InvoiceData, value: string | number) => {
     setError("");
     setFormData((prev) => ({ ...prev, [field]: value }));
   };

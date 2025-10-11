@@ -135,7 +135,7 @@ const InvoiceTable: React.FC<InvoiceTableProps> = ({
         <FilterRow>
           <Select
             value={statusFilter || ""}
-            onChange={(v: any) => setStatusFilter(v?.target?.value)}
+            onChange={(v: string | number) => setStatusFilter(v as string)}   
             options={[
               { value: "", label: "Trạng thái" },
               { value: "Dự tính", label: "Dự tính" },
@@ -150,7 +150,7 @@ const InvoiceTable: React.FC<InvoiceTableProps> = ({
 
           <Select
             value={customerFilter || ""}
-            onChange={(v: any) => setCustomerFilter(v?.target?.value)}
+            onChange={(v: string | number) => setCustomerFilter(v as string)}
             options={[
               { value: "", label: "Khách hàng" },
               { value: "Doraemon", label: "Doraemon" },
@@ -160,7 +160,7 @@ const InvoiceTable: React.FC<InvoiceTableProps> = ({
 
           <Select
             value={projectFilter || ""}
-            onChange={(v: any) => setProjectFilter(v?.target?.value)}
+            onChange={(v: string | number) => setProjectFilter(v as string)}
             options={[
               { value: "", label: "Dự án" },
               { value: "Sumitomo", label: "Sumitomo" },

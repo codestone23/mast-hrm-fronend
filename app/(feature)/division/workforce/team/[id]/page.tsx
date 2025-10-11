@@ -2,9 +2,10 @@ import React from "react";
 import TeamDetail from "@/components/division/workforce/team/TeamDetail";
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function Page({ params }: Props) {
-  return <TeamDetail id={params.id} />;
+export default async function Page({ params }: Props) {
+  const { id } = await params;
+  return <TeamDetail id={id} />;
 }

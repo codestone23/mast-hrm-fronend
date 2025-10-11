@@ -1,5 +1,5 @@
 "use client";
-import { ContentWrapper } from "../../overview/overviewStyle";
+import { ContentWrapper } from "../overview/overviewStyle";
 import { PersonalPageContainer } from "../me/staff/personalStyle";
 import Header from "@/components/division/header/Header";
 import { usePathname, useRouter } from "next/navigation";

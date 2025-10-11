@@ -76,7 +76,6 @@ export const ModalContainer = styled.div<{ size?: string }>`
   box-shadow: var(--shadow-xl);
   animation: ${slideIn} 0.2s ease-out;
   max-height: 90vh;
-  overflow: hidden;
   
   ${({ size }) => getSizeStyles(size || 'md')}
   
@@ -140,19 +139,16 @@ export const ModalCloseButton = styled.button`
 
 export const ModalBody = styled.div`
   padding: 1.5rem;
-  overflow-y: auto;
   flex: 1;
   &::-webkit-scrollbar {
     display: block;
     width: 10px;
   }
   &::-webkit-scrollbar-track {
-    background: var(--gray-100);
     width: 10px;
     border-radius: 50px;
   }
   &::-webkit-scrollbar-thumb {
-    background: var(--gray-300);
     width: 10px;
     border-radius: 50px;
   }

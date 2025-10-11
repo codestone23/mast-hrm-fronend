@@ -52,6 +52,11 @@ export interface ResetPasswordRequest {
   confirmPassword: string;
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
 // User types
 export interface User {
   created_at: string; 

@@ -1,8 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { Lock, CheckCircle } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
 import { Modal, Button, Input } from '@/components/common';
+import { authService } from '@/services/auth.service';
+import { ChangePasswordRequest } from '@/types/api';
+import { useToast } from '@/hooks/useToast';
 import {
   ModalContent,
   FormSection,
@@ -11,7 +15,6 @@ import {
   PasswordStrengthText,
   PasswordRequirements,
   RequirementItem,
-  SuccessMessage,
   ErrorMessage
 } from './changePasswordModalStyle';
 
@@ -33,9 +36,22 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const { success: showSuccessToast } = useToast();
+
+  const changePasswordMutation = useMutation({
+    mutationFn: (data: ChangePasswordRequest) =>
+      authService.changePassword(data),
+    onSuccess: () => {
+      showSuccessToast('Đổi mật khẩu thành công!');
+      handleClose();
+    },
+    onError: (error: unknown) => {
+      console.error('Change password error:', error);
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại sau.';
+      setError(errorMessage);
+    }
+  });
 
   const getPasswordStrength = (password: string): PasswordStrength => {
     let score = 0;
@@ -94,28 +110,8 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       return;
     }
 
-    setIsLoading(true);
     setError('');
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Simulate validation - current password check
-      if (currentPassword !== 'Password@123') {
-        setError('Mật khẩu hiện tại không đúng');
-        return;
-      }
-
-      setSuccess(true);
-      setTimeout(() => {
-        handleClose();
-      }, 2000);
-    } catch {
-      setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
-    } finally {
-      setIsLoading(false);
-    }
+    changePasswordMutation.mutate({ currentPassword, newPassword });
   };
 
   const handleClose = () => {
@@ -123,8 +119,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
     setNewPassword('');
     setConfirmPassword('');
     setError('');
-    setSuccess(false);
-    setIsLoading(false);
+    changePasswordMutation.reset();
     onClose();
   };
 
@@ -145,6 +140,8 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
   const isFormValid = currentPassword && newPassword && confirmPassword && 
                      newPassword === confirmPassword && passwordStrength.score >= 3;
+  
+  const isLoading = changePasswordMutation.isPending;
 
   return (
     <Modal
@@ -153,96 +150,85 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       title="Đổi mật khẩu"
       size="md"
       footer={
-        !success && (
-          <>
-            <Button variant="ghost" onClick={handleClose} disabled={isLoading}>
-              Hủy
-            </Button>
-            <Button 
-              onClick={handleSubmit}
-              disabled={!isFormValid || isLoading}
-              loading={isLoading}
-            >
-              {isLoading ? 'Đang xử lý...' : 'Đổi mật khẩu'}
-            </Button>
-          </>
-        )
+        <>
+          <Button variant="ghost" onClick={handleClose} disabled={isLoading}>
+            Hủy
+          </Button>
+          <Button 
+            onClick={handleSubmit}
+            disabled={!isFormValid || isLoading}
+            loading={isLoading}
+          >
+            {isLoading ? 'Đang đổi mật khẩu...' : 'Đổi mật khẩu'}
+          </Button>
+        </>
       }
     >
       <ModalContent>
-        {success ? (
-          <SuccessMessage>
-            <CheckCircle size={24} style={{ marginRight: '0.5rem' }} />
-            Đổi mật khẩu thành công! Modal sẽ tự động đóng...
-          </SuccessMessage>
-        ) : (
-          <>
-            {error && <ErrorMessage>{error}</ErrorMessage>}
-            
-            <FormSection>
-              <Input
-                label="Mật khẩu hiện tại"
-                type="password"
-                placeholder="Nhập mật khẩu hiện tại"
-                value={currentPassword}
-                onChange={(e) => handleInputChange('current', e.target.value)}
-                icon={<Lock size={16} />}
-                required
-                disabled={isLoading}
-              />
-            </FormSection>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        
+        <FormSection>
+          <Input
+            label="Mật khẩu hiện tại"
+            type="password"
+            placeholder="Nhập mật khẩu hiện tại"
+            value={currentPassword}
+            onChange={(e) => handleInputChange('current', e.target.value)}
+            icon={<Lock size={16} />}
+            required
+            disabled={isLoading}
+          />
+        </FormSection>
 
-            <FormSection>
-              <Input
-                label="Mật khẩu mới"
-                type="password"
-                placeholder="Nhập mật khẩu mới"
-                value={newPassword}
-                onChange={(e) => handleInputChange('new', e.target.value)}
-                icon={<Lock size={16} />}
-                required
-                disabled={isLoading}
-              />
+        <FormSection>
+          <Input
+            label="Mật khẩu mới"
+            type="password"
+            placeholder="Nhập mật khẩu mới"
+            value={newPassword}
+            onChange={(e) => handleInputChange('new', e.target.value)}
+            icon={<Lock size={16} />}
+            required
+            disabled={isLoading}
+          />
 
-              {newPassword && (
-                <>
-                  <PasswordStrengthIndicator>
-                    <PasswordStrengthBar 
-                      strength={passwordStrength.score}
-                      color={passwordStrength.color}
-                    />
-                    <PasswordStrengthText color={passwordStrength.color}>
-                      {passwordStrength.label}
-                    </PasswordStrengthText>
-                  </PasswordStrengthIndicator>
-                  
-                  <PasswordRequirements>
-                    {passwordRequirements.map((req, index) => (
-                      <RequirementItem key={index} met={req.met}>
-                        <CheckCircle size={14} />
-                        {req.text}
-                      </RequirementItem>
-                    ))}
-                  </PasswordRequirements>
-                </>
-              )}
-            </FormSection>
+          {newPassword && (
+            <>
+              <PasswordStrengthIndicator>
+                <PasswordStrengthBar 
+                  strength={passwordStrength.score}
+                  color={passwordStrength.color}
+                />
+                <PasswordStrengthText color={passwordStrength.color}>
+                  {passwordStrength.label}
+                </PasswordStrengthText>
+              </PasswordStrengthIndicator>
+              
+              <PasswordRequirements>
+                {passwordRequirements.map((req, index) => (
+                  <RequirementItem key={index} $met={req.met}>
+                    <CheckCircle size={14} />
+                    {req.text}
+                  </RequirementItem>
+                ))}
+              </PasswordRequirements>
+            </>
+          )}
+        </FormSection>
 
-            <FormSection>
-              <Input
-                label="Xác nhận mật khẩu mới"
-                type="password"
-                placeholder="Nhập lại mật khẩu mới"
-                value={confirmPassword}
-                onChange={(e) => handleInputChange('confirm', e.target.value)}
-                icon={<Lock size={16} />}
-                error={confirmPassword && newPassword !== confirmPassword ? 'Mật khẩu xác nhận không khớp' : undefined}
-                required
-                disabled={isLoading}
-              />
-            </FormSection>
-          </>
-        )}
+        <FormSection>
+          <Input
+            label="Xác nhận mật khẩu mới"
+            type="password"
+            placeholder="Nhập lại mật khẩu mới"
+            value={confirmPassword}
+            onChange={(e) => handleInputChange('confirm', e.target.value)}
+            icon={<Lock size={16} />}
+            error={confirmPassword && newPassword !== confirmPassword ? 'Mật khẩu xác nhận không khớp' : undefined}
+            required
+            disabled={isLoading}
+          />
+        </FormSection>
       </ModalContent>
     </Modal>
   );

@@ -202,7 +202,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const days = getDaysInMonth(viewDate);
 
   return (
-    <DatePickerContainer className={className} fullWidth={fullWidth}>
+    <DatePickerContainer className={className} $fullWidth={fullWidth}>
       {label && (
         <DatePickerLabel htmlFor={datePickerId} required={required}>
           {label}
@@ -214,9 +214,9 @@ const DatePicker: React.FC<DatePickerProps> = ({
         <DatePickerInput
           ref={inputRef}
           id={datePickerId}
-          size={size}
-          disabled={disabled}
-          hasError={!!error}
+          $size={size}
+          $disabled={disabled}
+          $hasError={!!error}
           readOnly
           value={formatDate(selectedDate)}
           placeholder={placeholder}

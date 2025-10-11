@@ -120,17 +120,14 @@ export const SelectDropdown = styled.div`
   }
   
   &::-webkit-scrollbar-track {
-    background: var(--gray-100);
     border-radius: 3px;
   }
   
   &::-webkit-scrollbar-thumb {
-    background: var(--gray-300);
     border-radius: 3px;
   }
   
   &::-webkit-scrollbar-thumb:hover {
-    background: var(--gray-400);
   }
 `;
 

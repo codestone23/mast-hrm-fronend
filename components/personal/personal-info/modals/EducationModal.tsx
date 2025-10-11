@@ -6,10 +6,10 @@ import {
   ModalContent,
   FormSection,
   FormGrid,
-  ErrorMessage,
-  SuccessMessage
+  ErrorMessage
 } from '../personalInfoModalStyles';
 import profileService, { Education } from '@/services/profile.service';
+import { useToast } from '@/hooks/useToast';
 
 interface EducationModalProps {
   isOpen: boolean;
@@ -34,8 +34,8 @@ const EducationModal: React.FC<EducationModalProps> = ({
     end_date: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const { success: showSuccessToast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
@@ -89,18 +89,17 @@ const EducationModal: React.FC<EducationModalProps> = ({
         end_date: formData.end_date
       };
 
-      if (mode === 'add') {
-        const response = await profileService.addEducation(educationData);
-        onSave(response);
-      } else {
-        const response = await profileService.updateEducationById((initialData?.id || 0).toString(), educationData);
-        onSave(response);
-      }
-      
-      setSuccess(true);
-      setTimeout(() => {
-        handleClose();
-      }, 1500);
+             if (mode === 'add') {
+               const response = await profileService.addEducation(educationData);
+               onSave(response);
+               showSuccessToast('Học vấn đã được thêm thành công!');
+             } else {
+               const response = await profileService.updateEducationById((initialData?.id || 0).toString(), educationData);
+               onSave(response);
+               showSuccessToast('Học vấn đã được cập nhật thành công!');
+             }
+             
+             handleClose();
     } catch (error) {
       console.error('Error saving education:', error);
       setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
@@ -111,7 +110,6 @@ const EducationModal: React.FC<EducationModalProps> = ({
 
   const handleClose = () => {
     setError('');
-    setSuccess(false);
     setIsLoading(false);
     onClose();
   };
@@ -157,71 +155,62 @@ const EducationModal: React.FC<EducationModalProps> = ({
       }
     >
       <ModalContent>
-        {success ? (
-          <SuccessMessage>
-            <GraduationCap size={24} style={{ marginRight: '0.5rem' }} />
-            Học vấn đã được {mode === 'add' ? 'thêm' : 'cập nhật'} thành công!
-          </SuccessMessage>
-        ) : (
-          <>
-            {error && <ErrorMessage>{error}</ErrorMessage>}
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        
+        <FormSection>
+          <h4>Thông tin học vấn</h4>
+          <FormGrid>
+            <Input
+              label="Tên trường/Cơ sở đào tạo"
+              value={formData.name}
+              onChange={(e) => handleInputChange('name', e.target.value)}
+              placeholder="Ví dụ: Đại học Bách Khoa Hà Nội"
+              required
+              disabled={isLoading}
+            />
             
-            <FormSection>
-              <h4>Thông tin học vấn</h4>
-              <FormGrid>
-                <Input
-                  label="Tên trường/Cơ sở đào tạo"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="Ví dụ: Đại học Bách Khoa Hà Nội"
-                  required
-                  disabled={isLoading}
-                />
-                
-                <Input
-                  label="Chuyên ngành"
-                  value={formData.major}
-                  onChange={(e) => handleInputChange('major', e.target.value)}
-                  placeholder="Ví dụ: Công nghệ thông tin"
-                  required
-                  disabled={isLoading}
-                />
-                
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <TextArea
-                    label="Mô tả"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleTextAreaChange}
-                    placeholder="Ví dụ: Cử nhân Công nghệ thông tin"
-                    rows={3}
-                    disabled={isLoading}
-                  />
-                </div>
-                
-                <Input
-                  label="Ngày bắt đầu"
-                  type="date"
-                  name="start_date"
-                  value={formData.start_date}
-                  onChange={handleDateChange}
-                  required
-                  disabled={isLoading}
-                />
-                
-                <Input
-                  label="Ngày kết thúc"
-                  type="date"
-                  name="end_date"
-                  value={formData.end_date}
-                  onChange={handleDateChange}
-                  required
-                  disabled={isLoading}
-                />
-              </FormGrid>
-            </FormSection>
-          </>
-        )}
+            <Input
+              label="Chuyên ngành"
+              value={formData.major}
+              onChange={(e) => handleInputChange('major', e.target.value)}
+              placeholder="Ví dụ: Công nghệ thông tin"
+              required
+              disabled={isLoading}
+            />
+            
+            <div style={{ gridColumn: '1 / -1' }}>
+              <TextArea
+                label="Mô tả"
+                name="description"
+                value={formData.description}
+                onChange={handleTextAreaChange}
+                placeholder="Ví dụ: Cử nhân Công nghệ thông tin"
+                rows={3}
+                disabled={isLoading}
+              />
+            </div>
+            
+            <Input
+              label="Ngày bắt đầu"
+              type="date"
+              name="start_date"
+              value={formData.start_date}
+              onChange={handleDateChange}
+              required
+              disabled={isLoading}
+            />
+            
+            <Input
+              label="Ngày kết thúc"
+              type="date"
+              name="end_date"
+              value={formData.end_date}
+              onChange={handleDateChange}
+              required
+              disabled={isLoading}
+            />
+          </FormGrid>
+        </FormSection>
       </ModalContent>
     </Modal>
   );

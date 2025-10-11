@@ -1,6 +1,6 @@
 import styled, { css } from "styled-components";
 
-export const DatePickerContainer = styled.div<{ fullWidth?: boolean }>`
+export const DatePickerContainer = styled.div<{ $fullWidth?: boolean }>`
   display: flex;
   justify-content: center;
   flex-direction: column;
@@ -25,9 +25,9 @@ export const DatePickerLabel = styled.label<{ required?: boolean }>`
 `;
 
 export const DatePickerInput = styled.input<{
-  size?: string;
-  disabled?: boolean;
-  hasError?: boolean;
+  $size?: string;
+  $disabled?: boolean;
+  $hasError?: boolean;
 }>`
   width: 100%;
   background-color: transparent;
@@ -177,10 +177,10 @@ export const CalendarDayHeader = styled.div`
 `;
 
 export const CalendarDay = styled.button<{
-  isToday?: boolean;
-  isSelected?: boolean;
-  isCurrentMonth?: boolean;
-  isDisabled?: boolean;
+  $isToday?: boolean;
+  $isSelected?: boolean;
+  $isCurrentMonth?: boolean;
+  $isDisabled?: boolean;
 }>`
   display: flex;
   align-items: center;

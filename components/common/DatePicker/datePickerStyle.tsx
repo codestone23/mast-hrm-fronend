@@ -6,8 +6,8 @@ export const DatePickerContainer = styled.div<{ $fullWidth?: boolean }>`
   flex-direction: column;
   gap: 0.5rem;
 
-  ${({ fullWidth }) =>
-    fullWidth &&
+  ${({ $fullWidth }) =>
+    $fullWidth &&  
     css`
       width: 100%;
     `}
@@ -39,8 +39,8 @@ export const DatePickerInput = styled.input<{
   transition: all 0.2s ease;
   padding-right: 2.75rem;
 
-  ${({ size }) => {
-    switch (size) {
+  ${({ $size }) => {
+    switch ($size as string) {
       case "sm":
         return css`
           padding: 0.5rem 0.75rem;
@@ -59,14 +59,14 @@ export const DatePickerInput = styled.input<{
     }
   }}
 
-  ${({ hasError }) =>
-    hasError &&
+  ${({ $hasError }) =>
+    $hasError &&
     css`
       border-color: var(--error-500);
     `}
   
-  ${({ disabled }) =>
-    disabled &&
+  ${({ $disabled }) =>
+    $disabled &&
     css`
       opacity: 0.6;
       cursor: not-allowed;
@@ -195,39 +195,39 @@ export const CalendarDay = styled.button<{
   transition: all 0.2s ease;
   color: var(--text-primary);
 
-  ${({ isCurrentMonth }) =>
-    !isCurrentMonth &&
+  ${({ $isCurrentMonth }) =>
+    !$isCurrentMonth &&
     css`
       color: var(--text-muted);
       opacity: 0.5;
     `}
 
-  ${({ isToday }) =>
-    isToday &&
+  ${({ $isToday }) =>
+    $isToday &&
     css`
       background-color: var(--primary-100);
       color: var(--primary-600);
       font-weight: 600;
     `}
   
-  ${({ isSelected }) =>
-    isSelected &&
+  ${({ $isSelected }) =>
+    $isSelected &&
     css`
       background-color: var(--primary-500);
       color: white;
       font-weight: 600;
     `}
   
-  ${({ isDisabled }) =>
-    isDisabled &&
+  ${({ $isDisabled }) =>
+    $isDisabled &&
     css`
       opacity: 0.3;
       cursor: not-allowed;
     `}
   
   &:hover:not(:disabled) {
-    background-color: ${({ isSelected }) =>
-      isSelected ? "var(--primary-600)" : "var(--gray-100)"};
+    background-color: ${({ $isSelected }) =>
+      $isSelected ? "var(--primary-600)" : "var(--gray-100)"};
   }
 `;
 
@@ -250,8 +250,8 @@ export const MonthGrid = styled.div`
 `;
 
 export const MonthItem = styled.button<{
-  isCurrentMonth?: boolean;
-  isSelected?: boolean;
+  $isCurrentMonth?: boolean;
+  $isSelected?: boolean;
 }>`
   padding: 0.75rem 0.5rem;
   border-radius: var(--radius-md);
@@ -265,16 +265,16 @@ export const MonthItem = styled.button<{
     background-color: var(--gray-100);
   }
 
-  ${({ isCurrentMonth }) =>
-    isCurrentMonth &&
+  ${({ $isCurrentMonth }) =>
+    $isCurrentMonth &&
     css`
       background-color: var(--primary-100);
       color: var(--primary-600);
       font-weight: 600;
     `}
 
-  ${({ isSelected }) =>
-    isSelected &&
+  ${({ $isSelected }) =>
+    $isSelected &&
     css`
       background-color: var(--primary-500);
       color: white;

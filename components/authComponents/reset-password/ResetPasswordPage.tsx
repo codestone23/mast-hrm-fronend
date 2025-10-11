@@ -32,6 +32,8 @@ import {
   SuccessMessage
 } from './resetPasswordStyle';
 import ROUTERS from "@/config/router";
+import { authService } from '@/services/auth.service';
+
 
 interface PasswordStrength {
   score: number;
@@ -62,21 +64,21 @@ const ResetPasswordPage: React.FC = () => {
         return;
       }
 
-      try {
-        // Simulate API call để validate token
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Giả sử token hợp lệ nếu có độ dài > 10
-        if (token.length > 10) {
-          setTokenValid(true);
-        } else {
-          setError('Token không hợp lệ hoặc đã hết hạn');
-          setTokenValid(false);
-        }
-      } catch {
-        setError('Không thể xác thực token. Vui lòng thử lại sau.');
+    try {
+      // Decode token để lấy email và OTP
+      const decodedToken = atob(token!);
+      const [email, otp] = decodedToken.split(':');
+      
+      if (email && otp) {
+        setTokenValid(true);
+      } else {
+        setError('Token không hợp lệ hoặc đã hết hạn');
         setTokenValid(false);
       }
+    } catch {
+      setError('Token không hợp lệ hoặc đã hết hạn');
+      setTokenValid(false);
+    }
     };
 
     validateToken();
@@ -135,15 +137,23 @@ const ResetPasswordPage: React.FC = () => {
     setError('');
 
     try {
-      // Simulate API call để reset password
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Decode token để lấy email và OTP
+      const decodedToken = atob(token!);
+      const [email, otp] = decodedToken.split(':');
+      
+      await authService.resetPassword({
+        email: email,
+        otp: otp,
+        newPassword: password
+      });
       
       setSuccess(true);
       setTimeout(() => {
         router.push(ROUTERS.AUTH.LOGIN + '?message=password-reset-success');
       }, 2500);
     } catch {
-      setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
+      const errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -280,7 +290,7 @@ const ResetPasswordPage: React.FC = () => {
                     
                     <PasswordRequirements>
                       {passwordRequirements.map((req, index) => (
-                        <RequirementItem key={index} met={req.met}>
+                        <RequirementItem key={index} $met={req.met}>
                           <CheckCircle size={14} />
                           {req.text}
                         </RequirementItem>

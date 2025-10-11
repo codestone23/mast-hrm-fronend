@@ -25,3 +25,6 @@ export type { BreadcrumbProps, BreadcrumbItemData } from './Breadcrumb/Breadcrum
 
 export { default as ConfirmDeleteModal } from './ConfirmDeleteModal/ConfirmDeleteModal';
 export type { ConfirmDeleteModalProps } from './ConfirmDeleteModal/ConfirmDeleteModal';
+
+export { default as SuccessModal } from './SuccessModal/SuccessModal';
+export type { SuccessModalProps } from './SuccessModal/SuccessModal';

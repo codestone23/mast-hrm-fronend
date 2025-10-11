@@ -284,16 +284,16 @@ export const PasswordRequirements = styled.div`
   gap: 0.5rem;
 `;
 
-export const RequirementItem = styled.div<{ met: boolean }>`
+export const RequirementItem = styled.div<{ $met: boolean }>`
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.75rem;
-  color: ${({ met }) => met ? 'var(--success-600)' : 'var(--text-muted)'};
+  color: ${({ $met }) => $met ? 'var(--success-600)' : 'var(--text-muted)'};
   transition: color 0.2s ease;
   
   svg {
-    opacity: ${({ met }) => met ? 1 : 0.3};
+    opacity: ${({ $met }) => $met ? 1 : 0.3};
   }
 `;
 

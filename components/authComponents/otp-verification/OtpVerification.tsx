@@ -25,24 +25,33 @@ import {
   ErrorMessage,
   Timer
 } from './otpVerificationStyle';
+import { authService } from '@/services/auth.service';
+import SuccessModal from '@/components/common/SuccessModal/SuccessModal';
+
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message?: string;
+}
 
 interface OtpVerificationProps {
   email: string;
-  onBackToLogin: () => void;
   onBackToForgotPassword: () => void;
 }
 
 const OtpVerification: React.FC<OtpVerificationProps> = ({ 
   email, 
-  onBackToLogin, 
   onBackToForgotPassword
 }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
   const [canResend, setCanResend] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -117,23 +126,15 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
     setError('');
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await authService.verifyOTP(otpToVerify, email);
       
-       // Simulate validation
-       if (otpToVerify === '123456') {
-         setSuccess(true);
-         // Chuyển hướng đến trang reset password với token
-         setTimeout(() => {
-           window.location.href = `/reset-password?token=${otpToVerify}`;
-         }, 1500);
-       } else {
-        setError('Mã OTP không chính xác. Vui lòng thử lại.');
-        setOtp(['', '', '', '', '', '']);
-        inputRefs.current[0]?.focus();
-      }
-    } catch (err) {
-      setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
+      setShowSuccessModal(true);
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      const errorMessage = apiError?.response?.data?.message || apiError?.message || 'Mã OTP không chính xác. Vui lòng thử lại.';
+      setError(errorMessage);
+      setOtp(['', '', '', '', '', '']);
+      inputRefs.current[0]?.focus();
     } finally {
       setIsLoading(false);
     }
@@ -144,15 +145,16 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
     setError('');
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await authService.forgotPassword({ email });
       
       setTimeLeft(300);
       setCanResend(false);
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
-    } catch (err) {
-      setError('Không thể gửi lại mã OTP. Vui lòng thử lại sau.');
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      const errorMessage = apiError?.response?.data?.message || apiError?.message || 'Không thể gửi lại mã OTP. Vui lòng thử lại sau.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -165,6 +167,12 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
     const visiblePart = localPart.slice(0, 2);
     const hiddenPart = '*'.repeat(localPart.length - 2);
     return `${visiblePart}${hiddenPart}@${domain}`;
+  };
+
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    // Chuyển hướng đến trang reset password với token
+    window.location.href = `/reset-password?token=${btoa(email + ':' + otp.join(''))}`;
   };
 
   return (
@@ -181,7 +189,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
             Chúng tôi đã gửi mã xác thực 6 chữ số đến email <strong>{maskEmail(email)}</strong>
           </Subtitle>
 
-          {success ? (
+          {false ? (
            <SuccessMessage>
                <Shield size={24} style={{ marginRight: '0.5rem' }} />
                Xác thực thành công! Đang chuyển hướng đến trang đặt lại mật khẩu...
@@ -246,6 +254,15 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
           <p>Mã OTP giúp bảo vệ tài khoản của bạn an toàn</p>
         </RightContent>
       </RightSection>
+
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={handleSuccessModalClose}
+        title="Xác thực thành công!"
+        message="Mã OTP đã được xác thực thành công. Bạn sẽ được chuyển hướng đến trang đặt lại mật khẩu."
+        buttonText="Tiếp tục"
+        onButtonClick={handleSuccessModalClose}
+      />
     </OtpContainer>
   );
 };

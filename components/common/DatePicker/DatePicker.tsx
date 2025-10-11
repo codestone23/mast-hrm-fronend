@@ -250,10 +250,10 @@ const DatePicker: React.FC<DatePickerProps> = ({
                   {days.map((date, index) => (
                     <CalendarDay
                       key={index}
-                      isToday={isToday(date)}
-                      isSelected={isSelected(date)}
-                      isCurrentMonth={isCurrentMonth(date)}
-                      isDisabled={isDateDisabled(date)}
+                      $isToday={isToday(date)}
+                      $isSelected={isSelected(date)}
+                      $isCurrentMonth={isCurrentMonth(date)}
+                      $isDisabled={isDateDisabled(date)}
                       onClick={() => handleDateSelect(date)}
                     >
                       {date.getDate()}
@@ -281,8 +281,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
                     return (
                       <MonthItem
                         key={m}
-                        isCurrentMonth={ new Date().getMonth() === idx}
-                        isSelected={isSel}
+                        $isCurrentMonth={ new Date().getMonth() === idx}
+                        $isSelected={isSel}
                         onClick={() => !disabled && handleMonthSelect(idx)}
                       >
                         {m}

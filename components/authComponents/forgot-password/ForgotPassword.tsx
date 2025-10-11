@@ -22,6 +22,8 @@ import {
   SuccessMessage,
   ErrorMessage
 } from './forgotPasswordStyle';
+import { authService } from '@/services/auth.service';
+import SuccessModal from '@/components/common/SuccessModal/SuccessModal';
 
 interface ForgotPasswordProps {
   onBackToLogin: () => void;
@@ -31,8 +33,8 @@ interface ForgotPasswordProps {
 const ForgotPasswordPage: React.FC<ForgotPasswordProps> = ({ onBackToLogin, onEmailSent }) => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,20 +55,12 @@ const ForgotPasswordPage: React.FC<ForgotPasswordProps> = ({ onBackToLogin, onEm
     setError('');
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await authService.forgotPassword({ email });
       
-      setSuccess(true);
-      // Chuyển sang màn OTP nếu có callback
-      if (onEmailSent) {
-        setTimeout(() => {
-          onEmailSent(email);
-        }, 1500);
-      } else {
-        setEmail('');
-      }
+      setShowSuccessModal(true);
     } catch {
-      setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
+      const errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -75,6 +69,16 @@ const ForgotPasswordPage: React.FC<ForgotPasswordProps> = ({ onBackToLogin, onEm
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
     if (error) setError('');
+  };
+
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    // Chuyển sang màn OTP nếu có callback
+    if (onEmailSent) {
+      onEmailSent(email);
+    } else {
+      setEmail('');
+    }
   };
 
   return (
@@ -91,7 +95,7 @@ const ForgotPasswordPage: React.FC<ForgotPasswordProps> = ({ onBackToLogin, onEm
             Nhập email của bạn để nhận hướng dẫn đặt lại mật khẩu
           </Subtitle>
 
-          {success ? (
+          {false ? (
             <div>
               <SuccessMessage>
                 Email đã được gửi! Vui lòng kiểm tra hộp thư của bạn để đặt lại mật khẩu.
@@ -142,6 +146,15 @@ const ForgotPasswordPage: React.FC<ForgotPasswordProps> = ({ onBackToLogin, onEm
           <p>Đừng lo lắng, chúng tôi sẽ giúp bạn lấy lại mật khẩu</p>
         </RightContent>
       </RightSection>
+
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={handleSuccessModalClose}
+        title="Email đã được gửi!"
+        message="Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến email của bạn. Vui lòng kiểm tra hộp thư và làm theo hướng dẫn."
+        buttonText="Tiếp tục"
+        onButtonClick={handleSuccessModalClose}
+      />
     </ForgotPasswordContainer>
   );
 };

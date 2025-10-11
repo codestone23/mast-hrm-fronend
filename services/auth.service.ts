@@ -46,21 +46,12 @@ class AuthService {
     
     return response.data;
   }
-  
-  // {
-  //   "email": "user@example.com"
-  // }
 
   async forgotPassword(data: ForgotPasswordRequest): Promise<ApiResponse<void>> {
     const response = await axiosInstance.post('auth/forgot-password', data);
     return response.data;
   }
-  // {
-  //   "email": "user@example.com",
-  //   "otp": "123456",
-  //   "newPassword": "newpassword123"
-  // }
-
+  
   async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse<void>> {
     const response = await axiosInstance.post('auth/reset-password', data);
     return response.data;

@@ -19,3 +19,6 @@ export type { ChangePasswordModalProps } from './ChangePasswordModal/ChangePassw
 
 export { default as Breadcrumb } from './Breadcrumb/Breadcrumb';
 export type { BreadcrumbProps, BreadcrumbItemData } from './Breadcrumb/Breadcrumb';
+
+export { default as ConfirmDeleteModal } from './ConfirmDeleteModal/ConfirmDeleteModal';
+export type { ConfirmDeleteModalProps } from './ConfirmDeleteModal/ConfirmDeleteModal';

@@ -86,6 +86,7 @@ export const SelectValue = styled.span<{ $hasValue?: boolean }>`
   flex: 1;
   text-align: left;
   color: ${({ $hasValue }) => $hasValue ? 'var(--text-primary)' : 'var(--text-muted)'};
+  line-height: 1rem; /* Ensure consistent line height with input, datepicker, etc. */
 `;
 
 export const SelectIcon = styled.div<{ $isOpen?: boolean }>`

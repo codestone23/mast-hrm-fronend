@@ -16,10 +16,11 @@ import {
   CalendarDayHeader,
   ErrorMessage,
   HelperText
+  , MonthGrid, MonthItem
 } from './datePickerStyle';
 
 export interface DatePickerProps {
-  value?: Date | string;
+  value?: Date | string | null;
   onChange?: (date: Date | null) => void;
   placeholder?: string;
   label?: string;
@@ -30,6 +31,8 @@ export interface DatePickerProps {
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   format?: string;
+  mode?: 'date' | 'month';
+  align?: 'left' | 'right' | 'center';
   minDate?: Date;
   maxDate?: Date;
   className?: string;
@@ -48,6 +51,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
   size = 'md',
   fullWidth = true,
   format = 'dd/mm/yyyy',
+  mode = 'date',
+  align = 'left',
   minDate,
   maxDate,
   className,
@@ -86,10 +91,14 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const formatDate = (date: Date | null): string => {
     if (!date) return '';
     
-    const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
-    
+
+    if (mode === 'month') {
+      return `${month}/${year}`;
+    }
+
+    const day = date.getDate().toString().padStart(2, '0');
     return `${day}/${month}/${year}`;
   };
 
@@ -113,6 +122,37 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
   const handleNextMonth = () => {
     setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+  };
+
+  const handlePrevYear = () => {
+    setViewDate(new Date(viewDate.getFullYear() - 1, viewDate.getMonth(), 1));
+  };
+
+  const handleNextYear = () => {
+    setViewDate(new Date(viewDate.getFullYear() + 1, viewDate.getMonth(), 1));
+  };
+
+  const getLastDayOfMonth = (year: number, month: number) => {
+    return new Date(year, month + 1, 0);
+  };
+
+  const isMonthDisabled = (year: number, month: number) => {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = getLastDayOfMonth(year, month);
+
+    if (minDate && lastDay < minDate) return true;
+    if (maxDate && firstDay > maxDate) return true;
+    return false;
+  };
+
+  const handleMonthSelect = (monthIndex: number) => {
+    const year = viewDate.getFullYear();
+    if (isMonthDisabled(year, monthIndex)) return;
+
+    const date = new Date(year, monthIndex, 1);
+    setSelectedDate(date);
+    setIsOpen(false);
+    onChange?.(date);
   };
 
   const getDaysInMonth = (date: Date): Date[] => {
@@ -187,37 +227,71 @@ const DatePicker: React.FC<DatePickerProps> = ({
         </DatePickerIcon>
 
         {isOpen && (
-          <DatePickerDropdown>
-            <CalendarHeader>
-              <CalendarNav onClick={handlePrevMonth}>
-                <ChevronLeft size={16} />
-              </CalendarNav>
-              <CalendarTitle>
-                {monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}
-              </CalendarTitle>
-              <CalendarNav onClick={handleNextMonth}>
-                <ChevronRight size={16} />
-              </CalendarNav>
-            </CalendarHeader>
+          <DatePickerDropdown align={align}>
+            {mode === 'date' ? (
+              <>
+                <CalendarHeader>
+                  <CalendarNav onClick={handlePrevMonth}>
+                    <ChevronLeft size={16} />
+                  </CalendarNav>
+                  <CalendarTitle>
+                    {monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}
+                  </CalendarTitle>
+                  <CalendarNav onClick={handleNextMonth}>
+                    <ChevronRight size={16} />
+                  </CalendarNav>
+                </CalendarHeader>
 
-            <CalendarGrid>
-              {dayNames.map(day => (
-                <CalendarDayHeader key={day}>{day}</CalendarDayHeader>
-              ))}
-              
-              {days.map((date, index) => (
-                <CalendarDay
-                  key={index}
-                  isToday={isToday(date)}
-                  isSelected={isSelected(date)}
-                  isCurrentMonth={isCurrentMonth(date)}
-                  isDisabled={isDateDisabled(date)}
-                  onClick={() => handleDateSelect(date)}
-                >
-                  {date.getDate()}
-                </CalendarDay>
-              ))}
-            </CalendarGrid>
+                <CalendarGrid>
+                  {dayNames.map(day => (
+                    <CalendarDayHeader key={day}>{day}</CalendarDayHeader>
+                  ))}
+                  
+                  {days.map((date, index) => (
+                    <CalendarDay
+                      key={index}
+                      isToday={isToday(date)}
+                      isSelected={isSelected(date)}
+                      isCurrentMonth={isCurrentMonth(date)}
+                      isDisabled={isDateDisabled(date)}
+                      onClick={() => handleDateSelect(date)}
+                    >
+                      {date.getDate()}
+                    </CalendarDay>
+                  ))}
+                </CalendarGrid>
+              </>
+            ) : (
+              <>
+                <CalendarHeader>
+                  <CalendarNav onClick={handlePrevYear}>
+                    <ChevronLeft size={16} />
+                  </CalendarNav>
+                  <CalendarTitle>
+                    {viewDate.getFullYear()}
+                  </CalendarTitle>
+                  <CalendarNav onClick={handleNextYear}>
+                    <ChevronRight size={16} />
+                  </CalendarNav>
+                </CalendarHeader>
+
+                <MonthGrid>
+                  {monthNames.map((m, idx) => {
+                    const isSel = !!selectedDate && selectedDate.getFullYear() === viewDate.getFullYear() && selectedDate.getMonth() === idx;
+                    return (
+                      <MonthItem
+                        key={m}
+                        isCurrentMonth={ new Date().getMonth() === idx}
+                        isSelected={isSel}
+                        onClick={() => !disabled && handleMonthSelect(idx)}
+                      >
+                        {m}
+                      </MonthItem>
+                    );
+                  })}
+                </MonthGrid>
+              </>
+            )}
           </DatePickerDropdown>
         )}
       </div>

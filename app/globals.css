@@ -139,3 +139,15 @@ a {
 .rounded-md { border-radius: var(--radius-md); }
 .rounded-lg { border-radius: var(--radius-lg); }
 .rounded-xl { border-radius: var(--radius-xl); }
+
+/* Ensure react-datepicker popper appears above other sticky elements (like table thead) */
+.react-datepicker-popper,
+.react-datepicker,
+.react-datepicker__portal {
+  z-index: 9999 !important;
+}
+
+/* Triangle and calendar itself should also be on top */
+.react-datepicker__triangle, .react-datepicker__month-container {
+  z-index: 9999;
+}

@@ -1,20 +1,23 @@
-import styled, { css } from 'styled-components';
+import styled, { css } from "styled-components";
 
 export const DatePickerContainer = styled.div<{ fullWidth?: boolean }>`
   display: flex;
+  justify-content: center;
   flex-direction: column;
   gap: 0.5rem;
-  
-  ${({ fullWidth }) => fullWidth && css`
-    width: 100%;
-  `}
+
+  ${({ fullWidth }) =>
+    fullWidth &&
+    css`
+      width: 100%;
+    `}
 `;
 
 export const DatePickerLabel = styled.label<{ required?: boolean }>`
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-primary);
-  
+
   .required {
     color: var(--error-500);
     margin-left: 0.25rem;
@@ -27,22 +30,23 @@ export const DatePickerInput = styled.input<{
   hasError?: boolean;
 }>`
   width: 100%;
-  background-color: #fff;
+  background-color: transparent;
+  border: none;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   cursor: pointer;
   transition: all 0.2s ease;
   padding-right: 2.75rem;
-  
+
   ${({ size }) => {
     switch (size) {
-      case 'sm':
+      case "sm":
         return css`
           padding: 0.5rem 0.75rem;
           font-size: 0.75rem;
         `;
-      case 'lg':
+      case "lg":
         return css`
           padding: 1rem 1rem;
           font-size: 1rem;
@@ -54,27 +58,31 @@ export const DatePickerInput = styled.input<{
         `;
     }
   }}
+
+  ${({ hasError }) =>
+    hasError &&
+    css`
+      border-color: var(--error-500);
+    `}
   
-  ${({ hasError }) => hasError && css`
-    border-color: var(--error-500);
-  `}
-  
-  ${({ disabled }) => disabled && css`
-    opacity: 0.6;
-    cursor: not-allowed;
-    background-color: var(--gray-100);
-  `}
+  ${({ disabled }) =>
+    disabled &&
+    css`
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: var(--gray-100);
+    `}
   
   &:hover:not(:disabled) {
     border-color: var(--gray-300);
   }
-  
+
   &:focus {
     outline: none;
     border-color: var(--primary-500);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
-  
+
   &::placeholder {
     color: var(--text-muted);
   }
@@ -89,10 +97,26 @@ export const DatePickerIcon = styled.div`
   pointer-events: none;
 `;
 
-export const DatePickerDropdown = styled.div`
+export const DatePickerDropdown = styled.div<{
+  align?: "left" | "right" | "center";
+}>`
   position: absolute;
   top: 100%;
-  left: 0;
+
+  ${({ align }) =>
+    align === "left"
+      ? css`
+          left: 0;
+        `
+    : align === "right"
+      ? css`
+          right: 0;
+        `
+      : css`
+          left: 50%;
+          transform: translateX(-50%);
+        `}
+
   z-index: 1000;
   background: white;
   border: 1px solid var(--border);
@@ -122,7 +146,7 @@ export const CalendarNav = styled.button`
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background-color: var(--gray-100);
     color: var(--text-primary);
@@ -169,33 +193,41 @@ export const CalendarDay = styled.button<{
   font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  color: var(--text-primary);
+
+  ${({ isCurrentMonth }) =>
+    !isCurrentMonth &&
+    css`
+      color: var(--text-muted);
+      opacity: 0.5;
+    `}
+
+  ${({ isToday }) =>
+    isToday &&
+    css`
+      background-color: var(--primary-100);
+      color: var(--primary-600);
+      font-weight: 600;
+    `}
   
-  ${({ isCurrentMonth }) => !isCurrentMonth && css`
-    color: var(--text-muted);
-    opacity: 0.5;
-  `}
+  ${({ isSelected }) =>
+    isSelected &&
+    css`
+      background-color: var(--primary-500);
+      color: white;
+      font-weight: 600;
+    `}
   
-  ${({ isToday }) => isToday && css`
-    background-color: var(--primary-100);
-    color: var(--primary-600);
-    font-weight: 600;
-  `}
-  
-  ${({ isSelected }) => isSelected && css`
-    background-color: var(--primary-500);
-    color: white;
-    font-weight: 600;
-  `}
-  
-  ${({ isDisabled }) => isDisabled && css`
-    opacity: 0.3;
-    cursor: not-allowed;
-  `}
+  ${({ isDisabled }) =>
+    isDisabled &&
+    css`
+      opacity: 0.3;
+      cursor: not-allowed;
+    `}
   
   &:hover:not(:disabled) {
-    background-color: ${({ isSelected }) => 
-      isSelected ? 'var(--primary-600)' : 'var(--gray-100)'
-    };
+    background-color: ${({ isSelected }) =>
+      isSelected ? "var(--primary-600)" : "var(--gray-100)"};
   }
 `;
 
@@ -209,4 +241,42 @@ export const HelperText = styled.div`
   font-size: 0.75rem;
   color: var(--text-muted);
   margin-top: 0.25rem;
+`;
+
+export const MonthGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+`;
+
+export const MonthItem = styled.button<{
+  isCurrentMonth?: boolean;
+  isSelected?: boolean;
+}>`
+  padding: 0.75rem 0.5rem;
+  border-radius: var(--radius-md);
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: all 0.12s ease;
+
+  &:hover:not(:disabled) {
+    background-color: var(--gray-100);
+  }
+
+  ${({ isCurrentMonth }) =>
+    isCurrentMonth &&
+    css`
+      background-color: var(--primary-100);
+      color: var(--primary-600);
+      font-weight: 600;
+    `}
+
+  ${({ isSelected }) =>
+    isSelected &&
+    css`
+      background-color: var(--primary-500);
+      color: white;
+    `}
 `;

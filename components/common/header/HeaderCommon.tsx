@@ -38,18 +38,18 @@ interface User {
 
 const HeaderCommon = (props: HeaderCommonProps) => {
   const router = useRouter();
-  const { activeTab = "staff", onTabChange } = props;
+  const { activeTab = ROUTERS.PERSONAL.BASE, onTabChange } = props;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
-    { id: "me/staff", label: "Dashboard" },
-    { id: "me/personal-info", label: "Thông tin cá nhân" },
-    { id: "me/projects", label: "Dự án tham gia" },
-    { id: "me/timekeeping/time-sheets", label: "Chấm công" },
-    { id: "me/company", label: "Công ty" },
+    { id: ROUTERS.PERSONAL.BASE, label: "Dashboard" },
+    { id: ROUTERS.PERSONAL.INFO, label: "Thông tin cá nhân" },
+    { id: ROUTERS.PERSONAL.PROJECTS, label: "Dự án tham gia" },
+    { id: ROUTERS.PERSONAL.TIMEKEEPING, label: "Chấm công" },
+    { id: ROUTERS.PERSONAL.COMPANY, label: "Công ty" },
   ];
 
   useEffect(() => {

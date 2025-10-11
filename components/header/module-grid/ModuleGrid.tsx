@@ -60,7 +60,7 @@ const modules: Module[] = [
     description: "Quản lý phòng ban và cơ cấu tổ chức",
     icon: Building2,
     color: "#ef4444",
-    path: "",
+    path: ROUTERS.DIVISION.BASE,
   },
   {
     id: "schedule",

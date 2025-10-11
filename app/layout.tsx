@@ -3,6 +3,7 @@ import StyledComponentsRegistry from "../components/StyledComponentsRegistry";
 import { ToastProvider } from "../contexts/ToastContext";
 import QueryProvider from "../components/providers/QueryProvider";
 import "./globals.css";
+import 'react-datepicker/dist/react-datepicker.css';
 
 export const metadata: Metadata = {
   title: "Mast HRM - Hệ thống quản lý nhân sự",

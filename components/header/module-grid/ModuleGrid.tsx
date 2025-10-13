@@ -92,7 +92,7 @@ const modules: Module[] = [
     description: "Cài đặt hệ thống và cấu hình",
     icon: Settings,
     color: "#6b7280",
-    path: "",
+    path: ROUTERS.SETTINGS.ACCOUNTS,
   },
 ];
 

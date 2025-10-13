@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Select, DatePicker, TimePicker } from '@/components/common';
 import {
   ModalContent,
@@ -7,6 +7,7 @@ import {
   ErrorMessage
 } from './requestModalStyles';
 import { useToast } from '@/hooks/useToast';
+import { timekeepingService } from '@/services/timekeeping.service';
 
 interface RegularOvertimeModalProps {
   isOpen: boolean;
@@ -20,38 +21,59 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
   selectedDate
 }) => {
   const [formData, setFormData] = useState({
-    proposalName: 'Làm thêm giờ dự án ACMS',
-    project: '',
-    approver: '',
-    applicationDate: selectedDate,
-    startTime: '19:00',
-    endTime: '21:00',
+    title: '',
+    projectId: '',
+    workDate: selectedDate,
+    startTime: '',
+    endTime: '',
     reason: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const { success: showSuccessToast } = useToast();
 
-  const approvers = [
-    { value: 'manager1', label: 'Nguyễn Văn A - Trưởng phòng' },
-    { value: 'manager2', label: 'Trần Thị B - Phó giám đốc' },
-    { value: 'manager3', label: 'Lê Văn C - Giám đốc' }
-  ];
+  const [projects, setProjects] = useState<Array<{value: string, label: string}>>([]);
 
-  const projects = [
-    { value: 'project1', label: 'Dự án ACMS' },
-    { value: 'project2', label: 'Dự án HRM' },
-    { value: 'project3', label: 'Dự án CRM' }
-  ];
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await timekeepingService.getProjects();
+        const projectOptions = response.data.map(project => ({
+          value: project.id.toString(),
+          label: project.name
+        }));
+        setProjects(projectOptions);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        // Fallback to hardcoded projects if API fails
+        setProjects([
+          { value: '1', label: 'Dự án ACME' },
+          { value: '2', label: 'Dự án HRM' },
+          { value: '3', label: 'Dự án CRM' },
+          { value: '4', label: 'Dự án ERP' },
+          { value: '5', label: 'Dự án Mobile App' }
+        ]);
+      }
+    };
+
+    if (isOpen) {
+      fetchProjects();
+    }
+  }, [isOpen]);
 
   const handleSubmit = async () => {
-    if (!formData.approver) {
-      setError('Vui lòng chọn người phê duyệt');
+    if (!formData.title.trim()) {
+      setError('Vui lòng nhập tiêu đề');
       return;
     }
 
-    if (!formData.project) {
+    if (!formData.projectId) {
       setError('Vui lòng chọn dự án');
+      return;
+    }
+
+    if (!formData.reason.trim()) {
+      setError('Vui lòng nhập lý do');
       return;
     }
 
@@ -59,13 +81,20 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
     setError('');
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      showSuccessToast('Đăng ký OT ngày thường thành công!');
+      const payload = {
+        title: formData.title,
+        project_id: parseInt(formData.projectId),
+        work_date: formData.workDate,
+        start_time: formData.startTime,
+        end_time: formData.endTime,
+        reason: formData.reason
+      };
+
+      await timekeepingService.createOvertimeRequest(payload);
+      showSuccessToast('Tạo đơn xin làm thêm giờ thành công!');
       onClose();
     } catch (error) {
-      console.error('Error submitting regular overtime request:', error);
+      console.error('Error submitting overtime request:', error);
       setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
@@ -101,9 +130,9 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
             variant="primary"
             onClick={handleSubmit}
             loading={isLoading}
-            disabled={isLoading || !formData.approver || !formData.project}
+            disabled={isLoading || !formData.title.trim() || !formData.projectId || !formData.reason.trim()}
           >
-            {isLoading ? 'Đang xử lý...' : 'Thêm'}
+            {isLoading ? 'Đang xử lý...' : 'Tạo đơn'}
           </Button>
         </>
       }
@@ -114,37 +143,28 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
         <FormSection>
           <FormGrid>
             <Input
-              label="Tên đề xuất"
-              value={formData.proposalName}
-              onChange={(e) => handleInputChange('proposalName', e.target.value)}
+              label="Tiêu đề"
+              value={formData.title}
+              onChange={(e) => handleInputChange('title', e.target.value)}
+              placeholder="Nhập tiêu đề đơn xin làm thêm giờ"
               required
               disabled={isLoading}
             />
             
             <Select
               label="Dự án"
-              value={formData.project}
-              onChange={(value: string | number) => handleInputChange('project', value.toString())}
+              value={formData.projectId}
+              onChange={(value: string | number) => handleInputChange('projectId', value.toString())}
               options={projects}
               placeholder="Chọn dự án"
               required
               disabled={isLoading}
             />
             
-            <Select
-              label="Chọn người phê duyệt"
-              value={formData.approver}
-              onChange={(value: string | number) => handleInputChange('approver', value.toString())}
-              options={approvers}
-              placeholder="Chọn người phê duyệt"
-              required
-              disabled={isLoading}
-            />
-            
             <DatePicker
-              label="Ngày áp dụng"
-              value={formData.applicationDate}
-              onChange={(value) => handleInputChange('applicationDate', value ? value.toISOString().split('T')[0] : '')}
+              label="Ngày làm thêm giờ"
+              value={formData.workDate}
+              onChange={(value) => handleInputChange('workDate', value ? value.toISOString().split('T')[0] : '')}
               required
               disabled={isLoading}
             />
@@ -165,12 +185,24 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
               disabled={isLoading}
             />
             
+            {/* Comment lại phần người phê duyệt vì API chưa có */}
+            {/* <Select
+              label="Chọn người phê duyệt"
+              value={formData.approver}
+              onChange={(value: string | number) => handleInputChange('approver', value.toString())}
+              options={approvers}
+              placeholder="Chọn người phê duyệt"
+              required
+              disabled={isLoading}
+            /> */}
+            
             <div style={{ gridColumn: '1 / -1' }}>
               <Input
                 label="Lý do"
                 value={formData.reason}
                 onChange={(e) => handleInputChange('reason', e.target.value)}
                 placeholder="Nhập lý do làm thêm giờ..."
+                required
                 disabled={isLoading}
               />
             </div>

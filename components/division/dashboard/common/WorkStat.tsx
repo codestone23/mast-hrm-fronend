@@ -83,11 +83,11 @@ const WorkStat: React.FC = () => {
                     <CardBody>
                         <StatBlock>
                             <StatGroup style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                                <StatNumber green>{workData.authorizedLeave}</StatNumber>
+                                <StatNumber $green={true}>{workData.authorizedLeave}</StatNumber>
                                 <StatLabel>Có phép</StatLabel>
                             </StatGroup>
                             <StatGroup style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
-                                <StatNumber green>{workData.unauthorizedLeave}</StatNumber>
+                                <StatNumber $green={true}>{workData.unauthorizedLeave}</StatNumber>
                                 <StatLabel>Không phép</StatLabel>
                             </StatGroup>
                         </StatBlock>

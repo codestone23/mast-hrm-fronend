@@ -93,10 +93,10 @@ export const StatGroup = styled.div`
   gap: 5px;
 `;
 
-export const StatNumber = styled.div<{ green?: boolean }>`
+export const StatNumber = styled.div<{ $green?: boolean }>`
   font-size: 20px;
   font-weight: 700;
-  color: ${props => (props.green ? "#059669" : "inherit")};
+  color: ${props => (props.$green ? "#059669" : "inherit")};
 `;
 
 export const StatLabel = styled.div`

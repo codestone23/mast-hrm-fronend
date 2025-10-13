@@ -7,10 +7,8 @@ import ListRequest from '../ListRequest';
 import CreateRequestModal from '../modals/CreateRequestModal';
 import RegisterFace from "../register-face/RegisterFace";
 import RequestTypeModal from '../modals/RequestTypeModal';
-import LateArrivalModal from '../modals/LateArrivalModal';
-import EarlyDepartureModal from '../modals/EarlyDepartureModal';
+import LateEarlyModal from '../modals/LateEarlyModal';
 import RemoteWorkModal from '../modals/RemoteWorkModal';
-import UnpaidLeaveModal from '../modals/UnpaidLeaveModal';
 import PaidLeaveModal from '../modals/PaidLeaveModal';
 import RegularOvertimeModal from '../modals/RegularOvertimeModal';
 import ForgotTimekeepingModal from '../modals/ForgotTimekeepingModal';
@@ -546,26 +544,14 @@ const TimeSheets: React.FC = () => {
       />
 
       {/* Specific Request Modals */}
-      <LateArrivalModal
-        isOpen={requestModalState.activeModal === RequestModalType.LATE_ARRIVAL}
-        onClose={closeAllModals}
-        selectedDate={requestModalState.selectedDate}
-      />
-
-      <EarlyDepartureModal
-        isOpen={requestModalState.activeModal === RequestModalType.EARLY_DEPARTURE}
+      <LateEarlyModal
+        isOpen={requestModalState.activeModal === RequestModalType.LATE_EARLY}
         onClose={closeAllModals}
         selectedDate={requestModalState.selectedDate}
       />
 
       <RemoteWorkModal
         isOpen={requestModalState.activeModal === RequestModalType.REMOTE_WORK}
-        onClose={closeAllModals}
-        selectedDate={requestModalState.selectedDate}
-      />
-
-      <UnpaidLeaveModal
-        isOpen={requestModalState.activeModal === RequestModalType.UNPAID_LEAVE}
         onClose={closeAllModals}
         selectedDate={requestModalState.selectedDate}
       />

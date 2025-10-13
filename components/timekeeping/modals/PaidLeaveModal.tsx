@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Select, DatePicker } from '@/components/common';
 import {
   ModalContent,
@@ -8,7 +8,9 @@ import {
   InfoBanner
 } from './requestModalStyles';
 import { useToast } from '@/hooks/useToast';
-
+import { timekeepingService } from '@/services/timekeeping.service';
+import LocalStorageUtil from '@/utils/LocalStorageUtil';
+import { User } from "@/constants/types";
 interface PaidLeaveModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -21,52 +23,90 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
   selectedDate
 }) => {
   const [formData, setFormData] = useState({
-    proposalName: 'Nghỉ ốm ngày 05/05/2021',
-    approver: '',
-    applicationDate: selectedDate,
-    morningShift: false,
-    afternoonShift: false,
+    title: '',
+    leaveType: 'PAID',
+    duration: 'FULL_DAY',
+    workDate: selectedDate,
     reason: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const { success: showSuccessToast } = useToast();
+  const [annualLeaveQuota, setAnnualLeaveQuota] = useState(0);
+  const [showInsufficientQuotaModal, setShowInsufficientQuotaModal] = useState(false);
+  const { success: showSuccessToast, error: showErrorToast } = useToast();
 
-  const approvers = [
-    { value: 'manager1', label: 'Nguyễn Văn A - Trưởng phòng' },
-    { value: 'manager2', label: 'Trần Thị B - Phó giám đốc' },
-    { value: 'manager3', label: 'Lê Văn C - Giám đốc' }
+  const leaveTypes = [
+    { value: 'PAID', label: 'Nghỉ phép có lương' },
+    { value: 'UNPAID', label: 'Nghỉ phép không lương' }
   ];
 
-  const timeSlots = [
-    { id: '8-10', label: '8:00 - 10:00' },
-    { id: '10-12', label: '10:00 - 12:00' },
-    { id: '13-15', label: '13:30 - 15:30' },
-    { id: '15-17', label: '15:30 - 17:30' }
+  const durations = [
+    { value: 'FULL_DAY', label: 'Cả ngày' },
+    { value: 'MORNING', label: 'Buổi sáng' },
+    { value: 'AFTERNOON', label: 'Buổi chiều' }
   ];
+
+  // Lấy thông tin user từ localStorage
+  useEffect(() => {
+    if (isOpen) {
+      const userData = LocalStorageUtil.getUserLocalDataObject('user') as User;
+      if (userData && userData.annual_leave_quota) {
+        setAnnualLeaveQuota(userData.annual_leave_quota);
+      }
+    }
+  }, [isOpen]);
+
+  // Tính số giờ phép cần sử dụng
+  const getRequiredLeaveHours = () => {
+    switch (formData.duration) {
+      case 'FULL_DAY':
+        return 8;
+      case 'MORNING':
+      case 'AFTERNOON':
+        return 4;
+      default:
+        return 8;
+    }
+  };
 
   const handleSubmit = async () => {
-    if (!formData.approver) {
-      setError('Vui lòng chọn người phê duyệt');
+    if (!formData.title.trim()) {
+      setError('Vui lòng nhập tiêu đề');
       return;
     }
 
-    if (!formData.morningShift && !formData.afternoonShift) {
-      setError('Vui lòng chọn ít nhất một ca nghỉ');
+    if (!formData.reason.trim()) {
+      setError('Vui lòng nhập lý do');
       return;
+    }
+
+    // Kiểm tra số giờ phép còn lại nếu là nghỉ có lương
+    if (formData.leaveType === 'PAID') {
+      const requiredHours = getRequiredLeaveHours();
+      if (annualLeaveQuota < requiredHours) {
+        setShowInsufficientQuotaModal(true);
+        return;
+      }
     }
 
     setIsLoading(true);
     setError('');
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      showSuccessToast('Đăng ký nghỉ phép thành công!');
+      const payload = {
+        work_date: formData.workDate,
+        duration: formData.duration as 'FULL_DAY' | 'MORNING' | 'AFTERNOON',
+        title: formData.title,
+        type: formData.leaveType as 'PAID' | 'UNPAID',
+        reason: formData.reason,
+        is_past: false
+      };
+
+      await timekeepingService.createDayOffRequest(payload);
+      showSuccessToast('Tạo đơn xin nghỉ phép thành công!');
       onClose();
     } catch (error) {
-      console.error('Error submitting paid leave request:', error);
+      console.error('Error submitting leave request:', error);
       setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
@@ -79,19 +119,11 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
     onClose();
   };
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string) => {
     setError('');
     setFormData(prev => ({
       ...prev,
       [field]: value
-    }));
-  };
-
-  const handleTimeSlotChange = (slotId: string, checked: boolean) => {
-    setError('');
-    setFormData(prev => ({
-      ...prev,
-      [slotId]: checked
     }));
   };
 
@@ -110,9 +142,9 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
             variant="primary"
             onClick={handleSubmit}
             loading={isLoading}
-            disabled={isLoading || !formData.approver || (!formData.morningShift && !formData.afternoonShift)}
+            disabled={isLoading || !formData.title.trim() || !formData.reason.trim()}
           >
-            {isLoading ? 'Đang xử lý...' : 'Thêm'}
+            {isLoading ? 'Đang xử lý...' : 'Tạo đơn'}
           </Button>
         </>
       }
@@ -121,20 +153,50 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
         {error && <ErrorMessage>{error}</ErrorMessage>}
         
         <InfoBanner>
-          Số giờ phép còn lại: 40 giờ
+          Số giờ phép còn lại: {annualLeaveQuota} giờ
         </InfoBanner>
         
         <FormSection>
           <FormGrid>
             <Input
-              label="Tên đề xuất"
-              value={formData.proposalName}
-              onChange={(e) => handleInputChange('proposalName', e.target.value)}
+              label="Tiêu đề"
+              value={formData.title}
+              onChange={(e) => handleInputChange('title', e.target.value)}
+              placeholder="Nhập tiêu đề đơn xin nghỉ phép"
               required
               disabled={isLoading}
             />
             
             <Select
+              label="Loại nghỉ phép"
+              value={formData.leaveType}
+              onChange={(value: string | number) => handleInputChange('leaveType', value.toString())}
+              options={leaveTypes}
+              placeholder="Chọn loại nghỉ phép"
+              required
+              disabled={isLoading}
+            />
+            
+            <Select
+              label="Thời gian nghỉ"
+              value={formData.duration}
+              onChange={(value: string | number) => handleInputChange('duration', value.toString())}
+              options={durations}
+              placeholder="Chọn thời gian nghỉ"
+              required
+              disabled={isLoading}
+            />
+            
+            <DatePicker
+              label="Ngày nghỉ"
+              value={formData.workDate}
+              onChange={(value) => handleInputChange('workDate', value ? value.toISOString().split('T')[0] : '')}
+              required
+              disabled={isLoading}
+            />
+            
+            {/* Comment lại phần người phê duyệt vì API chưa có */}
+            {/* <Select
               label="Chọn người phê duyệt"
               value={formData.approver}
               onChange={(value: string | number) => handleInputChange('approver', value.toString())}
@@ -142,48 +204,61 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
               placeholder="Chọn người phê duyệt"
               required
               disabled={isLoading}
-            />
-            
-            <DatePicker
-              label="Ngày áp dụng"
-              value={formData.applicationDate}
-              onChange={(value) => handleInputChange('applicationDate', value ? value.toISOString().split('T')[0] : '')}
-              required
-              disabled={isLoading}
-            />
-            
-            <div style={{ gridColumn: '1 / -1' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151' }}>
-                Ca xin nghỉ
-              </label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                {timeSlots.map((slot) => (
-                  <label key={slot.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={formData[slot.id as keyof typeof formData] as boolean}
-                      onChange={(e) => handleTimeSlotChange(slot.id, e.target.checked)}
-                      disabled={isLoading}
-                      style={{ width: '16px', height: '16px' }}
-                    />
-                    <span>{slot.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+            /> */}
             
             <div style={{ gridColumn: '1 / -1' }}>
               <Input
                 label="Lý do"
                 value={formData.reason}
                 onChange={(e) => handleInputChange('reason', e.target.value)}
-                placeholder="Nhập lý do nghỉ..."
+                placeholder="Nhập lý do nghỉ phép..."
+                required
                 disabled={isLoading}
               />
             </div>
           </FormGrid>
         </FormSection>
       </ModalContent>
+
+      {/* Modal cảnh báo không đủ giờ phép */}
+      <Modal
+        isOpen={showInsufficientQuotaModal}
+        onClose={() => setShowInsufficientQuotaModal(false)}
+        title="Không đủ giờ phép"
+        size="sm"
+        footer={
+          <>
+            <Button 
+              variant="ghost" 
+              onClick={() => setShowInsufficientQuotaModal(false)}
+            >
+              Đóng
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                setShowInsufficientQuotaModal(false);
+                // Chuyển sang nghỉ không lương
+                setFormData(prev => ({ ...prev, leaveType: 'UNPAID' }));
+              }}
+            >
+              Chuyển sang nghỉ không lương
+            </Button>
+          </>
+        }
+      >
+        <div style={{ padding: '1rem', textAlign: 'center' }}>
+          <p style={{ marginBottom: '1rem', color: '#ef4444' }}>
+            Bạn không đủ giờ phép để xin nghỉ có lương.
+          </p>
+          <p style={{ marginBottom: '0.5rem' }}>
+            Số giờ phép còn lại: <strong>{annualLeaveQuota} giờ</strong>
+          </p>
+          <p>
+            Số giờ cần sử dụng: <strong>{getRequiredLeaveHours()} giờ</strong>
+          </p>
+        </div>
+      </Modal>
     </Modal>
   );
 };

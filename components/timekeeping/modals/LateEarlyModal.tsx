@@ -1,0 +1,230 @@
+import React, { useState } from 'react';
+import { Modal, Input, Button, Select, DatePicker } from '@/components/common';
+import {
+  ModalContent,
+  FormSection,
+  FormGrid,
+  ErrorMessage,
+  InfoBanner
+} from './requestModalStyles';
+import { useToast } from '@/hooks/useToast';
+import { timekeepingService } from '@/services/timekeeping.service';
+
+interface LateEarlyModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedDate: string;
+}
+
+const LateEarlyModal: React.FC<LateEarlyModalProps> = ({
+  isOpen,
+  onClose,
+  selectedDate
+}) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    workDate: selectedDate,
+    requestType: 'LATE',
+    lateMinutes: 0,
+    earlyMinutes: 0,
+    reason: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { success: showSuccessToast } = useToast();
+
+  const requestTypes = [
+    { value: 'LATE', label: 'Đi muộn' },
+    { value: 'EARLY', label: 'Về sớm' },
+    { value: 'BOTH', label: 'Cả đi muộn và về sớm' }
+  ];
+
+  const handleSubmit = async () => {
+    if (!formData.title.trim()) {
+      setError('Vui lòng nhập tiêu đề');
+      return;
+    }
+
+    if (!formData.reason.trim()) {
+      setError('Vui lòng nhập lý do');
+      return;
+    }
+
+    if (formData.requestType === 'LATE' && formData.lateMinutes <= 0) {
+      setError('Vui lòng nhập số phút đi muộn');
+      return;
+    }
+
+    if (formData.requestType === 'EARLY' && formData.earlyMinutes <= 0) {
+      setError('Vui lòng nhập số phút về sớm');
+      return;
+    }
+
+    if (formData.requestType === 'BOTH' && (formData.lateMinutes <= 0 || formData.earlyMinutes <= 0)) {
+      setError('Vui lòng nhập số phút đi muộn và về sớm');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const payload = {
+        work_date: formData.workDate,
+        request_type: formData.requestType as 'LATE' | 'EARLY' | 'BOTH',
+        title: formData.title,
+        late_minutes: formData.lateMinutes,
+        early_minutes: formData.earlyMinutes,
+        reason: formData.reason
+      };
+
+      await timekeepingService.createLateEarlyRequest(payload);
+      showSuccessToast('Tạo đơn xin đi muộn/về sớm thành công!');
+      onClose();
+    } catch (error) {
+      console.error('Error submitting late/early request:', error);
+      setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    setError('');
+    setIsLoading(false);
+    onClose();
+  };
+
+  const handleInputChange = (field: string, value: string | number) => {
+    setError('');
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const isFormValid = () => {
+    if (!formData.title.trim() || !formData.reason.trim()) return false;
+    
+    if (formData.requestType === 'LATE' && formData.lateMinutes <= 0) return false;
+    if (formData.requestType === 'EARLY' && formData.earlyMinutes <= 0) return false;
+    if (formData.requestType === 'BOTH' && (formData.lateMinutes <= 0 || formData.earlyMinutes <= 0)) return false;
+    
+    return true;
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Đăng ký đi muộn/về sớm"
+      size="md"
+      footer={
+        <>
+          <Button variant="ghost" onClick={handleClose} disabled={isLoading}>
+            Hủy
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            loading={isLoading}
+            disabled={isLoading || !isFormValid()}
+          >
+            {isLoading ? 'Đang xử lý...' : 'Tạo đơn'}
+          </Button>
+        </>
+      }
+    >
+      <ModalContent>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        
+        <InfoBanner>
+          Số phút còn lại có thể đăng ký: 120 phút
+        </InfoBanner>
+        
+        <FormSection>
+          <FormGrid>
+            <Input
+              label="Tiêu đề"
+              value={formData.title}
+              onChange={(e) => handleInputChange('title', e.target.value)}
+              placeholder="Nhập tiêu đề đơn xin đi muộn/về sớm"
+              required
+              disabled={isLoading}
+            />
+            
+            <Select
+              label="Loại yêu cầu"
+              value={formData.requestType}
+              onChange={(value: string | number) => handleInputChange('requestType', value.toString())}
+              options={requestTypes}
+              placeholder="Chọn loại yêu cầu"
+              required
+              disabled={isLoading}
+            />
+            
+            <DatePicker
+              label="Ngày áp dụng"
+              value={formData.workDate}
+              onChange={(value) => handleInputChange('workDate', value ? value.toISOString().split('T')[0] : '')}
+              required
+              disabled={isLoading}
+            />
+            
+            {(formData.requestType === 'LATE' || formData.requestType === 'BOTH') && (
+              <Input
+                label="Số phút đi muộn"
+                type="number"
+                value={formData.lateMinutes}
+                onChange={(e) => handleInputChange('lateMinutes', parseInt(e.target.value) || 0)}
+                placeholder="Nhập số phút đi muộn"
+                required
+                disabled={isLoading}
+                min="1"
+                max="120"
+              />
+            )}
+            
+            {(formData.requestType === 'EARLY' || formData.requestType === 'BOTH') && (
+              <Input
+                label="Số phút về sớm"
+                type="number"
+                value={formData.earlyMinutes}
+                onChange={(e) => handleInputChange('earlyMinutes', parseInt(e.target.value) || 0)}
+                placeholder="Nhập số phút về sớm"
+                required
+                disabled={isLoading}
+                min="1"
+                max="120"
+              />
+            )}
+            
+            {/* Comment lại phần người phê duyệt vì API chưa có */}
+            {/* <Select
+              label="Chọn người phê duyệt"
+              value={formData.approver}
+              onChange={(value: string | number) => handleInputChange('approver', value.toString())}
+              options={approvers}
+              placeholder="Chọn người phê duyệt"
+              required
+              disabled={isLoading}
+            /> */}
+            
+            <div style={{ gridColumn: '1 / -1' }}>
+              <Input
+                label="Lý do"
+                value={formData.reason}
+                onChange={(e) => handleInputChange('reason', e.target.value)}
+                placeholder="Nhập lý do đi muộn/về sớm..."
+                required
+                disabled={isLoading}
+              />
+            </div>
+          </FormGrid>
+        </FormSection>
+      </ModalContent>
+    </Modal>
+  );
+};
+
+export default LateEarlyModal;

@@ -4,7 +4,6 @@ import {
   PaginatedResponse,
   TimeSheet,
   TimeSheetRequest,
-  TimeSheetStatus,
   LeaveRequest,
   CreateLeaveRequest,
   RequestStatus,
@@ -172,6 +171,63 @@ class TimekeepingService {
     if (year) params.append('year', year);
     
     const response = await axiosInstance.get(`timekeeping/leave-requests/stats?${params}`);
+    return response.data;
+  }
+
+  // Day Off Request APIs
+  async createDayOffRequest(requestData: {
+    work_date: string;
+    duration: 'FULL_DAY' | 'MORNING' | 'AFTERNOON';
+    title: string;
+    type: 'PAID' | 'UNPAID';
+    reason: string;
+    is_past: boolean;
+  }): Promise<ApiResponse<unknown>> {
+    const response = await axiosInstance.post('requests/day-off', requestData);
+    return response.data;
+  }
+
+  // Remote Work Request APIs
+  async createRemoteWorkRequest(requestData: {
+    work_date: string;
+    remote_type: 'REMOTE' | 'HYBRID';
+    title: string;
+    reason: string;
+    duration: 'FULL_DAY' | 'MORNING' | 'AFTERNOON';
+  }): Promise<ApiResponse<unknown>> {
+    const response = await axiosInstance.post('requests/remote-work', requestData);
+    return response.data;
+  }
+
+  // Overtime Request APIs
+  async createOvertimeRequest(requestData: {
+    title: string;
+    project_id: number;
+    work_date: string;
+    start_time: string;
+    end_time: string;
+    reason: string;
+  }): Promise<ApiResponse<unknown>> {
+    const response = await axiosInstance.post('requests/overtime', requestData);
+    return response.data;
+  }
+
+  // Late/Early Request APIs
+  async createLateEarlyRequest(requestData: {
+    work_date: string;
+    request_type: 'LATE' | 'EARLY' | 'BOTH';
+    title: string;
+    late_minutes: number;
+    early_minutes: number;
+    reason: string;
+  }): Promise<ApiResponse<unknown>> {
+    const response = await axiosInstance.post('requests/late-early', requestData);
+    return response.data;
+  }
+
+  // Get projects list
+  async getProjects(): Promise<ApiResponse<Array<{id: number, name: string}>>> {
+    const response = await axiosInstance.get('projects');
     return response.data;
   }
 }

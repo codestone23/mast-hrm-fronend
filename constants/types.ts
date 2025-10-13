@@ -31,6 +31,7 @@ export interface User {
   };
   remaining_leave_days: number;
   assigned_devices: unknown[];
+  annual_leave_quota?: number;
 }
 
 export interface UserInformation {
@@ -133,4 +134,27 @@ export interface UserProfile {
       };
     };
   }>;
+}
+
+export interface Account {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: "active" | "inactive";
+  avatar?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  joinDate?: string;
+}
+
+export interface Division {
+  id: string;
+  name: string;
+  description: string;
+  employeeCount: number;
+  manager?: string;
+  status: "active" | "inactive";
+  createdAt: string;
 }

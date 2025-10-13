@@ -27,38 +27,28 @@ interface RequestTypeModalProps {
 
 const requestTypes: RequestType[] = [
   {
-    id: RequestModalType.LATE_ARRIVAL,
-    name: 'Đăng ký đi muộn đầu ca',
-    icon: <Clock size={20} />
-  },
-  {
-    id: RequestModalType.EARLY_DEPARTURE,
-    name: 'Đăng ký về sớm',
+    id: RequestModalType.LATE_EARLY,
+    name: 'Đi muộn/Về sớm',
     icon: <Clock size={20} />
   },
   {
     id: RequestModalType.REMOTE_WORK,
-    name: 'Đăng ký làm việc từ xa',
+    name: 'Làm việc từ xa',
     icon: <Home size={20} />
   },
   {
-    id: RequestModalType.UNPAID_LEAVE,
-    name: 'Nghỉ không lương',
-    icon: <Calendar size={20} />
-  },
-  {
     id: RequestModalType.PAID_LEAVE,
-    name: 'Nghỉ phép',
+    name: 'Nghỉ phép (có lương/không lương)',
     icon: <Calendar size={20} />
   },
   {
     id: RequestModalType.REGULAR_OVERTIME,
-    name: 'Đăng ký OT ngày thường',
+    name: 'Làm thêm giờ',
     icon: <Briefcase size={20} />
   },
   {
     id: RequestModalType.FORGOT_TIMEKEEPING,
-    name: 'Đăng ký quên chấm công',
+    name: 'Quên chấm công',
     icon: <AlertCircle size={20} />
   }
 ];

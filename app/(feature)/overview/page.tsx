@@ -1,10 +1,9 @@
 'use client';
 
 import React from 'react';
-import styled from 'styled-components';
-import Header from '../../../components/header/Header';
-import ModuleGrid from '../../../components/header/module-grid/ModuleGrid';
-import { ContentHeader, ContentWrapper, PageContainer } from "./overviewStyle";
+import Header from '@/components/header/Header';
+import ModuleGrid from '../../../components/header/module-grid/ModuleGrid'; 
+import { ContentHeader, PageContainer } from "./overviewStyle";
 import { useRouter } from "next/navigation";
 import { useOverview } from "./useOverview";
 

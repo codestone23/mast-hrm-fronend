@@ -1,9 +1,7 @@
 export enum RequestModalType {
   NONE = 'none',
-  LATE_ARRIVAL = 'late-arrival',
-  EARLY_DEPARTURE = 'early-departure',
+  LATE_EARLY = 'late-early',
   REMOTE_WORK = 'remote-work',
-  UNPAID_LEAVE = 'unpaid-leave',
   PAID_LEAVE = 'paid-leave',
   REGULAR_OVERTIME = 'regular-overtime',
   FORGOT_TIMEKEEPING = 'forgot-timekeeping'

@@ -18,7 +18,12 @@ const ROUTERS = {
         INVOICE: "division/invoice",
         CUSTOMER: "division/customer",
         REVENUE: "division/revenue",
-    }, 
+    },
+    SETTINGS: {
+        BASE: "settings",
+        ACCOUNTS: "settings/accounts",
+        DIVISIONS: "settings/divisions",
+    },
 };
 
 export default ROUTERS;

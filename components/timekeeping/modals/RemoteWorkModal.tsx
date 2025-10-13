@@ -7,6 +7,7 @@ import {
   ErrorMessage
 } from './requestModalStyles';
 import { useToast } from '@/hooks/useToast';
+import { timekeepingService } from '@/services/timekeeping.service';
 
 interface RemoteWorkModalProps {
   isOpen: boolean;
@@ -20,31 +21,29 @@ const RemoteWorkModal: React.FC<RemoteWorkModalProps> = ({
   selectedDate
 }) => {
   const [formData, setFormData] = useState({
-    proposalName: 'Làm việc từ xa chống dịch covid',
-    approver: '',
-    applicationDate: selectedDate,
-    morningShift: true,
-    afternoonShift: false,
+    title: '',
+    workDate: selectedDate,
+    duration: 'FULL_DAY',
     reason: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const { success: showSuccessToast } = useToast();
 
-  const approvers = [
-    { value: 'manager1', label: 'Nguyễn Văn A - Trưởng phòng' },
-    { value: 'manager2', label: 'Trần Thị B - Phó giám đốc' },
-    { value: 'manager3', label: 'Lê Văn C - Giám đốc' }
+  const durations = [
+    { value: 'FULL_DAY', label: 'Cả ngày' },
+    { value: 'MORNING', label: 'Buổi sáng' },
+    { value: 'AFTERNOON', label: 'Buổi chiều' }
   ];
 
   const handleSubmit = async () => {
-    if (!formData.approver) {
-      setError('Vui lòng chọn người phê duyệt');
+    if (!formData.title.trim()) {
+      setError('Vui lòng nhập tiêu đề');
       return;
     }
 
-    if (!formData.morningShift && !formData.afternoonShift) {
-      setError('Vui lòng chọn ít nhất một ca làm việc');
+    if (!formData.reason.trim()) {
+      setError('Vui lòng nhập lý do');
       return;
     }
 
@@ -52,10 +51,16 @@ const RemoteWorkModal: React.FC<RemoteWorkModalProps> = ({
     setError('');
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      showSuccessToast('Đăng ký làm việc từ xa thành công!');
+      const payload = {
+        work_date: formData.workDate,
+        remote_type: 'REMOTE' as 'REMOTE' | 'HYBRID',
+        title: formData.title,
+        reason: formData.reason,
+        duration: formData.duration as 'FULL_DAY' | 'MORNING' | 'AFTERNOON'
+      };
+
+      await timekeepingService.createRemoteWorkRequest(payload);
+      showSuccessToast('Tạo đơn xin làm việc từ xa thành công!');
       onClose();
     } catch (error) {
       console.error('Error submitting remote work request:', error);
@@ -71,7 +76,7 @@ const RemoteWorkModal: React.FC<RemoteWorkModalProps> = ({
     onClose();
   };
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string) => {
     setError('');
     setFormData(prev => ({
       ...prev,
@@ -94,9 +99,9 @@ const RemoteWorkModal: React.FC<RemoteWorkModalProps> = ({
             variant="primary"
             onClick={handleSubmit}
             loading={isLoading}
-            disabled={isLoading || !formData.approver || (!formData.morningShift && !formData.afternoonShift)}
+            disabled={isLoading || !formData.title.trim() || !formData.reason.trim()}
           >
-            {isLoading ? 'Đang xử lý...' : 'Thêm'}
+            {isLoading ? 'Đang xử lý...' : 'Tạo đơn'}
           </Button>
         </>
       }
@@ -107,14 +112,34 @@ const RemoteWorkModal: React.FC<RemoteWorkModalProps> = ({
         <FormSection>
           <FormGrid>
             <Input
-              label="Tên đề xuất"
-              value={formData.proposalName}
-              onChange={(e) => handleInputChange('proposalName', e.target.value)}
+              label="Tiêu đề"
+              value={formData.title}
+              onChange={(e) => handleInputChange('title', e.target.value)}
+              placeholder="Nhập tiêu đề đơn xin làm việc từ xa"
               required
               disabled={isLoading}
             />
             
             <Select
+              label="Thời gian làm việc"
+              value={formData.duration}
+              onChange={(value: string | number) => handleInputChange('duration', value.toString())}
+              options={durations}
+              placeholder="Chọn thời gian làm việc"
+              required
+              disabled={isLoading}
+            />
+            
+            <DatePicker
+              label="Ngày làm việc"
+              value={formData.workDate}
+              onChange={(value) => handleInputChange('workDate', value ? value.toISOString().split('T')[0] : '')}
+              required
+              disabled={isLoading}
+            />
+            
+            {/* Comment lại phần người phê duyệt vì API chưa có */}
+            {/* <Select
               label="Chọn người phê duyệt"
               value={formData.approver}
               onChange={(value: string | number) => handleInputChange('approver', value.toString())}
@@ -122,43 +147,7 @@ const RemoteWorkModal: React.FC<RemoteWorkModalProps> = ({
               placeholder="Chọn người phê duyệt"
               required
               disabled={isLoading}
-            />
-            
-            <DatePicker
-              label="Ngày áp dụng"
-              value={formData.applicationDate}
-              onChange={(value) => handleInputChange('applicationDate', value ? value.toISOString().split('T')[0] : '')}
-              required
-              disabled={isLoading}
-            />
-            
-            <div style={{ gridColumn: '1 / -1' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151' }}>
-                Ca làm việc
-              </label>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={formData.morningShift}
-                    onChange={(e) => handleInputChange('morningShift', e.target.checked)}
-                    disabled={isLoading}
-                    style={{ width: '16px', height: '16px' }}
-                  />
-                  <span>Ca sáng</span>
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={formData.afternoonShift}
-                    onChange={(e) => handleInputChange('afternoonShift', e.target.checked)}
-                    disabled={isLoading}
-                    style={{ width: '16px', height: '16px' }}
-                  />
-                  <span>Ca chiều</span>
-                </label>
-              </div>
-            </div>
+            /> */}
             
             <div style={{ gridColumn: '1 / -1' }}>
               <Input
@@ -166,6 +155,7 @@ const RemoteWorkModal: React.FC<RemoteWorkModalProps> = ({
                 value={formData.reason}
                 onChange={(e) => handleInputChange('reason', e.target.value)}
                 placeholder="Nhập lý do làm việc từ xa..."
+                required
                 disabled={isLoading}
               />
             </div>

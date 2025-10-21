@@ -32,7 +32,6 @@ export const usePersonal = () => {
     if(!!userData?.id) {
       setUser(userData);
     } else {
-      console.log("setInitLogin", true);
       setInitLogin(true);
     }
   }, []);

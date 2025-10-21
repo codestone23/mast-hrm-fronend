@@ -21,7 +21,9 @@ export const SelectLabel = styled.label<{ required?: boolean }>`
   }
 `;
 
-export const SelectTrigger = styled.div<{
+export const SelectTrigger = styled.div.withConfig({
+  shouldForwardProp: (prop) => !prop.startsWith('$'),
+})<{
   $size?: string;
   disabled?: boolean;
   $hasError?: boolean;
@@ -100,17 +102,18 @@ export const SelectIcon = styled.div<{ $isOpen?: boolean }>`
   `}
 `;
 
-export const SelectDropdown = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 1000;
+export const SelectDropdown = styled.div.withConfig({
+  shouldForwardProp: (prop) => !prop.startsWith('$'),
+})<{ $triggerRect?: DOMRect }>`
+  position: fixed;
+  top: ${({ $triggerRect }) => $triggerRect ? `${$triggerRect.bottom + 4}px` : 'auto'};
+  left: ${({ $triggerRect }) => $triggerRect ? `${$triggerRect.left}px` : 'auto'};
+  width: ${({ $triggerRect }) => $triggerRect ? `${$triggerRect.width}px` : 'auto'};
+  z-index: 1002;
   background: white;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
-  margin-top: 0.25rem;
   max-height: 200px;
   overflow-y: auto;
   

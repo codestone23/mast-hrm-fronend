@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GraduationCap } from 'lucide-react';
-import { Modal, Input, Button } from '@/components/common';
+import { Modal, Input, Button, DatePicker } from '@/components/common';
+import { formatDateForAPI, parseDateFromAPI } from '@/utils/dateUtils';
 import TextArea from '@/components/common/TextArea/TextArea';
 import {
   ModalContent,
@@ -122,9 +123,6 @@ const EducationModal: React.FC<EducationModalProps> = ({
     }));
   };
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleInputChange(e.target.name, e.target.value);
-  };
 
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     handleInputChange(e.target.name, e.target.value);
@@ -190,22 +188,18 @@ const EducationModal: React.FC<EducationModalProps> = ({
               />
             </div>
             
-            <Input
+            <DatePicker
               label="Ngày bắt đầu"
-              type="date"
-              name="start_date"
-              value={formData.start_date}
-              onChange={handleDateChange}
+              value={parseDateFromAPI(formData.start_date)}
+              onChange={(date) => handleInputChange("start_date", formatDateForAPI(date))}
               required
               disabled={isLoading}
             />
             
-            <Input
+            <DatePicker
               label="Ngày kết thúc"
-              type="date"
-              name="end_date"
-              value={formData.end_date}
-              onChange={handleDateChange}
+              value={parseDateFromAPI(formData.end_date)}
+              onChange={(date) => handleInputChange("end_date", formatDateForAPI(date))}
               required
               disabled={isLoading}
             />

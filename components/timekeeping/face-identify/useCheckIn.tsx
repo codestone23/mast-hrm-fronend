@@ -20,7 +20,6 @@ export const useCheckIn = () => {
             return response;
         },
         onSuccess: (data: unknown) => {
-            console.log(data);
             success('Check in thành công');
             setIsCheckInLoading(false);
         },

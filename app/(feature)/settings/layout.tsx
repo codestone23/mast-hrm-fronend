@@ -1,23 +1,26 @@
 "use client";
 import { ContentWrapper } from "../overview/overviewStyle";
 import { PersonalPageContainer } from "../me/staff/personalStyle";
-import SettingsHeader from "@/components/settings/SettingsHeader";
-import { usePathname, useRouter } from "next/navigation";
+import HeaderCommon from "@/components/common/header/HeaderCommon";
+import { usePathname } from "next/navigation";
+import ROUTERS from "@/config/router";
 
 export default function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const router = useRouter();
   const pathname = usePathname().split("/");
   const activeTab = pathname.slice(1, pathname.length).join("/");
-  const onTabChange = (tab: string) => {
-    router.push(`/${tab}`);
-  };
+
+  const navItems = [
+    { id: ROUTERS.SETTINGS.ACCOUNTS, label: "Quản lý tài khoản" },
+    { id: ROUTERS.SETTINGS.DIVISIONS, label: "Các divisions" },
+  ];
+
   return (
     <PersonalPageContainer>
-      <SettingsHeader activeTab={activeTab} onTabChange={onTabChange} />  
+      <HeaderCommon activeTab={activeTab} navItems={navItems} />  
       <ContentWrapper>{children}</ContentWrapper>
     </PersonalPageContainer>
   );

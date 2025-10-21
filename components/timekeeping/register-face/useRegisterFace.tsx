@@ -20,7 +20,6 @@ export const useRegisterFace = () => {
             return response;
         },
         onSuccess: (data: unknown) => {
-            console.log(data);
             success('Đăng ký khuôn mặt thành công');
             setIsLoading(false);
         },

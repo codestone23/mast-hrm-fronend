@@ -1,15 +1,21 @@
 "use client";
 
-import React, { useState } from 'react';
-import { FileText, Calendar, Clock, Type, AlignLeft, CheckCircle, User } from 'lucide-react';
-import { Modal, Input, Button, Select } from '@/components/common';
+import React, { useState } from "react";
+import {
+  Clock,
+  Type,
+  AlignLeft,
+  CheckCircle,
+} from "lucide-react";
+import { Modal, Input, Button, Select, DatePicker } from "@/components/common";
+import { formatDateForAPI, parseDateFromAPI } from "@/utils/dateUtils";
 import {
   ModalContent,
   FormSection,
   FormGrid,
   ErrorMessage,
-  SuccessMessage
-} from './modalStyles';
+  SuccessMessage,
+} from "./modalStyles";
 
 interface CreateRequestModalProps {
   isOpen: boolean;
@@ -26,109 +32,124 @@ interface RequestData {
   startTime?: string;
   endTime?: string;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   submittedAt: string;
 }
 
 const CreateRequestModal: React.FC<CreateRequestModalProps> = ({
   isOpen,
   onClose,
-  onSave
+  onSave,
 }) => {
   const [formData, setFormData] = useState({
-    type: '',
-    title: '',
-    startDate: '',
-    endDate: '',
-    startTime: '',
-    endTime: '',
-    reason: ''
+    type: "",
+    title: "",
+    startDate: "",
+    endDate: "",
+    startTime: "",
+    endTime: "",
+    reason: "",
   });
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const requestTypeOptions = [
-    { value: 'leave', label: 'Xin nghỉ phép' },
-    { value: 'sick_leave', label: 'Nghỉ ốm' },
-    { value: 'personal_leave', label: 'Nghỉ việc riêng' },
-    { value: 'maternity_leave', label: 'Nghỉ thai sản' },
-    { value: 'overtime', label: 'Đăng ký làm thêm giờ' },
-    { value: 'remote_work', label: 'Làm việc từ xa' },
-    { value: 'late_arrival', label: 'Đi muộn' },
-    { value: 'early_departure', label: 'Về sớm' },
-    { value: 'forgot_checkin', label: 'Quên chấm công' },
-    { value: 'business_trip', label: 'Công tác' },
-    { value: 'other', label: 'Khác' }
+    { value: "leave", label: "Xin nghỉ phép" },
+    { value: "sick_leave", label: "Nghỉ ốm" },
+    { value: "personal_leave", label: "Nghỉ việc riêng" },
+    { value: "maternity_leave", label: "Nghỉ thai sản" },
+    { value: "overtime", label: "Đăng ký làm thêm giờ" },
+    { value: "remote_work", label: "Làm việc từ xa" },
+    { value: "late_arrival", label: "Đi muộn" },
+    { value: "early_departure", label: "Về sớm" },
+    { value: "forgot_checkin", label: "Quên chấm công" },
+    { value: "business_trip", label: "Công tác" },
+    { value: "other", label: "Khác" },
   ];
 
   const handleInputChange = (field: string, value: string) => {
-    setError(''); // Clear error on input change
-    setFormData(prev => ({
+    setError(""); // Clear error on input change
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const needsTimeRange = (type: string) => {
-    return ['overtime', 'late_arrival', 'early_departure', 'forgot_checkin'].includes(type);
+    return [
+      "overtime",
+      "late_arrival",
+      "early_departure",
+      "forgot_checkin",
+    ].includes(type);
   };
 
   const needsEndDate = (type: string) => {
-    return ['leave', 'sick_leave', 'personal_leave', 'maternity_leave', 'remote_work', 'business_trip'].includes(type);
+    return [
+      "leave",
+      "sick_leave",
+      "personal_leave",
+      "maternity_leave",
+      "remote_work",
+      "business_trip",
+    ].includes(type);
   };
 
   const handleSubmit = async () => {
     if (!formData.type) {
-      setError('Vui lòng chọn loại yêu cầu');
+      setError("Vui lòng chọn loại yêu cầu");
       return;
     }
     if (!formData.title) {
-      setError('Vui lòng nhập tiêu đề yêu cầu');
+      setError("Vui lòng nhập tiêu đề yêu cầu");
       return;
     }
     if (!formData.startDate) {
-      setError('Vui lòng chọn ngày bắt đầu');
+      setError("Vui lòng chọn ngày bắt đầu");
       return;
     }
     if (needsEndDate(formData.type) && !formData.endDate) {
-      setError('Vui lòng chọn ngày kết thúc');
+      setError("Vui lòng chọn ngày kết thúc");
       return;
     }
-    if (needsTimeRange(formData.type) && (!formData.startTime || !formData.endTime)) {
-      setError('Vui lòng chọn thời gian bắt đầu và kết thúc');
+    if (
+      needsTimeRange(formData.type) &&
+      (!formData.startTime || !formData.endTime)
+    ) {
+      setError("Vui lòng chọn thời gian bắt đầu và kết thúc");
       return;
     }
     if (!formData.reason) {
-      setError('Vui lòng nhập lý do');
+      setError("Vui lòng nhập lý do");
       return;
     }
 
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       const requestData: RequestData = {
         id: `request_${Date.now()}`,
         ...formData,
-        status: 'pending',
-        submittedAt: new Date().toISOString()
+        status: "pending",
+        submittedAt: new Date().toISOString(),
       };
 
       setSuccess(true);
       if (onSave) {
         onSave(requestData);
       }
-      
+
       setTimeout(() => {
         handleClose();
       }, 1500);
     } catch {
-      setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
+      setError("Có lỗi xảy ra. Vui lòng thử lại sau.");
     } finally {
       setIsLoading(false);
     }
@@ -136,21 +157,26 @@ const CreateRequestModal: React.FC<CreateRequestModalProps> = ({
 
   const handleClose = () => {
     setFormData({
-      type: '',
-      title: '',
-      startDate: '',
-      endDate: '',
-      startTime: '',
-      endTime: '',
-      reason: ''
+      type: "",
+      title: "",
+      startDate: "",
+      endDate: "",
+      startTime: "",
+      endTime: "",
+      reason: "",
     });
-    setError('');
+    setError("");
     setSuccess(false);
     setIsLoading(false);
     onClose();
   };
 
-  const isSubmitDisabled = isLoading || !formData.type || !formData.title || !formData.startDate || !formData.reason;
+  const isSubmitDisabled =
+    isLoading ||
+    !formData.type ||
+    !formData.title ||
+    !formData.startDate ||
+    !formData.reason;
 
   return (
     <Modal
@@ -177,30 +203,30 @@ const CreateRequestModal: React.FC<CreateRequestModalProps> = ({
       <ModalContent>
         {success ? (
           <SuccessMessage>
-            <CheckCircle size={24} style={{ marginRight: '0.5rem' }} />
+            <CheckCircle size={24} style={{ marginRight: "0.5rem" }} />
             Yêu cầu đã được gửi thành công!
           </SuccessMessage>
         ) : (
           <>
             {error && <ErrorMessage>{error}</ErrorMessage>}
-            
+
             <FormSection>
               <h4>Thông tin yêu cầu</h4>
               <FormGrid>
                 <Select
                   label="Loại yêu cầu"
                   value={formData.type}
-                  onChange={(value) => handleInputChange('type', String(value))}
+                  onChange={(value) => handleInputChange("type", String(value))}
                   options={requestTypeOptions}
                   placeholder="Chọn loại yêu cầu"
                   required
                   disabled={isLoading}
                 />
-                
+
                 <Input
                   label="Tiêu đề yêu cầu"
                   value={formData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
                   icon={<Type size={16} />}
                   placeholder="Nhập tiêu đề yêu cầu"
                   required
@@ -212,23 +238,19 @@ const CreateRequestModal: React.FC<CreateRequestModalProps> = ({
             <FormSection>
               <h4>Thời gian</h4>
               <FormGrid>
-                <Input
+                <DatePicker
                   label="Ngày bắt đầu"
-                  type="date"
-                  value={formData.startDate}
-                  onChange={(e) => handleInputChange('startDate', e.target.value)}
-                  icon={<Calendar size={16} />}
+                  value={parseDateFromAPI(formData.startDate)}
+                  onChange={(date) => handleInputChange("startDate", formatDateForAPI(date))}
                   required
                   disabled={isLoading}
                 />
-                
+
                 {needsEndDate(formData.type) && (
-                  <Input
+                  <DatePicker
                     label="Ngày kết thúc"
-                    type="date"
-                    value={formData.endDate}
-                    onChange={(e) => handleInputChange('endDate', e.target.value)}
-                    icon={<Calendar size={16} />}
+                    value={parseDateFromAPI(formData.endDate)}
+                    onChange={(date) => handleInputChange("endDate", formatDateForAPI(date))}
                     required
                     disabled={isLoading}
                   />
@@ -241,17 +263,21 @@ const CreateRequestModal: React.FC<CreateRequestModalProps> = ({
                     label="Thời gian bắt đầu"
                     type="time"
                     value={formData.startTime}
-                    onChange={(e) => handleInputChange('startTime', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("startTime", e.target.value)
+                    }
                     icon={<Clock size={16} />}
                     required
                     disabled={isLoading}
                   />
-                  
+
                   <Input
                     label="Thời gian kết thúc"
                     type="time"
                     value={formData.endTime}
-                    onChange={(e) => handleInputChange('endTime', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("endTime", e.target.value)
+                    }
                     icon={<Clock size={16} />}
                     required
                     disabled={isLoading}
@@ -264,7 +290,7 @@ const CreateRequestModal: React.FC<CreateRequestModalProps> = ({
               <Input
                 label="Lý do"
                 value={formData.reason}
-                onChange={(e) => handleInputChange('reason', e.target.value)}
+                onChange={(e) => handleInputChange("reason", e.target.value)}
                 icon={<AlignLeft size={16} />}
                 placeholder="Nhập lý do chi tiết cho yêu cầu này..."
                 required

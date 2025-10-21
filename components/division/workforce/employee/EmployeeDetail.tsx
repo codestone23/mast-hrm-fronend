@@ -15,7 +15,7 @@ import BasicInfo from "./Tabs/BasicInfo";
 import ContractInfo from "./Tabs/ContractInfo";
 import TimeSheets from "./Tabs/TimeSheets";
 
-const Tabs = ["Thông Tin Cơ bản", "Thông tin hợp đồng", "Bảng chấm công"];
+const Tabs = ["Thông Tin Cơ bản", "Bảng chấm công"];
 
 const SAMPLE_DATA = {
   id: "1",
@@ -246,7 +246,6 @@ const EmployeeDetail: React.FC<{ id?: string }> = ({ id }) => {
         </TabContainer>
 
         {selectedTab === "Thông Tin Cơ bản" && <BasicInfo />}
-        {selectedTab === "Thông tin hợp đồng" && <ContractInfo />}
         {selectedTab === "Bảng chấm công" && <TimeSheets />}
       </RightCol>
     </Container>

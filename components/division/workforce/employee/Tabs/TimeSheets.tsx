@@ -223,14 +223,6 @@ const TimeSheets: React.FC = () => {
             const todayString = getTodayInVietnamTimezone();
             const isToday = day.fullDate === todayString;
 
-            if (day.isCurrentMonth && day.dayNumber <= 7) {
-              console.log(
-                `Day ${day.dayNumber}: fullDate=${
-                  day.fullDate
-                }, today=${todayString}, isToday=${isToday}, hasData=${!!dayData}`
-              );
-            }
-
             // Kiểm tra ngày trong quá khứ không có data
             const dayDate = new Date(day.fullDate);
             const currentDate = new Date(todayString);

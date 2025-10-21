@@ -53,7 +53,6 @@ const EmployeeBirthday: React.FC = () => {
 
   useEffect(() => {
     const filtered = getUpcomingBirthdays(SAMPLE_DATA(60), selectedTime);
-    console.log("Filtered Birthdays: ", filtered);
     setEmployeeData(filtered);
   }, [selectedTime]);
 

@@ -140,6 +140,7 @@ export const ModalCloseButton = styled.button`
 export const ModalBody = styled.div`
   padding: 1.5rem;
   flex: 1;
+  overflow-y: auto;
   &::-webkit-scrollbar {
     display: block;
     width: 10px;

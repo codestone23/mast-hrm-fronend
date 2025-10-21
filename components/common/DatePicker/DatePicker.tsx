@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   DatePickerContainer,
@@ -63,9 +64,12 @@ const DatePicker: React.FC<DatePickerProps> = ({
     value ? (typeof value === 'string' ? new Date(value) : value) : null
   );
   const [viewDate, setViewDate] = useState(selectedDate || new Date());
+  const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
   
   const datePickerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
   const datePickerId = id || `datepicker-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -79,14 +83,21 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (datePickerRef.current && 
+          !datePickerRef.current.contains(target) && 
+          dropdownRef.current &&
+          !dropdownRef.current.contains(target)) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
   const formatDate = (date: Date | null): string => {
     if (!date) return '';
@@ -100,6 +111,16 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
     const day = date.getDate().toString().padStart(2, '0');
     return `${day}/${month}/${year}`;
+  };
+
+  const formatDateForAPI = (date: Date | null): string => {
+    if (!date) return '';
+    
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
   };
 
   const isDateDisabled = (date: Date): boolean => {
@@ -211,23 +232,33 @@ const DatePicker: React.FC<DatePickerProps> = ({
       )}
       
       <div ref={datePickerRef} style={{ position: 'relative' }}>
-        <DatePickerInput
-          ref={inputRef}
-          id={datePickerId}
-          $size={size}
-          $disabled={disabled}
-          $hasError={!!error}
-          readOnly
-          value={formatDate(selectedDate)}
-          placeholder={placeholder}
-          onClick={() => !disabled && setIsOpen(!isOpen)}
-        />
+        <div ref={triggerRef}>
+          <DatePickerInput
+            ref={inputRef}
+            id={datePickerId}
+            $size={size}
+            $disabled={disabled}
+            $hasError={!!error}
+            readOnly
+            value={formatDate(selectedDate)}
+            placeholder={placeholder}
+            onClick={() => {
+              if (!disabled) {
+                if (!isOpen && triggerRef.current) {
+                  const rect = triggerRef.current.getBoundingClientRect();
+                  setTriggerRect(rect);
+                }
+                setIsOpen(!isOpen);
+              }
+            }}
+          />
+        </div>
         <DatePickerIcon>
           <Calendar size={16} />
         </DatePickerIcon>
 
-        {isOpen && (
-          <DatePickerDropdown align={align}>
+        {isOpen && createPortal(
+          <DatePickerDropdown ref={dropdownRef} align={align} $triggerRect={triggerRect || undefined}>
             {mode === 'date' ? (
               <>
                 <CalendarHeader>
@@ -292,7 +323,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
                 </MonthGrid>
               </>
             )}
-          </DatePickerDropdown>
+          </DatePickerDropdown>,
+          document.body
         )}
       </div>
       

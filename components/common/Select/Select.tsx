@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Check } from 'lucide-react';
 import {
   SelectContainer,
@@ -58,7 +59,10 @@ const Select: React.FC<SelectProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState(value || defaultValue || '');
   const [searchTerm, setSearchTerm] = useState('');
+  const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
   const selectRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`; 
@@ -71,15 +75,22 @@ const Select: React.FC<SelectProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (selectRef.current && 
+          !selectRef.current.contains(target) && 
+          dropdownRef.current &&
+          !dropdownRef.current.contains(target)) {
         setIsOpen(false);
         setSearchTerm('');
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && searchable && searchInputRef.current) {
@@ -97,6 +108,10 @@ const Select: React.FC<SelectProps> = ({
 
   const handleToggle = () => {
     if (!disabled) {
+      if (!isOpen && triggerRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        setTriggerRect(rect);
+      }
       setIsOpen(!isOpen);
     }
   };
@@ -149,6 +164,7 @@ const Select: React.FC<SelectProps> = ({
       
       <div ref={selectRef} style={{ position: 'relative' }}>
         <SelectTrigger
+          ref={triggerRef}
           id={selectId}
           $size={size}
           disabled={disabled}
@@ -169,8 +185,8 @@ const Select: React.FC<SelectProps> = ({
           </SelectIcon>
         </SelectTrigger>
 
-        {isOpen && (
-          <SelectDropdown role="listbox">
+        {isOpen && createPortal(
+          <SelectDropdown ref={dropdownRef} $triggerRect={triggerRect || undefined} role="listbox">
             {searchable && (
               <div style={{ padding: '0.5rem' }}>
                 <input
@@ -212,7 +228,8 @@ const Select: React.FC<SelectProps> = ({
                 </SelectOption>
               ))
             )}
-          </SelectDropdown>
+          </SelectDropdown>,
+          document.body
         )}
       </div>
       

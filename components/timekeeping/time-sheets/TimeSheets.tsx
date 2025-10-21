@@ -224,16 +224,13 @@ const TimeSheets: React.FC = () => {
 
   // Handle request type selection
   const handleSelectRequestType = (requestType: string) => {
-    console.log('Selected request type:', requestType);
     const modalType = requestType as RequestModalType;
-    console.log('Modal type:', modalType);
     setRequestModalState(prev => {
       const newState = {
         ...prev,
         isRequestTypeModalOpen: false,
         activeModal: modalType
       };
-      console.log('Setting modal state:', newState);
       return newState;
     });
   };
@@ -262,9 +259,6 @@ const TimeSheets: React.FC = () => {
     "Tháng 11",
     "Tháng 12",
   ];
-
-  // Debug log
-  console.log('TimeSheets render - requestModalState:', requestModalState);
 
   return (
     <TimeSheetsContainer>
@@ -332,10 +326,6 @@ const TimeSheets: React.FC = () => {
                     
                     const todayString = getTodayInVietnamTimezone();
                     const isToday = day.fullDate === todayString;
-                    
-                    if (day.isCurrentMonth && day.dayNumber <= 7) {
-                      console.log(`Day ${day.dayNumber}: fullDate=${day.fullDate}, today=${todayString}, isToday=${isToday}, hasData=${!!dayData}`);
-                    }
                     
                     // Kiểm tra ngày trong quá khứ không có data
                     const dayDate = new Date(day.fullDate);

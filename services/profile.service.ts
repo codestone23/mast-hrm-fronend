@@ -1,5 +1,6 @@
 import { UserProfile } from "@/constants/types";
 import axiosInstance from "@/lib/axios";
+import { ApiResponse } from "@/types/api";
 
 export interface Education {
   id?: number;
@@ -153,7 +154,7 @@ class ProfileService {
     return response.data;
   }
   
-  async getPositions(): Promise<Position[]> {
+  async getPositions(): Promise<ApiResponse<Position[]>> {
     const response = await axiosInstance.get('user-profile/references/positions');
     return response.data;
   }

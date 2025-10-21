@@ -145,12 +145,6 @@ const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                   THÔNG TIN CƠ BẢN
                 </TabItem>
                 <TabItem 
-                  $active={activeTab === 'contract'} 
-                  onClick={() => setActiveTab('contract')}
-                >
-                  THÔNG TIN HỢP ĐỒNG
-                </TabItem>
-                <TabItem 
                   $active={activeTab === 'skills'} 
                   onClick={() => setActiveTab('skills')}
                 >
@@ -249,12 +243,6 @@ const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                       </TableRow>
                     </FamilyTable>
                   </>
-                )}
-
-                {activeTab === 'contract' && (
-                  <div>
-                    <h3>Thông tin hợp đồng sẽ được hiển thị ở đây</h3>
-                  </div>
                 )}
 
                 {activeTab === 'skills' && (

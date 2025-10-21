@@ -85,12 +85,10 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
 
   const handleEdit = () => {
     // Navigate to edit page or open edit modal
-    console.log('Edit account');
   };
 
   const handleDelete = () => {
     // Show delete confirmation
-    console.log('Delete account');
   };
 
   if (loading) {
@@ -187,12 +185,6 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
             THÔNG TIN CƠ BẢN
           </TabItem>
           <TabItem 
-            $active={activeTab === 'contract'} 
-            onClick={() => setActiveTab('contract')}
-          >
-            THÔNG TIN HỢP ĐỒNG
-          </TabItem>
-          <TabItem 
             $active={activeTab === 'skills'} 
             onClick={() => setActiveTab('skills')}
           >
@@ -245,13 +237,6 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
               </SectionHeader>
               <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Chưa có thông tin thân nhân</p>
             </>
-          )}
-
-          {activeTab === 'contract' && (
-            <div>
-              <h3>Thông tin hợp đồng sẽ được hiển thị ở đây</h3>
-              <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Chưa có thông tin hợp đồng</p>
-            </div>
           )}
 
           {activeTab === 'skills' && (

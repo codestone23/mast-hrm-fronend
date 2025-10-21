@@ -26,9 +26,14 @@ import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
 import { useRouter } from "next/navigation";
 import CookieManager from "@/utils/cookies";
 
+interface NavItem {
+  id: string;
+  label: string;
+}
+
 interface HeaderCommonProps {
   activeTab?: string;
-  onTabChange?: (tab: string) => void;
+  navItems?: NavItem[];
 }
 
 interface User {
@@ -38,19 +43,11 @@ interface User {
 
 const HeaderCommon = (props: HeaderCommonProps) => {
   const router = useRouter();
-  const { activeTab = ROUTERS.PERSONAL.BASE, onTabChange } = props;
+  const { activeTab = ROUTERS.PERSONAL.BASE, navItems = [] } = props;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const navItems = [
-    { id: ROUTERS.PERSONAL.BASE, label: "Dashboard" },
-    { id: ROUTERS.PERSONAL.INFO, label: "Thông tin cá nhân" },
-    { id: ROUTERS.PERSONAL.PROJECTS, label: "Dự án tham gia" },
-    { id: ROUTERS.PERSONAL.TIMEKEEPING, label: "Chấm công" },
-    { id: ROUTERS.PERSONAL.COMPANY, label: "Công ty" },
-  ];
 
   useEffect(() => {
     const userData = LocalStorageUtil.getItemObject(LOCAL_KEY.USER);
@@ -71,9 +68,7 @@ const HeaderCommon = (props: HeaderCommonProps) => {
   }, []);
 
   const handleTabClick = (tabId: string) => {
-    if (onTabChange) {
-      onTabChange(tabId);
-    }
+    router.push(tabId);
   };
 
   const toggleDropdown = () => {
@@ -111,7 +106,7 @@ const HeaderCommon = (props: HeaderCommonProps) => {
           {navItems.map((item) => (
             <NavItem
               key={item.id}
-              $active={activeTab.startsWith(item.id)}
+              $active={activeTab.startsWith(item.id.slice(1))}
               onClick={() => handleTabClick(item.id)}
             >
               {item.label}

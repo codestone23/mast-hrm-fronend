@@ -247,8 +247,6 @@ const FaceIdentify: React.FC = () => {
                 image: dataURLtoFile(imageSrc || '', `snapshot_${Date.now()}.png`),
             };
 
-            console.log("🚀 Check-In Data:", data)
-
             setIsCheckInLoading(true);
             checkInMutation.mutate(data);
 
@@ -275,8 +273,6 @@ const FaceIdentify: React.FC = () => {
                 note: "Check-out via FaceIdentify component",
                 image: dataURLtoFile(imageSrc || '', `snapshot_${Date.now()}.png`),
             };
-
-            console.log("🚀 Check-Out Data:", data)
 
             setIsCheckOutLoading(true);
             checkOutMutation.mutate(data);

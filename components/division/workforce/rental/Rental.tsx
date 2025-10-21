@@ -101,7 +101,7 @@ const Rental: React.FC = () => {
           <div>
             <Button
               variant="warning"
-              onClick={() => console.log("Thuê nhân sự")}
+              onClick={() => {}}
             >
               + Thuê nhân sự
             </Button>

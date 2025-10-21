@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Briefcase } from 'lucide-react';
-import { Modal, Input, Button } from '@/components/common';
+import React, { useState, useEffect } from "react";
+import { Modal, Input, Button, DatePicker } from "@/components/common";
+import { formatDateForAPI, parseDateFromAPI } from "@/utils/dateUtils";
 import {
   ModalContent,
   FormSection,
   FormGrid,
-  ErrorMessage
-} from '../personalInfoModalStyles';
-import profileService, { Experience } from '@/services/profile.service';
-import { useToast } from '@/hooks/useToast';
+  ErrorMessage,
+} from "../personalInfoModalStyles";
+import profileService, { Experience } from "@/services/profile.service";
+import { useToast } from "@/hooks/useToast";
 
 interface ExperienceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  mode: 'add' | 'edit';
+  mode: "add" | "edit";
   initialData?: Experience | null;
   onSave: (experience: Experience) => void;
 }
@@ -23,33 +23,33 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({
   onClose,
   mode,
   initialData,
-  onSave
+  onSave,
 }) => {
   const [formData, setFormData] = useState({
-    job_title: '',
-    company: '',
-    start_date: '',
-    end_date: ''
+    job_title: "",
+    company: "",
+    start_date: "",
+    end_date: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const { success: showSuccessToast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
-      if (mode === 'edit' && initialData) {
+      if (mode === "edit" && initialData) {
         setFormData({
           job_title: initialData.job_title,
           company: initialData.company,
-          start_date: initialData.start_date.split('T')[0], // Convert to YYYY-MM-DD format
-          end_date: initialData.end_date.split('T')[0]
+          start_date: initialData.start_date.split("T")[0], // Convert to YYYY-MM-DD format
+          end_date: initialData.end_date.split("T")[0],
         });
       } else {
         setFormData({
-          job_title: '',
-          company: '',
-          start_date: '',
-          end_date: ''
+          job_title: "",
+          company: "",
+          start_date: "",
+          end_date: "",
         });
       }
     }
@@ -57,77 +57,82 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({
 
   const handleSubmit = async () => {
     if (!formData.job_title) {
-      setError('Vui lòng nhập chức vụ');
+      setError("Vui lòng nhập chức vụ");
       return;
     }
     if (!formData.company) {
-      setError('Vui lòng nhập tên công ty');
+      setError("Vui lòng nhập tên công ty");
       return;
     }
     if (!formData.start_date) {
-      setError('Vui lòng chọn ngày bắt đầu');
+      setError("Vui lòng chọn ngày bắt đầu");
       return;
     }
     if (!formData.end_date) {
-      setError('Vui lòng chọn ngày kết thúc');
+      setError("Vui lòng chọn ngày kết thúc");
       return;
     }
 
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
       const experienceData = {
         job_title: formData.job_title,
         company: formData.company,
         start_date: formData.start_date,
-        end_date: formData.end_date
+        end_date: formData.end_date,
       };
 
-             if (mode === 'add') {
-               const response = await profileService.addExperience(experienceData);
-               onSave(response);
-               showSuccessToast('Kinh nghiệm đã được thêm thành công!');
-             } else {
-               const response = await profileService.updateExperienceById((initialData?.id || 0).toString(), experienceData);
-               onSave(response);
-               showSuccessToast('Kinh nghiệm đã được cập nhật thành công!');
-             }
-             
-             handleClose();
+      if (mode === "add") {
+        const response = await profileService.addExperience(experienceData);
+        onSave(response);
+        showSuccessToast("Kinh nghiệm đã được thêm thành công!");
+      } else {
+        const response = await profileService.updateExperienceById(
+          (initialData?.id || 0).toString(),
+          experienceData
+        );
+        onSave(response);
+        showSuccessToast("Kinh nghiệm đã được cập nhật thành công!");
+      }
+
+      handleClose();
     } catch (error) {
-      console.error('Error saving experience:', error);
-      setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
+      console.error("Error saving experience:", error);
+      setError("Có lỗi xảy ra. Vui lòng thử lại sau.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleClose = () => {
-    setError('');
+    setError("");
     setIsLoading(false);
     onClose();
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setError(''); // Clear error on input change
-    setFormData(prev => ({
+    setError(""); // Clear error on input change
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleInputChange(e.target.name, e.target.value);
-  };
 
-  const isSubmitDisabled = isLoading || !formData.job_title || !formData.company || !formData.start_date || !formData.end_date;
+  const isSubmitDisabled =
+    isLoading ||
+    !formData.job_title ||
+    !formData.company ||
+    !formData.start_date ||
+    !formData.end_date;
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={mode === 'add' ? 'Thêm kinh nghiệm mới' : 'Chỉnh sửa kinh nghiệm'}
+      title={mode === "add" ? "Thêm kinh nghiệm mới" : "Chỉnh sửa kinh nghiệm"}
       size="lg"
       footer={
         <>
@@ -140,51 +145,47 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({
             loading={isLoading}
             disabled={isSubmitDisabled}
           >
-            {mode === 'add' ? 'Thêm' : 'Cập nhật'}
+            {mode === "add" ? "Thêm" : "Cập nhật"}
           </Button>
         </>
       }
     >
       <ModalContent>
         {error && <ErrorMessage>{error}</ErrorMessage>}
-        
+
         <FormSection>
           <h4>Thông tin kinh nghiệm</h4>
           <FormGrid>
             <Input
               label="Chức vụ"
               value={formData.job_title}
-              onChange={(e) => handleInputChange('job_title', e.target.value)}
+              onChange={(e) => handleInputChange("job_title", e.target.value)}
               placeholder="Ví dụ: Frontend Developer"
               required
               disabled={isLoading}
             />
-            
+
             <Input
               label="Công ty"
               value={formData.company}
-              onChange={(e) => handleInputChange('company', e.target.value)}
+              onChange={(e) => handleInputChange("company", e.target.value)}
               placeholder="Ví dụ: Công ty ABC"
               required
               disabled={isLoading}
             />
-            
-            <Input
+
+            <DatePicker
               label="Ngày bắt đầu"
-              type="date"
-              name="start_date"
-              value={formData.start_date}
-              onChange={handleDateChange}
+              value={parseDateFromAPI(formData.start_date)}
+              onChange={(date) => handleInputChange("start_date", formatDateForAPI(date))}
               required
               disabled={isLoading}
             />
-            
-            <Input
+
+            <DatePicker
               label="Ngày kết thúc"
-              type="date"
-              name="end_date"
-              value={formData.end_date}
-              onChange={handleDateChange}
+              value={parseDateFromAPI(formData.end_date)}
+              onChange={(date) => handleInputChange("end_date", formatDateForAPI(date))}
               required
               disabled={isLoading}
             />

@@ -20,7 +20,6 @@ export const useCheckOut = () => {
             return response;
         },
         onSuccess: (data: unknown) => {
-            console.log(data);
             success('Check out thành công');
             setIsCheckOutLoading(false);
         },

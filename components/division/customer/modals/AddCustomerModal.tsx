@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import { Modal, Button, Input, Select } from "@/components/common";
+import { Modal, Button, Input, Select, DatePicker } from "@/components/common";
+import { formatDateForAPI, parseDateFromAPI } from "@/utils/dateUtils";
 import {
   Form,
   Row,
@@ -13,7 +14,6 @@ import {
   TagCloseButton,
   PriceRow,
   DateGroup,
-  DateInput,
   RemoveButton,
   AddPriceButton,
 } from "./addCustomerModalStyle";
@@ -277,23 +277,21 @@ const AddCustomerModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
 
                 <DateGroup>
                   <Col>
-                    <Label>Thời gian áp dụng</Label>
-                    <DateInput
-                      type="date"
-                      value={pr.start || ""}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        updatePriceRow(pr.id, { start: e.target.value })
+                    <DatePicker
+                      label="Thời gian áp dụng"
+                      value={parseDateFromAPI(pr.start)}
+                      onChange={(date) =>
+                        updatePriceRow(pr.id, { start: formatDateForAPI(date) })
                       }
                     />
                   </Col>
                   <span>~</span>
                   <Col>
-                    <Label>Thời gian kết thúc</Label>
-                    <DateInput
-                      type="date"
-                      value={pr.end || ""}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        updatePriceRow(pr.id, { end: e.target.value })
+                    <DatePicker
+                      label="Thời gian kết thúc"
+                      value={parseDateFromAPI(pr.end)}
+                      onChange={(date) =>
+                        updatePriceRow(pr.id, { end: formatDateForAPI(date) })
                       }
                     />
                   </Col>

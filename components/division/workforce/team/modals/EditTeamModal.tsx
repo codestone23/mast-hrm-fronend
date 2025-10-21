@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Modal from "@/components/common/Modal/Modal";
-import { Button } from "@/components/common";
+import { Button, DatePicker } from "@/components/common";
+import { formatDateForAPI, parseDateFromAPI } from "@/utils/dateUtils";
 import {
   Form,
   Row,
@@ -79,8 +80,11 @@ const EditTeamModal: React.FC<Props> = ({ isOpen, onClose, team, onSave }) => {
 
         <Row>
           <Col>
-            <Label>Ngày thành lập</Label>
-            <DateInput type="date" value={startDate} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartDate(e.target.value)} />
+            <DatePicker
+              label="Ngày thành lập"
+              value={parseDateFromAPI(startDate)}
+              onChange={(date) => setStartDate(formatDateForAPI(date))}
+            />
           </Col>
         </Row>
 

@@ -1,23 +1,27 @@
 "use client";
 import { ContentWrapper } from "../overview/overviewStyle";
 import { PersonalPageContainer } from "../me/staff/personalStyle";
-import Header from "@/components/division/header/Header";
-import { usePathname, useRouter } from "next/navigation";
+import HeaderCommon from "@/components/common/header/HeaderCommon";
+import { usePathname } from "next/navigation";
+import ROUTERS from "@/config/router";
 
 export default function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const router = useRouter();
   const pathname = usePathname().split("/");
   const activeTab = pathname.slice(1, pathname.length).join("/");
-  const onTabChange = (tab: string) => {
-    router.push(`/${tab}`);
-  };
+
+  const navItems = [
+    { id: ROUTERS.DIVISION.BASE, label: "Dashboard" },
+    { id: ROUTERS.DIVISION.WORKFORCE, label: "Quản lý nhân sự" },
+    { id: ROUTERS.DIVISION.CUSTOMER, label: "Quản lý khách hàng" },
+  ];
+
   return (
     <PersonalPageContainer>
-      <Header activeTab={activeTab} onTabChange={onTabChange} />  
+      <HeaderCommon activeTab={activeTab} navItems={navItems} />  
       <ContentWrapper>{children}</ContentWrapper>
     </PersonalPageContainer>
   );

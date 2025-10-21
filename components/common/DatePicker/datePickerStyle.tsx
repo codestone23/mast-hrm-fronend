@@ -97,27 +97,23 @@ export const DatePickerIcon = styled.div`
   pointer-events: none;
 `;
 
-export const DatePickerDropdown = styled.div<{
+export const DatePickerDropdown = styled.div.withConfig({
+  shouldForwardProp: (prop) => !prop.startsWith('$'),
+})<{
   align?: "left" | "right" | "center";
+  $triggerRect?: DOMRect;
 }>`
-  position: absolute;
-  top: 100%;
-
-  ${({ align }) =>
-    align === "left"
-      ? css`
-          left: 0;
-        `
-    : align === "right"
-      ? css`
-          right: 0;
-        `
-      : css`
-          left: 50%;
-          transform: translateX(-50%);
-        `}
-
-  z-index: 1000;
+  position: fixed;
+  top: ${({ $triggerRect }) => $triggerRect ? `${$triggerRect.bottom + 4}px` : 'auto'};
+  left: ${({ $triggerRect, align }) => {
+    if (!$triggerRect) return 'auto';
+    if (align === "right") return `${$triggerRect.right - $triggerRect.width}px`;
+    if (align === "center") return `${$triggerRect.left + ($triggerRect.width / 2)}px`;
+    return `${$triggerRect.left}px`;
+  }};
+  width: ${({ $triggerRect }) => $triggerRect ? `${$triggerRect.width}px` : 'auto'};
+  transform: ${({ align }) => align === "center" ? 'translateX(-50%)' : 'none'};
+  z-index: 1002;
   background: white;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);

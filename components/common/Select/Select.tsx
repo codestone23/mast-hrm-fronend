@@ -37,6 +37,11 @@ export interface SelectProps {
   searchable?: boolean;
   className?: string;
   id?: string;
+  // Infinite scroll props
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
+  fetchNextPage?: () => void;
+  loadingText?: string;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -54,7 +59,11 @@ const Select: React.FC<SelectProps> = ({
   fullWidth = true,
   searchable = false,
   className,
-  id
+  id,
+  hasNextPage = false,
+  isFetchingNextPage = false,
+  fetchNextPage,
+  loadingText = 'Đang tải thêm...'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState(value || defaultValue || '');
@@ -64,6 +73,7 @@ const Select: React.FC<SelectProps> = ({
   const triggerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`; 
 
@@ -97,6 +107,25 @@ const Select: React.FC<SelectProps> = ({
       searchInputRef.current.focus();
     }
   }, [isOpen, searchable]);
+
+  // Infinite scroll logic
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !isOpen || !hasNextPage || isFetchingNextPage || !fetchNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [isOpen, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const selectedOption = options.find(option => option.value === selectedValue);
   
@@ -212,21 +241,49 @@ const Select: React.FC<SelectProps> = ({
                 Không có tùy chọn nào
               </div>
             ) : (
-              filteredOptions.map((option) => (
-                <SelectOption
-                  key={option.value}
-                  disabled={option.disabled}
-                  selected={option.value === selectedValue}
-                  onClick={() => handleSelect(option)}
-                  role="option"
-                  aria-selected={option.value === selectedValue}
-                >
-                  <span>{option.label}</span>
-                  {option.value === selectedValue && (
-                    <Check size={16} />
-                  )}
-                </SelectOption>
-              ))
+              <>
+                {filteredOptions.map((option) => (
+                  <SelectOption
+                    key={option.value}
+                    disabled={option.disabled}
+                    selected={option.value === selectedValue}
+                    onClick={() => handleSelect(option)}
+                    role="option"
+                    aria-selected={option.value === selectedValue}
+                  >
+                    <span>{option.label}</span>
+                    {option.value === selectedValue && (
+                      <Check size={16} />
+                    )}
+                  </SelectOption>
+                ))}
+                
+                {/* Sentinel element for infinite scroll */}
+                {hasNextPage && (
+                  <div 
+                    ref={sentinelRef}
+                    style={{ 
+                      height: '1px', 
+                      marginTop: '8px',
+                      visibility: 'hidden'
+                    }}
+                  />
+                )}
+                
+                {/* Loading indicator for infinite scroll */}
+                {isFetchingNextPage && (
+                  <div style={{ 
+                    padding: '0.75rem', 
+                    textAlign: 'center', 
+                    color: 'var(--text-muted)', 
+                    fontSize: '0.875rem',
+                    borderTop: '1px solid var(--border)',
+                    marginTop: '4px'
+                  }}>
+                    {loadingText}
+                  </div>
+                )}
+              </>
             )}
           </SelectDropdown>,
           document.body

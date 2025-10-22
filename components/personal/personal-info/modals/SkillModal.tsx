@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Star } from "lucide-react";
-import { Modal, Input, Button, Select } from "@/components/common";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Modal, Button, Select } from "@/components/common";
 import {
   ModalContent,
   FormSection,
   FormGrid,
   ErrorMessage,
 } from "../personalInfoModalStyles";
-import profileService, { Skill, Position } from "@/services/profile.service";
+import profileService, { Skill, PositionsResponse } from "@/services/profile.service";
 import { useToast } from "@/hooks/useToast";
 
 interface SkillModalProps {
@@ -17,6 +17,8 @@ interface SkillModalProps {
   initialData?: Skill | null;
   onSave: (skill: Skill) => void;
 }
+
+
 
 const SkillModal: React.FC<SkillModalProps> = ({
   isOpen,
@@ -31,14 +33,38 @@ const SkillModal: React.FC<SkillModalProps> = ({
     months_experience: "",
     is_main: false,
   });
-  const [availableSkills, setAvailableSkills] = useState<Position[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const { success: showSuccessToast } = useToast();
 
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    isLoading,
+    error: queryError,
+  } = useInfiniteQuery<PositionsResponse, Error>({
+    queryKey: ['positions'],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await profileService.getPositions(pageParam as number);
+      return response as PositionsResponse;
+    },
+    getNextPageParam: (lastPage: PositionsResponse) => {
+      return lastPage.pagination?.has_next_page 
+        ? lastPage.pagination.current_page + 1 
+        : undefined;
+    },
+    initialPageParam: 1,
+    enabled: isOpen,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const availableSkills = data?.pages.flatMap(page => page.data) || [];
+
   useEffect(() => {
     if (isOpen) {
-      loadAvailableSkills();
+      resetState();
       if (mode === "edit" && initialData) {
         setFormData({
           skill_id: initialData.skill_id.toString(),
@@ -57,19 +83,11 @@ const SkillModal: React.FC<SkillModalProps> = ({
     }
   }, [isOpen, mode, initialData]);
 
-  const loadAvailableSkills = async () => {
-    try {
-      setIsLoading(true);
-      const response = await profileService.getPositions();
-
-      setAvailableSkills(response.data || []);
-    } catch (error) {
-      console.error("Error loading skills:", error);
-      setError("Không thể tải danh sách kỹ năng");
-    } finally {
-      setIsLoading(false);
-    }
+  const resetState = () => {
+    setError("");
   };
+
+
 
   const handleSubmit = async () => {
     if (!formData.skill_id) {
@@ -77,11 +95,10 @@ const SkillModal: React.FC<SkillModalProps> = ({
       return;
     }
     if (!formData.experience) {
-      setError("Vui lòng nhập số năm kinh nghiệm");
+      setError("Vui lòng chọn số năm kinh nghiệm");
       return;
     }
 
-    setIsLoading(true);
     setError("");
 
     try {
@@ -109,14 +126,11 @@ const SkillModal: React.FC<SkillModalProps> = ({
     } catch (error) {
       console.error("Error saving skill:", error);
       setError("Có lỗi xảy ra. Vui lòng thử lại sau.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleClose = () => {
     setError("");
-    setIsLoading(false);
     onClose();
   };
 
@@ -129,7 +143,19 @@ const SkillModal: React.FC<SkillModalProps> = ({
   };
 
   const isSubmitDisabled =
-    isLoading || !formData.skill_id || !formData.experience;
+    isFetching || !formData.skill_id || !formData.experience;
+
+  // Generate options for years (0-30)
+  const yearOptions = Array.from({ length: 31 }, (_, i) => ({
+    value: i.toString(),
+    label: `${i} năm`,
+  }));
+
+  // Generate options for months (0-12)
+  const monthOptions = Array.from({ length: 13 }, (_, i) => ({
+    value: i.toString(),
+    label: `${i} tháng`,
+  }));
 
   return (
     <Modal
@@ -139,13 +165,13 @@ const SkillModal: React.FC<SkillModalProps> = ({
       size="lg"
       footer={
         <>
-          <Button variant="ghost" onClick={handleClose} disabled={isLoading}>
+          <Button variant="ghost" onClick={handleClose} disabled={isFetching}>
             Hủy
           </Button>
           <Button
             variant="primary"
             onClick={handleSubmit}
-            loading={isLoading}
+            loading={isFetching}
             disabled={isSubmitDisabled}
           >
             {mode === "add" ? "Thêm" : "Cập nhật"}
@@ -154,7 +180,7 @@ const SkillModal: React.FC<SkillModalProps> = ({
       }
     >
       <ModalContent>
-        {error && <ErrorMessage>{error}</ErrorMessage>}
+        {(error || queryError) && <ErrorMessage>{error || "Không thể tải danh sách kỹ năng"}</ErrorMessage>}
 
         <FormSection>
           <h4>Thông tin kỹ năng</h4>
@@ -171,30 +197,35 @@ const SkillModal: React.FC<SkillModalProps> = ({
               }))}
               required
               disabled={isLoading}
+              placeholder="Chọn kỹ năng..."
+              hasNextPage={hasNextPage}
+              isFetchingNextPage={isFetchingNextPage}
+              fetchNextPage={fetchNextPage}
+              loadingText="Đang tải thêm kỹ năng..."
             />
 
-            <Input
+            <Select
               label="Số năm kinh nghiệm"
-              type="number"
               value={formData.experience}
-              onChange={(e) => handleInputChange("experience", e.target.value)}
-              min="0"
-              max="50"
+              onChange={(value: string | number) => {
+                handleInputChange("experience", value.toString())
+              }}
+              options={yearOptions}
               required
               disabled={isLoading}
+              placeholder="Chọn số năm kinh nghiệm"
             />
 
-            <Input
+            <Select
               label="Số tháng kinh nghiệm"
-              type="number"
               value={formData.months_experience}
-              onChange={(e) =>
-                handleInputChange("months_experience", e.target.value)
-              }
-              min="0"
-              max="12"
+              onChange={(value: string | number) => {
+                handleInputChange("months_experience", value.toString())
+              }}
+              options={monthOptions}
               required
               disabled={isLoading}
+              placeholder="Chọn số tháng kinh nghiệm"
             />
 
             <div
@@ -219,6 +250,7 @@ const SkillModal: React.FC<SkillModalProps> = ({
                 Kỹ năng chính
               </label>
             </div>
+
           </FormGrid>
         </FormSection>
       </ModalContent>

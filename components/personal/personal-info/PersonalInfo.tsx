@@ -10,8 +10,6 @@ import {
   GraduationCap,
 } from "lucide-react";
 import EditPersonalInfoModal from "./EditPersonalInfoModal";
-import FamilyMemberModal from "./FamilyMemberModal";
-import DeleteFamilyMemberModal from "./DeleteFamilyMemberModal";
 import SkillModal from "./modals/SkillModal";
 import ExperienceModal from "./modals/ExperienceModal";
 import CertificateModal from "./modals/CertificateModal";
@@ -50,41 +48,63 @@ import {
   InfoItem,
   InfoLabel,
   InfoValue,
-  FamilyTable,
-  TableHeader,
-  TableRow,
-  TableCell,
-  ActionButtons,
-  ActionButton,
+  SkillsContainer,
+  SkillCard,
+  SkillCardHeader,
+  SkillInfo,
+  SkillTitle,
+  SkillDescription,
+  SkillMainTag,
+  SkillActions,
+  SkillActionButton,
+  SkillDeleteButton,
+  EmptyState,
+  EmptyStateIcon,
+  EmptyStateTitle,
+  EmptyStateDescription,
+  ExperienceContainer,
+  ExperienceCard,
+  ExperienceCardHeader,
+  ExperienceInfo,
+  ExperienceTitle,
+  ExperienceCompany,
+  ExperienceDate,
+  ExperienceActions,
+  ExperienceActionButton,
+  ExperienceDeleteButton,
+  CertificateContainer,
+  CertificateCard,
+  CertificateCardHeader,
+  CertificateInfo,
+  CertificateTitle,
+  CertificateId,
+  CertificateDate,
+  CertificateActions,
+  CertificateActionButton,
+  CertificateDeleteButton,
+  EducationContainer,
+  EducationCard,
+  EducationCardHeader,
+  EducationInfo,
+  EducationTitle,
+  EducationMajor,
+  EducationDescription,
+  EducationDate,
+  EducationActions,
+  EducationActionButton,
+  EducationDeleteButton,
 } from "./personalInfoStyle";
 import Image from "next/image";
 import IMAGES from "@/config/images";
 import { usePersonalInfo } from "./usePersonalInfo";
 
-interface FamilyMemberData {
-  id: string;
-  name: string;
-  relationship: string;
-  gender: string;
-  birthDate: string;
-  phone: string;
-  dependent: string;
-  notes: string;
-}
 
 const PersonalInfo = () => {
   const [activeTab, setActiveTab] = useState("basic");
 
-  const { data, initPersonalInfo } = usePersonalInfo();
+  const { data, initPersonalInfo, refetch } = usePersonalInfo();
   // Modal states
   const [isEditPersonalModalOpen, setIsEditPersonalModalOpen] = useState(false);
-  const [isFamilyModalOpen, setIsFamilyModalOpen] = useState(false);
-  const [isDeleteFamilyModalOpen, setIsDeleteFamilyModalOpen] = useState(false);
-  const [familyModalMode, setFamilyModalMode] = useState<"add" | "edit">("add");
-  const [selectedFamilyMember, setSelectedFamilyMember] =
-    useState<FamilyMemberData | null>(null);
-
-  const [familyMembers, setFamilyMembers] = useState<FamilyMemberData[]>([]);
 
   // Skills state
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -135,42 +155,6 @@ const PersonalInfo = () => {
     setIsEditPersonalModalOpen(true);
   };
 
-  const handleAddFamilyMember = () => {
-    setFamilyModalMode("add");
-    setSelectedFamilyMember(null);
-    setIsFamilyModalOpen(true);
-  };
-
-  const handleEditFamilyMember = (member: FamilyMemberData) => {
-    setFamilyModalMode("edit");
-    setSelectedFamilyMember(member);
-    setIsFamilyModalOpen(true);
-  };
-
-  const handleDeleteFamilyMember = (member: FamilyMemberData) => {
-    setSelectedFamilyMember(member);
-    setIsDeleteFamilyModalOpen(true);
-  };
-
-  const handleSaveFamilyMember = (memberData: FamilyMemberData) => {
-    if (familyModalMode === "add") {
-      setFamilyMembers((prev) => [...prev, memberData]);
-    } else {
-      setFamilyMembers((prev) =>
-        prev.map((member) =>
-          member.id === memberData.id ? memberData : member
-        )
-      );
-    }
-  };
-
-  const handleConfirmDeleteFamilyMember = () => {
-    if (selectedFamilyMember) {
-      setFamilyMembers((prev) =>
-        prev.filter((member) => member.id !== selectedFamilyMember.id)
-      );
-    }
-  };
 
   // Skills handlers
   const handleAddSkill = () => {
@@ -431,52 +415,53 @@ const PersonalInfo = () => {
               height={120}
             />
           </UserAvatar>
-          <UserName>{data?.user_information?.name || data?.name}</UserName>
-          <UserRole>{data?.user_information?.expertise || "N/A"}</UserRole>
+          <UserName>{data?.user_information?.[0]?.name || data?.name}</UserName>
+          <UserRole>{data?.user_information?.[0]?.expertise || "N/A"}</UserRole>
         </UserProfile>
 
         <UserDetails>
           <DetailItem>
             <DetailLabel>Email</DetailLabel>
             <DetailValue>
-              {data?.user_information?.email || data?.email}
+              {data?.user_information?.[0]?.email || data?.email}
             </DetailValue>
           </DetailItem>
           <DetailItem>
             <DetailLabel>Mã nhân viên</DetailLabel>
-            <DetailValue>{data?.user_information?.code || "N/A"}</DetailValue>
+            <DetailValue>{data?.user_information?.[0]?.code || "N/A"}</DetailValue>
           </DetailItem>
-          <DetailItem>
+          {/* <DetailItem>
             <DetailLabel>Người quản lý</DetailLabel>
             <DetailValue>
               <div>Không có</div>
             </DetailValue>
-          </DetailItem>
+          </DetailItem> */}
         </UserDetails>
-
+          <StatsGrid>
+            <StatCard $color="#3b82f6">
+              <StatNumber>
+                {initPersonalInfo?.remaining_leave_days || 0}
+              </StatNumber>
+              <StatLabel>Số giờ phép còn lại</StatLabel>
+            </StatCard>
+          </StatsGrid>
         <StatsGrid>
-          <StatCard $color="#3b82f6">
-            <StatNumber>
-              {initPersonalInfo?.remaining_leave_days || 0}
-            </StatNumber>
-            <StatLabel>Số giờ phép còn lại</StatLabel>
-          </StatCard>
           <StatCard $color="#6b7280">
             <StatNumber>0</StatNumber>
             <StatLabel>Số giờ đã nghỉ</StatLabel>
           </StatCard>
+          <StatCard $color="#f59e0b">
+            <StatNumber>0</StatNumber>
+            <StatLabel>
+              <Clock
+                size={16}
+                style={{ display: "inline", marginRight: "0.5rem" }}
+              />
+              Số giờ OT
+            </StatLabel>
+          </StatCard>
         </StatsGrid>
 
-        <StatCard $color="#f59e0b">
-          <StatNumber>0</StatNumber>
-          <StatLabel>
-            <Clock
-              size={16}
-              style={{ display: "inline", marginRight: "0.5rem" }}
-            />
-            Số giờ OT
-          </StatLabel>
-        </StatCard>
       </LeftSidebar>
 
       <MainContent>
@@ -509,9 +494,9 @@ const PersonalInfo = () => {
                 <InfoItem>
                   <InfoLabel>Ngày sinh</InfoLabel>
                   <InfoValue>
-                    {data?.user_information?.birthday
+                    {data?.user_information?.[0]?.birthday
                       ? new Date(
-                          data.user_information.birthday
+                          data.user_information?.[0]?.birthday
                         ).toLocaleDateString("vi-VN")
                       : "Không có"}
                   </InfoValue>
@@ -519,114 +504,66 @@ const PersonalInfo = () => {
                 <InfoItem>
                   <InfoLabel>Quốc tịch</InfoLabel>
                   <InfoValue>
-                    {data?.user_information?.nationality || "Không có"}
+                    {data?.user_information?.[0]?.nationality || "Không có"}
                   </InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Giới tính</InfoLabel>
                   <InfoValue>
-                    {data?.user_information?.gender || "Không có"}
+                    {data?.user_information?.[0]?.gender || "Không có"}
                   </InfoValue>
                 </InfoItem>
-                <InfoItem>
+                {/* <InfoItem>
                   <InfoLabel>Trạng thái tài khoản</InfoLabel>
                   <InfoValue>
-                    {data?.user_information?.status || "Không có"}
+                    {data?.user_information?.[0]?.status || "Không có"}
                   </InfoValue>
-                </InfoItem>
+                </InfoItem> */}
                 <InfoItem>
                   <InfoLabel>Số điện thoại</InfoLabel>
                   <InfoValue>
-                    {data?.user_information?.phone || "Không có"}
+                    {data?.user_information?.[0]?.phone || "Không có"}
                   </InfoValue>
                 </InfoItem>
-                <InfoItem>
+                {/* <InfoItem>
                   <InfoLabel>Loại nhân sự</InfoLabel>
                   <InfoValue>Chính thức</InfoValue>
-                </InfoItem>
+                </InfoItem> */}
                 <InfoItem>
                   <InfoLabel>Tình trạng hôn nhân</InfoLabel>
                   <InfoValue>
-                    {data?.user_information?.marital || "Chưa kết hôn"}
+                    {data?.user_information?.[0]?.marital || "Chưa kết hôn"}
                   </InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Phòng ban (Nhóm)</InfoLabel>
                   <InfoValue>
-                    {data?.user_information?.office_id || "Không có"}
+                    {data?.user_information?.[0]?.office_id || "Không có"}
                   </InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Địa chỉ tạm trú</InfoLabel>
                   <InfoValue>
-                    {data?.user_information?.temp_address || "Không có"}
+                    {data?.user_information?.[0]?.temp_address || "Không có"}
                   </InfoValue>
                 </InfoItem>
-                <InfoItem>
+                {/* <InfoItem>
                   <InfoLabel>Loại hợp đồng</InfoLabel>
                   <InfoValue>Hợp đồng xác định thời hạn</InfoValue>
-                </InfoItem>
+                </InfoItem> */}
                 <InfoItem>
                   <InfoLabel>Địa chỉ thường trú</InfoLabel>
                   <InfoValue>
-                    {data?.user_information?.address || "Không có"}
+                    {data?.user_information?.[0]?.address || "Không có"}
                   </InfoValue>
                 </InfoItem>
                 <InfoItem>
                   <InfoLabel>Email cá nhân</InfoLabel>
                   <InfoValue>
-                    {data?.user_information?.personal_email || "Không có"}
+                    {data?.user_information?.[0]?.personal_email || "Không có"}
                   </InfoValue>
                 </InfoItem>
               </InfoGrid>
-
-              <SectionHeader>
-                <SectionTitle>Thông tin thân nhân</SectionTitle>
-                <SectionAction onClick={handleAddFamilyMember}>
-                  <Plus size={16} />
-                </SectionAction>
-              </SectionHeader>
-
-              <FamilyTable>
-                <TableHeader>
-                  <div>Họ và tên</div>
-                  <div>Mối quan hệ</div>
-                  <div>Giới tính</div>
-                  <div>Ngày sinh</div>
-                  <div>Số điện thoại</div>
-                  <div>Người phụ thuộc</div>
-                  <div>Ghi nhận phụ thuộc</div>
-                  <div></div>
-                </TableHeader>
-
-                {familyMembers.map((member, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{member.name}</TableCell>
-                    <TableCell>{member.relationship}</TableCell>
-                    <TableCell>{member.gender}</TableCell>
-                    <TableCell>{member.birthDate}</TableCell>
-                    <TableCell>{member.phone}</TableCell>
-                    <TableCell>{member.dependent}</TableCell>
-                    <TableCell>{member.notes}</TableCell>
-                    <TableCell>
-                      <ActionButtons>
-                        <ActionButton
-                          $type="edit"
-                          onClick={() => handleEditFamilyMember(member)}
-                        >
-                          <Edit size={14} />
-                        </ActionButton>
-                        <ActionButton
-                          $type="delete"
-                          onClick={() => handleDeleteFamilyMember(member)}
-                        >
-                          <Trash2 size={14} />
-                        </ActionButton>
-                      </ActionButtons>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </FamilyTable>
             </>
           )}
 
@@ -635,7 +572,7 @@ const PersonalInfo = () => {
               {/* Skills Section */}
               <SectionHeader>
                 <SectionTitle>
-                  <Star size={20} style={{ marginRight: "8px" }} />
+                  <Star size={20} />
                   Kỹ năng
                 </SectionTitle>
                 <SectionAction onClick={handleAddSkill}>
@@ -643,121 +580,48 @@ const PersonalInfo = () => {
                 </SectionAction>
               </SectionHeader>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "16px",
-                  marginBottom: "24px",
-                }}
-              >
+              <SkillsContainer>
                 {skills.map((skill, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      background: "white",
-                      padding: "16px",
-                      borderRadius: "8px",
-                      border: "1px solid #e5e7eb",
-                      position: "relative",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                      }}
-                    >
-                      <div>
-                        <h4
-                          style={{
-                            margin: "0 0 8px 0",
-                            fontSize: "16px",
-                            fontWeight: "600",
-                          }}
-                        >
-                          {skill.skill?.name}
-                        </h4>
-                        <p style={{ margin: "0 0 4px 0", color: "#6b7280" }}>
+                  <SkillCard key={index}>
+                    <SkillCardHeader>
+                      <SkillInfo>
+                        <SkillTitle>{skill.skill?.name}</SkillTitle>
+                        <SkillDescription>
                           Kinh nghiệm: {skill.experience} năm{" "}
                           {skill.months_experience} tháng
-                        </p>
+                        </SkillDescription>
                         {skill.is_main && (
-                          <span
-                            style={{
-                              background: "#dbeafe",
-                              color: "#1e40af",
-                              padding: "2px 8px",
-                              borderRadius: "12px",
-                              fontSize: "12px",
-                              fontWeight: "500",
-                            }}
-                          >
-                            Kỹ năng chính
-                          </span>
+                          <SkillMainTag>Kỹ năng chính</SkillMainTag>
                         )}
-                      </div>
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <button
-                          onClick={() => handleEditSkill(skill)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: "4px",
-                            borderRadius: "4px",
-                            color: "#6b7280",
-                          }}
-                        >
+                      </SkillInfo>
+                      <SkillActions>
+                        <SkillActionButton onClick={() => handleEditSkill(skill)}>
                           <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteSkill(skill)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: "4px",
-                            borderRadius: "4px",
-                            color: "#ef4444",
-                          }}
-                        >
+                        </SkillActionButton>
+                        <SkillDeleteButton onClick={() => handleDeleteSkill(skill)}>
                           <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                        </SkillDeleteButton>
+                      </SkillActions>
+                    </SkillCardHeader>
+                  </SkillCard>
                 ))}
                 {skills.length === 0 && (
-                  <div
-                    style={{
-                      textAlign: "center",
-                      padding: "40px 20px",
-                      color: "#6b7280",
-                      background: "#f9fafb",
-                      borderRadius: "8px",
-                      border: "1px dashed #d1d5db",
-                    }}
-                  >
-                    <Star
-                      size={48}
-                      style={{ marginBottom: "16px", opacity: 0.5 }}
-                    />
-                    <p style={{ margin: "0", fontSize: "16px" }}>
-                      Chưa có kỹ năng nào
-                    </p>
-                    <p style={{ margin: "8px 0 0 0", fontSize: "14px" }}>
+                  <EmptyState>
+                    <EmptyStateIcon>
+                      <Star size={48} />
+                    </EmptyStateIcon>
+                    <EmptyStateTitle>Chưa có kỹ năng nào</EmptyStateTitle>
+                    <EmptyStateDescription>
                       Nhấn nút + để thêm kỹ năng mới
-                    </p>
-                  </div>
+                    </EmptyStateDescription>
+                  </EmptyState>
                 )}
-              </div>
+              </SkillsContainer>
 
               {/* Experience Section */}
               <SectionHeader>
                 <SectionTitle>
-                  <Briefcase size={20} style={{ marginRight: "8px" }} />
+                  <Briefcase size={20} />
                   Kinh nghiệm làm việc
                 </SectionTitle>
                 <SectionAction onClick={handleAddExperience}>
@@ -765,116 +629,46 @@ const PersonalInfo = () => {
                 </SectionAction>
               </SectionHeader>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "16px",
-                  marginBottom: "24px",
-                }}
-              >
+              <ExperienceContainer>
                 {experiences.map((exp, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      background: "white",
-                      padding: "16px",
-                      borderRadius: "8px",
-                      border: "1px solid #e5e7eb",
-                      position: "relative",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                      }}
-                    >
-                      <div>
-                        <h4
-                          style={{
-                            margin: "0 0 8px 0",
-                            fontSize: "16px",
-                            fontWeight: "600",
-                          }}
-                        >
-                          {exp.job_title}
-                        </h4>
-                        <p style={{ margin: "0 0 4px 0", color: "#6b7280" }}>
-                          {exp.company}
-                        </p>
-                        <p
-                          style={{
-                            margin: "0",
-                            color: "#6b7280",
-                            fontSize: "14px",
-                          }}
-                        >
+                  <ExperienceCard key={index}>
+                    <ExperienceCardHeader>
+                      <ExperienceInfo>
+                        <ExperienceTitle>{exp.job_title}</ExperienceTitle>
+                        <ExperienceCompany>{exp.company}</ExperienceCompany>
+                        <ExperienceDate>
                           {new Date(exp.start_date).toLocaleDateString("vi-VN")}{" "}
                           - {new Date(exp.end_date).toLocaleDateString("vi-VN")}
-                        </p>
-                      </div>
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <button
-                          onClick={() => handleEditExperience(exp)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: "4px",
-                            borderRadius: "4px",
-                            color: "#6b7280",
-                          }}
-                        >
+                        </ExperienceDate>
+                      </ExperienceInfo>
+                      <ExperienceActions>
+                        <ExperienceActionButton onClick={() => handleEditExperience(exp)}>
                           <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteExperience(exp)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: "4px",
-                            borderRadius: "4px",
-                            color: "#ef4444",
-                          }}
-                        >
+                        </ExperienceActionButton>
+                        <ExperienceDeleteButton onClick={() => handleDeleteExperience(exp)}>
                           <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                        </ExperienceDeleteButton>
+                      </ExperienceActions>
+                    </ExperienceCardHeader>
+                  </ExperienceCard>
                 ))}
                 {experiences.length === 0 && (
-                  <div
-                    style={{
-                      textAlign: "center",
-                      padding: "40px 20px",
-                      color: "#6b7280",
-                      background: "#f9fafb",
-                      borderRadius: "8px",
-                      border: "1px dashed #d1d5db",
-                    }}
-                  >
-                    <Briefcase
-                      size={48}
-                      style={{ marginBottom: "16px", opacity: 0.5 }}
-                    />
-                    <p style={{ margin: "0", fontSize: "16px" }}>
-                      Chưa có kinh nghiệm nào
-                    </p>
-                    <p style={{ margin: "8px 0 0 0", fontSize: "14px" }}>
+                  <EmptyState>
+                    <EmptyStateIcon>
+                      <Briefcase size={48} />
+                    </EmptyStateIcon>
+                    <EmptyStateTitle>Chưa có kinh nghiệm nào</EmptyStateTitle>
+                    <EmptyStateDescription>
                       Nhấn nút + để thêm kinh nghiệm mới
-                    </p>
-                  </div>
+                    </EmptyStateDescription>
+                  </EmptyState>
                 )}
-              </div>
+              </ExperienceContainer>
 
               {/* Certificates Section */}
               <SectionHeader>
                 <SectionTitle>
-                  <Award size={20} style={{ marginRight: "8px" }} />
+                  <Award size={20} />
                   Chứng chỉ
                 </SectionTitle>
                 <SectionAction onClick={handleAddCertificate}>
@@ -882,116 +676,45 @@ const PersonalInfo = () => {
                 </SectionAction>
               </SectionHeader>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "16px",
-                  marginBottom: "24px",
-                }}
-              >
+              <CertificateContainer>
                 {certificates.map((cert, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      background: "white",
-                      padding: "16px",
-                      borderRadius: "8px",
-                      border: "1px solid #e5e7eb",
-                      position: "relative",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                      }}
-                    >
-                      <div>
-                        <h4
-                          style={{
-                            margin: "0 0 8px 0",
-                            fontSize: "16px",
-                            fontWeight: "600",
-                          }}
-                        >
-                          Chứng chỉ #{cert.id}
-                        </h4>
-                        <p style={{ margin: "0 0 4px 0", color: "#6b7280" }}>
-                          Certificate ID: {cert.certificate_id}
-                        </p>
-                        <p
-                          style={{
-                            margin: "0",
-                            color: "#6b7280",
-                            fontSize: "14px",
-                          }}
-                        >
-                          Cấp ngày:{" "}
-                          {new Date(cert.issued_at).toLocaleDateString("vi-VN")}
-                        </p>
-                      </div>
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <button
-                          onClick={() => handleEditCertificate(cert)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: "4px",
-                            borderRadius: "4px",
-                            color: "#6b7280",
-                          }}
-                        >
+                  <CertificateCard key={index}>
+                    <CertificateCardHeader>
+                      <CertificateInfo>
+                        <CertificateTitle>Chứng chỉ {cert.name}</CertificateTitle>
+                        <CertificateId>Tổ chức cấp: {cert.authority}</CertificateId>
+                        <CertificateDate>
+                          Cấp ngày: {new Date(cert.issued_at).toLocaleDateString("vi-VN")}
+                        </CertificateDate>
+                      </CertificateInfo>
+                      <CertificateActions>
+                        <CertificateActionButton onClick={() => handleEditCertificate(cert)}>
                           <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteCertificate(cert)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: "4px",
-                            borderRadius: "4px",
-                            color: "#ef4444",
-                          }}
-                        >
+                        </CertificateActionButton>
+                        <CertificateDeleteButton onClick={() => handleDeleteCertificate(cert)}>
                           <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                        </CertificateDeleteButton>
+                      </CertificateActions>
+                    </CertificateCardHeader>
+                  </CertificateCard>
                 ))}
                 {certificates.length === 0 && (
-                  <div
-                    style={{
-                      textAlign: "center",
-                      padding: "40px 20px",
-                      color: "#6b7280",
-                      background: "#f9fafb",
-                      borderRadius: "8px",
-                      border: "1px dashed #d1d5db",
-                    }}
-                  >
-                    <Award
-                      size={48}
-                      style={{ marginBottom: "16px", opacity: 0.5 }}
-                    />
-                    <p style={{ margin: "0", fontSize: "16px" }}>
-                      Chưa có chứng chỉ nào
-                    </p>
-                    <p style={{ margin: "8px 0 0 0", fontSize: "14px" }}>
+                  <EmptyState>
+                    <EmptyStateIcon>
+                      <Award size={48} />
+                    </EmptyStateIcon>
+                    <EmptyStateTitle>Chưa có chứng chỉ nào</EmptyStateTitle>
+                    <EmptyStateDescription>
                       Nhấn nút + để thêm chứng chỉ mới
-                    </p>
-                  </div>
+                    </EmptyStateDescription>
+                  </EmptyState>
                 )}
-              </div>
+              </CertificateContainer>
 
               {/* Education Section */}
               <SectionHeader>
                 <SectionTitle>
-                  <GraduationCap size={20} style={{ marginRight: "8px" }} />
+                  <GraduationCap size={20} />
                   Học vấn
                 </SectionTitle>
                 <SectionAction onClick={handleAddEducation}>
@@ -999,119 +722,42 @@ const PersonalInfo = () => {
                 </SectionAction>
               </SectionHeader>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "16px",
-                }}
-              >
+              <EducationContainer>
                 {educations.map((edu, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      background: "white",
-                      padding: "16px",
-                      borderRadius: "8px",
-                      border: "1px solid #e5e7eb",
-                      position: "relative",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                      }}
-                    >
-                      <div>
-                        <h4
-                          style={{
-                            margin: "0 0 8px 0",
-                            fontSize: "16px",
-                            fontWeight: "600",
-                          }}
-                        >
-                          {edu.name}
-                        </h4>
-                        <p style={{ margin: "0 0 4px 0", color: "#6b7280" }}>
-                          {edu.major}
-                        </p>
-                        <p
-                          style={{
-                            margin: "0 0 4px 0",
-                            color: "#6b7280",
-                            fontSize: "14px",
-                          }}
-                        >
-                          {edu.description}
-                        </p>
-                        <p
-                          style={{
-                            margin: "0",
-                            color: "#6b7280",
-                            fontSize: "14px",
-                          }}
-                        >
+                  <EducationCard key={index}>
+                    <EducationCardHeader>
+                      <EducationInfo>
+                        <EducationTitle>{edu.name}</EducationTitle>
+                        <EducationMajor>{edu.major}</EducationMajor>
+                        <EducationDescription>{edu.description}</EducationDescription>
+                        <EducationDate>
                           {new Date(edu.start_date).toLocaleDateString("vi-VN")}{" "}
                           - {new Date(edu.end_date).toLocaleDateString("vi-VN")}
-                        </p>
-                      </div>
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <button
-                          onClick={() => handleEditEducation(edu)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: "4px",
-                            borderRadius: "4px",
-                            color: "#6b7280",
-                          }}
-                        >
+                        </EducationDate>
+                      </EducationInfo>
+                      <EducationActions>
+                        <EducationActionButton onClick={() => handleEditEducation(edu)}>
                           <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteEducation(edu)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: "4px",
-                            borderRadius: "4px",
-                            color: "#ef4444",
-                          }}
-                        >
+                        </EducationActionButton>
+                        <EducationDeleteButton onClick={() => handleDeleteEducation(edu)}>
                           <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                        </EducationDeleteButton>
+                      </EducationActions>
+                    </EducationCardHeader>
+                  </EducationCard>
                 ))}
                 {educations.length === 0 && (
-                  <div
-                    style={{
-                      textAlign: "center",
-                      padding: "40px 20px",
-                      color: "#6b7280",
-                      background: "#f9fafb",
-                      borderRadius: "8px",
-                      border: "1px dashed #d1d5db",
-                    }}
-                  >
-                    <GraduationCap
-                      size={48}
-                      style={{ marginBottom: "16px", opacity: 0.5 }}
-                    />
-                    <p style={{ margin: "0", fontSize: "16px" }}>
-                      Chưa có học vấn nào
-                    </p>
-                    <p style={{ margin: "8px 0 0 0", fontSize: "14px" }}>
+                  <EmptyState>
+                    <EmptyStateIcon>
+                      <GraduationCap size={48} />
+                    </EmptyStateIcon>
+                    <EmptyStateTitle>Chưa có học vấn nào</EmptyStateTitle>
+                    <EmptyStateDescription>
                       Nhấn nút + để thêm học vấn mới
-                    </p>
-                  </div>
+                    </EmptyStateDescription>
+                  </EmptyState>
                 )}
-              </div>
+              </EducationContainer>
             </>
           )}
         </TabContent>
@@ -1119,23 +765,23 @@ const PersonalInfo = () => {
 
       <EditPersonalInfoModal
         isOpen={isEditPersonalModalOpen}
-        onClose={() => setIsEditPersonalModalOpen(false)}
+        onClose={() => {
+          refetch();
+          setIsEditPersonalModalOpen(false);
+        }}
+        initialData={data?.user_information?.[0] ? {
+          birthDate: data.user_information[0].birthday ? new Date(data.user_information[0].birthday).toLocaleDateString("vi-VN") : "",
+          nationality: data.user_information[0].nationality || "",
+          gender: data.user_information[0].gender || "",
+          phone: data.user_information[0].phone || "",
+          maritalStatus: data.user_information[0].marital || "",
+          temporaryAddress: data.user_information[0].temp_address || "",
+          permanentAddress: data.user_information[0].address || "",
+          personalEmail: data.user_information[0].personal_email || "",
+          expertise: data.user_information[0].expertise || "",
+        } : undefined}
       />
 
-      <FamilyMemberModal
-        isOpen={isFamilyModalOpen}
-        onClose={() => setIsFamilyModalOpen(false)}
-        mode={familyModalMode}
-        initialData={selectedFamilyMember ?? undefined}
-        onSave={handleSaveFamilyMember}
-      />
-
-      <DeleteFamilyMemberModal
-        isOpen={isDeleteFamilyModalOpen}
-        onClose={() => setIsDeleteFamilyModalOpen(false)}
-        memberName={selectedFamilyMember?.name || ""}
-        onConfirm={handleConfirmDeleteFamilyMember}
-      />
 
       {/* Skills Modal */}
       <SkillModal

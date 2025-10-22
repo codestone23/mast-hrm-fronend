@@ -78,7 +78,7 @@ export const ProjectStatus = styled.div<{ $status: 'active' | 'completed' | 'pau
 
 export const ProjectDetailGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
   
   @media (max-width: 768px) {

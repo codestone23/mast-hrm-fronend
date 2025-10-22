@@ -30,7 +30,7 @@ const CertificateModal: React.FC<CertificateModalProps> = ({
     authority: "",
     issued_at: "",
     start_date: "",
-    type: "ACHIEVEMENT",
+    type: "CERTIFICATE",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -40,11 +40,11 @@ const CertificateModal: React.FC<CertificateModalProps> = ({
     if (isOpen) {
       if (mode === "edit" && initialData) {
         setFormData({
-          name: `Chứng chỉ #${initialData.id}`,
-          authority: "N/A",
+          name: initialData?.name ?? '',
+          authority: initialData?.authority ?? '',
           issued_at: initialData.issued_at.split("T")[0],
           start_date: initialData.start_date.split("T")[0],
-          type: "ACHIEVEMENT",
+          type: initialData?.type ?? 'CERTIFICATE',
         });
       } else {
         setFormData({
@@ -52,7 +52,7 @@ const CertificateModal: React.FC<CertificateModalProps> = ({
           authority: "",
           issued_at: "",
           start_date: "",
-          type: "ACHIEVEMENT",
+          type: "CERTIFICATE",
         });
       }
     }
@@ -193,36 +193,6 @@ const CertificateModal: React.FC<CertificateModalProps> = ({
                 required
                 disabled={isLoading}
               />
-
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "8px",
-                  fontWeight: "500",
-                  color: "#374151",
-                }}
-              >
-                Loại chứng chỉ
-              </label>
-              <select
-                value={formData.type}
-                onChange={(e) => handleInputChange("type", e.target.value)}
-                disabled={isLoading}
-                style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  border: "1px solid #d1d5db",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  backgroundColor: isLoading ? "#f9fafb" : "white",
-                }}
-              >
-                <option value="ACHIEVEMENT">Thành tích</option>
-                <option value="CERTIFICATION">Chứng nhận</option>
-                <option value="LICENSE">Giấy phép</option>
-              </select>
-            </div>
           </FormGrid>
         </FormSection>
       </ModalContent>

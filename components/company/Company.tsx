@@ -57,7 +57,7 @@ interface Employee {
 }
 
 const Company: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("CẢM NANG NHÂN VIÊN");
+  const [activeTab, setActiveTab] = useState("DANH SÁCH NHÂN VIÊN CÔNG TY");
   const [selectedDivision, setSelectedDivision] = useState("Tất cả");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -174,7 +174,7 @@ const Company: React.FC = () => {
     return acc;
   }, {} as Record<string, Employee[]>);
 
-  const tabs = ["CẢM NANG NHÂN VIÊN", "DANH SÁCH NHÂN VIÊN CÔNG TY"];
+  const tabs = ["DANH SÁCH NHÂN VIÊN CÔNG TY"];
 
   return (
     <CompanyContainer>
@@ -192,155 +192,87 @@ const Company: React.FC = () => {
         </TabsContainer>
       </Header>
 
-      {activeTab === "CẢM NANG NHÂN VIÊN" ? (
-        <CompanyInfoSection>
+      <MainContent>
+        <EmployeeSection>
           <SectionTitle>
-            <Building size={20} />
-            Thông tin công ty
+            <Users size={20} />
+            Danh sách nhân viên
           </SectionTitle>
+          {Object.entries(groupedEmployees).map(
+            ([divisionName, divisionEmployees]) => (
+              <DivisionSection key={divisionName}>
+                <DivisionHeader>
+                  <Users size={18} />
+                  {divisionName} ({divisionEmployees.length} nhân viên)
+                </DivisionHeader>
+                <DivisionEmployeeGrid>
+                  {divisionEmployees.map((employee) => (
+                    <EmployeeCard key={employee.id}>
+                      <EmployeeAvatar>
+                        <User size={24} />
+                      </EmployeeAvatar>
+                      <EmployeeInfo>
+                        <EmployeeName>{employee.name}</EmployeeName>
+                        <EmployeeEmail>{employee.email}</EmployeeEmail>
+                        <EmployeePosition>
+                          {employee.id} - {employee.position}
+                        </EmployeePosition>
+                      </EmployeeInfo>
+                    </EmployeeCard>
+                  ))}
+                </DivisionEmployeeGrid>
+              </DivisionSection>
+            )
+          )}
+        </EmployeeSection>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "2rem",
-            }}
-          >
-            <InfoCard>
-              <CompanyLogo>
-                <Building size={40} color="#FF9800" />
-              </CompanyLogo>
-              <CompanyDetails>
-                <CompanyName>MAST Việt Nam</CompanyName>
-                <CompanyAddress>
-                  <MapPin size={16} />
-                  Tầng 12, Tòa nhà Innovation
-                  <br />
-                  Khu Công nghệ cao, Quận 9, TP.HCM
-                </CompanyAddress>
-                <ContactInfo>
-                  <ContactItem>
-                    <Phone size={16} />
-                    (+84) 28-1234-5678
-                  </ContactItem>
-                  <ContactItem>
-                    <Mail size={16} />
-                    info@mast.vn
-                  </ContactItem>
-                </ContactInfo>
-              </CompanyDetails>
-            </InfoCard>
+        <Sidebar>
+          <SidebarTitle>
+            <Users size={20} />
+            Tổng số nhân viên: {filteredEmployees.length}
+          </SidebarTitle>
 
-            <InfoCard>
-              <CompanyLogo>
-                <Building size={40} color="#2196F3" />
-              </CompanyLogo>
-              <CompanyDetails>
-                <CompanyName>MAST Singapore</CompanyName>
-                <CompanyAddress>
-                  <MapPin size={16} />
-                  Level 15, Marina Bay Financial Centre
-                  <br />8 Marina Boulevard, Singapore 018981
-                </CompanyAddress>
-                <ContactInfo>
-                  <ContactItem>
-                    <Phone size={16} />
-                    (+65) 6789-0123
-                  </ContactItem>
-                  <ContactItem>
-                    <Mail size={16} />
-                    info@mast.sg
-                  </ContactItem>
-                </ContactInfo>
-              </CompanyDetails>
-            </InfoCard>
-          </div>
-        </CompanyInfoSection>
-      ) : (
-        <MainContent>
-          <EmployeeSection>
-            <SectionTitle>
-              <Users size={20} />
-              Danh sách nhân viên
-            </SectionTitle>
-            {Object.entries(groupedEmployees).map(
-              ([divisionName, divisionEmployees]) => (
-                <DivisionSection key={divisionName}>
-                  <DivisionHeader>
-                    <Users size={18} />
-                    {divisionName} ({divisionEmployees.length} nhân viên)
-                  </DivisionHeader>
-                  <DivisionEmployeeGrid>
-                    {divisionEmployees.map((employee) => (
-                      <EmployeeCard key={employee.id}>
-                        <EmployeeAvatar>
-                          <User size={24} />
-                        </EmployeeAvatar>
-                        <EmployeeInfo>
-                          <EmployeeName>{employee.name}</EmployeeName>
-                          <EmployeeEmail>{employee.email}</EmployeeEmail>
-                          <EmployeePosition>
-                            {employee.id} - {employee.position}
-                          </EmployeePosition>
-                        </EmployeeInfo>
-                      </EmployeeCard>
-                    ))}
-                  </DivisionEmployeeGrid>
-                </DivisionSection>
-              )
-            )}
-          </EmployeeSection>
+          <SidebarCard>
+            <SidebarCardTitle>
+              <Search size={18} />
+              Tìm kiếm
+            </SidebarCardTitle>
+            <SearchInput>
+              <Search size={16} />
+              <input
+                type="text"
+                placeholder="Tìm tên nhân viên"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </SearchInput>
+          </SidebarCard>
 
-          <Sidebar>
-            <SidebarTitle>
-              <Users size={20} />
-              Tổng số nhân viên: {filteredEmployees.length}
-            </SidebarTitle>
-
-            <SidebarCard>
-              <SidebarCardTitle>
-                <Search size={18} />
-                Tìm kiếm
-              </SidebarCardTitle>
-              <SearchInput>
-                <Search size={16} />
-                <input
-                  type="text"
-                  placeholder="Tìm tên nhân viên"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </SearchInput>
-            </SidebarCard>
-
-            <SidebarCard>
-              <SidebarCardTitle>
-                <Building size={18} />
-                Division
-              </SidebarCardTitle>
-              <FilterList>
-                {divisions.map((division) => (
-                  <FilterItem
-                    key={division.name}
-                    $active={selectedDivision === division.name}
-                    onClick={() => setSelectedDivision(division.name)}
-                  >
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                      <FilterIcon
-                        $active={selectedDivision === division.name}
-                      />
-                      <FilterLabel>{division.name}</FilterLabel>
-                    </div>
-                    <FilterCount $active={selectedDivision === division.name}>
-                      {division.count}
-                    </FilterCount>
-                  </FilterItem>
-                ))}
-              </FilterList>
-            </SidebarCard>
-          </Sidebar>
-        </MainContent>
-      )}
+          <SidebarCard>
+            <SidebarCardTitle>
+              <Building size={18} />
+              Division
+            </SidebarCardTitle>
+            <FilterList>
+              {divisions.map((division) => (
+                <FilterItem
+                  key={division.name}
+                  $active={selectedDivision === division.name}
+                  onClick={() => setSelectedDivision(division.name)}
+                >
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <FilterIcon $active={selectedDivision === division.name} />
+                    <FilterLabel>{division.name}</FilterLabel>
+                  </div>
+                  <FilterCount $active={selectedDivision === division.name}>
+                    {division.count}
+                  </FilterCount>
+                </FilterItem>
+              ))}
+            </FilterList>
+          </SidebarCard>
+        </Sidebar>
+      </MainContent>
     </CompanyContainer>
   );
 };

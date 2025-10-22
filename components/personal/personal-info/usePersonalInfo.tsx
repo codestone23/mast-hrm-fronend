@@ -6,7 +6,7 @@ import { User } from "@/constants/types";
 
 export const usePersonalInfo = () => {
     const [initPersonalInfo, setInitPersonalInfo] = useState<User | null>(null);
-    const { data, isLoading, error } = useQuery({       
+    const { data, isLoading, error, refetch } = useQuery({       
         queryKey: ['personal-info'],
         queryFn: () => profileService.getProfile(),
     })
@@ -23,5 +23,6 @@ export const usePersonalInfo = () => {
         isLoading,
         error,
         initPersonalInfo,
+        refetch,
     }
 }

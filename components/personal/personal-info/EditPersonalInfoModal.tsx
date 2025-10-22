@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
-import { User, Mail, Phone, MapPin, Users } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { Mail, Phone, MapPin, Briefcase } from "lucide-react";
 import { Modal, Input, Button, Select, DatePicker } from "@/components/common";
-import { formatDateForAPI, parseDateFromAPI } from "@/utils/dateUtils";
+import { formatDateForDisplay, parseDateFromDisplay, formatDateForAPI } from "@/utils/dateUtils";
+import { useUpdateProfile } from "@/hooks/useProfileMutation";
+import { useToast } from "@/hooks/useToast";
 import {
   ModalContent,
   FormSection,
   FormGrid,
   ErrorMessage,
-  SuccessMessage,
 } from "./personalInfoModalStyles";
 
 interface EditPersonalInfoModalProps {
@@ -20,18 +22,15 @@ interface EditPersonalInfoModalProps {
 }
 
 interface PersonalInfoData {
-  birthDate: string;
+  birthDate: string; 
   nationality: string;
   gender: string;
-  accountStatus: string;
   phone: string;
-  employeeType: string;
   maritalStatus: string;
-  department: string;
   temporaryAddress: string;
-  contractType: string;
   permanentAddress: string;
   personalEmail: string;
+  expertise: string;
 }
 
 const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
@@ -40,26 +39,37 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
   initialData,
   onSave,
 }) => {
-  const [formData, setFormData] = useState<PersonalInfoData>(
-    initialData || {
-      birthDate: "30/04/2003",
-      nationality: "Việt Nam",
-      gender: "Nam",
-      accountStatus: "Active",
-      phone: "094545857",
-      employeeType: "Chính thức",
-      maritalStatus: "Chưa kết hôn",
-      department: "44444",
-      temporaryAddress: "Hà Nội",
-      contractType: "Hợp đồng xác định thời hạn",
-      permanentAddress: "Thanh Hóa",
-      personalEmail: "abc@outlook.com",
-    }
+  const defaultValues: PersonalInfoData = useMemo(
+    () => ({
+      birthDate: "",
+      nationality: "",
+      gender: "",
+      phone: "",
+      maritalStatus: "",
+      temporaryAddress: "",
+      permanentAddress: "",
+      personalEmail: "",
+      expertise: "",
+    }),
+    []
   );
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+    reset,
+  } = useForm<PersonalInfoData>({
+    defaultValues: initialData || defaultValues,
+  });
+
   const [error, setError] = useState("");
+  const { success: showSuccessToast } = useToast();
+
+  const formData = watch();
+  const updateProfileMutation = useUpdateProfile();
 
   const genderOptions = [
     { value: "Nam", label: "Nam" },
@@ -70,84 +80,55 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
   const maritalStatusOptions = [
     { value: "Chưa kết hôn", label: "Chưa kết hôn" },
     { value: "Đã kết hôn", label: "Đã kết hôn" },
-    { value: "Ly hôn", label: "Ly hôn" },
-    { value: "Góa", label: "Góa" },
+    { value: "Ly hôn", label: "Ly hôn" }
   ];
 
-  const employeeTypeOptions = [
-    { value: "Chính thức", label: "Chính thức" },
-    { value: "Thử việc", label: "Thử việc" },
-    { value: "Thực tập", label: "Thực tập" },
-    { value: "Part-time", label: "Part-time" },
-  ];
-
-  const contractTypeOptions = [
-    {
-      value: "Hợp đồng xác định thời hạn",
-      label: "Hợp đồng xác định thời hạn",
-    },
-    {
-      value: "Hợp đồng không xác định thời hạn",
-      label: "Hợp đồng không xác định thời hạn",
-    },
-    { value: "Hợp đồng thử việc", label: "Hợp đồng thử việc" },
-  ];
-
-  const accountStatusOptions = [
-    { value: "Active", label: "Active" },
-    { value: "Inactive", label: "Inactive" },
-    { value: "Suspended", label: "Suspended" },
-  ];
-
-  const handleInputChange = (field: keyof PersonalInfoData, value: string) => {
-    setError(""); // Clear error on input change
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleSubmit = async () => {
-    if (!formData.phone) {
-      setError("Vui lòng nhập số điện thoại");
-      return;
+  // Reset form when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      reset(initialData || defaultValues);
+      setError("");
     }
-    if (!formData.personalEmail) {
-      setError("Vui lòng nhập email cá nhân");
-      return;
-    }
+  }, [isOpen, initialData, reset, defaultValues]);
 
-    setIsLoading(true);
+  const onSubmit = async (data: PersonalInfoData) => {
     setError("");
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Convert form data to API format
+      const apiData = {
+        personal_email: data.personalEmail,
+        nationality: data.nationality,
+        gender: data.gender,
+        marital: data.maritalStatus,
+        birthday: data.birthDate ? formatDateForAPI(parseDateFromDisplay(data.birthDate)) : undefined,
+        address: data.permanentAddress,
+        temp_address: data.temporaryAddress,
+        phone: data.phone,
+        expertise: data.expertise,
+      };
 
-      setSuccess(true);
+      await updateProfileMutation.mutateAsync(apiData);
+
+      // Show success toast
+      showSuccessToast("Thông tin cá nhân đã được cập nhật thành công!", "Thành công");
+      
       if (onSave) {
-        onSave(formData);
+        onSave(data);
       }
 
-      setTimeout(() => {
-        handleClose();
-      }, 1500);
-    } catch {
+      // Close modal immediately after success
+      handleClose();
+    } catch (error) {
+      console.error('Error updating profile:', error);
       setError("Có lỗi xảy ra. Vui lòng thử lại sau.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleClose = () => {
     setError("");
-    setSuccess(false);
-    setIsLoading(false);
     onClose();
   };
-
-  const isSubmitDisabled =
-    isLoading || !formData.phone || !formData.personalEmail;
 
   return (
     <Modal
@@ -157,14 +138,14 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
       size="lg"
       footer={
         <>
-          <Button variant="ghost" onClick={handleClose} disabled={isLoading}>
+          <Button variant="ghost" onClick={handleClose} disabled={isSubmitting}>
             Hủy
           </Button>
           <Button
             variant="primary"
-            onClick={handleSubmit}
-            loading={isLoading}
-            disabled={isSubmitDisabled}
+            onClick={handleSubmit(onSubmit)}
+            loading={isSubmitting || updateProfileMutation.isPending}
+            disabled={isSubmitting || updateProfileMutation.isPending}
           >
             Lưu thay đổi
           </Button>
@@ -172,163 +153,120 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
       }
     >
       <ModalContent>
-        {success ? (
-          <SuccessMessage>
-            <User size={24} style={{ marginRight: "0.5rem" }} />
-            Thông tin cá nhân đã được cập nhật thành công!
-          </SuccessMessage>
-        ) : (
-          <>
-            {error && <ErrorMessage>{error}</ErrorMessage>}
+        {error && <ErrorMessage>{error}</ErrorMessage>}
 
-            <FormSection>
-              <h4>Thông tin cơ bản</h4>
-              <FormGrid>
-                <DatePicker
-                  label="Ngày sinh"
-                  value={parseDateFromAPI(formData.birthDate)}
-                  onChange={(date) => handleInputChange("birthDate", formatDateForAPI(date))}
-                  required
-                  disabled={isLoading}
-                />
+        <FormSection>
+          <h4>Thông tin cơ bản</h4>
+          <FormGrid>
+            <DatePicker
+              label="Ngày sinh"
+              value={parseDateFromDisplay(formData.birthDate)}
+              onChange={(date) =>
+                setValue("birthDate", formatDateForDisplay(date))
+              }
+              mode="date"
+              allowInput={true}
+              placeholder="DD/MM/YYYY"
+              required
+              disabled={isSubmitting}
+            />
 
-                <Input
-                  label="Quốc tịch"
-                  value={formData.nationality}
-                  onChange={(e) =>
-                    handleInputChange("nationality", e.target.value)
-                  }
-                  icon={<MapPin size={16} />}
-                  required
-                  disabled={isLoading}
-                />
+            <Input
+              label="Quốc tịch"
+              {...register("nationality", {
+                required: "Vui lòng nhập quốc tịch",
+              })}
+              icon={<MapPin size={16} />}
+              required
+              disabled={isSubmitting}
+              error={errors.nationality?.message}
+            />
 
-                <Select
-                  label="Giới tính"
-                  value={formData.gender}
-                  onChange={(value) =>
-                    handleInputChange("gender", String(value))
-                  }
-                  options={genderOptions}
-                  required
-                  disabled={isLoading}
-                />
+            <Select
+              label="Giới tính"
+              value={formData.gender}
+              onChange={(value) => setValue("gender", String(value))}
+              options={genderOptions}
+              required
+              disabled={isSubmitting}
+            />
 
-                <Select
-                  label="Trạng thái tài khoản"
-                  value={formData.accountStatus}
-                  onChange={(value) =>
-                    handleInputChange("accountStatus", String(value))
-                  }
-                  options={accountStatusOptions}
-                  required
-                  disabled={isLoading}
-                />
-              </FormGrid>
-            </FormSection>
+            <Input
+              label="Chuyên môn"
+              {...register("expertise", {
+                required: "Vui lòng nhập chuyên môn",
+              })}
+              icon={<Briefcase size={16} />}
+              required
+              disabled={isSubmitting}
+              error={errors.expertise?.message}
+            />
+          </FormGrid>
+        </FormSection>
 
-            <FormSection>
-              <h4>Thông tin liên lạc</h4>
-              <FormGrid>
-                <Input
-                  label="Số điện thoại"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  icon={<Phone size={16} />}
-                  required
-                  disabled={isLoading}
-                />
+        <FormSection>
+          <h4>Thông tin liên lạc</h4>
+          <FormGrid>
+            <Input
+              label="Số điện thoại"
+              type="tel"
+              {...register("phone", {
+                required: "Vui lòng nhập số điện thoại",
+                pattern: {
+                  value: /^[0-9]{10,11}$/,
+                  message: "Số điện thoại không hợp lệ",
+                },
+              })}
+              icon={<Phone size={16} />}
+              required
+              disabled={isSubmitting}
+              error={errors.phone?.message}
+            />
 
-                <Input
-                  label="Email cá nhân"
-                  type="email"
-                  value={formData.personalEmail}
-                  onChange={(e) =>
-                    handleInputChange("personalEmail", e.target.value)
-                  }
-                  icon={<Mail size={16} />}
-                  required
-                  disabled={isLoading}
-                />
-              </FormGrid>
-            </FormSection>
+            <Input
+              label="Email cá nhân"
+              type="email"
+              {...register("personalEmail", {
+                required: "Vui lòng nhập email cá nhân",
+                pattern: {
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  message: "Email không hợp lệ",
+                },
+              })}
+              icon={<Mail size={16} />}
+              required
+              disabled={isSubmitting}
+              error={errors.personalEmail?.message}
+            />
+            <Select
+              label="Tình trạng hôn nhân"
+              value={formData.maritalStatus}
+              onChange={(value) => setValue("maritalStatus", String(value))}
+              options={maritalStatusOptions}
+              required
+              disabled={isSubmitting}
+            />
+          </FormGrid>
+        </FormSection>
 
-            <FormSection>
-              <h4>Thông tin công việc</h4>
-              <FormGrid>
-                <Select
-                  label="Loại nhân sự"
-                  value={formData.employeeType}
-                  onChange={(value) =>
-                    handleInputChange("employeeType", String(value))
-                  }
-                  options={employeeTypeOptions}
-                  required
-                  disabled={isLoading}
-                />
+        <FormSection>
+          <h4>Địa chỉ</h4>
+          <FormGrid>
+            <Input
+              label="Địa chỉ tạm trú"
+              {...register("temporaryAddress")}
+              icon={<MapPin size={16} />}
+              disabled={isSubmitting}
+            />
 
-                <Input
-                  label="Phòng ban (Nhóm)"
-                  value={formData.department}
-                  onChange={(e) =>
-                    handleInputChange("department", e.target.value)
-                  }
-                  icon={<Users size={16} />}
-                  required
-                  disabled={isLoading}
-                />
-
-                <Select
-                  label="Loại hợp đồng"
-                  value={formData.contractType}
-                  onChange={(value) =>
-                    handleInputChange("contractType", String(value))
-                  }
-                  options={contractTypeOptions}
-                  required
-                  disabled={isLoading}
-                />
-
-                <Select
-                  label="Tình trạng hôn nhân"
-                  value={formData.maritalStatus}
-                  onChange={(value) =>
-                    handleInputChange("maritalStatus", String(value))
-                  }
-                  options={maritalStatusOptions}
-                  required
-                  disabled={isLoading}
-                />
-              </FormGrid>
-            </FormSection>
-
-            <FormSection>
-              <h4>Địa chỉ</h4>
-              <FormGrid>
-                <Input
-                  label="Địa chỉ tạm trú"
-                  value={formData.temporaryAddress}
-                  onChange={(e) =>
-                    handleInputChange("temporaryAddress", e.target.value)
-                  }
-                  icon={<MapPin size={16} />}
-                  disabled={isLoading}
-                />
-
-                <Input
-                  label="Địa chỉ thường trú"
-                  value={formData.permanentAddress}
-                  onChange={(e) =>
-                    handleInputChange("permanentAddress", e.target.value)
-                  }
-                  icon={<MapPin size={16} />}
-                  disabled={isLoading}
-                />
-              </FormGrid>
-            </FormSection>
-          </>
-        )}
+            <Input
+              label="Địa chỉ thường trú"
+              {...register("permanentAddress")}
+              icon={<MapPin size={16} />}
+              disabled={isSubmitting}
+            />
+          </FormGrid>
+        </FormSection>
       </ModalContent>
     </Modal>
   );

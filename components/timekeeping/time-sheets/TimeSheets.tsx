@@ -101,10 +101,8 @@ const TimeSheets: React.FC = () => {
 
   const tabs = [
     "BẢNG CHẤM CÔNG",
-    "LIST REQUEST",
-    "BẢNG OT",
     "LIST ĐỀ XUẤT",
-    "REQUEST OT",
+    "BẢNG OT",
   ];
 
   const weekDays = [

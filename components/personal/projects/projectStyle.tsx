@@ -8,6 +8,10 @@ export const ProjectsContainer = styled.div`
 
 export const ProjectsHeader = styled.div`
   margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
 `;
 
 export const ProjectsTitle = styled.h1`
@@ -23,9 +27,16 @@ export const ProjectsSubtitle = styled.p`
   margin: 0;
 `;
 
+export const ProjectsActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+`;
+
 export const ProjectsGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 `;
 
@@ -44,9 +55,6 @@ export const ProjectCard = styled.div`
 `;
 
 export const ProjectHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   margin-bottom: 1rem;
 `;
 
@@ -70,8 +78,8 @@ export const ProjectDescription = styled.p`
 
 export const ProjectMeta = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
   margin-bottom: 1rem;
 `;
 
@@ -84,6 +92,7 @@ export const ProjectMetaItem = styled.div`
   
   svg {
     color: var(--primary-500);
+    flex-shrink: 0;
   }
 `;
 
@@ -224,51 +233,31 @@ export const ProjectTeamCount = styled.div`
 export const ProjectActions = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 `;
 
-export const ProjectDetailButton = styled.button`
-  background: var(--primary-500);
+export const ProjectActionButton = styled.button<{ $danger?: boolean }>`
+  background: ${({ $danger }) => $danger ? 'var(--error-500)' : 'var(--primary-500)'};
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.75rem;
   border-radius: var(--radius-md);
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
   
   &:hover {
-    background: var(--primary-600);
+    background: ${({ $danger }) => $danger ? 'var(--error-600)' : 'var(--primary-600)'};
     transform: translateY(-1px);
   }
   
   &:active {
     transform: translateY(0);
-  }
-`;
-
-export const ProjectSecondaryButton = styled.button`
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  
-  &:hover {
-    color: var(--primary-600);
-    border-color: var(--primary-200);
-    background: var(--primary-50);
   }
 `;
 

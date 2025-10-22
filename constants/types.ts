@@ -94,7 +94,7 @@ export interface UserProfile {
       id: number;
       name: string;
     };
-  } | null;
+  }[] | null;
   education?: Array<{
     id: number;
     user_id: number;

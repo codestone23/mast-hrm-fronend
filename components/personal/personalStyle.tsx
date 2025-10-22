@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 export const PersonalContainer = styled.div`
   background-color: var(--background-secondary);
-  min-height: 100vh;
+  min-height: calc(100vh - 60px);
   padding: 1.5rem;
 `;
 

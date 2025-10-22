@@ -118,14 +118,15 @@ export const DetailValue = styled.div`
 `;
 
 export const StatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: row;
   gap: 1rem;
   margin-bottom: 1rem;
 `;
 
 export const StatCard = styled.div<{ $color: string }>`
   background: ${props => props.$color};
+  flex: 1;
   padding: 1rem;
   border-radius: var(--radius-md);
   text-align: center;
@@ -187,6 +188,9 @@ export const SectionTitle = styled.h3`
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 export const SectionAction = styled.button`
@@ -278,5 +282,317 @@ export const ActionButton = styled.button<{ $type: 'edit' | 'delete' }>`
   
   &:hover {
     background: ${props => props.$type === 'edit' ? 'var(--primary-50)' : 'var(--error-50)'};
+  }
+`;
+
+// Skills Section Styles
+export const SkillsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+`;
+
+export const SkillCard = styled.div`
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  position: relative;
+`;
+
+export const SkillCardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
+export const SkillInfo = styled.div`
+  flex: 1;
+`;
+
+export const SkillTitle = styled.h4`
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+`;
+
+export const SkillDescription = styled.p`
+  margin: 0 0 4px 0;
+  color: #6b7280;
+`;
+
+export const SkillMainTag = styled.span`
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+`;
+
+export const SkillActions = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+export const SkillActionButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: #6b7280;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+`;
+
+export const SkillDeleteButton = styled(SkillActionButton)`
+  color: #ef4444;
+
+  &:hover {
+    background: #fef2f2;
+  }
+`;
+
+export const EmptyState = styled.div`
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px dashed #d1d5db;
+`;
+
+export const EmptyStateIcon = styled.div`
+  margin-bottom: 16px;
+  opacity: 0.5;
+`;
+
+export const EmptyStateTitle = styled.p`
+  margin: 0;
+  font-size: 16px;
+`;
+
+export const EmptyStateDescription = styled.p`
+  margin: 8px 0 0 0;
+  font-size: 14px;
+`;
+
+// Experience Section Styles
+export const ExperienceContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+`;
+
+export const ExperienceCard = styled.div`
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  position: relative;
+`;
+
+export const ExperienceCardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
+export const ExperienceInfo = styled.div`
+  flex: 1;
+`;
+
+export const ExperienceTitle = styled.h4`
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+`;
+
+export const ExperienceCompany = styled.p`
+  margin: 0 0 4px 0;
+  color: #6b7280;
+`;
+
+export const ExperienceDate = styled.p`
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+`;
+
+export const ExperienceActions = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+export const ExperienceActionButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: #6b7280;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+`;
+
+export const ExperienceDeleteButton = styled(ExperienceActionButton)`
+  color: #ef4444;
+
+  &:hover {
+    background: #fef2f2;
+  }
+`;
+
+// Certificate Section Styles
+export const CertificateContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+`;
+
+export const CertificateCard = styled.div`
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  position: relative;
+`;
+
+export const CertificateCardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
+export const CertificateInfo = styled.div`
+  flex: 1;
+`;
+
+export const CertificateTitle = styled.h4`
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+`;
+
+export const CertificateId = styled.p`
+  margin: 0 0 4px 0;
+  color: #6b7280;
+`;
+
+export const CertificateDate = styled.p`
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+`;
+
+export const CertificateActions = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+export const CertificateActionButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: #6b7280;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+`;
+
+export const CertificateDeleteButton = styled(CertificateActionButton)`
+  color: #ef4444;
+
+  &:hover {
+    background: #fef2f2;
+  }
+`;
+
+// Education Section Styles
+export const EducationContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+export const EducationCard = styled.div`
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  position: relative;
+`;
+
+export const EducationCardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
+export const EducationInfo = styled.div`
+  flex: 1;
+`;
+
+export const EducationTitle = styled.h4`
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+`;
+
+export const EducationMajor = styled.p`
+  margin: 0 0 4px 0;
+  color: #6b7280;
+`;
+
+export const EducationDescription = styled.p`
+  margin: 0 0 4px 0;
+  color: #6b7280;
+  font-size: 14px;
+`;
+
+export const EducationDate = styled.p`
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+`;
+
+export const EducationActions = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+export const EducationActionButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: #6b7280;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+`;
+
+export const EducationDeleteButton = styled(EducationActionButton)`
+  color: #ef4444;
+
+  &:hover {
+    background: #fef2f2;
   }
 `;

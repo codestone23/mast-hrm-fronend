@@ -1,6 +1,6 @@
 import { UserProfile } from "@/constants/types";
+import { UpdateProfileData } from "@/hooks/useProfileMutation";
 import axiosInstance from "@/lib/axios";
-import { ApiResponse } from "@/types/api";
 
 export interface Education {
   id?: number;
@@ -58,14 +58,26 @@ export interface AvatarUpdate {
   avatar_url: string;
 }
 
+export interface PositionsResponse {
+  data: Position[];
+  pagination: {
+    current_page: number;
+    per_page: number;
+    total: number;
+    total_pages: number;
+    has_next_page: boolean;
+    has_prev_page: boolean;
+  };
+}
+
 class ProfileService {
   async getProfile(): Promise<UserProfile> {
     const response = await axiosInstance.get('user-profile');
     return response.data;
   }
 
-  async updateProfile(profileData: UserProfile): Promise<UserProfile> {
-    const response = await axiosInstance.put('user-profile/information', profileData);
+  async updateProfile(profileData: UpdateProfileData): Promise<UserProfile> {
+    const response = await axiosInstance.patch('user-profile/information', profileData);
     return response.data;
   }
 
@@ -154,8 +166,15 @@ class ProfileService {
     return response.data;
   }
   
-  async getPositions(): Promise<ApiResponse<Position[]>> {
-    const response = await axiosInstance.get('user-profile/references/positions');
+  async getPositions(page: number = 1, search?: string): Promise<PositionsResponse> {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', '5');
+    if (search) {
+      params.append('search', search);
+    }
+    
+    const response = await axiosInstance.get(`user-profile/references/positions?${params.toString()}`);
     return response.data;
   }
 

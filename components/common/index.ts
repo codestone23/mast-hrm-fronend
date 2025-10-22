@@ -5,6 +5,9 @@ export type { ButtonProps } from './Button/Button';
 export { default as Input } from './Input/Input';
 export type { InputProps } from './Input/Input';
 
+export { default as TextArea } from './TextArea/TextArea';
+export type { TextAreaProps } from './TextArea/TextArea';
+
 export { default as Modal } from './Modal/Modal';
 export type { ModalProps } from './Modal/Modal';
 

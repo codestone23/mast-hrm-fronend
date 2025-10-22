@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
@@ -32,12 +32,13 @@ export interface DatePickerProps {
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   format?: string;
-  mode?: 'date' | 'month';
+  mode?: 'date' | 'month' | 'year';
   align?: 'left' | 'right' | 'center';
   minDate?: Date;
   maxDate?: Date;
   className?: string;
   id?: string;
+  allowInput?: boolean;
 }
 
 const DatePicker: React.FC<DatePickerProps> = ({
@@ -51,13 +52,13 @@ const DatePicker: React.FC<DatePickerProps> = ({
   required = false,
   size = 'md',
   fullWidth = true,
-  format = 'dd/mm/yyyy',
   mode = 'date',
   align = 'left',
   minDate,
   maxDate,
   className,
-  id
+  id,
+  allowInput = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(
@@ -65,6 +66,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
   );
   const [viewDate, setViewDate] = useState(selectedDate || new Date());
   const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
+  const [inputValue, setInputValue] = useState('');
+  const [isInputFocused, setIsInputFocused] = useState(false);
   
   const datePickerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -73,13 +76,36 @@ const DatePicker: React.FC<DatePickerProps> = ({
   
   const datePickerId = id || `datepicker-${Math.random().toString(36).substr(2, 9)}`;
 
+  const formatDate = useCallback((date: Date | null): string => {
+    if (!date) return '';
+    
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+
+    if (mode === 'month') {
+      return `${month}/${year}`;
+    }
+
+    if (mode === 'year') {
+      return year.toString();
+    }
+
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${day}/${month}/${year}`;
+  }, [mode]);
+
   useEffect(() => {
     if (value) {
       const date = typeof value === 'string' ? new Date(value) : value;
       setSelectedDate(date);
       setViewDate(date);
+      setInputValue(formatDate(date));
     }
-  }, [value]);
+  }, [value, formatDate]);
+
+  useEffect(() => {
+    setInputValue(formatDate(selectedDate));
+  }, [selectedDate, formatDate]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -99,29 +125,6 @@ const DatePicker: React.FC<DatePickerProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  const formatDate = (date: Date | null): string => {
-    if (!date) return '';
-    
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-
-    if (mode === 'month') {
-      return `${month}/${year}`;
-    }
-
-    const day = date.getDate().toString().padStart(2, '0');
-    return `${day}/${month}/${year}`;
-  };
-
-  const formatDateForAPI = (date: Date | null): string => {
-    if (!date) return '';
-    
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
-  };
 
   const isDateDisabled = (date: Date): boolean => {
     if (minDate && date < minDate) return true;
@@ -133,8 +136,73 @@ const DatePicker: React.FC<DatePickerProps> = ({
     if (isDateDisabled(date)) return;
     
     setSelectedDate(date);
+    setInputValue(formatDate(date));
     setIsOpen(false);
     onChange?.(date);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    
+    // Parse input value to date
+    if (value.trim()) {
+      let parsedDate: Date | null = null;
+      
+      if (mode === 'year') {
+        const year = parseInt(value);
+        if (!isNaN(year) && year >= 1900 && year <= 2100) {
+          parsedDate = new Date(year, 0, 1);
+        }
+      } else if (mode === 'month') {
+        const parts = value.split('/');
+        if (parts.length === 2) {
+          const month = parseInt(parts[0]) - 1;
+          const year = parseInt(parts[1]);
+          if (!isNaN(month) && !isNaN(year) && month >= 0 && month <= 11 && year >= 1900 && year <= 2100) {
+            parsedDate = new Date(year, month, 1);
+          }
+        }
+      } else {
+        const parts = value.split('/');
+        if (parts.length === 3) {
+          const day = parseInt(parts[0]);
+          const month = parseInt(parts[1]) - 1;
+          const year = parseInt(parts[2]);
+          if (!isNaN(day) && !isNaN(month) && !isNaN(year) && 
+              day >= 1 && day <= 31 && month >= 0 && month <= 11 && year >= 1900 && year <= 2100) {
+            parsedDate = new Date(year, month, day);
+          }
+        }
+      }
+      
+      if (parsedDate && !isNaN(parsedDate.getTime())) {
+        setSelectedDate(parsedDate);
+        onChange?.(parsedDate);
+      }
+    } else {
+      setSelectedDate(null);
+      onChange?.(null);
+    }
+  };
+
+  const handleInputFocus = () => {
+    setIsInputFocused(true);
+    if (!isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setTriggerRect(rect);
+    }
+    setIsOpen(true);
+  };
+
+  const handleInputBlur = () => {
+    setIsInputFocused(false);
+    // Delay closing to allow clicking on dropdown
+    setTimeout(() => {
+      if (!isInputFocused) {
+        setIsOpen(false);
+      }
+    }, 150);
   };
 
   const handlePrevMonth = () => {
@@ -153,13 +221,10 @@ const DatePicker: React.FC<DatePickerProps> = ({
     setViewDate(new Date(viewDate.getFullYear() + 1, viewDate.getMonth(), 1));
   };
 
-  const getLastDayOfMonth = (year: number, month: number) => {
-    return new Date(year, month + 1, 0);
-  };
 
   const isMonthDisabled = (year: number, month: number) => {
     const firstDay = new Date(year, month, 1);
-    const lastDay = getLastDayOfMonth(year, month);
+    const lastDay = new Date(year, month + 1, 0);
 
     if (minDate && lastDay < minDate) return true;
     if (maxDate && firstDay > maxDate) return true;
@@ -172,6 +237,15 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
     const date = new Date(year, monthIndex, 1);
     setSelectedDate(date);
+    setInputValue(formatDate(date));
+    setIsOpen(false);
+    onChange?.(date);
+  };
+
+  const handleYearSelect = (year: number) => {
+    const date = new Date(year, 0, 1);
+    setSelectedDate(date);
+    setInputValue(formatDate(date));
     setIsOpen(false);
     onChange?.(date);
   };
@@ -180,7 +254,6 @@ const DatePicker: React.FC<DatePickerProps> = ({
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
     
     // Điều chỉnh để bắt đầu từ thứ 2
@@ -239,9 +312,12 @@ const DatePicker: React.FC<DatePickerProps> = ({
             $size={size}
             $disabled={disabled}
             $hasError={!!error}
-            readOnly
-            value={formatDate(selectedDate)}
+            readOnly={!allowInput}
+            value={allowInput ? inputValue : formatDate(selectedDate)}
             placeholder={placeholder}
+            onChange={allowInput ? handleInputChange : undefined}
+            onFocus={allowInput ? handleInputFocus : undefined}
+            onBlur={allowInput ? handleInputBlur : undefined}
             onClick={() => {
               if (!disabled) {
                 if (!isOpen && triggerRef.current) {
@@ -292,7 +368,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
                   ))}
                 </CalendarGrid>
               </>
-            ) : (
+            ) : mode === 'month' ? (
               <>
                 <CalendarHeader>
                   <CalendarNav onClick={handlePrevYear}>
@@ -317,6 +393,37 @@ const DatePicker: React.FC<DatePickerProps> = ({
                         onClick={() => !disabled && handleMonthSelect(idx)}
                       >
                         {m}
+                      </MonthItem>
+                    );
+                  })}
+                </MonthGrid>
+              </>
+            ) : (
+              <>
+                <CalendarHeader>
+                  <CalendarNav onClick={() => setViewDate(new Date(viewDate.getFullYear() - 10, 0, 1))}>
+                    <ChevronLeft size={16} />
+                  </CalendarNav>
+                  <CalendarTitle>
+                    {viewDate.getFullYear() - 5} - {viewDate.getFullYear() + 4}
+                  </CalendarTitle>
+                  <CalendarNav onClick={() => setViewDate(new Date(viewDate.getFullYear() + 10, 0, 1))}>
+                    <ChevronRight size={16} />
+                  </CalendarNav>
+                </CalendarHeader>
+
+                <MonthGrid>
+                  {Array.from({ length: 10 }, (_, i) => {
+                    const year = viewDate.getFullYear() - 5 + i;
+                    const isSel = !!selectedDate && selectedDate.getFullYear() === year;
+                    return (
+                      <MonthItem
+                        key={year}
+                        $isCurrentMonth={ new Date().getFullYear() === year}
+                        $isSelected={isSel}
+                        onClick={() => !disabled && handleYearSelect(year)}
+                      >
+                        {year}
                       </MonthItem>
                     );
                   })}

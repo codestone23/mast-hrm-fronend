@@ -10,7 +10,7 @@ import {
   ResetPasswordRequest,
   ChangePasswordRequest,
 } from '@/types/api';
-import { User } from "@/constants/types";
+import { User, UserProfile } from "@/constants/types";
 
 class AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {

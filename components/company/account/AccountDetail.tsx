@@ -80,7 +80,7 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
   };
 
   const handleBack = () => {
-    router.push('/settings/accounts');
+    router.push('/company/accounts');
   };
 
   const handleEdit = () => {

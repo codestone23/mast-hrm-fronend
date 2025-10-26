@@ -1,5 +1,5 @@
 import React from 'react'
-import Company from '@/components/company/Company'
+import Company from '@/components/settings/Company' 
 
 const CompanyPage = () => {
   return (

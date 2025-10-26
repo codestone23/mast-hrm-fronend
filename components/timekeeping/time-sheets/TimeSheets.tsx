@@ -1,10 +1,11 @@
 "use client";
 
 import { Calendar, ChevronLeft, ChevronRight, ImageUp, Plus, ScanFace } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import FaceIdentify from "../face-identify/FaceIdentify";
 import ListRequest from '../ListRequest';
 import CreateRequestModal from '../modals/CreateRequestModal';
+import RequestDetailModal from '../modals/RequestDetailModal';
 import RegisterFace from "../register-face/RegisterFace";
 import RequestTypeModal from '../modals/RequestTypeModal';
 import LateEarlyModal from '../modals/LateEarlyModal';
@@ -13,6 +14,9 @@ import PaidLeaveModal from '../modals/PaidLeaveModal';
 import RegularOvertimeModal from '../modals/RegularOvertimeModal';
 import ForgotTimekeepingModal from '../modals/ForgotTimekeepingModal';
 import { RequestModalType, RequestModalState } from '../modals/modalTypes';
+import { useAppSelector } from "@/store/hooks";
+import { ROLE_NAMES } from "@/constants/enums";
+import { RequestData } from '../ListRequest';
 import {
   CalendarContainer,
   CalendarGrid,
@@ -49,6 +53,7 @@ import {
   WeekDay,
   WorkSchedule,
   WorkScheduleTime,
+  RequestBadge,
 } from "./timeSheetStyle";
 import { useTimeSheet } from './useTimeSheet';
 
@@ -64,6 +69,9 @@ interface ProcessedTimeSheetData {
     isComplete: boolean;
     type: string;
     remote: string;
+    request_type: string | null;
+    paid_leave: number | null;
+    unpaid_leave: number | null;
   };
 }
 
@@ -71,6 +79,28 @@ const TimeSheets: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState("BẢNG CHẤM CÔNG");
   const [isCreateRequestModalOpen, setIsCreateRequestModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<RequestData | null>(null);
+  
+  // Get user role
+  const userData = useAppSelector((state) => state.user.data);
+  const userRole = userData?.user_information?.role?.name?.toLowerCase() || '';
+  const role = useMemo(() => {
+    if (!userRole) return null;
+    const roleNames = Object.values(ROLE_NAMES);
+    return roleNames.find(r => r.toLowerCase() === userRole) as string;
+  }, [userRole]);
+  
+  const canSeeOtherRequests = useMemo(() => {
+    if (!role) return false;
+    return [
+      ROLE_NAMES.TEAM_LEADER,
+      ROLE_NAMES.DIVISION_HEAD,
+      ROLE_NAMES.HR_MANAGER,
+      ROLE_NAMES.ADMIN,
+      ROLE_NAMES.SUPER_ADMIN
+    ].includes(role as ROLE_NAMES);
+  }, [role]);
   
   // Request modals state - optimized with single state
   const [requestModalState, setRequestModalState] = useState<RequestModalState>({
@@ -99,11 +129,17 @@ const TimeSheets: React.FC = () => {
     });
   }, [currentDate, setPayload]);
 
-  const tabs = [
-    "BẢNG CHẤM CÔNG",
-    "LIST ĐỀ XUẤT",
-    "BẢNG OT",
-  ];
+  const tabs = useMemo(() => {
+    const baseTabs = ["BẢNG CHẤM CÔNG"];
+    
+    baseTabs.splice(1, 0, "LIST ĐỀ XUẤT CỦA TÔI");
+    
+    if (canSeeOtherRequests) {
+      baseTabs.splice(2, 0, "LIST ĐỀ XUẤT");
+    }
+    
+    return baseTabs;
+  }, [canSeeOtherRequests]);
 
   const weekDays = [
     "Thứ 2",
@@ -116,17 +152,15 @@ const TimeSheets: React.FC = () => {
   ];
 
   const legendItems = [
-    { color: "#4CAF50", label: "Đủ công", status: "work" },
-    { color: "#FFA726", label: "Thiếu công", status: "late" },
-    { color: "#9C27B0", label: "Không có công", status: "absent" },
-    { color: "#F44336", label: "Nghỉ", status: "holiday" },
-    { color: "#FF9800", label: "Ngày lễ", status: "leave" },
-    { color: "#4CAF50", label: "Nghỉ có lương", status: "remote" },
-    { color: "#2196F3", label: "Nghỉ không lương", status: "ot" },
-    { color: "#FF5722", label: "Đi muộn/ về sớm", status: "late" },
-    { color: "#607D8B", label: "Quên chấm công", status: "absent" },
-    { color: "#795548", label: "Remote", status: "remote" },
-    { color: "#009688", label: "OT", status: "ot" },
+    { color: "#c9f8c9", label: "Đủ công", status: "work" },
+    { color: "#FFE0B2", label: "Thiếu công/Đi muộn", status: "late" },
+    { color: "#f3a7a7", label: "Không có công", status: "absent" },
+    { color: "#B3E5FC", label: "Nghỉ có lương", status: "leave" },
+    { color: "#FFE0B2", label: "Nghỉ không lương", status: "holiday" },
+    { color: "#E1BEE7", label: "Làm việc từ xa", status: "remote" },
+    { color: "#C8E6C9", label: "Làm thêm giờ (OT)", status: "ot" },
+    { color: "#FFF59D", label: "Đi muộn/Về sớm", status: "late-early" },
+    { color: "#FFCDD2", label: "Quên chấm công", status: "forgot-checkin" },
   ];
 
   const formatDateToVietnamTimezone = (date: Date) => {
@@ -156,7 +190,6 @@ const TimeSheets: React.FC = () => {
       fullDate: string;
     }> = [];
 
-    // Thêm ngày từ tháng trước (chỉ cần đủ để bắt đầu tuần)
     for (let i = daysFromPrevMonth - 1; i >= 0; i--) {
       const date = new Date(
         prevMonth.getFullYear(),
@@ -220,6 +253,23 @@ const TimeSheets: React.FC = () => {
     });
   };
 
+  // Handle request actions
+  const handleApproveRequest = (requestId: string) => {
+    console.log('Approve request:', requestId);
+  };
+
+  const handleRejectRequest = (requestId: string) => {
+    console.log('Reject request:', requestId);
+  };
+
+  const handleApproveAllRequests = () => {
+    console.log('Approve all requests');
+  };
+
+  const handleRejectAllRequests = () => {
+    console.log('Reject all requests');
+  };
+
   // Handle request type selection
   const handleSelectRequestType = (requestType: string) => {
     const modalType = requestType as RequestModalType;
@@ -273,7 +323,14 @@ const TimeSheets: React.FC = () => {
           ))}
         </TabsContainer>
         <HeaderButtons>
-          <CreateButton onClick={() => setIsCreateRequestModalOpen(true)}>
+          <CreateButton onClick={() => {
+            const today = getTodayInVietnamTimezone();
+            setRequestModalState({
+              isRequestTypeModalOpen: true,
+              activeModal: RequestModalType.NONE,
+              selectedDate: today
+            });
+          }}>
             <Plus size={16} />
             Tạo request
           </CreateButton>
@@ -286,6 +343,13 @@ const TimeSheets: React.FC = () => {
           </CreateButton>
          </HeaderButtons>
       </Header>
+
+      <RequestTypeModal
+        isOpen={Boolean(requestModalState.isRequestTypeModalOpen && requestModalState.activeModal === RequestModalType.NONE && requestModalState.selectedDate)}
+        onClose={closeAllModals}
+        onSelectRequestType={handleSelectRequestType}
+        selectedDate={requestModalState.selectedDate}
+      />
 
       <MainContent>
         {activeTab === "BẢNG CHẤM CÔNG" && (
@@ -368,6 +432,17 @@ const TimeSheets: React.FC = () => {
                               </>
                             ) : dayData ? (
                               <>
+                                {dayData.request_type && (
+                                  <RequestBadge $type={dayData.status}>
+                                    {dayData.request_type === 'LATE' || dayData.request_type === 'EARLY' || dayData.request_type === 'BOTH' ? 'Muộn/Sớm' :
+                                     dayData.request_type === 'PAID_LEAVE' ? 'Nghỉ lương' :
+                                     dayData.request_type === 'UNPAID_LEAVE' ? 'Nghỉ' :
+                                     dayData.request_type === 'REMOTE_WORK' || dayData.request_type === 'HYBRID' ? 'Remote' :
+                                     dayData.request_type === 'OVERTIME' ? 'OT' :
+                                     dayData.request_type === 'FORGOT_CHECKIN' ? 'Quên chấm' :
+                                     dayData.request_type}
+                                  </RequestBadge>
+                                )}
                                 <div>
                                   Đi Muộn: {dayData.lateTime || 0}
                                   <br />
@@ -452,16 +527,6 @@ const TimeSheets: React.FC = () => {
                   <StatNumber>
                     {isLoading ? '...' : 
                       Object.values(timeSheetData).reduce((total: number, day: ProcessedTimeSheetData[string]) => 
-                        total + (day.fines || 0), 0
-                      )
-                    } VNĐ
-                  </StatNumber>
-                  <StatLabel>Tiền phạt</StatLabel>
-                </StatItem>
-                <StatItem>
-                  <StatNumber>
-                    {isLoading ? '...' : 
-                      Object.values(timeSheetData).reduce((total: number, day: ProcessedTimeSheetData[string]) => 
                         total + (day.status === 'leave' ? 8 : 0), 0
                       )
                     }
@@ -484,24 +549,22 @@ const TimeSheets: React.FC = () => {
           </>
         )}
 
-        {activeTab === "LIST REQUEST" && (
+        {(activeTab === "LIST ĐỀ XUẤT CỦA TÔI" || activeTab === "LIST ĐỀ XUẤT") && (
           <div style={{ padding: '2rem', width: '100%' }}>
-            <ListRequest />
+            <ListRequest 
+              isMyRequestsOnly={activeTab === "LIST ĐỀ XUẤT CỦA TÔI"}
+              onRequestClick={(request) => {
+                setSelectedRequest(request);
+                setIsDetailModalOpen(true);
+              }}
+              onApprove={handleApproveRequest}
+              onReject={handleRejectRequest}
+              onApproveAll={handleApproveAllRequests}
+              onRejectAll={handleRejectAllRequests}
+            />
           </div>
         )}
-
-        {(activeTab === "BẢNG OT" || activeTab === "LIST ĐỀ XUẤT" || activeTab === "REQUEST OT") && (
-          <div style={{ 
-            padding: '2rem', 
-            width: '100%', 
-            textAlign: 'center',
-            color: 'var(--text-secondary)'
-          }}>
-            <h3>Tính năng {activeTab} đang được phát triển</h3>
-            <p>Vui lòng quay lại sau để sử dụng tính năng này.</p>
-          </div>
-        )}
-
+        
         {activeTab === "FaceIdentify" && (
           <div style={{ padding: '1rem', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <h3 style={{ marginBottom: '1rem' }}>Xác thực khuôn mặt</h3>
@@ -523,13 +586,6 @@ const TimeSheets: React.FC = () => {
         onClose={() => setIsCreateRequestModalOpen(false)}
       />
 
-      {/* Request Type Modal */}
-      <RequestTypeModal
-        isOpen={requestModalState.isRequestTypeModalOpen}
-        onClose={closeAllModals}
-        onSelectRequestType={handleSelectRequestType}
-        selectedDate={requestModalState.selectedDate}
-      />
 
       {/* Specific Request Modals */}
       <LateEarlyModal
@@ -560,6 +616,19 @@ const TimeSheets: React.FC = () => {
         isOpen={requestModalState.activeModal === RequestModalType.FORGOT_TIMEKEEPING}
         onClose={closeAllModals}
         selectedDate={requestModalState.selectedDate}
+      />
+
+      {/* Request Detail Modal */}
+      <RequestDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedRequest(null);
+        }}
+        request={selectedRequest}
+        canApprove={selectedRequest ? (activeTab === "LIST ĐỀ XUẤT" && selectedRequest.status === 'pending') : false}
+        onApprove={handleApproveRequest}
+        onReject={handleRejectRequest}
       />
     </TimeSheetsContainer>
   );

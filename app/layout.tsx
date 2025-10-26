@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import StyledComponentsRegistry from "../components/StyledComponentsRegistry";
 import { ToastProvider } from "../contexts/ToastContext";
 import QueryProvider from "../components/providers/QueryProvider";
+import ReduxProvider from "../components/providers/ReduxProvider";
 import "./globals.css";
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -19,11 +20,13 @@ export default function RootLayout({
     <html lang="vi" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <StyledComponentsRegistry>
-          <QueryProvider>
-            <ToastProvider>
-              {children}
-            </ToastProvider>
-          </QueryProvider>
+          <ReduxProvider>
+            <QueryProvider>
+              <ToastProvider>
+                {children}
+              </ToastProvider>
+            </QueryProvider>
+          </ReduxProvider>
         </StyledComponentsRegistry>
       </body>
     </html>

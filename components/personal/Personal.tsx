@@ -7,12 +7,9 @@ import {
   FileText,
   Calendar,
   AlertCircle,
-  CheckCircle,
   TrendingUp,
   BarChart3,
 } from "lucide-react";
-import DailyReports from "../timekeeping/DailyReports";
-import CreateReportModal from "../timekeeping/modals/CreateReportModal";
 import {
   PersonalContainer,
   DashboardGrid,
@@ -28,8 +25,6 @@ import {
   AttendanceCard,
   AttendanceStatus,
   MetricsList,
-  ResourcesCard,
-  EffortSection,
   CardHeader,
   CardTitle,
   CardLink,
@@ -47,17 +42,6 @@ import {
   AssetsListContainer,
   AssetsListTitle,
   AssetsItem,
-  ResourcesHeader,
-  ResourcesTitle,
-  ResourcesLink,
-  EffortDateLabel,
-  EffortDisplay,
-  EffortNumber,
-  EffortLabel,
-  EffortPercentage,
-  EffortText,
-  ResourcesInfo,
-  ResourcesDetailLink,
   DashboardCol,
   ButtonDetail,
   ProfileDetailRight,
@@ -70,8 +54,6 @@ import { usePersonalAttendanceStats as usePersonalAttendanceStats } from "../../
 
 const Personal: React.FC = () => {
   const router = useRouter();
-  const [isCreateReportModalOpen, setIsCreateReportModalOpen] = useState(false);
-  const [reports, setReports] = useState<any[]>([]);
   const { user } = usePersonal();
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -171,22 +153,14 @@ const Personal: React.FC = () => {
     router.push(ROUTERS.PERSONAL.INFO);
   };
 
-  const handleClickProjects = () => {
-    router.push(ROUTERS.PERSONAL.PROJECTS);
-  };
-
-  const handleCreateReport = (reportData: any) => {
-    setReports((prev: any) => [reportData, ...prev]);
-  };
-
   const getJoinDate = () => {
     const totalDays = Math.floor(
-      (new Date().getTime() - new Date(user?.join_date || "").getTime()) /
+      (new Date().getTime() - new Date(user?.join_date || "").getTime()) / 
         (1000 * 60 * 60 * 24)
     );
     if (user?.join_date) {
       return `Ngày gia nhập: ${
-        user.join_date.split("T")[0]
+        user?.join_date?.split("T")[0]
       } (${totalDays} ngày)`;
     }
     return `Ngày gia nhập: ${new Date().toLocaleDateString(
@@ -260,9 +234,9 @@ const Personal: React.FC = () => {
             </ProfileAvatar>
             <ProfileInfo>
               <ProfileDetail>
-                <h3>{user?.name}</h3>
-                <p>{user?.email}</p>
-                <div className="role">Frontend Developer</div>
+                <h3>{user?.user_information?.name}</h3>
+                <p>{user?.user_information?.email}</p>
+                <div className="role">{user?.user_information?.expertise}</div>
               </ProfileDetail>
               <ProfileDetailRight>
                 <div>
@@ -329,12 +303,6 @@ const Personal: React.FC = () => {
                   </MetricsList>
                 </WorkStatsContainer>
               </Card>
-              {/* <Card>
-                <DailyReports 
-                  reports={reports}
-                  onCreateReport={() => setIsCreateReportModalOpen(true)}
-                />
-              </Card> */}
             </DashboardCol>
             <DashboardCol>
               <Card>
@@ -363,36 +331,6 @@ const Personal: React.FC = () => {
                   <StatsNewestLabel>Cập nhật mới nhất</StatsNewestLabel>
                 </StatsNewest>
               </Card>
-              {/* <ResourcesCard>
-                <ResourcesHeader>
-                  <ResourcesTitle>Dự án hiện tại</ResourcesTitle>
-                  <ResourcesLink onClick={handleClickProjects}>Xem chi tiết</ResourcesLink>
-                </ResourcesHeader>
-                <EffortSection>
-                  <EffortDateLabel>Tiến độ ngày 18/08/2025</EffortDateLabel>
-                  <EffortDisplay>
-                    <EffortNumber>02</EffortNumber>
-                    <EffortLabel>Dự án</EffortLabel>
-                    <EffortPercentage>75%</EffortPercentage>
-                    <EffortText>Hoàn thành</EffortText>
-                  </EffortDisplay>
-                </EffortSection>
-                <EffortSection>
-                  <EffortDateLabel>Tiến độ tháng 08/2025</EffortDateLabel>
-                  <EffortDisplay>
-                    <EffortNumber>03</EffortNumber>
-                    <EffortLabel>Dự án</EffortLabel>
-                    <EffortPercentage color="var(--warning-500)">
-                      60%
-                    </EffortPercentage>
-                    <EffortText>Hoàn thành</EffortText>
-                  </EffortDisplay>
-                </EffortSection>
-                <ResourcesInfo $marginBottom="0.5rem">
-                  Web Application: <strong>85%</strong>
-                </ResourcesInfo>
-                <ResourcesDetailLink>Xem chi tiết</ResourcesDetailLink>
-              </ResourcesCard> */}
               <Card>
                 <CardHeader>
                   <IconWrapper>
@@ -410,7 +348,7 @@ const Personal: React.FC = () => {
                   <AssetsListTitle>
                     <strong>Danh sách thiết bị</strong>
                   </AssetsListTitle>
-                  {user?.assigned_devices.slice(0, 3).map((device: any) => (
+                  {user?.assigned_devices?.slice(0, 3).map((device: any) => (
                     <AssetsItem $marginBottom="0.25rem" key={device.id}>
                       {device.name}
                     </AssetsItem>
@@ -433,12 +371,6 @@ const Personal: React.FC = () => {
           <DashboardCol $span={1}></DashboardCol>
         </DashboardCol>
       </DashboardGrid>
-
-      <CreateReportModal
-        isOpen={isCreateReportModalOpen}
-        onClose={() => setIsCreateReportModalOpen(false)}
-        onSave={handleCreateReport}
-      />
     </PersonalContainer>
   );
 };

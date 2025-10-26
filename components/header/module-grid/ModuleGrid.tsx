@@ -3,13 +3,10 @@
 import React from "react";
 import {
   Users,
-  FolderOpen,
   UserCheck,
   Building2,
-  Calendar,
-  FileText,
   Settings,
-  BarChart3,
+  Briefcase,
 } from "lucide-react";
 import {
   GridContainer,
@@ -37,22 +34,16 @@ const modules: Module[] = [
     icon: Users,
     color: "#3b82f6",
     path: ROUTERS.PERSONAL.BASE,
+    allowedRoles: ["super_admin", "admin", "hr_manager", "project_manager", "division_head", "team_leader", "employee"],
   },
-  // {
-  //   id: "project",
-  //   name: "Project",
-  //   description: "Quản lý dự án và theo dõi tiến độ công việc",
-  //   icon: FolderOpen,
-  //   color: "#10b981",
-  //   path: "",
-  // },
   {
     id: "hr",
     name: "HR",
-    description: "Quản lý nhân sự và các hoạt động HR",
+    description: "Quản lý tài sản và thống kê",
     icon: UserCheck,
     color: "#f59e0b",
-    path: "",
+    path: ROUTERS.HR.STATS,
+    allowedRoles: ["hr_manager", "admin"],
   },
   {
     id: "division",
@@ -61,48 +52,36 @@ const modules: Module[] = [
     icon: Building2,
     color: "#ef4444",
     path: ROUTERS.DIVISION.BASE,
+    allowedRoles: ["super_admin", "admin", "division_head"],
   },
   {
-    id: "schedule",
-    name: "Schedule",
-    description: "Quản lý lịch làm việc và nghỉ phép",
-    icon: Calendar,
+    id: "company",
+    name: "Company",
+    description: "Quản lý công ty và cấu hình hệ thống",
+    icon: Briefcase,
     color: "#8b5cf6",
-    path: "",
+    path: ROUTERS.COMPANY.BASE,
+    allowedRoles: ["super_admin", "admin", "hr_manager"],
   },
-  // {
-  //   id: "reports",
-  //   name: "Reports",
-  //   description: "Báo cáo và thống kê dữ liệu",
-  //   icon: BarChart3,
-  //   color: "#06b6d4",
-  //   path: "",
-  // },
-  // {
-  //   id: "documents",
-  //   name: "Documents",
-  //   description: "Quản lý tài liệu và văn bản",
-  //   icon: FileText,
-  //   color: "#84cc16",
-  //   path: "",
-  // },
   {
     id: "settings",
     name: "Settings",
     description: "Cài đặt hệ thống và cấu hình",
     icon: Settings,
     color: "#6b7280",
-    path: ROUTERS.SETTINGS.ACCOUNTS,
+    path: ROUTERS.SETTINGS.BASE,
+    allowedRoles: ["super_admin", "admin", "hr_manager"],
   },
 ];
 
 interface ModuleGridProps {
   onModuleClick?: (moduleId: string) => void;
   userName?: string;
+  userRole?: string;
 }
 
 const ModuleGrid: React.FC<ModuleGridProps> = (props: ModuleGridProps) => {
-  const { onModuleClick, userName } = props;
+  const { onModuleClick, userName, userRole } = props;
   const handleModuleClick = (modulePath: string) => {
     if (onModuleClick) {
       onModuleClick(modulePath);
@@ -120,6 +99,11 @@ const ModuleGrid: React.FC<ModuleGridProps> = (props: ModuleGridProps) => {
     return now.toLocaleDateString("vi-VN", options);
   };
 
+  // Filter modules based on user role
+  const filteredModules = modules.filter(module => 
+    !module.allowedRoles || module.allowedRoles.includes(userRole || "")
+  );
+
   return (
     <GridContainer>
       <WelcomeSection>
@@ -134,7 +118,7 @@ const ModuleGrid: React.FC<ModuleGridProps> = (props: ModuleGridProps) => {
       </SystemSection>
 
       <ModulesGrid>
-        {modules.map((module) => {
+        {filteredModules.map((module) => {
           const IconComponent = module.icon;
           return (
             <ModuleCard

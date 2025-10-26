@@ -58,6 +58,22 @@ export interface AvatarUpdate {
   avatar_url: string;
 }
 
+export interface ImageUpdate {
+  file_type: string;
+  folder: string;
+}
+
+export interface PresignedUrlResponse {
+  upload_url: string;
+  public_id: string;
+  signature: string;
+  timestamp: number;
+  api_key: string;
+  folder: string;
+  transformation?: string;
+  expires_at: string;
+}
+
 export interface PositionsResponse {
   data: Position[];
   pagination: {
@@ -186,6 +202,66 @@ class ProfileService {
   async updateAvatar(data: AvatarUpdate): Promise<AvatarUpdate> {
     const response = await axiosInstance.patch('user-profile/avatar', data);
     return response.data;
+  }
+
+  async getPresignedUrl(data: ImageUpdate): Promise<PresignedUrlResponse> {
+    const response = await axiosInstance.post('upload/presigned-url', data);
+    return response.data;
+  }
+
+  async uploadImage(data: ImageUpdate): Promise<ImageUpdate> {
+    const response = await axiosInstance.post('upload/presigned-url', data);
+    return response.data;
+  }
+
+  async uploadAvatarFile(file: File): Promise<string> {
+    try {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error('Loại file không được hỗ trợ. Chỉ chấp nhận: JPEG, JPG, PNG, WEBP');
+      }
+
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        throw new Error('Kích thước file quá lớn. Tối đa 5MB');
+      }
+
+      const presignedData = await this.getPresignedUrl({
+        file_type: file.type,
+        folder: 'avatars',
+      });
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('public_id', presignedData.public_id);
+      formData.append('signature', presignedData.signature);
+      formData.append('timestamp', presignedData.timestamp.toString());
+      formData.append('api_key', presignedData.api_key);
+      formData.append('folder', presignedData.folder);
+      if (presignedData.transformation) {
+        formData.append('transformation', presignedData.transformation);
+      }
+
+      const uploadResponse = await fetch(presignedData.upload_url, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        throw new Error(`Upload thất bại: ${uploadResponse.status} - ${errorText}`);
+      }
+
+      const uploadResult = await uploadResponse.json();
+
+      // 3. Update avatar URL
+      await this.updateAvatar({ avatar_url: uploadResult.secure_url });
+
+      return uploadResult.secure_url;
+    } catch (error) {
+      console.error('Lỗi upload avatar:', error);
+      throw error;
+    }
   }
 }
 

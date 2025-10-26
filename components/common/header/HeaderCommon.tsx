@@ -88,6 +88,7 @@ const HeaderCommon = (props: HeaderCommonProps) => {
       case 'logout':
         CookieManager.deleteCookie('access_token');
         CookieManager.deleteCookie('refresh_token');
+        LocalStorageUtil.removeItem(LOCAL_KEY.USER);
         router.push(ROUTERS.AUTH.LOGIN);
         break;
       default:

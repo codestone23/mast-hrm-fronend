@@ -1,6 +1,6 @@
 'use client';
 
-import AccountDetail from "@/components/settings/account/AccountDetail";
+import AccountDetail from "@/components/company/account/AccountDetail";
 import React, { use } from 'react';
 
 interface AccountDetailPageProps {

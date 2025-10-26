@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
-import { FileText, Calendar, Clock, User, Plus, Filter } from 'lucide-react';
-import { Button, Select } from '@/components/common';
+import { FileText, Calendar, Clock, User, Filter, CheckCircle, XCircle } from 'lucide-react';
+import { Select } from '@/components/common';
 import CreateRequestModal from './modals/CreateRequestModal';
 import {
   RequestList,
@@ -13,10 +13,26 @@ import {
   RequestMeta,
   RequestMetaItem,
   RequestReason,
-  EmptyState
+  ListRequestContainer,
+  ListRequestHeader,
+  ListRequestTitle,
+  ListRequestSubtitle,
+  ListRequestHighlight,
+  FilterContainer,
+  FilterLabel,
+  EmptyStateContainer,
+  EmptyStateIcon,
+  EmptyStateTitle,
+  EmptyStateDescription,
+  RequestActions,
+  ApproveButton,
+  RejectButton,
+  BulkActionButtons,
+  BulkApproveButton,
+  BulkRejectButton,
 } from './modals/modalStyles';
 
-interface RequestData {
+export interface RequestData {
   id: string;
   type: string;
   title: string;
@@ -27,13 +43,30 @@ interface RequestData {
   reason: string;
   status: 'pending' | 'approved' | 'rejected';
   submittedAt: string;
+  employeeName?: string;
+  approverName?: string;
+  approvedAt?: string;
+  rejectionReason?: string;
 }
 
 interface ListRequestProps {
   onCreateRequest?: () => void;
+  onRequestClick?: (request: RequestData) => void;
+  isMyRequestsOnly?: boolean;
+  onApprove?: (requestId: string) => void;
+  onReject?: (requestId: string) => void;
+  onApproveAll?: () => void;
+  onRejectAll?: () => void;
 }
 
-const ListRequest: React.FC<ListRequestProps> = ({ onCreateRequest }) => {
+const ListRequest: React.FC<ListRequestProps> = ({ 
+  onRequestClick, 
+  isMyRequestsOnly = false,
+  onApprove,
+  onReject,
+  onApproveAll,
+  onRejectAll
+}) => {
   const [requests, setRequests] = useState<RequestData[]>([
     {
       id: 'request_1',
@@ -41,9 +74,10 @@ const ListRequest: React.FC<ListRequestProps> = ({ onCreateRequest }) => {
       title: 'Xin nghỉ phép',
       startDate: '2024-09-25',
       endDate: '2024-09-26',
-      reason: 'Về quê thăm gia đình',
+      reason: 'Về quê thăm gia đình, có việc gia đình cần giải quyết. Xin phép nghỉ 2 ngày để sắp xếp công việc.',
       status: 'pending',
-      submittedAt: '2024-09-20T09:00:00Z'
+      submittedAt: '2024-09-20T09:00:00Z',
+      employeeName: 'Nguyễn Văn A'
     },
     {
       id: 'request_2',
@@ -53,9 +87,12 @@ const ListRequest: React.FC<ListRequestProps> = ({ onCreateRequest }) => {
       endDate: '2024-09-22',
       startTime: '18:00',
       endTime: '20:00',
-      reason: 'Hoàn thành dự án MAST trước deadline',
+      reason: 'Hoàn thành dự án MAST trước deadline. Cần hoàn thiện các tính năng còn lại và kiểm thử toàn diện.',
       status: 'approved',
-      submittedAt: '2024-09-21T14:30:00Z'
+      submittedAt: '2024-09-21T14:30:00Z',
+      employeeName: 'Trần Thị B',
+      approverName: 'Lê Văn C',
+      approvedAt: '2024-09-21T15:00:00Z'
     },
     {
       id: 'request_3',
@@ -65,9 +102,12 @@ const ListRequest: React.FC<ListRequestProps> = ({ onCreateRequest }) => {
       endDate: '2024-09-19',
       startTime: '08:30',
       endTime: '17:30',
-      reason: 'Quên mang thẻ và điện thoại hết pin',
+      reason: 'Quên mang thẻ và điện thoại hết pin. Đã có mặt đúng giờ và làm việc đầy đủ. Xin xác nhận lại.',
       status: 'rejected',
-      submittedAt: '2024-09-19T18:00:00Z'
+      submittedAt: '2024-09-19T18:00:00Z',
+      employeeName: 'Phạm Văn D',
+      approverName: 'Nguyễn Thị E',
+      rejectionReason: 'Lý do không hợp lệ, đã kiểm tra camera và xác nhận không có mặt tại văn phòng vào thời gian này.'
     }
   ]);
   
@@ -133,12 +173,6 @@ const ListRequest: React.FC<ListRequestProps> = ({ onCreateRequest }) => {
     setRequests(prev => [requestData, ...prev]);
   };
 
-  const handleOpenCreateModal = () => {
-    setIsCreateModalOpen(true);
-    if (onCreateRequest) {
-      onCreateRequest();
-    }
-  };
 
   const filteredRequests = requests.filter(request => {
     const statusMatch = statusFilter === 'all' || request.status === statusFilter;
@@ -146,26 +180,49 @@ const ListRequest: React.FC<ListRequestProps> = ({ onCreateRequest }) => {
     return statusMatch && typeMatch;
   });
 
+  const pendingRequests = filteredRequests.filter(r => r.status === 'pending');
+  const hasPendingRequests = pendingRequests.length > 0 && !isMyRequestsOnly;
+
+  const handleApprove = (requestId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    onApprove?.(requestId);
+  };
+
+  const handleReject = (requestId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    onReject?.(requestId);
+  };
+
+  const handleApproveAll = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onApproveAll?.();
+  };
+
+  const handleRejectAll = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onRejectAll?.();
+  };
+
   return (
     <>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-            Danh sách yêu cầu ({filteredRequests.length})
-          </h3>
-          <Button 
-            variant="primary" 
-            size="sm"
-            onClick={handleOpenCreateModal}
-          >
-            <Plus size={16} />
-            Tạo yêu cầu
-          </Button>
-        </div>
+      <ListRequestContainer>
+        <ListRequestHeader>
+          <div>
+            <ListRequestTitle>
+              Danh sách yêu cầu
+            </ListRequestTitle>
+            <ListRequestSubtitle>
+              Tổng cộng: <ListRequestHighlight>{filteredRequests.length}</ListRequestHighlight> yêu cầu
+            </ListRequestSubtitle>
+          </div>
+        </ListRequestHeader>
 
         {/* Filters */}
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <Filter size={16} color="var(--text-secondary)" />
+        <FilterContainer>
+          <FilterLabel>
+            <Filter size={16} />
+            <span>Bộ lọc:</span>
+          </FilterLabel>
           <Select
             value={statusFilter}
             onChange={(value) => setStatusFilter(String(value))}
@@ -180,24 +237,46 @@ const ListRequest: React.FC<ListRequestProps> = ({ onCreateRequest }) => {
             size="sm"
             fullWidth={false}
           />
-        </div>
-      </div>
+        </FilterContainer>
+      </ListRequestContainer>
+
+      {hasPendingRequests && (
+        <BulkActionButtons>
+          <BulkApproveButton onClick={handleApproveAll}>
+            <CheckCircle size={18} />
+            Duyệt tất cả ({pendingRequests.length})
+          </BulkApproveButton>
+          <BulkRejectButton onClick={handleRejectAll}>
+            <XCircle size={18} />
+            Từ chối tất cả ({pendingRequests.length})
+          </BulkRejectButton>
+        </BulkActionButtons>
+      )}
 
       {filteredRequests.length === 0 ? (
-        <EmptyState>
-          <FileText size={48} />
-          <h3>Không có yêu cầu nào</h3>
-          <p>
+        <EmptyStateContainer>
+          <EmptyStateIcon>
+            <FileText size={48} />
+          </EmptyStateIcon>
+          <EmptyStateTitle>
+            Không có yêu cầu nào
+          </EmptyStateTitle>
+          <EmptyStateDescription>
             {statusFilter !== 'all' || typeFilter !== 'all' 
               ? 'Không tìm thấy yêu cầu nào với bộ lọc hiện tại'
               : 'Tạo yêu cầu đầu tiên của bạn'
             }
-          </p>
-        </EmptyState>
+          </EmptyStateDescription>
+        </EmptyStateContainer>
       ) : (
         <RequestList>
           {filteredRequests.map((request) => (
-            <RequestItem key={request.id}>
+            <RequestItem 
+              key={request.id}
+              $status={request.status}
+              onClick={() => onRequestClick && onRequestClick(request)}
+              style={{ cursor: onRequestClick ? 'pointer' : 'default' }}
+            >
               <RequestHeader>
                 <RequestTitle>{request.title}</RequestTitle>
                 <RequestStatus $status={request.status}>
@@ -232,6 +311,19 @@ const ListRequest: React.FC<ListRequestProps> = ({ onCreateRequest }) => {
               </RequestMeta>
               
               <RequestReason>{request.reason}</RequestReason>
+
+              {!isMyRequestsOnly && request.status === 'pending' && (
+                <RequestActions>
+                  <ApproveButton onClick={(e) => handleApprove(request.id, e)}>
+                    <CheckCircle size={16} />
+                    Duyệt
+                  </ApproveButton>
+                  <RejectButton onClick={(e) => handleReject(request.id, e)}>
+                    <XCircle size={16} />
+                    Từ chối
+                  </RejectButton>
+                </RequestActions>
+              )}
             </RequestItem>
           ))}
         </RequestList>

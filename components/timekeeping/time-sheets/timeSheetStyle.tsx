@@ -171,13 +171,20 @@ export const DayCell = styled.div<{
 }>`
   background: ${(props) => {
     if (!props.$isCurrentMonth) return "#f8f8f8";
-    if (props.$status === "work") return "#c9f8c9";
-    if (props.$status === "late") return "#FFE0B2";
-    if (props.$status === "absent") return "#f3a7a7";
-    if (props.$status === "holiday") return "#FFF3E0"; 
-    if (props.$status === "leave") return "#E1F5FE"; 
-    if (props.$status === "remote") return "#F3E5F5"; 
-    if (props.$status === "ot") return "#E8F5E8"; 
+    
+    // Request types colors
+    if (props.$status === "late-early") return "#FFF59D"; // Vàng nhạt cho đi muộn về sớm
+    if (props.$status === "leave") return "#B3E5FC"; // Xanh nhạt cho nghỉ có lương
+    if (props.$status === "holiday") return "#FFE0B2"; // Cam nhạt cho nghỉ không lương
+    if (props.$status === "remote") return "#E1BEE7"; // Tím nhạt cho làm việc từ xa
+    if (props.$status === "ot") return "#C8E6C9"; // Xanh lá nhạt cho OT
+    if (props.$status === "forgot-checkin") return "#FFCDD2"; // Đỏ nhạt cho quên chấm công
+    
+    // Regular status colors
+    if (props.$status === "work") return "#c9f8c9"; // Xanh lá cho đủ công
+    if (props.$status === "late") return "#FFE0B2"; // Cam cho đi muộn
+    if (props.$status === "absent") return "#f3a7a7"; // Đỏ cho không có công
+    
     return "white";
   }};
   padding: 8px;
@@ -191,7 +198,7 @@ export const DayCell = styled.div<{
   ${(props) =>
     props.$isToday &&
     `
-    border: 1px solid #FF9800;
+    border: 2px solid #FF9800;
   `}
 `;
 
@@ -339,4 +346,25 @@ export const TotalWork = styled.div`
   font-size: 20px;
   font-weight: 600;
   color: #4CAF50;
+`;
+
+export const RequestBadge = styled.div<{ $type: string }>`
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: white;
+  background: ${(props) => {
+    switch (props.$type) {
+      case 'late-early': return '#F57C00';
+      case 'leave': return '#0288D1';
+      case 'holiday': return '#E65100';
+      case 'remote': return '#6A1B9A';
+      case 'ot': return '#2E7D32';
+      case 'forgot-checkin': return '#C62828';
+      default: return '#757575';
+    }
+  }};
 `;

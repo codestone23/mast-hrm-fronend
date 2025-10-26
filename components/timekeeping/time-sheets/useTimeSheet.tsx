@@ -41,6 +41,9 @@ export const useTimeSheet = () => {
         isComplete: boolean;
         type: string;
         remote: string;
+        request_type: string | null;
+        paid_leave: number | null;
+        unpaid_leave: number | null;
     }>, item: TimeSheet) => {
         // Sử dụng UTC để đảm bảo consistency với backend
         const date = dayjs.utc(item.work_date).format('YYYY-MM-DD');
@@ -61,13 +64,41 @@ export const useTimeSheet = () => {
         
         // Xác định status dựa trên dữ liệu
         let status: string = 'absent';
-        if (item.checkin && item.checkout) {
+        
+        // Ưu tiên request_type trước
+        if (item.request_type) {
+            switch (item.request_type) {
+                case 'LATE':
+                case 'EARLY':
+                case 'BOTH':
+                    status = 'late-early';
+                    break;
+                case 'PAID_LEAVE':
+                    status = 'leave';
+                    break;
+                case 'UNPAID_LEAVE':
+                    status = 'holiday';
+                    break;
+                case 'REMOTE_WORK':
+                case 'HYBRID':
+                    status = 'remote';
+                    break;
+                case 'OVERTIME':
+                    status = 'ot';
+                    break;
+                case 'FORGOT_CHECKIN':
+                    status = 'absent';
+                    break;
+                default:
+                    status = 'work';
+            }
+        } else if (item.checkin && item.checkout) {
             status = item.late_time > 0 ? 'late' : 'work';
         } else if (item.checkin && !item.checkout) {
             status = 'work';
         } else if (item.paid_leave || item.unpaid_leave) {
             status = item.paid_leave ? 'leave' : 'holiday';
-        } else if (item.remote === 'REMOTE') {
+        } else if (item.remote === 'REMOTE' || item.remote === 'HYBRID') {
             status = 'remote';
         }
 
@@ -81,7 +112,10 @@ export const useTimeSheet = () => {
             fines: item.fines,
             isComplete: item.is_complete,
             type: item.type,
-            remote: item.remote
+            remote: item.remote,
+            request_type: item.request_type,
+            paid_leave: item.paid_leave,
+            unpaid_leave: item.unpaid_leave
         };
         
         return acc;

@@ -36,6 +36,7 @@ export const Card = styled.div<{ span?: number }>`
 `;
 
 export const WelcomeCard = styled(Card)`
+  font-size: 1.2rem;
   background: linear-gradient(135deg, var(--secondary-400), var(--secondary-500));
   color: white;
   position: relative;
@@ -458,19 +459,25 @@ export const IconWrapper = styled.div<{ color?: string }>`
 `;
 
 export const ProfileDetail = styled.div<{
-  $marginTop?: string;
-  $fontSize?: string;
-  $opacity?: number;
+    $marginTop?: string;
+    $fontSize?: string;
+    $opacity?: number;
 }>`
   margin-top: ${(props) => props.$marginTop || "0"};
-  font-size: ${(props) => props.$fontSize || "0.85rem"};
+  font-size: ${(props) => props.$fontSize || "1.2rem"};
   opacity: ${(props) => props.$opacity || 1};
+  h3 {
+    font-size: ${(props) => props.$fontSize || "1.2rem"};
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
 `;
 
 export const ProgressText = styled.div<{
-  $textAlign?: string;
-  $marginTop?: string;
-  $fontSize?: string;
+    $textAlign?: string;
+    $marginTop?: string;
+    $fontSize?: string;
 }>`
   margin-top: ${(props) => props.$marginTop || "0"};
   font-size: ${(props) => props.$fontSize || "0.8rem"};
@@ -611,11 +618,10 @@ export const EffortPercentage = styled.span<{ color?: string }>`
   font-size: 1.4rem;
   font-weight: 700;
   color: ${(props) => props.color || "var(--success-600)"};
-  background: ${(props) => 
-    props.color === "var(--warning-500)" 
-      ? "linear-gradient(135deg, var(--warning-500), var(--warning-600))"
-      : "linear-gradient(135deg, var(--success-500), var(--success-600))"
-  };
+  background: ${(props) =>
+      props.color === "var(--warning-500)"
+          ? "linear-gradient(135deg, var(--warning-500), var(--warning-600))"
+          : "linear-gradient(135deg, var(--success-500), var(--success-600))"};
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -702,7 +708,7 @@ export const FollowingTitle = styled.span`
   color: var(--text-primary);
 `;
 
-export const DashboardCol = styled.div<{ $span?: number }> `
+export const DashboardCol = styled.div<{ $span?: number }>`
   display: flex;
   flex-direction: column;
   grid-column: span ${(props) => props.$span || 1};

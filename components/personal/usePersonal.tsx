@@ -5,6 +5,7 @@ import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
 import ROUTERS from "@/config/router";
 import { useRouter } from "next/navigation";
 import { User } from "@/constants/types";
+import { convertUserToUserProfile } from "@/store/slices/userSlice";
 
 export const usePersonal = () => {
   const [initLogin, setInitLogin] = useState(false);
@@ -19,6 +20,8 @@ export const usePersonal = () => {
   useEffect(() => { 
     if (initLogin) {
       if(data) {
+        const userProfile = convertUserToUserProfile(data);
+        LocalStorageUtil.setItemObject(LOCAL_KEY.USER, userProfile);
         setUser(data);
         setInitLogin(false);
         return;

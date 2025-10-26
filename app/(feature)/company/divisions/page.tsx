@@ -1,6 +1,6 @@
 'use client';
 
-import { DivisionManagement } from "@/components/settings";
+import { DivisionManagement } from "@/components/company";
 import React from 'react';
 
 const DivisionsPage: React.FC = () => {

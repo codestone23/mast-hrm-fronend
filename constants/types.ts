@@ -7,6 +7,7 @@ export interface Module {
   icon: LucideIcon;
   color: string;
   path: string;
+  allowedRoles?: string[];
 }
 
 export interface User {
@@ -17,7 +18,51 @@ export interface User {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-  user_information: unknown[];
+  user_information?: {
+    id: number;
+    user_id: number;
+    email: string;
+    personal_email: string;
+    nationality: string;
+    name: string;
+    code: string;
+    avatar: string;
+    gender: string;
+    marital: string;
+    birthday: string;
+    position_id: number;
+    office_id: number;
+    address: string;
+    temp_address: string;
+    phone: string;
+    tax_code: string;
+    role_id: number;
+    status: string;
+    description: string;
+    level_id: number;
+    note: string;
+    overview: string;
+    expertise: string;
+    technique: string;
+    main_task: string;
+    language_id: number;
+    position?: {
+      id: number;
+      name: string;
+    };
+    role?: {
+      id: number;
+      name: string;
+    };
+    level?: {
+      id: number;
+      name: string;
+    };
+    language?: {
+      id: number;
+      name: string;
+    };
+  } | null;
   join_date: string | null;
   today_attendance: {
     checkin: string | null;
@@ -94,7 +139,7 @@ export interface UserProfile {
       id: number;
       name: string;
     };
-  }[] | null;
+  } | null;
   education?: Array<{
     id: number;
     user_id: number;
@@ -134,6 +179,26 @@ export interface UserProfile {
       };
     };
   }>;
+  assigned_devices?: Array<{
+    id: number;
+    name: string;
+    description: string;
+    created_at: string;
+    updated_at: string;
+  }>;
+  annual_leave_quota?: number;
+  remaining_leave_days?: number;
+  join_date?: string;
+  today_attendance?: {
+    checkin: string | null;
+    checkout: string | null;
+    total_work_time: number;
+    status: string | null;
+    late_time: number;
+    early_time: number;
+    is_complete: boolean;
+    has_attendance: boolean;
+  };
 }
 
 export interface Account {
@@ -157,4 +222,37 @@ export interface Division {
   manager?: string;
   status: "active" | "inactive";
   createdAt: string;
+}
+
+export interface Asset {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  status: "available" | "in_use" | "maintenance" | "disposed";
+  category?: string;
+  price?: number;
+  warehouse?: string;
+  importDate?: string;
+  user?: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AssetRequest {
+  id: string;
+  assetId: string;
+  asset?: Asset;
+  userId: string;
+  userName?: string;
+  userAvatar?: string;
+  reason: string;
+  status: "pending" | "approved" | "rejected";
+  requestedAt: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
 }

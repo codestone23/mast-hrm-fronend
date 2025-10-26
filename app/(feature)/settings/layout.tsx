@@ -14,8 +14,7 @@ export default function Layout({
   const activeTab = pathname.slice(1, pathname.length).join("/");
 
   const navItems = [
-    { id: ROUTERS.SETTINGS.ACCOUNTS, label: "Quản lý tài khoản" },
-    { id: ROUTERS.SETTINGS.DIVISIONS, label: "Các divisions" },
+    { id: ROUTERS.SETTINGS.BASE, label: "Cài đặt" },
   ];
 
   return (

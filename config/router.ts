@@ -19,10 +19,18 @@ const ROUTERS = {
         CUSTOMER: "/division/customer",
         REVENUE: "/division/revenue",
     },
+    COMPANY: {
+        BASE: "/company",
+        ACCOUNTS: "/company/accounts",
+        DIVISIONS: "/company/divisions",
+    },
+    HR: {
+        STATS: "/hr/stats",
+        ASSETS: "/hr/assets",
+        USERS: "/hr/users",
+    },
     SETTINGS: {
         BASE: "/settings",
-        ACCOUNTS: "/settings/accounts",
-        DIVISIONS: "/settings/divisions",
     },
 };
 

@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { Plus, Eye, Edit, Trash2, User, Users } from "lucide-react";
 import {
   PersonalContainer,
-  DashboardGridAccount,
+  DashboardGrid,
   Card,
   CardHeader,
   CardTitle,
@@ -26,14 +27,12 @@ import {
   EmptyState,
   EmptyIcon,
   EmptyText,
-} from "./accountStyle";
-import CreateAccountModal from "./modals/CreateAccountModal";
-import EditAccountModal from "./modals/EditAccountModal";
-import { ConfirmDeleteModal } from "@/components/common";
+} from "./userStyle";
 import { Account } from "@/constants/types";
 import { useRouter } from "next/navigation";
+import { DashboardGridAccount } from "@/components/company/account/accountStyle";
 
-const AccountManagement: React.FC = () => {
+const UserManagement: React.FC = () => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -114,7 +113,7 @@ const AccountManagement: React.FC = () => {
   };
 
   const handleViewDetail = (account: Account) => {
-    router.push(`/settings/accounts/${account.id}`);
+    router.push(`/hr/users/${account.id}`);
   };
 
   const handleEdit = (account: Account) => {
@@ -143,7 +142,7 @@ const AccountManagement: React.FC = () => {
             <IconWrapper>
               <Users size={20} />
             </IconWrapper>
-            <CardTitle>Quản lý tài khoản hệ thống</CardTitle>
+            <CardTitle>Quản lý người dùng</CardTitle>
           </CardHeader>
           <div
             style={{
@@ -164,7 +163,7 @@ const AccountManagement: React.FC = () => {
             />
             <CreateButton onClick={() => setIsCreateModalOpen(true)}>
               <Plus size={20} />
-              Tạo tài khoản mới
+              Tạo người dùng mới
             </CreateButton>
           </div>
           <div
@@ -209,7 +208,7 @@ const AccountManagement: React.FC = () => {
               <IconWrapper>
                 <Users size={20} />
               </IconWrapper>
-              <CardTitle>Danh sách tài khoản</CardTitle>
+              <CardTitle>Danh sách người dùng</CardTitle>
             </CardHeader>
 
             {filteredAccounts.length === 0 ? (
@@ -219,8 +218,8 @@ const AccountManagement: React.FC = () => {
                 </EmptyIcon>
                 <EmptyText>
                   {searchTerm
-                    ? "Không tìm thấy tài khoản nào"
-                    : "Chưa có tài khoản nào"}
+                    ? "Không tìm thấy người dùng nào"
+                    : "Chưa có người dùng nào"}
                 </EmptyText>
               </EmptyState>
             ) : (
@@ -238,7 +237,7 @@ const AccountManagement: React.FC = () => {
                       <UserInfo>
                         <Avatar>
                           {account.avatar ? (
-                            <img src={account.avatar} alt={account.name} />
+                            <Image src={account.avatar} alt={account.name} width={40} height={40} />
                           ) : (
                             <User size={20} />
                           )}
@@ -288,35 +287,19 @@ const AccountManagement: React.FC = () => {
         </DashboardCol>
       </DashboardGridAccount>
 
-      {/* Modals */}
-      <CreateAccountModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSave={handleCreateAccount}
-      />
-
-      <EditAccountModal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setSelectedAccount(null);
-        }}
-        account={selectedAccount}
-        onSave={handleEditAccount}
-      />
-
-      <ConfirmDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setIsDeleteModalOpen(false);
-          setSelectedAccount(null);
-        }}
-        onConfirm={handleDeleteAccount}
-        title="Xóa tài khoản"
-        message={`Bạn có chắc chắn muốn xóa tài khoản "${selectedAccount?.name}"?`}
-      />
+      {/* Modals sẽ được thêm sau */}
+      {isCreateModalOpen && (
+        <div>Create Modal</div>
+      )}
+      {isEditModalOpen && (
+        <div>Edit Modal</div>
+      )}
+      {isDeleteModalOpen && (
+        <div>Delete Modal</div>
+      )}
     </PersonalContainer>
   );
 };
 
-export default AccountManagement;
+export default UserManagement;
+

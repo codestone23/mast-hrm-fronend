@@ -1,7 +1,8 @@
-import React, { useRef } from "react";
+import React from "react";
 import { Camera, Clock } from "lucide-react";
 import Image from "next/image";
 import IMAGES from "@/config/images";
+import { User, UserProfile as UserProfileType } from "@/constants/types";
 import {
   LeftSidebar,
   UserProfile,
@@ -19,13 +20,13 @@ import {
 } from "./personalInfoStyle";
 
 interface PersonalInfoSidebarProps {
-  data?: any;
+  data?: UserProfileType;
   avatarUrl: string | null;
   isUploading: boolean;
   onAvatarClick: () => void;
   onAvatarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
-  initPersonalInfo?: any;
+  initPersonalInfo?: User;
 }
 
 const PersonalInfoSidebar: React.FC<PersonalInfoSidebarProps> = ({

@@ -5,7 +5,6 @@ import { useEffect } from 'react';
 import { store } from '@/store';
 import { loadUserFromStorage, fetchUserData } from '@/store/slices/userSlice';
 import LocalStorageUtil, { LOCAL_KEY } from '@/utils/LocalStorageUtil';
-import authService from '@/services/auth.service';
 
 interface ReduxProviderProps {
   children: React.ReactNode;
@@ -16,7 +15,6 @@ export default function ReduxProvider({ children }: ReduxProviderProps) {
     const initializeUser = async () => {
       // Try to load from localStorage first
       const userData = LocalStorageUtil.getItemObject(LOCAL_KEY.USER);
-      console.log('ReduxProvider: User data in localStorage:', userData);
       
       if (userData) {
         // If have data in localStorage, load it
@@ -25,7 +23,6 @@ export default function ReduxProvider({ children }: ReduxProviderProps) {
         // If no data in localStorage, fetch from API
         // Try to call API regardless of authService check
         try {
-          console.log('ReduxProvider: No data in localStorage, fetching from API...');
           await store.dispatch(fetchUserData()).unwrap();
         } catch (error) {
           console.error('ReduxProvider: Failed to fetch user data:', error);

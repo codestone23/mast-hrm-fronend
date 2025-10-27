@@ -87,9 +87,8 @@ const ListAssetRequests: React.FC<ListAssetRequestsProps> = ({
   return (
     <RequestList>
       {requests.map((request) => {
-        const statusColors = getStatusColor(request.status);
         return (
-          <RequestItem key={request.id} $status={request.status as any}>
+          <RequestItem key={request.id} $status={request.status}>
             <RequestHeader>
               <div style={{ flex: 1 }}>
                 <RequestTitle>{request.asset?.name || "N/A"}</RequestTitle>
@@ -116,7 +115,7 @@ const ListAssetRequests: React.FC<ListAssetRequestsProps> = ({
                   </div>
                 </div>
               </div>
-              <RequestStatus $status={request.status as any}>
+              <RequestStatus $status={request.status}>
                 {getStatusText(request.status)}
               </RequestStatus>
             </RequestHeader>

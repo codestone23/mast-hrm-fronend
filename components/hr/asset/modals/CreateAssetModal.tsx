@@ -23,6 +23,11 @@ interface CreateAssetModalProps {
   onSave: (assetData: Omit<Asset, "id">) => void;
 }
 
+interface SelectOption {
+  value: string;
+  label: string;
+}
+
 const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
   isOpen,
   onClose,

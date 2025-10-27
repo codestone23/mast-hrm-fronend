@@ -17,6 +17,13 @@ import {
 import { Asset } from "@/constants/types";
 import { Input, Select, SelectOption, TextArea } from "@/components/common";
 
+const enum AssetStatus {
+  AVAILABLE = "available",
+  IN_USE = "in_use",
+  MAINTENANCE = "maintenance",
+  DISPOSED = "disposed",
+}
+
 interface EditAssetModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -34,7 +41,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
     code: "",
     name: "",
     description: "",
-    status: "available" as const,
+    status: AssetStatus.AVAILABLE,
     category: "",
     price: "",
     warehouse: "",
@@ -43,10 +50,10 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const statusOptions: SelectOption[] = [
-    { value: "available", label: "Trống" },
-    { value: "in_use", label: "Đang sử dụng" },
-    { value: "maintenance", label: "Bảo trì" },
-    { value: "disposed", label: "Thanh lý" },
+    { value: AssetStatus.AVAILABLE, label: "Trống" },
+    { value: AssetStatus.IN_USE, label: "Đang sử dụng" },
+    { value: AssetStatus.MAINTENANCE, label: "Bảo trì" },
+    { value: AssetStatus.DISPOSED, label: "Thanh lý" },
   ];
 
   useEffect(() => {
@@ -55,7 +62,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
         code: asset.code,
         name: asset.name,
         description: asset.description || "",
-        status: asset.status,
+        status: asset.status as AssetStatus,
         category: asset.category || "",
         price: asset.price?.toString() || "",
         warehouse: asset.warehouse || "",

@@ -83,7 +83,7 @@ const DevDebugPage: React.FC = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [consoleEnabled, setConsoleEnabled] = useState(false);
   const [enableReduxMonitor, setEnableReduxMonitor] = useState(false);
-  const [reduxHistory, setReduxHistory] = useState<any[]>([]);
+  const [reduxHistory, setReduxHistory] = useState<Array<{ timestamp: string; state: unknown }>>([]);
   const rootState = useAppSelector((state) => state);
 
   // Hook để theo dõi Redux state changes

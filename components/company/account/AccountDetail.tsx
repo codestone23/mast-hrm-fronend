@@ -228,14 +228,6 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
                   <InfoValue>Chưa có thông tin</InfoValue>
                 </InfoItem>
               </InfoGrid>
-
-              <SectionHeader>
-                <SectionTitle>Thông tin thân nhân</SectionTitle>
-                <SectionAction onClick={() => console.log('Add family member')}>
-                  <Plus size={16} />
-                </SectionAction>
-              </SectionHeader>
-              <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Chưa có thông tin thân nhân</p>
             </>
           )}
 

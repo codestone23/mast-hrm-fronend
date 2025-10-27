@@ -1,5 +1,6 @@
 import React from "react";
 import { Edit } from "lucide-react";
+import { UserProfile } from "@/constants/types";
 import {
   SectionHeader,
   SectionTitle,
@@ -11,7 +12,7 @@ import {
 } from "./personalInfoStyle";
 
 interface BasicInfoTabProps {
-  data?: any;
+  data?: UserProfile;
   onEdit: () => void;
 }
 

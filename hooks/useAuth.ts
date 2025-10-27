@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { authService } from '@/services/auth.service';
 import TokenManager from '@/utils/token';
-import { User, UserProfile } from "@/constants/types";
+import { User } from "@/constants/types";
 import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
 import { convertUserToUserProfile } from "@/store/slices/userSlice";
 
 interface AuthState {
-  user: UserProfile | null;
+  user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -29,7 +29,7 @@ export const useAuth = () => {
         
         if (userFromToken) {
           setAuthState({
-            user: userFromToken as UserProfile,
+            user: userFromToken as User,
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -43,7 +43,7 @@ export const useAuth = () => {
       if (newToken) {
         const userFromToken = authService.getCurrentUserFromToken();
         setAuthState({
-          user: userFromToken as UserProfile,
+          user: userFromToken as User,
           isAuthenticated: true,
           isLoading: false,
           error: null,
@@ -82,7 +82,7 @@ export const useAuth = () => {
         // Lấy thông tin user từ token
         const userFromToken = authService.getCurrentUserFromToken();
         setAuthState({
-          user: userFromToken as UserProfile,
+          user: userFromToken as User,
           isAuthenticated: true,
           isLoading: false,
           error: null,
@@ -146,7 +146,7 @@ export const useAuth = () => {
         LocalStorageUtil.setItemObject(LOCAL_KEY.USER, userProfile);
         setAuthState(prev => ({
           ...prev,
-          user: userProfile,
+          user: response,
           isAuthenticated: true,
         }));
       }
@@ -166,7 +166,7 @@ export const useAuth = () => {
           const userFromToken = authService.getCurrentUserFromToken();
           setAuthState(prev => ({
             ...prev,
-            user: userFromToken as UserProfile,
+            user: userFromToken as User,
             isAuthenticated: true,
           }));
         } else {

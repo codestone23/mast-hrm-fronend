@@ -383,7 +383,7 @@ const PersonalInfo = () => {
                 onAvatarClick={handleAvatarClick}
                 onAvatarChange={handleAvatarChange}
                 fileInputRef={fileInputRef}
-                initPersonalInfo={initPersonalInfo}
+                initPersonalInfo={initPersonalInfo || undefined}
             />
 
             <MainContent>

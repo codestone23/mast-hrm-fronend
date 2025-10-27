@@ -1,5 +1,4 @@
 import { Middleware } from '@reduxjs/toolkit';
-import { RootState } from '../store';
 
 let consoleEnabled = false;
 
@@ -8,7 +7,7 @@ export const enableConsoleLogs = (enabled: boolean) => {
 };
 
 // Redux middleware để log state changes
-export const loggerMiddleware: Middleware<{}, RootState> = (store) => (next) => (action) => {
+export const loggerMiddleware: Middleware = (store) => (next) => (action) => {
   if (consoleEnabled) {
     console.group('🔍 Redux Action');
     console.log('%cPrevious State:', 'color: #9E9E9E', store.getState());

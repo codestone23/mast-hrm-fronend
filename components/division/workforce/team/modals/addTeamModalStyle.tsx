@@ -31,11 +31,6 @@ export const Input = styled.input`
   color: var(--text-primary);
 `;
 
-export const DateInput = styled.input`
-  width: 100%;
-  padding: 0.45rem 0.6rem;
-`;
-
 export const Select = styled.select`
   width: 100%;
   padding: 0.6rem 0.75rem;

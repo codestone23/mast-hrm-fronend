@@ -12,13 +12,13 @@ import {
   RightCol,
   Minutes,
 } from "./empLateModalStyle";
-import { LateEntryData } from "@/types/api";
+import { WorkingEntryData } from "@/types/api";
 
-interface EmpLateModalProps {
+interface EmpWorkModalProps {
   isOpen: boolean;
   onClose: () => void;
   date?: string;
-  entries?: LateEntryData[];
+  entries?: WorkingEntryData[];
 }
 
 const SAMPLE_DATA = (n = 10) => {
@@ -29,13 +29,13 @@ const SAMPLE_DATA = (n = 10) => {
     email: "someone@example.com",
     position: "Developer",
     checkin_time: "09:15 AM",
-    late_minutes: 15,
-    status: "Late",
-    duration: "15",
+    checkout_time: "05:00 PM",
+    status: "On Time",
+    duration: "8 hours",
   }));
 };
 
-const EmpLateModal: React.FC<EmpLateModalProps> = ({
+const EmpLateModal: React.FC<EmpWorkModalProps> = ({
   isOpen,
   onClose,
   date,
@@ -64,7 +64,7 @@ const EmpLateModal: React.FC<EmpLateModalProps> = ({
               </Info>
 
               <RightCol>
-                <Minutes>{e.late_minutes} phút</Minutes>
+                <Minutes>{e.duration} phút</Minutes>
               </RightCol>
             </Row>
           ))}

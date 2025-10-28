@@ -21,22 +21,9 @@ import {
   RowsPerPageSelect,
 } from "./employeeStyle";
 import { useRouter } from "next/navigation";
-
-interface EmpRow {
-  id: string;
-  code: string;
-  name: string;
-  email: string;
-  birthday: string;
-  team: string;
-  joinDate: string;
-  months: number;
-  position: string;
-  skills: string[];
-  level: string;
-  rank: number;
-  avatar?: string;
-}
+import divisionWorkforceService from "@/services/division_workforce.service";
+import { DivisionMemberData } from "@/types/api";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // helper to format date
 const fmtDate = (d: string) => {
@@ -52,70 +39,54 @@ const teams = ["Why's Team", "Dev Ops", "Finance", "HR"];
 const positions = ["Dev", "PM", "Designer", "Tester"];
 const levels = ["Intern", "Fresher", "Junior", "Senior"];
 
-const SampleData = (n = 60) => {
-  const out: EmpRow[] = [];
-
-  for (let i = 1; i <= n; i++) {
-    const join = new Date(2021, i % 12, (i % 28) + 1);
-    const birth = new Date(1990 + (i % 10), i % 12, (i % 28) + 1);
-    out.push({
-      id: String(i),
-      code: `NV${String(i).padStart(4, "0")}`,
-      name: `Nguyễn Bảo ${i}`,
-      email: `nb${i}@example.com`,
-      birthday: birth.toISOString(),
-      team: teams[i % teams.length],
-      joinDate: join.toISOString(),
-      months: 24,
-      position: positions[i % positions.length],
-      skills: ["PHP", "React"].slice(0, (i % 2) + 1),
-      level: levels[i % levels.length],
-      rank: 2,
-      avatar: "https://i.pravatar.cc/48?img=" + ((i % 70) + 1),
-    });
-  }
-  return out;
-};
-
 const EmployeeList: React.FC = () => {
-  const [data, setData] = useState<EmpRow[]>(() => SampleData(60));
+  const [data, setData] = useState<DivisionMemberData[] | null>(null);
 
-  const [query, setQuery] = useState("");
-  const [teamFilter, setTeamFilter] = useState("");
-  const [positionFilter, setPositionFilter] = useState("");
-  const [skillFilter, setSkillFilter] = useState("");
-  const [levelFilter, setLevelFilter] = useState("");
+  const [search, setSearch] = useState("");
+  const [teamId, setTeamId] = useState<number | undefined>(undefined);
+  const [positionId, setPositionId] = useState<number | undefined>(undefined);
+  const [skillId, setSkillId] = useState<number | undefined>(undefined);
+  const [levelId, setLevelId] = useState<number | undefined>(undefined);
+  const [sortBy, setSortBy] = useState("id");
+  const [sortOrder, setSortOrder] = useState("asc");
 
+  const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [limit, setLimit] = useState(10);
   const router = useRouter();
 
-  const filtered = useMemo(() => {
-    return data.filter((r) => {
-      if (teamFilter && r.team !== teamFilter) return false;
-      if (positionFilter && r.position !== positionFilter) return false;
-      if (levelFilter && r.level !== levelFilter) return false;
-      if (skillFilter && !r.skills.includes(skillFilter)) return false;
-      if (query) {
-        const q = query.toLowerCase();
-        if (!`${r.code} ${r.name} ${r.email}`.toLowerCase().includes(q))
-          return false;
-      }
-      return true;
-    });
-  }, [data, teamFilter, positionFilter, levelFilter, skillFilter, query]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const DIVISION_ID = 1; // to be replaced with actual division id
 
   const resetFilters = () => {
-    setQuery("");
-    setTeamFilter("");
-    setPositionFilter("");
-    setSkillFilter("");
-    setLevelFilter("");
+    setSearch("");
+    setTeamId(undefined);
+    setPositionId(undefined);
+    setSkillId(undefined);
+    setLevelId(undefined);
     setPage(1);
   };
+
+  useEffect(() => {
+    try {
+      divisionWorkforceService.getMembers(
+        DIVISION_ID,
+        page,
+        limit,
+        search,
+        teamId,
+        positionId,
+        skillId,
+        levelId,
+        sortBy,
+        sortOrder
+      ).then((res) => {
+        setData(res.data);
+        setTotalPages(res.pagination.totalPages);
+      });
+    } catch (err) {
+      console.error("Failed to fetch employee data:", err);
+    }
+  }, [DIVISION_ID, page, limit, search, teamId, positionId, skillId, levelId, sortBy, sortOrder]);
 
   return (
     <Container>
@@ -123,15 +94,15 @@ const EmployeeList: React.FC = () => {
         <SearchRow>
           <Input
             placeholder="Tìm nhân viên"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </SearchRow>
 
         <FilterRow>
           <Select
-            value={teamFilter}
-            onChange={(v: string | number) => setTeamFilter(v as string)} 
+            value={teamId}
+            onChange={(v: string | number) => setTeamId(Number(v))}
             options={[
               { value: "", label: "Team" },
               ...teams.map((t) => ({ value: t, label: t })),
@@ -139,8 +110,8 @@ const EmployeeList: React.FC = () => {
           />
 
           <Select
-            value={positionFilter}
-            onChange={(v: string | number) => setPositionFilter(v as string)}
+            value={positionId}
+            onChange={(v: string | number) => setPositionId(Number(v))}
             options={[
               { value: "", label: "Vị trí" },
               ...positions.map((p) => ({ value: p, label: p })),
@@ -148,18 +119,18 @@ const EmployeeList: React.FC = () => {
           />
 
           <Select
-            value={skillFilter}
-            onChange={(v: string | number) => setSkillFilter(v as string)}
+            value={skillId}
+            onChange={(v: string | number) => setSkillId(Number(v))}
             options={[
               { value: "", label: "Kỹ năng" },
-              { value: "PHP", label: "PHP" },
-              { value: "React", label: "React" },
+              { value: "1", label: "PHP" },
+              { value: "2", label: "React" },
             ]}
           />
 
           <Select
-            value={levelFilter}
-            onChange={(v: string | number) => setLevelFilter(v as string)}
+            value={levelId}
+            onChange={(v: string | number) => setLevelId(Number(v))}
             options={[
               { value: "", label: "Level" },
               ...levels.map((l) => ({ value: l, label: l })),
@@ -203,11 +174,11 @@ const EmployeeList: React.FC = () => {
               </TR>
             </THead>
             <TBody>
-              {visible.map((r) => (
+              {data?.map((r) => (
                 <TR
-                  key={r.id}
+                  key={r.user_id}
                   onClick={() =>
-                    router.push(`/division/workforce/employee/${r.id}`)
+                    router.push(`/division/workforce/employee/${r.user_id}`)
                   }
                   style={{ cursor: "pointer" }}
                 >
@@ -223,12 +194,12 @@ const EmployeeList: React.FC = () => {
                   </TD>
                   <TD>{fmtDate(r.birthday)}</TD>
                   <TD>{r.team}</TD>
-                  <TD>{fmtDate(r.joinDate)}</TD>
-                  <TD style={{ textAlign: "center" }}>{r.months}</TD>
+                  <TD>{fmtDate(r.join_date)}</TD>
+                  <TD style={{ textAlign: "center" }}>{r.months_of_service}</TD>
                   <TD>{r.position}</TD>
-                  <TD>{r.skills.join(", ")}</TD>
+                  <TD>{r.skills}</TD>
                   <TD>{r.level}</TD>
-                  <TD style={{ textAlign: "center" }}>{r.rank}</TD>
+                  <TD style={{ textAlign: "center" }}>{r.level}</TD>
                   <TD>
                     <Button variant="ghost" size="sm">
                       ⋮
@@ -243,14 +214,14 @@ const EmployeeList: React.FC = () => {
 
       <PaginationRow>
         <div>
-          1 - {Math.min(pageSize, filtered.length)} of {filtered.length}
+          1 - {limit} from {totalPages * limit}
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <RowsPerPageSelect
-            value={String(pageSize)}
+            value={String(limit)}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              setPageSize(Number(e.target.value));
+              setLimit(Number(e.target.value));
               setPage(1);
             }}
           >
@@ -263,7 +234,7 @@ const EmployeeList: React.FC = () => {
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
           >
-            ‹
+            <ChevronLeft color="var(--text-secondary)" />
           </PageButton>
           <div>
             {page} / {totalPages}
@@ -272,7 +243,7 @@ const EmployeeList: React.FC = () => {
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
           >
-            ›
+            <ChevronRight color="var(--text-secondary)" />
           </PageButton>
         </div>
       </PaginationRow>

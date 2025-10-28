@@ -73,6 +73,7 @@ export const CardHeader = styled.div`
 `;
 
 export const CardBody = styled.div`
+height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -113,4 +114,33 @@ export const ArrowBtn = styled.div`
   background: transparent;
   color: rgba(2,6,23,0.5);
   cursor: pointer;
+`;
+
+
+export const LoadingContainer = styled.div`
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+export const LoadingText = styled.div`
+  font-size: 16px;
+  color: #64748b;
+`;
+
+export const EmptyDataContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;  
+  gap: 12px;
+  padding: 20px 0;
+`;
+export const EmptyDataText = styled.div`
+  font-size: 16px;
+  color: #64748b;
 `;

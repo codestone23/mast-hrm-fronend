@@ -296,3 +296,171 @@ export interface CheckOutData {
 export interface RegisterFaceData {
   image: File;
 }
+
+export interface WorkingEntryData {
+  user_id: number;
+  name: string;
+  email: string;
+  avatar: string;
+  position: string;
+  checkin_time: string;
+  checkout_time: string;
+  status: string;
+  duration: string;
+}
+
+export interface LeaveEntryData {
+  user_id: number;
+  name: string;
+  email: string;
+  avatar: string;
+  position: string;
+  leave_type: string;
+  reason: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  duration: string;
+}
+
+export interface LateEntryData {
+  user_id: number;
+  name: string;
+  email: string;
+  avatar: string;
+  position: string;
+  checkin_time: string;
+  late_minutes: number;
+  status: string;
+  duration: string;
+}
+
+export interface WorkInfoData {
+  division: {
+    id: number;
+    name: string;
+  };
+  work_date: string;
+  working_info: {
+    total_members: number;
+    working_count: number;
+    work_date: string;
+    employees: WorkingEntryData[];
+  };
+  leave_requests: {
+    approved_count: number;
+    pending_count: number;
+    employees: LeaveEntryData[];
+  };
+  late_info: {
+    late_count: number;
+    minutes: number;
+    employees: LateEntryData[];
+  };
+}
+
+export interface BirthdayEmployeeData {
+  division: {
+    id: number;
+    name: string;
+  };  
+  month: number;
+  employees: {
+    user_id: number;
+    name: string;
+    email: string;
+    avatar: string;
+    birthday: string;
+    days_until_birthday: number;
+  }[];
+}
+
+export interface WorkStatisticData {
+  division: {
+    id: number;
+    name: string;
+  };
+  year: number;
+  attendance_stats: {
+    month: number;
+    late_hours: number;
+    actual_late_hours: number;
+    overtime_hours: number;
+  }[];
+}
+
+export interface DivisionMemberData {
+  user_id: number,
+  code: string,
+  name: string,
+  email: string,
+  avatar: string,
+  birthday: string,
+  team: string,
+  team_id: number,
+  join_date: string,
+  months_of_service: number,
+  position: string,
+  position_id: number,
+  skills: string,
+  level: string,
+  level_id: number,
+  coefficient: number
+}
+
+export interface DivisionTeamData {
+  id: number,
+  name: string,
+  division_id: number,
+  manager: {
+    id: number,
+    name: string,
+    email: string,
+    avatar: string
+  },
+  member_count: number,
+  resource_by_level: {
+    additionalProp1: 0,
+    additionalProp2: 0,
+    additionalProp3: 0
+  },
+  active_projects: string,
+  founding_date: string,
+  created_at: string
+}
+
+export interface DivisionTeamDetailData {
+  id: number,
+  name: string,
+  division_id: number,
+  manager: {
+    id: number,
+    name: string,
+    email: string,
+    avatar: string
+  },
+  member_count: number,
+  resource_by_level: {
+    [level: string]: number
+  },
+  active_projects: {
+    id: number,
+    name: string
+  }[],
+  founding_date: string,
+  created_at: string,
+  updated_at: string
+}
+
+export interface DivisionTeamCreateRequest {
+  divisionId: number,
+  managerId: number,
+  name: string,
+  foundingDate: string
+}
+
+export interface DivisionTeamUpdateRequest {
+  managerId: number,
+  name: string,
+  foundingDate: string
+}

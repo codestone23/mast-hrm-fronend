@@ -12,45 +12,42 @@ import {
   Input,
   FooterActions,
   Select,
-  DateInput,
 } from "./addTeamModalStyle";
 
-interface TeamShape {
-  id: number;
-  name: string;
-  manager: string;
-  createdAt?: string;
-}
+import { DivisionTeamData, DivisionTeamUpdateRequest } from "@/types/api";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  team?: TeamShape | null;
-  onSave: (team: TeamShape) => void;
+  team?: DivisionTeamData | null;
+  onSave: (team: DivisionTeamUpdateRequest) => void;
 }
 
 const EditTeamModal: React.FC<Props> = ({ isOpen, onClose, team, onSave }) => {
-  const [name, setName] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [manager, setManager] = useState("");
+  const [teamId, setTeamId] = useState<number | null>(null);
+  const [data, setData] = useState<DivisionTeamUpdateRequest | null>(null);
 
   useEffect(() => {
     if (team) {
-      setName(team.name || "");
-      setManager(team.manager || "");
-      setStartDate(team.createdAt || "");
-    } else {
-      setName("");
-      setManager("");
-      setStartDate("");
+      setTeamId(team.id);
+      setData({
+        name: team.name,
+        foundingDate: team.founding_date,
+        managerId: team.manager.id,
+      });
     }
   }, [team, isOpen]);
 
   const handleSave = () => {
-    if (!team) return;
-    const updated = { ...team, name: name.trim(), manager, createdAt: startDate };
+    if (!data) return;
+    const updated = { ...data };
     onSave(updated);
     onClose();
+  };
+
+  const updateField = (field: keyof DivisionTeamUpdateRequest, value: any) => {
+    if (!data) return;
+    setData({ ...data, [field]: value });
   };
 
   return (
@@ -74,7 +71,13 @@ const EditTeamModal: React.FC<Props> = ({ isOpen, onClose, team, onSave }) => {
         <Row>
           <Col>
             <Label>Tên team *</Label>
-            <Input value={name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)} placeholder="Tên team" />
+            <Input
+              value={data?.name || ""}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                updateField("name", e.target.value)
+              }
+              placeholder="Tên team"
+            />
           </Col>
         </Row>
 
@@ -82,8 +85,10 @@ const EditTeamModal: React.FC<Props> = ({ isOpen, onClose, team, onSave }) => {
           <Col>
             <DatePicker
               label="Ngày thành lập"
-              value={parseDateFromAPI(startDate)}
-              onChange={(date) => setStartDate(formatDateForAPI(date))}
+              value={parseDateFromAPI(data?.foundingDate || "")}
+              onChange={(date) =>
+                updateField("foundingDate", formatDateForAPI(date))
+              }
             />
           </Col>
         </Row>
@@ -91,10 +96,15 @@ const EditTeamModal: React.FC<Props> = ({ isOpen, onClose, team, onSave }) => {
         <Row>
           <Col>
             <Label>Người quản lý *</Label>
-            <Select value={manager} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setManager(e.target.value)}>
+            <Select
+              value={data?.managerId || ""}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                updateField("managerId", e.target.value)
+              }
+            >
               <option value="">-- Chọn --</option>
-              <option value="Phi Việt Anh">Phi Việt Anh</option>
-              <option value="Nguyễn Văn A">Nguyễn Văn A</option>
+              <option value="1">Phi Việt Anh</option>
+              <option value="2">Nguyễn Văn A</option>
             </Select>
           </Col>
         </Row>

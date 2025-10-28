@@ -1,5 +1,19 @@
 import styled from "styled-components";
+export const Header = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+`;
 
+export const Title = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+`;
 export const StatWrapper = styled.div`
   background: #fff;
   padding: 18px;

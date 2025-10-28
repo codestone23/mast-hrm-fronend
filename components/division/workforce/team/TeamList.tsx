@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/common";
 import AddTeamModal from "./modals/AddTeamModal";
@@ -23,61 +23,70 @@ import {
   Actions,
   Pagination,
 } from "./teamListStyle";
-
-const makeTeams = () => new Array(10).fill(0).map((_, i) => ({
-  id: i + 1,
-  name: `Team Project ${String.fromCharCode(65 + (i % 6))}`,
-  manager: "Phi Việt Anh",
-  managerAvatar: `https://i.pravatar.cc/40?img=${i + 10}`,
-  members: 20 + (i % 5),
-  resource: 24,
-  projects: "AR Civil, City Portal",
-  createdAt: "2022-01-25",
-}));
-
-interface Team {
-  id: number;
-  name: string;
-  manager: string;
-  managerAvatar: string;
-  members: number;
-  resource: number;
-  projects: string;
-  createdAt: string;
-}
+import divisionWorkforceService from "@/services/division_workforce.service";
+import { PaginatedResponse, DivisionTeamData, DivisionTeamUpdateRequest, DivisionTeamCreateRequest } from "@/types/api";
 
 const TeamList: React.FC = () => {
   const router = useRouter();
-  const [open, setOpen] = React.useState(false);
-  const [editOpen, setEditOpen] = React.useState(false);
-  const [teams, setTeams] = React.useState(makeTeams);
-  const [editing, setEditing] = React.useState<Team | null>(null);
+  const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editing, setEditing] = useState<DivisionTeamData | null>(null);
+  const [data, setData] = useState<DivisionTeamData[] | null>(null);
 
-  const handleCreate = (data: { name: string; manager?: string; members?: string[]; startDate?: string }) => {
-    const newTeam = {
-      id: teams.length + 1,
-      name: data.name,
-      manager: data.manager || "",
-      managerAvatar: `https://i.pravatar.cc/40?img=${Math.floor(Math.random()*40)+1}`,
-      members: data.members ? data.members.length : 0,
-      resource: 0,
-      projects: "",
-      createdAt: data.startDate || new Date().toISOString().slice(0,10),
-    } as Team;
-    setTeams((t) => [newTeam, ...t]);
+  const DIVISION_ID = 1;
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [sortBy, setSortBy] = useState("id");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [totalPages, setTotalPages] = useState(0);
+
+  useEffect(() => {
+    try {
+      divisionWorkforceService.getTeams(
+        DIVISION_ID,
+        search,
+        page,
+        limit,
+        sortBy,
+        sortOrder
+      ).then((res) => {
+        setData(res.data);
+        setTotalPages(res.pagination.totalPages);
+      });
+    } catch (err) {
+      console.error("Failed to fetch teams:", err);
+    }
+  }, [DIVISION_ID, search, page, limit, sortBy, sortOrder]);
+
+  const handleCreate = (data: DivisionTeamCreateRequest) => {
+    divisionWorkforceService.createTeam(data)
+    // not done
+    
     setOpen(false);
   };
 
-  const handleEditSave = (team: { id: number; name: string; manager: string; createdAt?: string }) => {
-    setTeams((t) => t.map((x) => (x.id === team.id ? { ...x, name: team.name, manager: team.manager, createdAt: team.createdAt || x.createdAt } : x)));
+  const handleEditSave = (data: DivisionTeamUpdateRequest) => {
+    if (!editing) return;
+
+    divisionWorkforceService.updateTeam(editing.id, data)
+    // not done
+
     setEditOpen(false);
     setEditing(null);
   };
 
-  const openEdit = (e: React.MouseEvent, team: Team) => {
+  const openEdit = (e: React.MouseEvent, team: DivisionTeamData) => {
     e.stopPropagation();
     setEditing(team);
     setEditOpen(true);
+  };
+
+  const handleDeleteTeam = (teamId: number) => {
+    if (!data) return;
+    divisionWorkforceService.deleteTeam(teamId).then(() => {
+      setData(data.filter((t) => t.id !== teamId));
+    });
   };
 
   return (
@@ -109,24 +118,24 @@ const TeamList: React.FC = () => {
             </Thead>
 
             <Tbody>
-              {teams.map((t) => (
+              {data && data.map((t) => (
                 <Tr key={t.id} onClick={() => router.push(`/division/workforce/team/${t.id}`)} style={{ cursor: 'pointer' }}>
                   <Td>{t.id}</Td>
                   <Td>{t.name}</Td>
                   <Td>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <Avatar src={t.managerAvatar} alt={t.manager} />
-                      <div>{t.manager}</div>
+                      <Avatar src={t.manager.avatar} alt={t.manager.name} />
+                      <div>{t.manager.name}</div>
                     </div>
                   </Td>
-                  <Td>{t.members}</Td>
-                  <Td>{t.resource}</Td>
-                  <Td>{t.projects}</Td>
-                  <Td>{t.createdAt}</Td>
+                  <Td>{t.member_count}</Td>
+                  <Td>{JSON.stringify(t.resource_by_level)}</Td>
+                  <Td>{t.active_projects}</Td>
+                  <Td>{t.created_at}</Td>
                   <Td>
                     <Actions>
                       <button title="Edit" onClick={(e) => openEdit(e, t)} style={{ border: "none", background: "transparent", cursor: "pointer" }}>✏️</button>
-                      <button title="Delete" onClick={(e) => { e.stopPropagation(); setTeams((s) => s.filter(x => x.id !== t.id)); }} style={{ border: "none", background: "transparent", cursor: "pointer" }}>🗑️</button>
+                      <button title="Delete" onClick={(e) => { e.stopPropagation(); handleDeleteTeam(t.id); }} style={{ border: "none", background: "transparent", cursor: "pointer" }}>🗑️</button>
                     </Actions>
                   </Td>
                 </Tr>
@@ -141,13 +150,8 @@ const TeamList: React.FC = () => {
         </Pagination>
       </Card>
 
-      <AddTeamModal isOpen={open} onClose={() => setOpen(false)} onSave={handleCreate} />
-      {/* Edit modal */}
-      {editing && (
-        <React.Suspense>
-          <EditTeamModal isOpen={editOpen} onClose={() => setEditOpen(false)} team={editing} onSave={handleEditSave} />
-        </React.Suspense>
-      )}
+      <AddTeamModal isOpen={open} onClose={() => setOpen(false)} onSave={handleCreate} divisionId={DIVISION_ID} />
+      <EditTeamModal isOpen={editOpen} onClose={() => setEditOpen(false)} team={editing} onSave={handleEditSave} />
     </Container>
   );
 };

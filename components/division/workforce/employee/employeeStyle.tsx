@@ -85,9 +85,16 @@ export const PaginationRow = styled.div`
 export const PageButton = styled.button`
   padding: 6px 10px;
   border-radius: 6px;
-  border: 1px solid var(--border);
   background: transparent;
+  color: var(--text-secondary);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
 `;
 
 export const RowsPerPageSelect = styled.select`

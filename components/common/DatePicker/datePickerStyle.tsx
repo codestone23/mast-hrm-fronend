@@ -100,19 +100,23 @@ export const DatePickerIcon = styled.div`
 export const DatePickerDropdown = styled.div.withConfig({
   shouldForwardProp: (prop) => !prop.startsWith('$'),
 })<{
-  align?: "left" | "right" | "center";
+  $align?: "left" | "right" | "center";
   $triggerRect?: DOMRect;
 }>`
   position: fixed;
   top: ${({ $triggerRect }) => $triggerRect ? `${$triggerRect.bottom + 4}px` : 'auto'};
-  left: ${({ $triggerRect, align }) => {
+  left: ${({ $triggerRect, $align }) => {
     if (!$triggerRect) return 'auto';
-    if (align === "right") return `${$triggerRect.right - $triggerRect.width}px`;
-    if (align === "center") return `${$triggerRect.left + ($triggerRect.width / 2)}px`;
+    if ($align === "right") return `${$triggerRect.right}px`;
+    if ($align === "center") return `${$triggerRect.left + ($triggerRect.width / 2)}px`;
     return `${$triggerRect.left}px`;
   }};
   width: ${({ $triggerRect }) => $triggerRect ? `${$triggerRect.width}px` : 'auto'};
-  transform: ${({ align }) => align === "center" ? 'translateX(-50%)' : 'none'};
+  transform: ${({ $align }) => {
+    if ($align === "right") return 'translateX(-100%)'
+    if ($align === "center") return 'translateX(-50%)'
+    return 'none';
+  }};
   z-index: 1002;
   background: white;
   border: 1px solid var(--border);
@@ -127,7 +131,6 @@ export const CalendarHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
 `;
 
 export const CalendarNav = styled.button`
@@ -159,6 +162,7 @@ export const CalendarGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 0.25rem;
+  margin-top: 1rem;
 `;
 
 export const CalendarDayHeader = styled.div`
@@ -243,19 +247,19 @@ export const MonthGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.5rem;
+  margin-top: 1rem;
 `;
-
 export const MonthItem = styled.button<{
   $isCurrentMonth?: boolean;
   $isSelected?: boolean;
 }>`
-  padding: 0.75rem 0.5rem;
+  padding: 0.5rem 0.5rem;
   border-radius: var(--radius-md);
   border: none;
   background: none;
   cursor: pointer;
   color: var(--text-primary);
-  transition: all 0.12s ease;
+  transition: all 0.12s ease;  
 
   &:hover:not(:disabled) {
     background-color: var(--gray-100);

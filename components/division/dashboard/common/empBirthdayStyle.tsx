@@ -114,7 +114,20 @@ export const Days = styled.div`
   font-size: 13px;
 `;
 
-export const EmptyEmployee = styled.div`
+export const LoadingContainer = styled.div`
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+export const LoadingText = styled.div`
+  font-size: 16px;
+  color: #64748b;
+`;
+
+export const EmptyDataContainer = styled.div`
   width: 100%;
   height: 100%;
   display: flex;
@@ -125,4 +138,7 @@ export const EmptyEmployee = styled.div`
   padding: 20px 0;
 `;
 
-export default {};
+export const EmptyDataText = styled.div`
+  font-size: 16px;
+  color: #64748b;
+`;

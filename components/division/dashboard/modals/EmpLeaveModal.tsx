@@ -13,35 +13,28 @@ import {
   TimeText,
   Status,
 } from './empLeaveModalStyle';
-
-interface LeaveEntry {
-  id: string | number;
-  avatar?: string;
-  name: string;
-  email?: string;
-  role?: string;
-  times?: string; // e.g. "8h - 10h, 13h30 - 15h30"
-  fullDay?: boolean;
-  allowed?: boolean;
-}
+import { LeaveEntryData } from '@/types/api';   
 
 interface EmployeeLeaveModalProps {
   isOpen: boolean;
   onClose: () => void;
   date?: string;
-  entries?: LeaveEntry[];
+  entries?: LeaveEntryData[];
 }
 
 const SAMPLE_DATA = (n = 10) => {
   return new Array(n).fill(null).map((_, i) => ({
-    id: i,
+    user_id: i,
     avatar: `https://i.pravatar.cc/100?img=${i}`,
     name: "Nguyen Van A",
     email: `employee${i}@company.com`,
-    role: "Designer",
-    times: i % 2 === 0 ? "8h - 12h" : "13h30 - 17h30",
-    fullDay: i % 3 === 0,
-    allowed: i % 4 !== 0,
+    position: "Designer",
+    leave_type: "Personal Leave",
+    reason: "Personal matters",
+    start_date: "2024-06-15",
+    end_date: "2024-06-15",
+    status: i % 4 === 0 ? "Rejected" : i % 3 === 0 ? "Approved" : "Pending",
+    duration: "4 hours",
   }));
 };
 
@@ -58,19 +51,19 @@ const EmployeeLeaveModal: React.FC<EmployeeLeaveModalProps> = ({
 
         <List>
           {entries.map((e) => (
-            <Row key={e.id}>
+            <Row key={e.user_id}>
               <Avatar src={e.avatar || ''} alt={e.name} />
               <Info>
                 <Name>{e.name}</Name>
                 <Meta>
                   {e.email && <span>{e.email} - </span>}
-                  {e.role}
+                  {e.position}
                 </Meta>
               </Info>
 
               <RightCol>
-                <TimeText>{e.fullDay ? 'Cả ngày' : e.times}</TimeText>
-                <Status allowed={!!e.allowed}>{e.allowed ? 'Có phép' : 'Không phép'}</Status>
+                <TimeText>{e.duration}</TimeText>
+                <Status allowed={!!e.status}>{e.status}</Status>
               </RightCol>
             </Row>
           ))}

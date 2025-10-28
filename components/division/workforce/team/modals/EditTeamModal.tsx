@@ -24,12 +24,10 @@ interface Props {
 }
 
 const EditTeamModal: React.FC<Props> = ({ isOpen, onClose, team, onSave }) => {
-  const [teamId, setTeamId] = useState<number | null>(null);
   const [data, setData] = useState<DivisionTeamUpdateRequest | null>(null);
 
   useEffect(() => {
     if (team) {
-      setTeamId(team.id);
       setData({
         name: team.name,
         foundingDate: team.founding_date,
@@ -45,7 +43,7 @@ const EditTeamModal: React.FC<Props> = ({ isOpen, onClose, team, onSave }) => {
     onClose();
   };
 
-  const updateField = (field: keyof DivisionTeamUpdateRequest, value: any) => {
+  const updateField = (field: keyof DivisionTeamUpdateRequest, value: string | number) => {
     if (!data) return;
     setData({ ...data, [field]: value });
   };

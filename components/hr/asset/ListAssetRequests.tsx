@@ -22,6 +22,7 @@ import {
 } from "@/components/timekeeping/modals/modalStyles";
 import { FileText } from "lucide-react";
 import { AssetRequest } from "@/constants/types";
+import { REQUEST_STATUS } from "@/constants/enums";
 
 interface ListAssetRequestsProps {
   requests: AssetRequest[];
@@ -115,7 +116,7 @@ const ListAssetRequests: React.FC<ListAssetRequestsProps> = ({
                   </div>
                 </div>
               </div>
-              <RequestStatus $status={request.status}>
+              <RequestStatus $color={getStatusColor(request.status).color}>
                 {getStatusText(request.status)}
               </RequestStatus>
             </RequestHeader>
@@ -131,7 +132,7 @@ const ListAssetRequests: React.FC<ListAssetRequestsProps> = ({
 
             <RequestReason>{request.reason}</RequestReason>
 
-            {request.status === "pending" && onApprove && onReject && (
+            {request.status === REQUEST_STATUS.PENDING && onApprove && onReject && (
               <RequestActions>
                 <ApproveButton onClick={(e) => handleApprove(request.id, e)}>
                   <CheckCircle size={16} />

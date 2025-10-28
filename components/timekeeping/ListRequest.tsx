@@ -31,6 +31,7 @@ import {
   BulkApproveButton,
   BulkRejectButton,
 } from './modals/modalStyles';
+import { REQUEST_STATUS } from '@/constants/enums';
 
 export interface RequestData {
   id: string;
@@ -132,6 +133,15 @@ const ListRequest: React.FC<ListRequestProps> = ({
     { value: 'forgot_checkin', label: 'Quên chấm công' },
     { value: 'other', label: 'Khác' }
   ];
+
+  const getStatusColor = (status: REQUEST_STATUS) => {
+    const statusColors: { [key in REQUEST_STATUS]: string } = {
+      [REQUEST_STATUS.PENDING]: "#FFA726",
+      [REQUEST_STATUS.APPROVED]: "#66BB6A",
+      [REQUEST_STATUS.REJECTED]: "#EF5350",
+    };
+    return statusColors[status as REQUEST_STATUS] || "#666";
+  };
 
   const getTypeLabel = (type: string) => {
     const typeMap: { [key: string]: string } = {
@@ -273,13 +283,13 @@ const ListRequest: React.FC<ListRequestProps> = ({
           {filteredRequests.map((request) => (
             <RequestItem 
               key={request.id}
-              $status={request.status}
+              $status={request.status as REQUEST_STATUS}
               onClick={() => onRequestClick && onRequestClick(request)}
               style={{ cursor: onRequestClick ? 'pointer' : 'default' }}
             >
               <RequestHeader>
                 <RequestTitle>{request.title}</RequestTitle>
-                <RequestStatus $status={request.status}>
+                <RequestStatus $color={getStatusColor(request.status as REQUEST_STATUS)}>
                   {getStatusLabel(request.status)}
                 </RequestStatus>
               </RequestHeader>

@@ -334,7 +334,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
         </DatePickerIcon>
 
         {isOpen && createPortal(
-          <DatePickerDropdown ref={dropdownRef} align={align} $triggerRect={triggerRect || undefined}>
+          <DatePickerDropdown ref={dropdownRef} $align={align} $triggerRect={triggerRect || undefined}>
             {mode === 'date' ? (
               <>
                 <CalendarHeader>

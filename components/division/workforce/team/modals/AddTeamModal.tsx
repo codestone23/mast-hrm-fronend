@@ -41,7 +41,7 @@ const AddTeamModal: React.FC<Props> = ({ isOpen, onClose, onSave, divisionId }) 
     onClose();
   };
 
-  const updateField = (field: keyof DivisionTeamCreateRequest, value: any) => {
+  const updateField = (field: keyof DivisionTeamCreateRequest, value: string | number) => {
     setData({ ...data, [field]: value });
   }
 

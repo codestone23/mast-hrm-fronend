@@ -31,6 +31,7 @@ import AssetDetailModal from "./modals/AssetDetailModal";
 import ConfirmDeleteModal from "./modals/ConfirmDeleteModal";
 import Pagination from "./Pagination";
 import ListAssetRequests from "./ListAssetRequests";
+import { REQUEST_STATUS } from "@/constants/enums";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -206,7 +207,7 @@ const AssetManagement: React.FC = () => {
       userName: "Lê Văn C",
       userAvatar: "",
       reason: "Cần laptop để làm việc tại nhà vì dự án deadline gần",
-      status: "pending",
+      status: REQUEST_STATUS.PENDING,
       requestedAt: "2024-01-10",
     },
     {
@@ -217,7 +218,7 @@ const AssetManagement: React.FC = () => {
       userName: "Phạm Thị D",
       userAvatar: "",
       reason: "Request MacBook cho dự án thiết kế, cần tool thiết kế chuyên nghiệp",
-      status: "pending",
+      status: REQUEST_STATUS.PENDING,
       requestedAt: "2024-01-12",
     },
     {
@@ -228,7 +229,7 @@ const AssetManagement: React.FC = () => {
       userName: "Nguyễn Thị F",
       userAvatar: "",
       reason: "Chuột hiện tại bị hỏng, cần thay thế gấp",
-      status: "approved",
+      status: REQUEST_STATUS.APPROVED,
       requestedAt: "2024-01-08",
     },
     {
@@ -239,7 +240,7 @@ const AssetManagement: React.FC = () => {
       userName: "Trần Văn G",
       userAvatar: "",
       reason: "Phòng làm việc ồn, cần keyboard im lặng hơn",
-      status: "rejected",
+      status: REQUEST_STATUS.REJECTED,
       requestedAt: "2024-01-05",
     },
   ]);
@@ -349,7 +350,7 @@ const AssetManagement: React.FC = () => {
     setRequests(
       requests.map((req) =>
         req.id === requestId
-          ? { ...req, status: "approved" as const, reviewedAt: new Date().toISOString() }
+          ? { ...req, status: REQUEST_STATUS.APPROVED, reviewedAt: new Date().toISOString() } as AssetRequest
           : req
       )
     );
@@ -359,7 +360,7 @@ const AssetManagement: React.FC = () => {
     setRequests(
       requests.map((req) =>
         req.id === requestId
-          ? { ...req, status: "rejected" as const, reviewedAt: new Date().toISOString() }
+          ? { ...req, status: REQUEST_STATUS.REJECTED, reviewedAt: new Date().toISOString() } as AssetRequest
           : req
       )
     );

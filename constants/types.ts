@@ -1,4 +1,5 @@
 import { LucideIcon } from 'lucide-react';
+import { REQUEST_STATUS } from "./enums";
 
 export interface Module {
   id: string;
@@ -251,7 +252,7 @@ export interface AssetRequest {
   userName?: string;
   userAvatar?: string;
   reason: string;
-  status: "pending" | "approved" | "rejected";
+  status: REQUEST_STATUS;
   requestedAt: string;
   reviewedAt?: string;
   reviewedBy?: string;

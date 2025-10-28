@@ -52,7 +52,7 @@ const TeamList: React.FC = () => {
         sortOrder
       ).then((res) => {
         setData(res.data);
-        setTotalPages(res.pagination.totalPages);
+        setTotalPages(res.pagination.total_pages);
       });
     } catch (err) {
       console.error("Failed to fetch teams:", err);

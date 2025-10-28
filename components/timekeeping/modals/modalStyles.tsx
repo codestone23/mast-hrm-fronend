@@ -337,7 +337,7 @@ export const DetailValue = styled.div`
 `;
 
 export const StatusBadge = styled.div<{
-    $status: "pending" | "approved" | "rejected";
+    $status: REQUEST_STATUS;
 }>`
   display: inline-flex;
   align-items: center;
@@ -349,17 +349,17 @@ export const StatusBadge = styled.div<{
   
   ${({ $status }) => {
       switch ($status) {
-          case "pending":
+          case REQUEST_STATUS.PENDING:
               return `
           background: #FFF3CD;
           color: #856404;
         `;
-          case "approved":
+          case REQUEST_STATUS.APPROVED:
               return `
           background: #D1F2DD;
           color: #155724;
         `;
-          case "rejected":
+          case REQUEST_STATUS.REJECTED:
               return `
           background: #F8D7DA;
           color: #721C24;

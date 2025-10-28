@@ -30,6 +30,7 @@ import {
   RejectButton,
 } from "./modalStyles";
 import { Calendar, Clock, User, CheckCircle, XCircle, Loader, FileText } from "lucide-react";
+import { REQUEST_STATUS } from "@/constants/enums";
 
 interface RequestDetailModalProps {
   isOpen: boolean;
@@ -71,13 +72,13 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
     return typeMap[type] || type;
   };
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (status: REQUEST_STATUS) => {
     const statusMap: { [key: string]: string } = {
-      'pending': 'Chờ duyệt',
-      'approved': 'Đã duyệt',
-      'rejected': 'Từ chối'
+      [REQUEST_STATUS.PENDING]: 'Chờ duyệt',
+      [REQUEST_STATUS.APPROVED]: 'Đã duyệt',
+      [REQUEST_STATUS.REJECTED]: 'Từ chối'
     };
-    return statusMap[status] || status;
+    return statusMap[status as REQUEST_STATUS] || status;
   };
 
   const formatDate = (dateString: string) => {
@@ -92,9 +93,9 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
 
   const getStatusIcon = () => {
     switch (request.status) {
-      case 'approved':
+      case REQUEST_STATUS.APPROVED:
         return <CheckCircle size={20} color="#22c55e" />;
-      case 'rejected':
+      case REQUEST_STATUS.REJECTED:
         return <XCircle size={20} color="#ef4444" />;
       default:
         return <Loader size={20} color="#f59e0b" className="animate-spin" />;
@@ -160,7 +161,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
         </DetailInfoGrid>
 
         {/* Approval Section - chỉ hiển thị khi đã được duyệt */}
-        {request.status === 'approved' && (
+        {request.status === REQUEST_STATUS.APPROVED && (
           <>
             <Divider />
             <ApprovalSection>
@@ -182,7 +183,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
         )}
 
         {/* Rejection Section - chỉ hiển thị khi bị từ chối */}
-        {request.status === 'rejected' && (
+        {request.status === REQUEST_STATUS.REJECTED && (
           <>
             <Divider />
             <RejectionSection>
@@ -198,7 +199,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
         )}
 
         {/* Action Buttons for Pending Requests */}
-        {canApprove && request.status === 'pending' && (
+        {canApprove && request.status === REQUEST_STATUS.PENDING && (
           <>
             <Divider />
             <RequestActions style={{ padding: '1rem' }}>

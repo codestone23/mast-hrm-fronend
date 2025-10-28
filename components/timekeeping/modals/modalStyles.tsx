@@ -1,4 +1,5 @@
-import styled from 'styled-components';
+import { REQUEST_STATUS } from "@/constants/enums";
+import styled from "styled-components";
 
 export const ModalContent = styled.div`
   padding: 0;
@@ -80,12 +81,14 @@ export const TimeSlot = styled.button<{ $selected: boolean }>`
   justify-content: center;
   gap: 0.25rem;
   padding: 0.5rem;
-  border: 1px solid ${({ $selected }) => $selected ? 'var(--primary-500)' : 'var(--border)'};
+  border: 1px solid ${({ $selected }) =>
+      $selected ? "var(--primary-500)" : "var(--border)"};
   border-radius: var(--radius-sm);
-  background: ${({ $selected }) => $selected ? 'var(--primary-50)' : 'white'};
-  color: ${({ $selected }) => $selected ? 'var(--primary-700)' : 'var(--text-secondary)'};
+  background: ${({ $selected }) => ($selected ? "var(--primary-50)" : "white")};
+  color: ${({ $selected }) =>
+      $selected ? "var(--primary-700)" : "var(--text-secondary)"};
   font-size: 0.75rem;
-  font-weight: ${({ $selected }) => $selected ? '600' : '400'};
+  font-weight: ${({ $selected }) => ($selected ? "600" : "400")};
   cursor: pointer;
   transition: all 0.2s ease;
   
@@ -198,7 +201,9 @@ export const RequestList = styled.div`
   gap: 1rem;
 `;
 
-export const RequestItem = styled.div<{ $status?: 'pending' | 'approved' | 'rejected' }>`
+export const RequestItem = styled.div<{
+    $status?: REQUEST_STATUS;
+}>`
   padding: 1.25rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -220,13 +225,16 @@ export const RequestItem = styled.div<{ $status?: 'pending' | 'approved' | 'reje
     top: 0;
     bottom: 0;
     width: 4px;
-    background: ${props => {
-      const status = props.$status || 'pending';
-      switch (status) {
-        case 'approved': return '#22c55e';
-        case 'rejected': return '#ef4444';
-        default: return '#f59e0b';
-      }
+    background: ${(props) => {
+        const status = props.$status || REQUEST_STATUS.PENDING;
+        switch (status) {
+            case REQUEST_STATUS.APPROVED:
+                return "#22c55e";
+            case REQUEST_STATUS.REJECTED:
+                return "#ef4444";
+            default:
+                return "#f59e0b";
+        }
     }};
   }
 `;
@@ -235,7 +243,6 @@ export const RequestHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 0.75rem;
 `;
 
 export const RequestTitle = styled.h4`
@@ -245,36 +252,28 @@ export const RequestTitle = styled.h4`
   margin: 0;
 `;
 
-export const RequestStatus = styled.span<{ $status: 'pending' | 'approved' | 'rejected' }>`
+export const RequestNote = styled.p`
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin: 0;
+`;
+
+export const RequestDescription = styled.p`
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin: 0;
+`;
+
+export const RequestStatus = styled.span<{ $color?: string }>`
   padding: 0.25rem 0.5rem;
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
   font-weight: 500;
-  
-  ${({ $status }) => {
-    switch ($status) {
-      case 'pending':
-        return `
-          background: var(--warning-100);
-          color: var(--warning-700);
-        `;
-      case 'approved':
-        return `
-          background: var(--success-100);
-          color: var(--success-700);
-        `;
-      case 'rejected':
-        return `
-          background: var(--error-100);
-          color: var(--error-700);
-        `;
-      default:
-        return `
-          background: var(--gray-100);
-          color: var(--gray-700);
-        `;
-    }
-  }}
+  background: ${({ $color }) => ($color ? `${$color}20` : "var(--gray-100)")};
+  color: ${({ $color }) => $color || "var(--gray-700)"};
+  text-align: right;
 `;
 
 export const RequestMeta = styled.div`
@@ -337,7 +336,9 @@ export const DetailValue = styled.div`
   flex: 1;
 `;
 
-export const StatusBadge = styled.div<{ $status: 'pending' | 'approved' | 'rejected' }>`
+export const StatusBadge = styled.div<{
+    $status: "pending" | "approved" | "rejected";
+}>`
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -347,28 +348,28 @@ export const StatusBadge = styled.div<{ $status: 'pending' | 'approved' | 'rejec
   font-weight: 600;
   
   ${({ $status }) => {
-    switch ($status) {
-      case 'pending':
-        return `
+      switch ($status) {
+          case "pending":
+              return `
           background: #FFF3CD;
           color: #856404;
         `;
-      case 'approved':
-        return `
+          case "approved":
+              return `
           background: #D1F2DD;
           color: #155724;
         `;
-      case 'rejected':
-        return `
+          case "rejected":
+              return `
           background: #F8D7DA;
           color: #721C24;
         `;
-      default:
-        return `
+          default:
+              return `
           background: var(--gray-100);
           color: var(--gray-700);
         `;
-    }
+      }
   }}
 `;
 
@@ -522,15 +523,58 @@ export const FilterContainer = styled.div`
   gap: 1rem;
   align-items: center;
   flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
 `;
 
 export const FilterLabel = styled.div`
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   color: var(--text-secondary);
   font-size: 0.875rem;
   font-weight: 500;
+  min-width: max-content;
+`;
+
+export const FilterGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+export const FilterItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+export const FilterActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+`;
+
+export const ResetFilterButton = styled.button`
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: var(--primary-50);
+    border-color: var(--primary-300);
+    color: var(--primary-700);
+  }
 `;
 
 export const EmptyStateContainer = styled.div`
@@ -686,4 +730,46 @@ export const BulkRejectButton = styled.button`
   &:active {
     transform: translateY(0);
   }
+`;
+
+// Pagination styles
+export const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1rem 0;
+`;
+
+export const PaginationButton = styled.button<{ disabled?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: white;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
+  transition: all 0.2s ease;
+  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
+  
+  &:hover:not(:disabled) {
+    border-color: var(--primary-300);
+    background: var(--primary-50);
+    color: var(--primary-700);
+  }
+  
+  &:disabled {
+    cursor: not-allowed;
+  }
+`;
+
+export const PaginationInfo = styled.div`
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
 `;

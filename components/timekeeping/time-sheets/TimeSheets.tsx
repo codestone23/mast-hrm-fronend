@@ -3,7 +3,8 @@
 import { Calendar, ChevronLeft, ChevronRight, ImageUp, Plus, ScanFace } from "lucide-react";
 import React, { useEffect, useState, useMemo } from "react";
 import FaceIdentify from "../face-identify/FaceIdentify";
-import ListRequest from '../ListRequest';
+import MyRequestsList from '../MyRequestsList';
+import AdminRequestsList from '../AdminRequestsList';
 import CreateRequestModal from '../modals/CreateRequestModal';
 import RequestDetailModal from '../modals/RequestDetailModal';
 import RegisterFace from "../register-face/RegisterFace";
@@ -15,8 +16,8 @@ import RegularOvertimeModal from '../modals/RegularOvertimeModal';
 import ForgotTimekeepingModal from '../modals/ForgotTimekeepingModal';
 import { RequestModalType, RequestModalState } from '../modals/modalTypes';
 import { useAppSelector } from "@/store/hooks";
-import { ROLE_NAMES } from "@/constants/enums";
-import { RequestData } from '../ListRequest';
+import { REQUEST_STATUS, ROLE_NAMES } from "@/constants/enums";
+import { Request } from '@/services/requests.service';
 import {
   CalendarContainer,
   CalendarGrid,
@@ -80,7 +81,7 @@ const TimeSheets: React.FC = () => {
   const [activeTab, setActiveTab] = useState("BẢNG CHẤM CÔNG");
   const [isCreateRequestModalOpen, setIsCreateRequestModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<RequestData | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   
   // Get user role
   const userData = useAppSelector((state) => state.user.data);
@@ -260,14 +261,6 @@ const TimeSheets: React.FC = () => {
 
   const handleRejectRequest = (requestId: string) => {
     console.log('Reject request:', requestId);
-  };
-
-  const handleApproveAllRequests = () => {
-    console.log('Approve all requests');
-  };
-
-  const handleRejectAllRequests = () => {
-    console.log('Reject all requests');
   };
 
   // Handle request type selection
@@ -550,18 +543,22 @@ const TimeSheets: React.FC = () => {
         )}
 
         {(activeTab === "LIST ĐỀ XUẤT CỦA TÔI" || activeTab === "LIST ĐỀ XUẤT") && (
-          <div style={{ padding: '2rem', width: '100%' }}>
-            <ListRequest 
-              isMyRequestsOnly={activeTab === "LIST ĐỀ XUẤT CỦA TÔI"}
-              onRequestClick={(request) => {
-                setSelectedRequest(request);
-                setIsDetailModalOpen(true);
-              }}
-              onApprove={handleApproveRequest}
-              onReject={handleRejectRequest}
-              onApproveAll={handleApproveAllRequests}
-              onRejectAll={handleRejectAllRequests}
-            />
+          <div style={{ width: '100%' }}>
+            {activeTab === "LIST ĐỀ XUẤT CỦA TÔI" ? (
+              <MyRequestsList 
+                onRequestClick={(request) => {
+                  setSelectedRequest(request);
+                  setIsDetailModalOpen(true);
+                }}
+              />
+            ) : (
+              <AdminRequestsList 
+                onRequestClick={(request) => {
+                  setSelectedRequest(request);
+                  setIsDetailModalOpen(true);
+                }}
+              />
+            )}
           </div>
         )}
         
@@ -626,7 +623,7 @@ const TimeSheets: React.FC = () => {
           setSelectedRequest(null);
         }}
         request={selectedRequest}
-        canApprove={selectedRequest ? (activeTab === "LIST ĐỀ XUẤT" && selectedRequest.status === 'pending') : false}
+        canApprove={selectedRequest ? (activeTab === "LIST ĐỀ XUẤT" && selectedRequest.status === REQUEST_STATUS.PENDING) : false} 
         onApprove={handleApproveRequest}
         onReject={handleRejectRequest}
       />

@@ -30,6 +30,7 @@ export const SelectTrigger = styled.div.withConfig({
   $isOpen?: boolean;
 }>`
   display: flex;
+  min-width: 100px;
   align-items: center;
   justify-content: space-between;
   background-color: #fff;

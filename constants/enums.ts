@@ -16,3 +16,17 @@ export enum ROLE_NAMES {
     ADMIN = "admin",
     SUPER_ADMIN = "super_admin",
 }
+
+export enum REQUEST_TYPE {
+    REMOTE_WORK = "REMOTE_WORK",
+    DAY_OFF = "DAY_OFF",
+    OVERTIME = "OVERTIME",
+    LATE_EARLY = "LATE_EARLY",
+    FORGOT_CHECKIN = "FORGOT_CHECKIN",
+}
+
+export enum REQUEST_STATUS {
+    PENDING = "PENDING",
+    APPROVED = "APPROVED",
+    REJECTED = "REJECTED",
+}

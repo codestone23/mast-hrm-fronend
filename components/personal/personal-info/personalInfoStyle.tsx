@@ -4,6 +4,8 @@ export const PersonalInfoContainer = styled.div`
   display: flex;
   gap: 2rem;
   padding: 2rem;
+  min-height: calc(100vh - 60px);
+  align-items: flex-start;
 `;
 
 export const LeftSidebar = styled.div`
@@ -13,9 +15,8 @@ export const LeftSidebar = styled.div`
   padding: 2rem;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
-  height: fit-content;
-  position: sticky;
-  top: 80px;
+  height: 100%;
+  position: relative;
 `;
 
 export const UserProfile = styled.div`

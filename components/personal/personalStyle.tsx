@@ -466,8 +466,8 @@ export const ProfileDetail = styled.div<{
   margin-top: ${(props) => props.$marginTop || "0"};
   font-size: ${(props) => props.$fontSize || "1.2rem"};
   opacity: ${(props) => props.$opacity || 1};
-  h3 {
-    font-size: ${(props) => props.$fontSize || "1.2rem"};
+  h3, p {
+    font-size: ${(props) => props.$fontSize || "1rem"};
     font-weight: 600;
     margin-bottom: 0.5rem;
     line-height: 1.4;

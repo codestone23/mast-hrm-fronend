@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Modal } from "@/components/common";
+import { Request } from '@/services/requests.service';
 import {
   ModalContent,
   DetailSection,
@@ -30,27 +31,10 @@ import {
 } from "./modalStyles";
 import { Calendar, Clock, User, CheckCircle, XCircle, Loader, FileText } from "lucide-react";
 
-interface RequestData {
-  id: string;
-  type: string;
-  title: string;
-  startDate: string;
-  endDate: string;
-  startTime?: string;
-  endTime?: string;
-  reason: string;
-  status: 'pending' | 'approved' | 'rejected';
-  submittedAt: string;
-  employeeName?: string;
-  approverName?: string;
-  approvedAt?: string;
-  rejectionReason?: string;
-}
-
 interface RequestDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  request: RequestData | null;
+  request: Request | null;
   canApprove?: boolean;
   onApprove?: (requestId: string) => void;
   onReject?: (requestId: string) => void;
@@ -67,28 +51,22 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
   if (!request) return null;
 
   const handleApprove = () => {
-    onApprove?.(request.id);
+    onApprove?.(request.id.toString());
     onClose();
   };
 
   const handleReject = () => {
-    onReject?.(request.id);
+    onReject?.(request.id.toString());
     onClose();
   };
 
   const getTypeLabel = (type: string) => {
     const typeMap: { [key: string]: string } = {
-      'leave': 'Xin nghỉ phép',
-      'sick_leave': 'Nghỉ ốm',
-      'personal_leave': 'Nghỉ việc riêng',
-      'maternity_leave': 'Nghỉ thai sản',
-      'overtime': 'Làm thêm giờ',
       'remote_work': 'Làm việc từ xa',
-      'late_arrival': 'Đi muộn',
-      'early_departure': 'Về sớm',
+      'day_off': 'Nghỉ phép',
+      'overtime': 'Làm thêm giờ',
+      'late_early': 'Đi muộn/Về sớm',
       'forgot_checkin': 'Quên chấm công',
-      'business_trip': 'Công tác',
-      'other': 'Khác'
     };
     return typeMap[type] || type;
   };
@@ -136,10 +114,10 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
           <DetailHeaderContent>
             <div>
               <DetailHeaderTitle>
-                {request.title}
+                {getTypeLabel(request.type)}
               </DetailHeaderTitle>
               <DetailHeaderSubtitle>
-                {getTypeLabel(request.type)}
+                Ngày làm việc: {formatDate(request.work_date)}
               </DetailHeaderSubtitle>
             </div>
             <StatusBadge $status={request.status}>
@@ -154,108 +132,66 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
           <InfoCard>
             <InfoCardLabel>
               <IconWrapper><Calendar size={12} /></IconWrapper>
-              Ngày bắt đầu
+              Ngày làm việc
             </InfoCardLabel>
-            <InfoCardValue>{formatDate(request.startDate)}</InfoCardValue>
+            <InfoCardValue>{formatDate(request.work_date)}</InfoCardValue>
           </InfoCard>
-          {request.endDate && request.endDate !== request.startDate && (
-            <InfoCard>
-              <InfoCardLabel>
-                <IconWrapper><Calendar size={12} /></IconWrapper>
-                Ngày kết thúc
-              </InfoCardLabel>
-              <InfoCardValue>{formatDate(request.endDate)}</InfoCardValue>
-            </InfoCard>
-          )}
-          {request.startTime && request.endTime && (
-            <>
-              <InfoCard>
-                <InfoCardLabel>
-                  <IconWrapper><Clock size={12} /></IconWrapper>
-                  Thời gian bắt đầu
-                </InfoCardLabel>
-                <InfoCardValue>{request.startTime}</InfoCardValue>
-              </InfoCard>
-              <InfoCard>
-                <InfoCardLabel>
-                  <IconWrapper><Clock size={12} /></IconWrapper>
-                  Thời gian kết thúc
-                </InfoCardLabel>
-                <InfoCardValue>{request.endTime}</InfoCardValue>
-              </InfoCard>
-            </>
-          )}
           <InfoCard>
             <InfoCardLabel>
               <IconWrapper><FileText size={12} /></IconWrapper>
               Ngày gửi
             </InfoCardLabel>
-            <InfoCardValue>{formatDateTime(request.submittedAt)}</InfoCardValue>
+            <InfoCardValue>{formatDateTime(request.created_at)}</InfoCardValue>
           </InfoCard>
-          {request.employeeName && (
-            <InfoCard>
-              <InfoCardLabel>
-                <IconWrapper><User size={12} /></IconWrapper>
-                Người tạo
-              </InfoCardLabel>
-              <InfoCardValue>{request.employeeName}</InfoCardValue>
-            </InfoCard>
-          )}
+          <InfoCard>
+            <InfoCardLabel>
+              <IconWrapper><User size={12} /></IconWrapper>
+              Người tạo
+            </InfoCardLabel>
+            <InfoCardValue>{request.user.user_information.name}</InfoCardValue>
+          </InfoCard>
+          <InfoCard>
+            <InfoCardLabel>
+              <IconWrapper><User size={12} /></IconWrapper>
+              Chức vụ
+            </InfoCardLabel>
+            <InfoCardValue>{request.user.user_information.position}</InfoCardValue>
+          </InfoCard>
         </DetailInfoGrid>
 
-        {/* Reason Section */}
-        <DetailSection>
-          <SectionTitle>
-            <FileText size={16} />
-            Lý do yêu cầu
-          </SectionTitle>
-          <ReasonBox>
-            {request.reason}
-          </ReasonBox>
-        </DetailSection>
-
-        {/* Approval Section */}
-        {request.approverName && (
+        {/* Approval Section - chỉ hiển thị khi đã được duyệt */}
+        {request.status === 'approved' && (
           <>
             <Divider />
             <ApprovalSection>
               <ApprovalSectionTitle>
                 <CheckCircle size={16} />
-                Thông tin duyệt
+                Đã được duyệt
               </ApprovalSectionTitle>
               <InfoGrid>
                 <InfoCard style={{ background: 'white' }}>
                   <InfoCardLabel>
-                    <IconWrapper><User size={12} /></IconWrapper>
-                    Người duyệt
+                    <IconWrapper><Clock size={12} /></IconWrapper>
+                    Thời gian duyệt
                   </InfoCardLabel>
-                  <InfoCardValue>{request.approverName}</InfoCardValue>
+                  <InfoCardValue>{formatDateTime(request.created_at)}</InfoCardValue>
                 </InfoCard>
-                {request.approvedAt && (
-                  <InfoCard style={{ background: 'white' }}>
-                    <InfoCardLabel>
-                      <IconWrapper><Clock size={12} /></IconWrapper>
-                      Thời gian duyệt
-                    </InfoCardLabel>
-                    <InfoCardValue>{formatDateTime(request.approvedAt)}</InfoCardValue>
-                  </InfoCard>
-                )}
               </InfoGrid>
             </ApprovalSection>
           </>
         )}
 
-        {/* Rejection Section */}
-        {request.rejectionReason && (
+        {/* Rejection Section - chỉ hiển thị khi bị từ chối */}
+        {request.status === 'rejected' && (
           <>
             <Divider />
             <RejectionSection>
               <RejectionSectionTitle>
                 <XCircle size={16} />
-                Lý do từ chối
+                Đã bị từ chối
               </RejectionSectionTitle>
               <WhiteReasonBox>
-                {request.rejectionReason}
+                Request này đã bị từ chối.
               </WhiteReasonBox>
             </RejectionSection>
           </>

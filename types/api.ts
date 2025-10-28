@@ -11,10 +11,10 @@ export interface PaginatedResponse<T> {
   message: string;
   data: T[];
   pagination: {
-    page: number;
-    limit: number;
+    current_page: number;
+    total_pages: number;
     total: number;
-    totalPages: number;
+    limit: number;
   };
 }
 

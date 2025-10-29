@@ -28,6 +28,12 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ data, onEdit }) => {
 
       <InfoGrid>
         <InfoItem>
+          <InfoLabel>Tên</InfoLabel>
+          <InfoValue>
+            {data?.user_information?.name || "Không có"}
+          </InfoValue>
+        </InfoItem>
+        <InfoItem>
           <InfoLabel>Ngày sinh</InfoLabel>
           <InfoValue>
             {data?.user_information?.birthday

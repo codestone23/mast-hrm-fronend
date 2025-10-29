@@ -30,3 +30,26 @@ export enum REQUEST_STATUS {
     APPROVED = "APPROVED",
     REJECTED = "REJECTED",
 }
+
+export enum AssetCategory {
+    LAPTOP = "LAPTOP",
+    DESKTOP = "DESKTOP",
+    MONITOR = "MONITOR",
+    KEYBOARD = "KEYBOARD",
+    MOUSE = "MOUSE",
+    HEADPHONE = "HEADPHONE",
+    PHONE = "PHONE",
+    TABLET = "TABLET",
+    FURNITURE = "FURNITURE",
+    EQUIPMENT = "EQUIPMENT",
+    OTHER = "OTHER",
+}
+
+export enum AssetStatus {
+    AVAILABLE = "AVAILABLE",    // Có sẵn
+    ASSIGNED = "ASSIGNED",      // Đã gán
+    MAINTENANCE = "MAINTENANCE", // Bảo trì
+    RETIRED = "RETIRED",        // Ngừng sử dụng
+    LOST = "LOST",              // Mất
+    DAMAGED = "DAMAGED",        // Hỏng
+}

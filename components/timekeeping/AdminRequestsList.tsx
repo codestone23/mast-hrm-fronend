@@ -42,9 +42,13 @@ import {
     RequestActions,
     ApproveButton,
     RejectButton,
+    RequestNote,
+    RequestDescription,
+    RequestLeft,
+    RequestRight,
 } from "./modals/modalStyles";
 import RejectModal from "./modals/RejectModal";
-import { REQUEST_STATUS } from "@/constants/enums";
+import { REQUEST_STATUS, REQUEST_TYPE } from "@/constants/enums";
 
 interface AdminRequestsListProps {
     onRequestClick?: (request: Request) => void;
@@ -274,49 +278,63 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                                             style={{ cursor: "pointer" }}
                                         >
                                             <RequestHeader>
-                                                <RequestTitle>
-                                                    {getTypeLabel(request.type)}
-                                                </RequestTitle>
-                                                <RequestStatus
-                                                    $color={getStatusColor(
-                                                        request.status
-                                                    )}
-                                                >
-                                                    {getStatusLabel(
-                                                        request.status
-                                                    )}
-                                                </RequestStatus>
+                                                <RequestLeft>
+                                                    <RequestTitle>
+                                                        Loại:{" "}
+                                                        {getTypeLabel(
+                                                            request.request_type as REQUEST_TYPE
+                                                        )}
+                                                    </RequestTitle>
+                                                    <RequestNote>
+                                                        Tiêu đề: {request.title}
+                                                    </RequestNote>
+                                                    <RequestDescription>
+                                                        Lý do: {request.reason}
+                                                    </RequestDescription>
+                                                    <RequestMetaItem>
+                                                        <User size={14} /> Người gửi: 
+                                                        <span>
+                                                            {
+                                                                request.user
+                                                                    .user_information
+                                                                    .name
+                                                            }
+                                                        </span>
+                                                    </RequestMetaItem>
+                                                </RequestLeft>
+                                                <RequestRight>
+                                                    <RequestStatus
+                                                        $color={getStatusColor(
+                                                            request.status
+                                                        )}
+                                                    >
+                                                        {getStatusLabel(
+                                                            request.status
+                                                        )}
+                                                    </RequestStatus>
+                                                    <RequestMeta>
+                                                        <RequestMetaItem>
+                                                            <Calendar
+                                                                size={14}
+                                                            />
+                                                            <span>
+                                                                {formatDate(
+                                                                    request.work_date
+                                                                )}
+                                                            </span>
+                                                        </RequestMetaItem>
+                                                        <RequestMetaItem>
+                                                            <span>•</span>
+                                                            <span>
+                                                                Gửi:{" "}
+                                                                {formatDateTime(
+                                                                    request.created_at
+                                                                )}
+                                                            </span>
+                                                        </RequestMetaItem>
+                                                    </RequestMeta>
+                                                </RequestRight>
                                             </RequestHeader>
-
-                                            <RequestMeta>
-                                                <RequestMetaItem>
-                                                    <User size={14} />
-                                                    <span>
-                                                        {
-                                                            request.user
-                                                                .user_information
-                                                                .name
-                                                        }
-                                                    </span>
-                                                </RequestMetaItem>
-                                                <RequestMetaItem>
-                                                    <Calendar size={14} />
-                                                    <span>
-                                                        {formatDate(
-                                                            request.work_date
-                                                        )}
-                                                    </span>
-                                                </RequestMetaItem>
-                                                <RequestMetaItem>
-                                                    <span>•</span>
-                                                    <span>
-                                                        Gửi:{" "}
-                                                        {formatDateTime(
-                                                            request.created_at
-                                                        )}
-                                                    </span>
-                                                </RequestMetaItem>
-                                            </RequestMeta>
 
                                             {request.status ===
                                                 REQUEST_STATUS.PENDING && (
@@ -380,9 +398,17 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                 onClose={() => setRejectModal({ isOpen: false, request: null })}
                 onConfirm={handleConfirmReject}
                 isLoading={rejectMutation.isPending}
-                error={rejectMutation.isError ? 'Có lỗi xảy ra khi từ chối đề xuất' : undefined}
+                error={
+                    rejectMutation.isError
+                        ? "Có lỗi xảy ra khi từ chối đề xuất"
+                        : undefined
+                }
                 title="Từ chối đề xuất"
-                subtitle={`Bạn đang từ chối đề xuất "${rejectModal.request?.title || ''}" của ${rejectModal.request?.user?.user_information?.name || ''}`}
+                subtitle={`Bạn đang từ chối đề xuất "${
+                    rejectModal.request?.title || ""
+                }" của ${
+                    rejectModal.request?.user?.user_information?.name || ""
+                }`}
                 placeholder="Nhập lý do từ chối đề xuất này..."
                 confirmText="Xác nhận từ chối"
                 cancelText="Hủy"

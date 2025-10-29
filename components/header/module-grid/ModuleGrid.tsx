@@ -43,7 +43,7 @@ const modules: Module[] = [
     icon: UserCheck,
     color: "#f59e0b",
     path: ROUTERS.HR.STATS,
-    allowedRoles: ["hr_manager", "admin"],
+    allowedRoles: ["hr_manager"],
   },
   {
     id: "division",
@@ -70,7 +70,7 @@ const modules: Module[] = [
     icon: Settings,
     color: "#6b7280",
     path: ROUTERS.SETTINGS.BASE,
-    allowedRoles: ["super_admin", "admin", "hr_manager"],
+    allowedRoles: ["super_admin", "admin"],
   },
 ];
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { Mail, Phone, MapPin, Briefcase } from "lucide-react";
+import { Mail, Phone, MapPin, Briefcase, User } from "lucide-react";
 import { Modal, Input, Button, Select, DatePicker } from "@/components/common";
 import { formatDateForDisplay, parseDateFromDisplay, formatDateForAPI } from "@/utils/dateUtils";
 import { useUpdateProfile } from "@/hooks/useProfileMutation";
@@ -22,6 +22,7 @@ interface EditPersonalInfoModalProps {
 }
 
 interface PersonalInfoData {
+  name: string;
   birthDate: string; 
   nationality: string;
   gender: string;
@@ -41,6 +42,7 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
 }) => {
   const defaultValues: PersonalInfoData = useMemo(
     () => ({
+      name: "",
       birthDate: "",
       nationality: "",
       gender: "",
@@ -97,6 +99,7 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
     try {
       // Convert form data to API format
       const apiData = {
+        name: data.name,
         personal_email: data.personalEmail,
         nationality: data.nationality,
         gender: data.gender,
@@ -158,6 +161,17 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
         <FormSection>
           <h4>Thông tin cơ bản</h4>
           <FormGrid>
+            <Input
+              label="Tên"
+              {...register("name", {
+                required: "Vui lòng nhập tên",
+              })}
+              icon={<User size={16} />}
+              required
+              disabled={isSubmitting}
+              error={errors.name?.message}
+            />
+
             <DatePicker
               label="Ngày sinh"
               value={parseDateFromDisplay(formData.birthDate)}

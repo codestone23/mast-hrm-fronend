@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
-import { Plus, Package, FileText, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Package, FileText, Edit, Trash2, Eye, UserPlus } from "lucide-react";
 import {
   Container,
   HeaderContainer,
   TabContainer,
   TabButton,
   ContentContainer,
-  SearchInput,
   CreateButton,
   AssetTable,
   TableHeader,
@@ -25,19 +25,28 @@ import {
   EmptyText,
 } from "./assetStyle";
 import { Asset, AssetRequest } from "@/constants/types";
+import { AssetCategory, AssetStatus, REQUEST_STATUS } from "@/constants/enums";
 import CreateAssetModal from "./modals/CreateAssetModal";
 import EditAssetModal from "./modals/EditAssetModal";
 import AssetDetailModal from "./modals/AssetDetailModal";
 import ConfirmDeleteModal from "./modals/ConfirmDeleteModal";
+import AssignAssetModal from "./modals/AssignAssetModal";
 import Pagination from "./Pagination";
 import ListAssetRequests from "./ListAssetRequests";
-import { REQUEST_STATUS } from "@/constants/enums";
+import assetsService, { GetAssetsParams } from "@/services/assets.service";
+import { Select, Input } from "@/components/common";
+import { useToast } from "@/hooks/useToast";
 
 const ITEMS_PER_PAGE = 10;
 
 const AssetManagement: React.FC = () => {
+  const queryClient = useQueryClient();
+  const { success: showSuccessToast, error: showErrorToast } = useToast();
+  
   const [activeTab, setActiveTab] = useState<"assets" | "requests">("assets");
   const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const [currentRequestPage, setCurrentRequestPage] = useState(1);
   
@@ -46,158 +55,98 @@ const AssetManagement: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
-  // Mock data - generate more items to demonstrate pagination
-  const [assets, setAssets] = useState<Asset[]>([
-    {
-      id: "1",
-      code: "TS001",
-      name: "Laptop Dell XPS 15",
-      description: "Laptop cao cấp cho nhân viên IT",
-      status: "in_use",
-      category: "ĐT",
-      price: 25000000,
-      warehouse: "Keangnam",
-      importDate: "2023-01-15",
-      user: {
-        id: "user1",
-        name: "Nguyễn Văn A",
-        avatar: "",
-      },
-    },
-    {
-      id: "2",
-      code: "TS002",
-      name: "MacBook Pro M1",
-      description: "MacBook cho designer",
-      status: "available",
-      category: "MAC",
-      price: 35000000,
-      warehouse: "Keangnam",
-      importDate: "2023-02-20",
-    },
-    {
-      id: "3",
-      code: "TS003",
-      name: "Màn hình Dell 27 inch",
-      description: "Màn hình UltraSharp 4K",
-      status: "in_use",
-      category: "Màn hình",
-      price: 12000000,
-      warehouse: "Sông Đà",
-      importDate: "2023-03-10",
-      user: {
-        id: "user2",
-        name: "Trần Thị B",
-        avatar: "",
-      },
-    },
-    {
-      id: "4",
-      code: "TS004",
-      name: "Chuột Logitech MX Master",
-      description: "Chuột không dây cao cấp",
-      status: "available",
-      category: "ĐT",
-      price: 2500000,
-      warehouse: "Keangnam",
-      importDate: "2023-04-05",
-    },
-    {
-      id: "5",
-      code: "TS005",
-      name: "Bàn phím cơ Keychron K8",
-      description: "Mechanical keyboard",
-      status: "in_use",
-      category: "ĐT",
-      price: 3500000,
-      warehouse: "Keangnam",
-      importDate: "2023-05-10",
-      user: {
-        id: "user3",
-        name: "Lê Văn C",
-        avatar: "",
-      },
-    },
-    {
-      id: "6",
-      code: "TS006",
-      name: "Webcam Logitech C920",
-      description: "Webcam HD 1080p",
-      status: "available",
-      category: "ĐT",
-      price: 3500000,
-      warehouse: "Sông Đà",
-      importDate: "2023-06-15",
-    },
-    {
-      id: "7",
-      code: "TS007",
-      name: "Microphone Blue Yeti",
-      description: "USB Microphone",
-      status: "in_use",
-      category: "ĐT",
-      price: 5500000,
-      warehouse: "Keangnam",
-      importDate: "2023-07-20",
-      user: {
-        id: "user4",
-        name: "Phạm Thị D",
-        avatar: "",
-      },
-    },
-    {
-      id: "8",
-      code: "TS008",
-      name: "iPad Pro 12.9 inch",
-      description: "Tablet cho meeting",
-      status: "available",
-      category: "MAC",
-      price: 25000000,
-      warehouse: "Sông Đà",
-      importDate: "2023-08-25",
-    },
-    {
-      id: "9",
-      code: "TS009",
-      name: "Đèn bàn BenQ ScreenBar",
-      description: "Bảo vệ mắt",
-      status: "maintenance",
-      category: "ĐT",
-      price: 4500000,
-      warehouse: "Keangnam",
-      importDate: "2023-09-01",
-    },
-    {
-      id: "10",
-      code: "TS010",
-      name: "Laptop Lenovo ThinkPad",
-      description: "Laptop business",
-      status: "in_use",
-      category: "ĐT",
-      price: 20000000,
-      warehouse: "Sông Đà",
-      importDate: "2023-10-10",
-      user: {
-        id: "user5",
-        name: "Hoàng Văn E",
-        avatar: "",
-      },
-    },
-    {
-      id: "11",
-      code: "TS011",
-      name: "Monitor LG 34 inch",
-      description: "Ultrawide monitor",
-      status: "available",
-      category: "Màn hình",
-      price: 15000000,
-      warehouse: "Keangnam",
-      importDate: "2023-11-15",
-    },
-  ]);
+  // Debounce search
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
+  // Fetch assets
+  const assetsParams: GetAssetsParams = useMemo(() => ({
+    page: currentPage,
+    limit: ITEMS_PER_PAGE,
+    ...(debouncedSearch && { search: debouncedSearch }),
+    ...(categoryFilter && { category: categoryFilter }),
+    ...(statusFilter && { status: statusFilter }),
+    sort_by: "created_at",
+    sort_order: "desc",
+  }), [currentPage, debouncedSearch, categoryFilter, statusFilter]);
+
+  const { data: assetsData, isLoading: isLoadingAssets } = useQuery({
+    queryKey: ['assets', assetsParams],
+    queryFn: () => assetsService.getListAssets(assetsParams),
+  });
+
+  const assets = assetsData?.data || [];
+  const pagination = assetsData?.pagination || { 
+    total: 0, 
+    current_page: 1, 
+    total_pages: 1, 
+    limit: ITEMS_PER_PAGE 
+  };
+  
+  const totalPages = pagination.total_pages || 1;
+
+  // Category options
+  const categoryOptions = [
+    { value: "", label: "Tất cả danh mục" },
+    ...Object.values(AssetCategory).map(cat => ({
+      value: cat,
+      label: cat,
+    })),
+  ];
+
+  // Status options
+  const statusOptions = [
+    { value: "", label: "Tất cả trạng thái" },
+    ...Object.values(AssetStatus).map(status => ({
+      value: status,
+      label: getStatusLabel(status),
+    })),
+  ];
+
+  function getStatusLabel(status: string): string {
+    const statusMap: Record<string, string> = {
+      [AssetStatus.AVAILABLE]: "Có sẵn",
+      [AssetStatus.ASSIGNED]: "Đã gán",
+      [AssetStatus.MAINTENANCE]: "Bảo trì",
+      [AssetStatus.RETIRED]: "Ngừng sử dụng",
+      [AssetStatus.LOST]: "Mất",
+      [AssetStatus.DAMAGED]: "Hỏng",
+    };
+    return statusMap[status] || status;
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case AssetStatus.AVAILABLE:
+        return "#10b981";
+      case AssetStatus.ASSIGNED:
+        return "#3b82f6";
+      case AssetStatus.MAINTENANCE:
+        return "#f59e0b";
+      case AssetStatus.RETIRED:
+      case AssetStatus.LOST:
+      case AssetStatus.DAMAGED:
+        return "#ef4444";
+      default:
+        return "#6b7280";
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    return getStatusLabel(status);
+  };
+
+  // Mock requests data (tạm thời giữ nguyên, sẽ tích hợp API sau)
   const [requests, setRequests] = useState<AssetRequest[]>([
     {
       id: "req1",
@@ -210,48 +159,7 @@ const AssetManagement: React.FC = () => {
       status: REQUEST_STATUS.PENDING,
       requestedAt: "2024-01-10",
     },
-    {
-      id: "req2",
-      assetId: "2",
-      asset: assets[1],
-      userId: "user4",
-      userName: "Phạm Thị D",
-      userAvatar: "",
-      reason: "Request MacBook cho dự án thiết kế, cần tool thiết kế chuyên nghiệp",
-      status: REQUEST_STATUS.PENDING,
-      requestedAt: "2024-01-12",
-    },
-    {
-      id: "req3",
-      assetId: "4",
-      asset: assets[3],
-      userId: "user6",
-      userName: "Nguyễn Thị F",
-      userAvatar: "",
-      reason: "Chuột hiện tại bị hỏng, cần thay thế gấp",
-      status: REQUEST_STATUS.APPROVED,
-      requestedAt: "2024-01-08",
-    },
-    {
-      id: "req4",
-      assetId: "5",
-      asset: assets[4],
-      userId: "user7",
-      userName: "Trần Văn G",
-      userAvatar: "",
-      reason: "Phòng làm việc ồn, cần keyboard im lặng hơn",
-      status: REQUEST_STATUS.REJECTED,
-      requestedAt: "2024-01-05",
-    },
   ]);
-
-  const filteredAssets = useMemo(() => {
-    return assets.filter(
-      (asset) =>
-        asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        asset.code.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [assets, searchTerm]);
 
   const filteredRequests = useMemo(() => {
     return requests.filter(
@@ -261,15 +169,7 @@ const AssetManagement: React.FC = () => {
     );
   }, [requests, searchTerm]);
 
-  // Pagination logic
-  const totalAssetPages = Math.ceil(filteredAssets.length / ITEMS_PER_PAGE);
   const totalRequestPages = Math.ceil(filteredRequests.length / ITEMS_PER_PAGE);
-  
-  const paginatedAssets = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    return filteredAssets.slice(start, end);
-  }, [filteredAssets, currentPage]);
 
   const paginatedRequests = useMemo(() => {
     const start = (currentRequestPage - 1) * ITEMS_PER_PAGE;
@@ -277,58 +177,97 @@ const AssetManagement: React.FC = () => {
     return filteredRequests.slice(start, end);
   }, [filteredRequests, currentRequestPage]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "available":
-        return "#10b981";
-      case "in_use":
-        return "#3b82f6";
-      case "maintenance":
-        return "#f59e0b";
-      case "disposed":
-        return "#ef4444";
-      default:
-        return "#6b7280";
-    }
-  };
+  // Mutations
+  const createMutation = useMutation({
+    mutationFn: (assetData: Partial<Asset>) => assetsService.createAsset(assetData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      queryClient.invalidateQueries({ queryKey: ['assetStatistics'] });
+      showSuccessToast("Tạo tài sản thành công");
+      setIsCreateModalOpen(false);
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      showErrorToast(err?.response?.data?.message || "Có lỗi xảy ra khi tạo tài sản");
+    },
+  });
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "available":
-        return "Trống";
-      case "in_use":
-        return "Đang sử dụng";
-      case "maintenance":
-        return "Bảo trì";
-      case "disposed":
-        return "Thanh lý";
-      default:
-        return status;
-    }
-  };
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number | string; data: Partial<Asset> }) =>
+      assetsService.updateAsset(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      queryClient.invalidateQueries({ queryKey: ['assetStatistics'] });
+      showSuccessToast("Cập nhật tài sản thành công");
+      setIsEditModalOpen(false);
+      setSelectedAsset(null);
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      showErrorToast(err?.response?.data?.message || "Có lỗi xảy ra khi cập nhật tài sản");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (assetId: number | string) => assetsService.deleteAsset(assetId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      queryClient.invalidateQueries({ queryKey: ['assetStatistics'] });
+      showSuccessToast("Xóa tài sản thành công");
+      setIsDeleteModalOpen(false);
+      setSelectedAsset(null);
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      showErrorToast(err?.response?.data?.message || "Có lỗi xảy ra khi xóa tài sản");
+    },
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: ({ assetId, userId, notes }: { assetId: number | string; userId: number; notes?: string }) =>
+      assetsService.assignAsset(assetId, userId, notes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      queryClient.invalidateQueries({ queryKey: ['assetStatistics'] });
+      setIsAssignModalOpen(false);
+      setSelectedAsset(null);
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      showErrorToast(err?.response?.data?.message || "Có lỗi xảy ra khi gán tài sản");
+    },
+  });
 
   // Handlers
   const handleCreateAsset = (assetData: Omit<Asset, "id">) => {
-    const newAsset: Asset = {
-      ...assetData,
-      id: Date.now().toString(),
-    };
-    setAssets([...assets, newAsset]);
-    setIsCreateModalOpen(false);
+    createMutation.mutate(assetData);
   };
 
   const handleEditAsset = (assetData: Asset) => {
-    setAssets(assets.map(asset => asset.id === assetData.id ? assetData : asset));
-    setIsEditModalOpen(false);
-    setSelectedAsset(null);
+    if (!assetData.id) return;
+    const updateData: Partial<Asset> = {
+      name: assetData.name,
+      description: assetData.description,
+      category: assetData.category,
+      serial_number: assetData.serial_number,
+      purchase_date: assetData.purchase_date,
+      purchase_price: assetData.purchase_price,
+      warranty_end_date: assetData.warranty_end_date,
+      notes: assetData.notes,
+      status: assetData.status,
+      location: assetData.location,
+    };
+    updateMutation.mutate({ id: assetData.id, data: updateData });
   };
 
   const handleDeleteAsset = () => {
-    if (selectedAsset) {
-      setAssets(assets.filter(asset => asset.id !== selectedAsset.id));
-      setIsDeleteModalOpen(false);
-      setSelectedAsset(null);
+    if (selectedAsset?.id) {
+      deleteMutation.mutate(selectedAsset.id);
     }
+  };
+
+  const handleAssignAsset = async (assetId: number | string, userId: number, notes?: string) => {
+    await assignMutation.mutateAsync({ assetId, userId, notes });
   };
 
   const handleViewAsset = (asset: Asset) => {
@@ -344,6 +283,11 @@ const AssetManagement: React.FC = () => {
   const handleDeleteClick = (asset: Asset) => {
     setSelectedAsset(asset);
     setIsDeleteModalOpen(true);
+  };
+
+  const handleAssignClick = (asset: Asset) => {
+    setSelectedAsset(asset);
+    setIsAssignModalOpen(true);
   };
 
   const handleApproveRequest = (requestId: string) => {
@@ -372,6 +316,42 @@ const AssetManagement: React.FC = () => {
     setCurrentPage(1);
     setCurrentRequestPage(1);
     setSearchTerm("");
+    setCategoryFilter("");
+    setStatusFilter("");
+  };
+
+  // Helper to get user from asset
+  const getAssetUser = (asset: Asset) => {
+    if (asset.assigned_user) {
+      return {
+        id: asset.assigned_user.id,
+        name: asset.assigned_user.user_information?.name || "",
+        avatar: "",
+      };
+    }
+    if (asset.user) {
+      return asset.user;
+    }
+    return null;
+  };
+
+  // Helper to get asset code
+  const getAssetCode = (asset: Asset) => {
+    return asset.asset_code || asset.code || "";
+  };
+
+  // Helper to get asset price
+  const getAssetPrice = (asset: Asset) => {
+    if (asset.purchase_price) {
+      const price = typeof asset.purchase_price === 'string' 
+        ? parseFloat(asset.purchase_price) 
+        : asset.purchase_price;
+      return new Intl.NumberFormat("vi-VN").format(price);
+    }
+    if (asset.price) {
+      return new Intl.NumberFormat("vi-VN").format(asset.price);
+    }
+    return "";
   };
 
   return (
@@ -397,12 +377,49 @@ const AssetManagement: React.FC = () => {
 
       <ContentContainer>
         {activeTab === "assets" && (
-          <div style={{ marginBottom: "12px" }}>
+          <>
+            <div style={{ marginBottom: "12px", display: "flex", gap: "12px", alignItems: "flex-end" }}>
             <CreateButton onClick={() => setIsCreateModalOpen(true)}>
               <Plus size={20} />
               Thêm tài sản
             </CreateButton>
+              
+              <div style={{ flex: 1, display: "flex", gap: "12px" }}>
+                <div style={{ flex: 1 }}>
+                  <Input
+                    placeholder="Tìm kiếm theo tên..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    fullWidth
+                  />
+                </div>
+                <div style={{ width: "200px" }}>
+                  <Select
+                    options={categoryOptions}
+                    value={categoryFilter}
+                    onChange={(value) => {
+                      setCategoryFilter(String(value));
+                      setCurrentPage(1);
+                    }}
+                    placeholder="Danh mục"
+                    fullWidth={false}
+                  />
+                </div>
+                <div style={{ width: "200px" }}>
+                  <Select
+                    options={statusOptions}
+                    value={statusFilter}
+                    onChange={(value) => {
+                      setStatusFilter(String(value));
+                      setCurrentPage(1);
+                    }}
+                    placeholder="Trạng thái"
+                    fullWidth={false}
+                  />
+                </div>
+              </div>
           </div>
+          </>
         )}
 
         {activeTab === "assets" ? (
@@ -416,21 +433,27 @@ const AssetManagement: React.FC = () => {
                 <TableCell>Trạng thái</TableCell>
                 <TableCell>Hành động</TableCell>
               </TableHeader>
-              {paginatedAssets.length === 0 ? (
+              {isLoadingAssets ? (
+                <EmptyState>
+                  <EmptyText>Đang tải...</EmptyText>
+                </EmptyState>
+              ) : assets.length === 0 ? (
                 <EmptyState>
                   <EmptyIcon>
                     <Package size={48} />
                   </EmptyIcon>
                   <EmptyText>
-                    {searchTerm
+                    {debouncedSearch || categoryFilter || statusFilter
                       ? "Không tìm thấy tài sản nào"
                       : "Chưa có tài sản nào"}
                   </EmptyText>
                 </EmptyState>
               ) : (
-                paginatedAssets.map((asset) => (
+                assets.map((asset) => {
+                  const user = getAssetUser(asset);
+                  return (
                   <TableRow key={asset.id}>
-                    <TableCell>{asset.code}</TableCell>
+                      <TableCell>{getAssetCode(asset)}</TableCell>
                     <TableCell>
                       <div>
                         <div style={{ fontWeight: 500 }}>{asset.name}</div>
@@ -442,28 +465,24 @@ const AssetManagement: React.FC = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {asset.user ? (
+                        {user ? (
                         <UserInfo>
                           <Avatar>
-                            {asset.user.avatar ? (
-                              <Image src={asset.user.avatar} alt={asset.user.name} width={40} height={40} />
+                              {user.avatar ? (
+                                <Image src={user.avatar} alt={user.name} width={40} height={40} />
                             ) : (
-                              <span>{asset.user.name.charAt(0)}</span>
+                                <span>{user.name.charAt(0)}</span>
                             )}
                           </Avatar>
                           <div>
-                            <UserName>{asset.user.name}</UserName>
+                              <UserName>{user.name}</UserName>
                           </div>
                         </UserInfo>
                       ) : (
-                        <span style={{ color: "#9ca3af" }}>N/A</span>
+                        <span style={{ color: "#9ca3af" }}>-</span>
                       )}
                     </TableCell>
-                    <TableCell>
-                      {asset.price
-                        ? new Intl.NumberFormat("vi-VN").format(asset.price)
-                        : "N/A"}
-                    </TableCell>
+                      <TableCell>{getAssetPrice(asset)}</TableCell>
                     <TableCell>
                       <StatusBadge $color={getStatusColor(asset.status)}>
                         {getStatusText(asset.status)}
@@ -477,19 +496,23 @@ const AssetManagement: React.FC = () => {
                         <ActionButton $variant="edit" onClick={() => handleEditClick(asset)}>
                           <Edit size={16} />
                         </ActionButton>
+                          <ActionButton $variant="edit" onClick={() => handleAssignClick(asset)} title="Gán tài sản">
+                            <UserPlus size={16} />
+                        </ActionButton>
                         <ActionButton $variant="delete" onClick={() => handleDeleteClick(asset)}>
                           <Trash2 size={16} />
                         </ActionButton>
                       </div>
                     </TableCell>
                   </TableRow>
-                ))
+                  );
+                })
               )}
             </AssetTable>
-            {paginatedAssets.length > 0 && filteredAssets.length > ITEMS_PER_PAGE && (
+            {assets.length > 0 && totalPages > 1 && (
               <Pagination
                 currentPage={currentPage}
-                totalPages={totalAssetPages}
+                totalPages={totalPages}
                 onPageChange={setCurrentPage}
               />
             )}
@@ -560,6 +583,16 @@ const AssetManagement: React.FC = () => {
         title="Xóa tài sản"
         message="Bạn có chắc chắn muốn xóa tài sản này?"
         assetName={selectedAsset?.name}
+      />
+
+      <AssignAssetModal
+        isOpen={isAssignModalOpen}
+        onClose={() => {
+          setIsAssignModalOpen(false);
+          setSelectedAsset(null);
+        }}
+        asset={selectedAsset}
+        onAssign={handleAssignAsset}
       />
     </Container>
   );

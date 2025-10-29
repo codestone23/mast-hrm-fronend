@@ -252,6 +252,20 @@ export const RequestTitle = styled.h4`
   margin: 0;
 `;
 
+export const RequestLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+export const RequestRight = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 0.5rem;
+`;
+
 export const RequestNote = styled.p`
   font-size: 0.875rem;
   font-weight: 400;
@@ -289,6 +303,9 @@ export const RequestMetaItem = styled.div`
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  line-height: 1.5;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
 `;
 
 export const RequestReason = styled.p`

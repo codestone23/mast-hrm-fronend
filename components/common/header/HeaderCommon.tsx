@@ -39,6 +39,9 @@ interface HeaderCommonProps {
 interface User {
   name?: string;
   email?: string;
+  user_information?: {
+    name?: string;
+  }
 }
 
 const HeaderCommon = (props: HeaderCommonProps) => {
@@ -123,7 +126,7 @@ const HeaderCommon = (props: HeaderCommonProps) => {
             <User size={16} color="white" />
             <UserDropdown $isOpen={isDropdownOpen}>
               <DropdownHeader>
-                <DropdownUserName>{user?.name || 'Loading...'}</DropdownUserName>
+                <DropdownUserName>{user?.user_information?.name || user?.name || ''}</DropdownUserName>
                 <DropdownUserEmail>{user?.email || ''}</DropdownUserEmail>
               </DropdownHeader>
               

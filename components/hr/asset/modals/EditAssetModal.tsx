@@ -15,14 +15,8 @@ import {
   SaveButton,
 } from "./modalStyle";
 import { Asset } from "@/constants/types";
+import { AssetCategory, AssetStatus } from "@/constants/enums";
 import { Input, Select, SelectOption, TextArea } from "@/components/common";
-
-const enum AssetStatus {
-  AVAILABLE = "available",
-  IN_USE = "in_use",
-  MAINTENANCE = "maintenance",
-  DISPOSED = "disposed",
-}
 
 interface EditAssetModalProps {
   isOpen: boolean;
@@ -38,34 +32,47 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
   onSave,
 }) => {
   const [formData, setFormData] = useState({
-    code: "",
     name: "",
     description: "",
     status: AssetStatus.AVAILABLE,
-    category: "",
-    price: "",
-    warehouse: "",
+    category: AssetCategory.OTHER,
+    serial_number: "",
+    purchase_date: "",
+    purchase_price: "",
+    warranty_end_date: "",
+    location: "",
+    notes: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const statusOptions: SelectOption[] = [
-    { value: AssetStatus.AVAILABLE, label: "Trống" },
-    { value: AssetStatus.IN_USE, label: "Đang sử dụng" },
+    { value: AssetStatus.AVAILABLE, label: "Có sẵn" },
+    { value: AssetStatus.ASSIGNED, label: "Đã gán" },
     { value: AssetStatus.MAINTENANCE, label: "Bảo trì" },
-    { value: AssetStatus.DISPOSED, label: "Thanh lý" },
+    { value: AssetStatus.RETIRED, label: "Ngừng sử dụng" },
+    { value: AssetStatus.LOST, label: "Mất" },
+    { value: AssetStatus.DAMAGED, label: "Hỏng" },
   ];
+
+  const categoryOptions: SelectOption[] = Object.values(AssetCategory).map(cat => ({
+    value: cat,
+    label: cat,
+  }));
 
   useEffect(() => {
     if (asset) {
       setFormData({
-        code: asset.code,
-        name: asset.name,
+        name: asset.name || "",
         description: asset.description || "",
-        status: asset.status as AssetStatus,
-        category: asset.category || "",
-        price: asset.price?.toString() || "",
-        warehouse: asset.warehouse || "",
+        status: (asset.status as AssetStatus) || AssetStatus.AVAILABLE,
+        category: (asset.category as AssetCategory) || AssetCategory.OTHER,
+        serial_number: asset.serial_number || "",
+        purchase_date: asset.purchase_date || "",
+        purchase_price: asset.purchase_price ? String(asset.purchase_price) : "",
+        warranty_end_date: asset.warranty_end_date || "",
+        location: asset.location || "",
+        notes: asset.notes || "",
       });
     }
   }, [asset]);
@@ -80,10 +87,6 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.code.trim()) {
-      newErrors.code = "Mã tài sản là bắt buộc";
-    }
-
     if (!formData.name.trim()) {
       newErrors.name = "Tên tài sản là bắt buộc";
     }
@@ -96,18 +99,21 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
     e.preventDefault();
     
     if (validateForm() && asset) {
-      onSave({
+      const updatedAsset: Asset = {
         ...asset,
-        code: formData.code,
         name: formData.name,
         description: formData.description,
         status: formData.status,
         category: formData.category,
-        price: formData.price ? parseFloat(formData.price) : undefined,
-        warehouse: formData.warehouse,
-      });
+        serial_number: formData.serial_number || undefined,
+        purchase_date: formData.purchase_date || undefined,
+        purchase_price: formData.purchase_price || undefined,
+        warranty_end_date: formData.warranty_end_date || undefined,
+        location: formData.location || undefined,
+        notes: formData.notes || undefined,
+      };
       
-      onClose();
+      onSave(updatedAsset);
     }
   };
 
@@ -120,7 +126,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
 
   return (
     <ModalOverlay onClick={handleClose}>
-      <ModalContainer size="md" onClick={(e) => e.stopPropagation()}>
+      <ModalContainer size="lg" onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
           <ModalTitle>Chỉnh sửa tài sản</ModalTitle>
           <ModalCloseButton onClick={handleClose}>
@@ -133,11 +139,9 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
             <FormRow>
               <Input
                 label="Mã tài sản"
-                value={formData.code}
-                onChange={(e) => handleInputChange("code", e.target.value)}
-                placeholder="Nhập mã tài sản"
-                error={errors.code}
-                required
+                value={asset.asset_code || asset.code || ""}
+                disabled
+                placeholder="Mã tài sản"
                 fullWidth
               />
 
@@ -162,12 +166,11 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
             />
 
             <FormRow>
-              <Input
-                label="Giá (VNĐ)"
-                type="number"
-                value={formData.price}
-                onChange={(e) => handleInputChange("price", e.target.value)}
-                placeholder="Nhập giá"
+              <Select
+                label="Danh mục"
+                options={categoryOptions}
+                value={formData.category}
+                onChange={(value) => handleInputChange("category", String(value))}
                 fullWidth
               />
 
@@ -182,21 +185,61 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
 
             <FormRow>
               <Input
-                label="Danh mục"
-                value={formData.category}
-                onChange={(e) => handleInputChange("category", e.target.value)}
-                placeholder="Nhập danh mục"
+                label="Số serial"
+                value={formData.serial_number}
+                onChange={(e) => handleInputChange("serial_number", e.target.value)}
+                placeholder="Nhập số serial"
                 fullWidth
               />
 
               <Input
-                label="Kho"
-                value={formData.warehouse}
-                onChange={(e) => handleInputChange("warehouse", e.target.value)}
-                placeholder="Nhập kho"
+                label="Vị trí"
+                value={formData.location}
+                onChange={(e) => handleInputChange("location", e.target.value)}
+                placeholder="Nhập vị trí"
                 fullWidth
               />
             </FormRow>
+
+            <FormRow>
+              <Input
+                label="Ngày mua"
+                type="date"
+                value={formData.purchase_date}
+                onChange={(e) => handleInputChange("purchase_date", e.target.value)}
+                placeholder="Chọn ngày mua"
+                fullWidth
+              />
+
+              <Input
+                label="Giá mua (VNĐ)"
+                type="number"
+                value={formData.purchase_price}
+                onChange={(e) => handleInputChange("purchase_price", e.target.value)}
+                placeholder="Nhập giá mua"
+                fullWidth
+              />
+            </FormRow>
+
+            <FormRow>
+              <Input
+                label="Ngày hết bảo hành"
+                type="date"
+                value={formData.warranty_end_date}
+                onChange={(e) => handleInputChange("warranty_end_date", e.target.value)}
+                placeholder="Chọn ngày hết bảo hành"
+                fullWidth
+              />
+            </FormRow>
+
+            <TextArea
+              label="Ghi chú"
+              value={formData.notes}
+              onChange={(e) => handleInputChange("notes", e.target.value)}
+              placeholder="Nhập ghi chú"
+              rows={3}
+              fullWidth
+            />
           </ModalBody>
 
           <ModalFooter>
@@ -214,4 +257,3 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
 };
 
 export default EditAssetModal;
-

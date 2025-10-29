@@ -1,5 +1,5 @@
 import { LucideIcon } from 'lucide-react';
-import { REQUEST_STATUS } from "./enums";
+import { REQUEST_STATUS, AssetCategory, AssetStatus } from "./enums";
 
 export interface Module {
   id: string;
@@ -226,22 +226,57 @@ export interface Division {
 }
 
 export interface Asset {
-  id: string;
-  code: string;
+  id: number | string;
+  asset_code: string;
   name: string;
   description?: string;
-  status: "available" | "in_use" | "maintenance" | "disposed";
-  category?: string;
+  status: AssetStatus | string;
+  category: AssetCategory | string;
+  serial_number?: string;
+  purchase_date?: string;
+  purchase_price?: string | number;
+  warranty_end_date?: string;
+  location?: string;
+  notes?: string;
+  assigned_to?: number;
+  assigned_date?: string;
+  assigned_user?: {
+    id: number;
+    email: string;
+    user_information: {
+      name: string;
+    };
+  };
+  createdAt?: string;
+  updatedAt?: string;
+  // Legacy fields for backward compatibility
+  code?: string;
   price?: number;
   warehouse?: string;
   importDate?: string;
   user?: {
-    id: string;
+    id: string | number;
     name: string;
     avatar?: string;
   };
-  createdAt?: string;
-  updatedAt?: string;
+}
+
+export interface AssetStatistics {
+  assets: {
+    total: number;
+    available: number;
+    assigned: number;
+    maintenance: number;
+    utilization_rate: number;
+  };
+  requests: {
+    pending: number;
+    approved: number;
+  };
+  categories: Array<{
+    category: string;
+    count: number;
+  }>;
 }
 
 export interface AssetRequest {

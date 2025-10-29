@@ -1,112 +1,264 @@
 "use client";
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Package, TrendingUp, TrendingDown, Activity } from "lucide-react";
 import {
-  StatsContainer,
-  StatsGrid,
-  StatsCard,
-  StatsHeader,
-  StatsTitle,
-  IconWrapper,
-  StatsValue,
-  StatsLabel,
-  ChartContainer,
+    PieChart,
+    Pie,
+    Cell,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    ResponsiveContainer,
+} from "recharts";
+import {
+    StatsContainer,
+    StatsGrid,
+    StatsCard,
+    StatsHeader,
+    StatsTitle,
+    IconWrapper,
+    StatsValue,
+    StatsLabel,
+    ChartContainer,
 } from "./assetStatsStyle";
+import assetsService from "@/services/assets.service";
+
+const COLORS = {
+    assigned: "#10b981",
+    available: "#f59e0b",
+    maintenance: "#ef4444",
+    pending: "#3b82f6",
+    approved: "#10b981",
+};
 
 const AssetStats: React.FC = () => {
-  // Mock data
-  const stats = {
-    total: 200,
-    inUse: 120,
-    available: 60,
-    maintenance: 15,
-    disposed: 5,
-  };
+    const { data, isLoading, error } = useQuery({
+        queryKey: ["assetStatistics"],
+        queryFn: () => assetsService.getAssetsStatistics(),
+    });
 
-  const inUsePercentage = ((stats.inUse / stats.total) * 100).toFixed(1);
-  const availablePercentage = ((stats.available / stats.total) * 100).toFixed(1);
-  const maintenancePercentage = ((stats.maintenance / stats.total) * 100).toFixed(1);
+    console.log(data);
 
-  return (
-    <StatsContainer>
-      <StatsGrid>
-        <StatsCard>
-          <StatsHeader>
-            <div>
-              <StatsTitle>Tổng số tài sản</StatsTitle>
-              <StatsValue>{stats.total}</StatsValue>
-            </div>
-            <IconWrapper $color="#3b82f6">
-              <Package size={32} />
-            </IconWrapper>
-          </StatsHeader>
-          <StatsLabel>
-            <TrendingUp size={16} />
-            Đang hoạt động: {stats.total - stats.maintenance - stats.disposed}
-          </StatsLabel>
-        </StatsCard>
+    const stats = data || {
+        assets: {
+            total: 0,
+            available: 0,
+            assigned: 0,
+            maintenance: 0,
+            utilization_rate: 0,
+        },
+        requests: {
+            pending: 0,
+            approved: 0,
+        },
+        categories: [],
+    };
 
-        <StatsCard>
-          <StatsHeader>
-            <div>
-              <StatsTitle>Đang sử dụng</StatsTitle>
-              <StatsValue $color="#10b981">{stats.inUse}</StatsValue>
-            </div>
-            <IconWrapper $color="#10b981">
-              <Activity size={32} />
-            </IconWrapper>
-          </StatsHeader>
-          <StatsLabel>
-            {inUsePercentage}% tổng số tài sản
-          </StatsLabel>
-        </StatsCard>
+    const assignedPercentage =
+        stats.assets.total > 0
+            ? ((stats.assets.assigned / stats.assets.total) * 100).toFixed(1)
+            : "0";
 
-        <StatsCard>
-          <StatsHeader>
-            <div>
-              <StatsTitle>Có sẵn</StatsTitle>
-              <StatsValue $color="#f59e0b">{stats.available}</StatsValue>
-            </div>
-            <IconWrapper $color="#f59e0b">
-              <TrendingDown size={32} />
-            </IconWrapper>
-          </StatsHeader>
-          <StatsLabel>
-            {availablePercentage}% tổng số tài sản
-          </StatsLabel>
-        </StatsCard>
+    const availablePercentage =
+        stats.assets.total > 0
+            ? ((stats.assets.available / stats.assets.total) * 100).toFixed(1)
+            : "0";
 
-        <StatsCard>
-          <StatsHeader>
-            <div>
-              <StatsTitle>Bảo trì</StatsTitle>
-              <StatsValue $color="#ef4444">{stats.maintenance}</StatsValue>
-            </div>
-            <IconWrapper $color="#ef4444">
-              <Activity size={32} />
-            </IconWrapper>
-          </StatsHeader>
-          <StatsLabel>
-            {maintenancePercentage}% tổng số tài sản
-          </StatsLabel>
-        </StatsCard>
-      </StatsGrid>
+    const maintenancePercentage =
+        stats.assets.total > 0
+            ? ((stats.assets.maintenance / stats.assets.total) * 100).toFixed(1)
+            : "0";
 
-        <ChartContainer>
-          <h3 style={{ marginBottom: "16px", color: "#333", fontSize: "19px", fontWeight: 600 }}>
-            Biểu đồ thống kê tài sản
-          </h3>
-          <div style={{ height: "260px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ textAlign: "center", color: "#666" }}>
-              <Package size={48} style={{ marginBottom: "12px" }} />
-              <p style={{ fontSize: "16px" }}>Biểu đồ sẽ được tích hợp sau</p>
-            </div>
-          </div>
-        </ChartContainer>
-    </StatsContainer>
-  );
+    // Data for requests pie chart
+    const requestsData = [
+        {
+            name: "Đang chờ",
+            value: stats.requests.pending,
+            color: COLORS.pending,
+        },
+        {
+            name: "Đã duyệt",
+            value: stats.requests.approved,
+            color: COLORS.approved,
+        },
+    ];
+
+    const categoriesData = stats.categories.map((cat) => ({
+        name: cat.category,
+        count: cat.count,
+    }));
+
+    return (
+        <StatsContainer>
+            <StatsGrid>
+                <StatsCard>
+                    <StatsHeader>
+                        <div>
+                            <StatsTitle>Tổng số tài sản</StatsTitle>
+                            <StatsValue>{stats.assets.total}</StatsValue>
+                        </div>
+                        <IconWrapper $color="#3b82f6">
+                            <Package size={32} />
+                        </IconWrapper>
+                    </StatsHeader>
+                    <StatsLabel>
+                        <TrendingUp size={16} />
+                        Tỷ lệ sử dụng: {stats.assets.utilization_rate}%
+                    </StatsLabel>
+                </StatsCard>
+
+                <StatsCard>
+                    <StatsHeader>
+                        <div>
+                            <StatsTitle>Đã gán</StatsTitle>
+                            <StatsValue $color="#10b981">
+                                {stats.assets.assigned}
+                            </StatsValue>
+                        </div>
+                        <IconWrapper $color="#10b981">
+                            <Activity size={32} />
+                        </IconWrapper>
+                    </StatsHeader>
+                    <StatsLabel>
+                        {assignedPercentage}% tổng số tài sản
+                    </StatsLabel>
+                </StatsCard>
+
+                <StatsCard>
+                    <StatsHeader>
+                        <div>
+                            <StatsTitle>Có sẵn</StatsTitle>
+                            <StatsValue $color="#f59e0b">
+                                {stats.assets.available}
+                            </StatsValue>
+                        </div>
+                        <IconWrapper $color="#f59e0b">
+                            <TrendingDown size={32} />
+                        </IconWrapper>
+                    </StatsHeader>
+                    <StatsLabel>
+                        {availablePercentage}% tổng số tài sản
+                    </StatsLabel>
+                </StatsCard>
+
+                <StatsCard>
+                    <StatsHeader>
+                        <div>
+                            <StatsTitle>Bảo trì</StatsTitle>
+                            <StatsValue $color="#ef4444">
+                                {stats.assets.maintenance}
+                            </StatsValue>
+                        </div>
+                        <IconWrapper $color="#ef4444">
+                            <Activity size={32} />
+                        </IconWrapper>
+                    </StatsHeader>
+                    <StatsLabel>
+                        {maintenancePercentage}% tổng số tài sản
+                    </StatsLabel>
+                </StatsCard>
+            </StatsGrid>
+
+            {isLoading ? (
+                <StatsContainer>
+                    <div
+                        style={{
+                            textAlign: "center",
+                            padding: "2rem",
+                            color: "#666",
+                        }}
+                    >
+                        Đang tải dữ liệu...
+                    </div>
+                </StatsContainer>
+            ) : (
+                <div
+                    style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "16px",
+                        marginTop: "16px",
+                    }}
+                >
+                    <ChartContainer>
+                        <h3
+                            style={{
+                                marginBottom: "16px",
+                                color: "#333",
+                                fontSize: "19px",
+                                fontWeight: 600,
+                            }}
+                        >
+                            Thống kê yêu cầu
+                        </h3>
+                        <ResponsiveContainer width="100%" height={260}>
+                            <PieChart>
+                                <Pie
+                                    data={requestsData}
+                                    cx="50%"
+                                    cy="50%"
+                                    labelLine={false}
+                                    label={({ name, value }) =>
+                                        value > 0 ? `${name}: ${value}` : ""
+                                    }
+                                    outerRadius={80}
+                                    fill="#8884d8"
+                                    dataKey="value"
+                                >
+                                    {requestsData.map((entry, index) => (
+                                        <Cell
+                                            key={`cell-${index}`}
+                                            fill={entry.color}
+                                        />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </ChartContainer>
+                    <ChartContainer>
+                        <h3
+                            style={{
+                                marginBottom: "16px",
+                                color: "#333",
+                                fontSize: "19px",
+                                fontWeight: 600,
+                            }}
+                        >
+                            Thống kê theo danh mục
+                        </h3>
+                        <ResponsiveContainer width="100%" height={260}>
+                            <BarChart data={categoriesData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis
+                                    dataKey="name"
+                                    tick={{ fontSize: 12 }}
+                                    angle={-45}
+                                    textAnchor="end"
+                                    height={80}
+                                />
+                                <YAxis />
+                                <Tooltip />
+                                <Legend />
+                                <Bar
+                                    dataKey="count"
+                                    fill="#2196F3"
+                                    name="Số lượng"
+                                />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </ChartContainer>
+                </div>
+            )}
+        </StatsContainer>
+    );
 };
 
 export default AssetStats;
-

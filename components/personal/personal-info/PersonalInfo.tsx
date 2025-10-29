@@ -439,6 +439,7 @@ const PersonalInfo = () => {
                 initialData={
                     data?.user_information
                         ? {
+                              name: data?.user_information?.name || "",
                               birthDate: data.user_information.birthday
                                   ? new Date(
                                         data.user_information.birthday

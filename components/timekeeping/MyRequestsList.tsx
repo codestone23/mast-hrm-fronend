@@ -34,6 +34,7 @@ import {
     EmptyStateDescription,
     RequestNote,
     RequestDescription,
+    RequestRight,
 } from "./modals/modalStyles";
 import { REQUEST_STATUS, REQUEST_TYPE } from "@/constants/enums";
 
@@ -249,16 +250,7 @@ const MyRequestsList: React.FC<MyRequestsListProps> = ({ onRequestClick }) => {
                                                     Lý do: {request.reason}
                                                 </RequestDescription>
                                             </div>
-                                            <div
-                                                style={{
-                                                    display: "flex",
-                                                    flexDirection: "column",
-                                                    gap: "0.5rem",
-                                                    justifyContent:
-                                                        "space-between",
-                                                    alignItems: "flex-end",
-                                                }}
-                                            >
+                                            <RequestRight>
                                                 <RequestStatus
                                                     $color={getStatusColor(
                                                         request.status
@@ -287,7 +279,7 @@ const MyRequestsList: React.FC<MyRequestsListProps> = ({ onRequestClick }) => {
                                                         </span>
                                                     </RequestMetaItem>
                                                 </RequestMeta>
-                                            </div>
+                                            </RequestRight>
                                         </RequestHeader>
                                     </RequestItem>
                                 ))}

@@ -19,6 +19,7 @@ import {
   IconWrapper,
 } from "./modalStyle";
 import { Asset } from "@/constants/types";
+import { AssetStatus } from "@/constants/enums";
 
 interface AssetDetailModalProps {
   isOpen: boolean;
@@ -50,13 +51,13 @@ const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case "available":
+      case AssetStatus.AVAILABLE  : 
         return "Trống";
-      case "in_use":
+      case AssetStatus.ASSIGNED:
         return "Đang sử dụng";
-      case "maintenance":
+      case AssetStatus.MAINTENANCE:
         return "Bảo trì";
-      case "disposed":
+      case AssetStatus.RETIRED:
         return "Thanh lý";
       default:
         return status;

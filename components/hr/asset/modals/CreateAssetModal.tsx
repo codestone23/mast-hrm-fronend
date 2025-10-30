@@ -79,6 +79,8 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
     
     if (validateForm()) {
       onSave({
+        asset_code: formData.code,
+        // keep legacy code for backward compatibility
         code: formData.code,
         name: formData.name,
         description: formData.description,
@@ -86,7 +88,7 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
         category: formData.category,
         price: formData.price ? parseFloat(formData.price) : undefined,
         warehouse: formData.warehouse,
-      });
+      } as Omit<Asset, "id">);
       
       setFormData({
         code: "",

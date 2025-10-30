@@ -101,11 +101,13 @@ export const useAuth = () => {
       return { success: false, error: errorMessage };
     }
   }, []);
-
   // Đăng xuất
   const logout = useCallback(async () => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true }));
+
+      TokenManager.clearTokens();
+      LocalStorageUtil.removeItem(LOCAL_KEY.USER);
       
       await authService.logout();
       

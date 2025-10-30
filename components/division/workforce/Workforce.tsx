@@ -4,9 +4,8 @@ import { Container, Header, TopTabs, Tab, Placeholder } from "./workforceStyle";
 import { Button } from "@/components/common";
 import EmployeeList from "./employee/EmployeeList";
 import TeamList from "./team/TeamList";
-import Rental from "./rental/Rental";
 
-const Tabs = ["Danh sách nhân sự", "Quản lý team", "Quản lý thuê người"];
+const Tabs = ["Danh sách nhân sự", "Quản lý team"];
 
 const Employee: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>(Tabs[0]);
@@ -41,8 +40,6 @@ const Employee: React.FC = () => {
         <EmployeeList />
       ) : activeTab === "Quản lý team" ? (
         <TeamList />
-      ) : activeTab === "Quản lý thuê người" ? (
-        <Rental />
       ) : (
         <Placeholder>
           <h3>{activeTab}</h3>

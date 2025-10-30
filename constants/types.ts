@@ -1,5 +1,5 @@
 import { LucideIcon } from 'lucide-react';
-import { REQUEST_STATUS, AssetCategory, AssetStatus } from "./enums";
+import { REQUEST_STATUS, AssetCategory, AssetStatus, DivisionStatus } from "./enums";
 
 export interface Module {
   id: string;
@@ -219,9 +219,7 @@ export interface Division {
   id: string;
   name: string;
   description: string;
-  employeeCount: number;
-  manager?: string;
-  status: "active" | "inactive";
+  status: DivisionStatus | string;
   createdAt: string;
 }
 

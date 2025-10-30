@@ -4,12 +4,13 @@ import {
   BirthdayEmployeeData,
   WorkStatisticData,
 } from '@/types/api';
+import { formatDateForApi } from "@/utils/api";
 
 class DivisionDashboardService {
   async getWorkInfo(divisionId: number, date: Date): Promise<WorkInfoData> {
     const response = await axiosInstance.get(`/divisions/${divisionId}/work-info`, {
       params: {
-        date: date.toISOString(),
+        work_date: formatDateForApi(date),
       },
     });
     return response.data;

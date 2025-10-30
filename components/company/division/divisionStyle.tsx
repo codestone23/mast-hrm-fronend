@@ -67,6 +67,7 @@ export const SearchInput = styled.input`
 `;
 
 export const CreateButton = styled.button`
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 8px;

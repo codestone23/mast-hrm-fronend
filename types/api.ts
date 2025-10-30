@@ -18,6 +18,95 @@ export interface PaginatedResponse<T> {
   };
 }
 
+// Division types
+export enum DivisionTypeEnum {
+  TECHNICAL = 'TECHNICAL',
+  BUSINESS = 'BUSINESS',
+  OPERATIONS = 'OPERATIONS',
+  OTHER = 'OTHER',
+}
+
+export enum DivisionStatusEnum {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+}
+
+export interface DivisionListItem {
+  id: number;
+  name: string;
+  head_id: number | null;
+  is_active_project: boolean;
+  type: DivisionTypeEnum | string;
+  status: DivisionStatusEnum | string;
+  level: number;
+  address: string | null;
+  parent_id: number | null;
+  founding_at: string | null;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  parent?: {
+    id: number;
+    name: string;
+  } | null;
+  children?: Array<{ id: number; name: string }>;
+  _count?: { user_division: number; projects: number };
+  member_count?: number;
+  project_count?: number;
+}
+
+export interface DivisionListParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  type?: DivisionTypeEnum | string;
+  status?: DivisionStatusEnum | string;
+}
+
+export interface CreateDivisionRequest {
+  name: string;
+  type: DivisionTypeEnum | string;
+  parent_id?: number | null;
+  description?: string;
+}
+
+export interface UpdateDivisionRequest extends CreateDivisionRequest {
+  status?: DivisionStatusEnum | string;
+}
+
+export type DivisionDetail = DivisionListItem;
+
+export interface DivisionUserAssignmentItem {
+  id: number;
+  name: string;
+  email: string;
+  userId: number;
+  divisionId: number;
+  role_id: number | null;
+  teamId: number | null;
+  description: string | null;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    user_information: {
+      name: string;
+      code: string;
+      avatar: string | null;
+    };
+  };
+  division?: { id: number; name: string };
+  created_at: string;
+}
+
+export interface PaginatedMeta {
+  total: number;
+  current_page: number;
+  limit: number;
+  total_pages: number;
+}
+
 // Auth types
 export interface LoginRequest {
   email: string;

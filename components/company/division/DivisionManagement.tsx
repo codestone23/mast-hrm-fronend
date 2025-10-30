@@ -1,371 +1,376 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Edit, Trash2, Building2, Users } from "lucide-react";
+import { Plus, Building2, Users } from "lucide-react";
 import {
-  PersonalContainer,
-  DashboardGrid,
-  Card,
-  WelcomeCard,
-  WelcomeContent,
-  StatsCard,
-  StatsNumber,
-  CardHeader,
-  CardTitle,
-  CardLink,
-  IconWrapper,
-  StatsHeader,
-  DashboardCol,
-  AssetsGradientBox,
-  AssetsNumber,
-  AssetsLabel,
-  AssetsListContainer,
-  AssetsListTitle,
-  AssetsItem,
-  SearchInput,
-  CreateButton,
-  DivisionGrid,
-  DivisionCard,
-  DivisionIcon,
-  DivisionInfo,
-  DivisionName,
-  DivisionDescription,
-  DivisionStats,
-  DivisionActions as CardActions,
-  ActionButton,
-  EmptyState,
-  EmptyIcon,
-  EmptyText,
+    PersonalContainer,
+    DashboardGrid,
+    Card,
+    WelcomeCard,
+    WelcomeContent,
+    StatsCard,
+    StatsNumber,
+    CardHeader,
+    CardTitle,
+    CardLink,
+    IconWrapper,
+    StatsHeader,
+    DashboardCol,
+    AssetsGradientBox,
+    AssetsNumber,
+    AssetsLabel,
+    AssetsListContainer,
+    AssetsListTitle,
+    AssetsItem,
+    CreateButton,
+    EmptyState,
+    EmptyIcon,
+    EmptyText,
 } from "./divisionStyle";
 import CreateDivisionModal from "./modals/CreateDivisionModal";
 import EditDivisionModal from "./modals/EditDivisionModal";
-import { Division } from "@/constants/types";
+import { useRouter } from "next/navigation";
+
+import { Division as LegacyDivision } from "@/constants/types";
+import DivisionFilters from "./DivisionFilters";
+import DivisionList from "./DivisionList";
+import Pagination from "@/components/common/Pagination/Pagination";
+import {
+    useCreateDivision,
+    useDeleteDivision,
+    useDivisionsList,
+    useUpdateDivision,
+    DivisionListResponse,
+} from "@/hooks/useDivisions";
+import {
+    CreateDivisionRequest,
+    UpdateDivisionRequest,
+    DivisionListItem,
+} from "@/types/api";
 import { ConfirmDeleteModal } from "@/components/common";
+import { useToast } from "@/contexts/ToastContext";
 
 const DivisionManagement: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedDivision, setSelectedDivision] = useState<Division | null>(null);
+    const router = useRouter();
+    const [searchTerm, setSearchTerm] = useState("");
+    const [typeFilter, setTypeFilter] = useState<string | undefined>(undefined);
+    const [statusFilter, setStatusFilter] = useState<string | undefined>(
+        undefined
+    );
+    const [page, setPage] = useState(1);
+    const [limit] = useState(10);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedDivision, setSelectedDivision] =
+        useState<DivisionListItem | null>(null);
 
-  // Mock data - sẽ được thay thế bằng API call
-  const [divisions, setDivisions] = useState<Division[]>([
-    {
-      id: "1",
-      name: "Phòng Công nghệ thông tin",
-      description: "Quản lý và phát triển hệ thống công nghệ thông tin",
-      employeeCount: 25,
-      manager: "Nguyễn Văn A",
-      status: "active",
-      createdAt: "2023-01-15",
-    },
-    {
-      id: "2",
-      name: "Phòng Nhân sự",
-      description: "Quản lý nhân sự và các chính sách lao động",
-      employeeCount: 12,
-      manager: "Trần Thị B",
-      status: "active",
-      createdAt: "2023-02-20",
-    },
-    {
-      id: "3",
-      name: "Phòng Tài chính",
-      description: "Quản lý tài chính và kế toán",
-      employeeCount: 8,
-      manager: "Lê Văn C",
-      status: "active",
-      createdAt: "2023-03-10",
-    },
-    {
-      id: "4",
-      name: "Phòng Marketing",
-      description: "Quản lý marketing và truyền thông",
-      employeeCount: 15,
-      manager: "Phạm Thị D",
-      status: "inactive",
-      createdAt: "2023-04-05",
-    },
-  ]);
+    const { data: listData, isFetching } = useDivisionsList({
+        page,
+        limit,
+        search: searchTerm || undefined,
+        type: typeFilter,
+        status: statusFilter,
+    });
+    const response = listData as DivisionListResponse | undefined;
+    const divisions = response?.data ?? [];
+    const total = response?.pagination.total ?? 0;
+    const totalPages = response?.pagination.total_pages ?? 1;
 
-  const filteredDivisions = divisions.filter(
-    (division) =>
-      division.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      division.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    const { success: showSuccessToast, error: showErrorToast } = useToast();
 
-  const handleCreateDivision = (divisionData: Omit<Division, "id" | "createdAt">) => {
-    const newDivision: Division = {
-      ...divisionData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString().split('T')[0],
+    const handleDeleteError = (error: string) => {
+        showErrorToast(error || "Có lỗi xảy ra khi xóa phòng ban");
     };
-    setDivisions([...divisions, newDivision]);
-    setIsCreateModalOpen(false);
-  };
 
-  const handleEditDivision = (divisionData: Division) => {
-    setDivisions(
-      divisions.map((division) =>
-        division.id === divisionData.id ? divisionData : division
-      )
-    );
-    setIsEditModalOpen(false);
-    setSelectedDivision(null);
-  };
+    const createMutation = useCreateDivision();
+    const deleteMutation = useDeleteDivision(handleDeleteError);
+    const updateMutation = useUpdateDivision(selectedDivision?.id ?? 0);
 
-  const handleDeleteDivision = () => {
-    if (selectedDivision) {
-      setDivisions(divisions.filter((division) => division.id !== selectedDivision.id));
-      setIsDeleteModalOpen(false);
-      setSelectedDivision(null);
-    }
-  };
+    const filteredDivisions = divisions; // server-side filtered
 
-  const handleEdit = (division: Division) => {
-    setSelectedDivision(division);
-    setIsEditModalOpen(true);
-  };
+    const handleCreateDivision = async (payload: CreateDivisionRequest) => {
+        await createMutation.mutateAsync(payload);
+        setIsCreateModalOpen(false);
+    };
 
-  const handleDelete = (division: Division) => {
-    setSelectedDivision(division);
-    setIsDeleteModalOpen(true);
-  };
+    const handleEditDivision = async (
+        payload: UpdateDivisionRequest & { id?: string | number }
+    ) => {
+        await updateMutation.mutateAsync(payload);
+        setIsEditModalOpen(false);
+        setSelectedDivision(null);
+    };
 
-  const getStatusColor = (status: string) => {
-    return status === "active" ? "#10b981" : "#ef4444";
-  };
+    const handleDeleteDivision = async () => {
+        if (selectedDivision) {
+            await deleteMutation.mutateAsync(selectedDivision.id);
+            setIsDeleteModalOpen(false);
+            setSelectedDivision(null);
+        }
+    };
 
-  const getStatusText = (status: string) => {
-    return status === "active" ? "Hoạt động" : "Không hoạt động";
-  };
+    const handleEdit = (division: DivisionListItem) => {
+        setSelectedDivision(division);
+        setIsEditModalOpen(true);
+    };
 
-  const renderHeader = () => {
-    const activeDivisions = divisions.filter(div => div.status === 'active').length;
-    const totalEmployees = divisions.reduce((total, div) => total + div.employeeCount, 0);
-    
+    const handleDelete = (division: DivisionListItem) => {
+        setSelectedDivision(division);
+        setIsDeleteModalOpen(true);
+    };
+
+    const renderHeader = () => {
+        const activeDivisions = divisions.filter(
+            (div) => div.status === "ACTIVE"
+        ).length;
+        const totalEmployees = divisions.reduce(
+            (acc, div) => acc + (div.member_count ?? 0),
+            0
+        );
+
+        return (
+            <DashboardCol>
+                <WelcomeCard>
+                    <WelcomeContent>
+                        <h3>Quản lý phòng ban hệ thống</h3>
+                        <p>
+                            Tổng số phòng ban: {divisions.length} | Đang hoạt
+                            động: {activeDivisions} | Tổng nhân viên:{" "}
+                            {totalEmployees}
+                        </p>
+                    </WelcomeContent>
+                </WelcomeCard>
+
+                <Card>
+                    <CardHeader>
+                        <IconWrapper>
+                            <Building2 size={20} />
+                        </IconWrapper>
+                        <CardTitle>Tìm kiếm và quản lý</CardTitle>
+                    </CardHeader>
+                    <div
+                        style={{
+                            display: "flex",
+                            gap: "16px",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                        }}
+                    >
+                        <DivisionFilters
+                            search={searchTerm}
+                            onSearchChange={setSearchTerm}
+                            type={typeFilter}
+                            status={statusFilter}
+                            onTypeChange={setTypeFilter}
+                            onStatusChange={setStatusFilter}
+                        />
+                        <CreateButton
+                            onClick={() => setIsCreateModalOpen(true)}
+                        >
+                            <Plus size={20} />
+                            Tạo phòng ban mới
+                        </CreateButton>
+                    </div>
+                </Card>
+
+                <StatsCard>
+                    <StatsHeader $marginBottom="0.5rem">
+                        <IconWrapper>
+                            <Building2 size={18} />
+                        </IconWrapper>
+                        <CardTitle>Tổng quan phòng ban</CardTitle>
+                    </StatsHeader>
+                    <StatsNumber className="large">{total}</StatsNumber>
+                    <div
+                        style={{
+                            fontSize: "0.8rem",
+                            color: "var(--text-secondary)",
+                            marginTop: "0.25rem",
+                        }}
+                    >
+                        phòng ban
+                    </div>
+                </StatsCard>
+
+                <Card>
+                    <CardHeader>
+                        <IconWrapper>
+                            <Users size={20} />
+                        </IconWrapper>
+                        <CardTitle>Thống kê nhân viên</CardTitle>
+                    </CardHeader>
+                    <AssetsGradientBox>
+                        <AssetsNumber>{totalEmployees}</AssetsNumber>
+                        <AssetsLabel>Tổng nhân viên</AssetsLabel>
+                    </AssetsGradientBox>
+                    <AssetsListContainer>
+                        <AssetsListTitle>
+                            <strong>Phân bố nhân viên theo phòng ban</strong>
+                        </AssetsListTitle>
+                        {divisions.slice(0, 4).map((division) => (
+                            <AssetsItem
+                                $marginBottom="0.25rem"
+                                key={division.id}
+                            >
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <span style={{ fontSize: "0.8rem" }}>
+                                        {division.name}
+                                    </span>
+                                    <span
+                                        style={{
+                                            fontSize: "0.75rem",
+                                            fontWeight: "600",
+                                            color:
+                                                division.status === "ACTIVE"
+                                                    ? "var(--success-600)"
+                                                    : "var(--text-muted)",
+                                            padding: "2px 6px",
+                                            borderRadius: "4px",
+                                            backgroundColor:
+                                                division.status === "ACTIVE"
+                                                    ? "var(--success-100)"
+                                                    : "var(--background-secondary)",
+                                        }}
+                                    >
+                                        {division.member_count ?? 0} nhân viên
+                                    </span>
+                                </div>
+                            </AssetsItem>
+                        ))}
+                        {divisions.length > 4 && (
+                            <AssetsItem
+                                $marginBottom="0.25rem"
+                                style={{
+                                    fontStyle: "italic",
+                                    color: "var(--text-muted)",
+                                }}
+                            >
+                                ... và {divisions.length - 4} phòng ban khác
+                            </AssetsItem>
+                        )}
+                    </AssetsListContainer>
+                </Card>
+            </DashboardCol>
+        );
+    };
+
     return (
-      <DashboardCol>
-        <WelcomeCard>
-          <WelcomeContent>
-            <h3>Quản lý phòng ban hệ thống</h3>
-            <p>Tổng số phòng ban: {divisions.length} | Đang hoạt động: {activeDivisions} | Tổng nhân viên: {totalEmployees}</p>
-          </WelcomeContent>
-        </WelcomeCard>
+        <PersonalContainer>
+            <DashboardGrid>
+                {renderHeader()}
+                <DashboardCol $span={2}>
+                    <Card>
+                        <CardHeader>
+                            <IconWrapper>
+                                <Building2 size={20} />
+                            </IconWrapper>
+                            <CardTitle>Danh sách phòng ban</CardTitle>
+                            <CardLink></CardLink>
+                        </CardHeader>
 
-        <Card>
-          <CardHeader>
-            <IconWrapper>
-              <Building2 size={20} />
-            </IconWrapper>
-            <CardTitle>Tìm kiếm và quản lý</CardTitle>
-          </CardHeader>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <SearchInput
-              type="text"
-              placeholder="Tìm kiếm theo tên hoặc mô tả phòng ban..."
-              value={searchTerm}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+                        {isFetching ? (
+                            <div style={{ padding: "24px" }}>Đang tải...</div>
+                        ) : filteredDivisions.length === 0 ? (
+                            <EmptyState>
+                                <EmptyIcon>
+                                    <Building2 size={48} />
+                                </EmptyIcon>
+                                <EmptyText>
+                                    {searchTerm
+                                        ? "Không tìm thấy phòng ban nào phù hợp với từ khóa tìm kiếm"
+                                        : "Chưa có phòng ban nào trong hệ thống"}
+                                </EmptyText>
+                                {!searchTerm && (
+                                    <div style={{ marginTop: "16px" }}>
+                                        <CreateButton
+                                            onClick={() =>
+                                                setIsCreateModalOpen(true)
+                                            }
+                                        >
+                                            <Plus size={20} />
+                                            Tạo phòng ban đầu tiên
+                                        </CreateButton>
+                                    </div>
+                                )}
+                            </EmptyState>
+                        ) : (
+                            <>
+                                <DivisionList
+                                    divisions={filteredDivisions}
+                                    onOpen={(d) =>
+                                        router.push(
+                                            `/company/divisions/${d.id}`
+                                        )
+                                    }
+                                    onEdit={handleEdit}
+                                    onDelete={handleDelete}
+                                />
+                                <div style={{ marginTop: 16 }}>
+                                    <Pagination
+                                        currentPage={page}
+                                        totalPages={totalPages}
+                                        totalItems={total}
+                                        itemsPerPage={limit}
+                                        onPageChange={(p) => setPage(p)}
+                                    />
+                                </div>
+                            </>
+                        )}
+                    </Card>
+                </DashboardCol>
+            </DashboardGrid>
+
+            {/* Modals */}
+            <CreateDivisionModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSave={(payload: CreateDivisionRequest) =>
+                    handleCreateDivision(payload)
+                }
             />
-            <CreateButton onClick={() => setIsCreateModalOpen(true)}>
-              <Plus size={20} />
-              Tạo phòng ban mới
-            </CreateButton>
-          </div>
-        </Card>
 
-        <StatsCard>
-          <StatsHeader $marginBottom="0.5rem">
-            <IconWrapper>
-              <Building2 size={18} />
-            </IconWrapper>
-            <CardTitle>Tổng quan phòng ban</CardTitle>
-          </StatsHeader>
-          <StatsNumber className="large">{divisions.length}</StatsNumber>
-          <div
-            style={{
-              fontSize: "0.8rem",
-              color: "var(--text-secondary)",
-              marginTop: "0.25rem",
-            }}
-          >
-            phòng ban
-          </div>
-        </StatsCard>
+            <EditDivisionModal
+                isOpen={isEditModalOpen}
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                    setSelectedDivision(null);
+                }}
+                division={
+                    selectedDivision
+                        ? ({
+                              id: String(selectedDivision.id),
+                              name: selectedDivision.name,
+                              description: selectedDivision.description || "",
+                              status:
+                                  selectedDivision.status === "ACTIVE"
+                                      ? "ACTIVE"
+                                      : "INACTIVE",
+                              createdAt: selectedDivision.created_at,
+                          } as LegacyDivision)
+                        : null
+                }
+                onSave={(d: UpdateDivisionRequest) => handleEditDivision(d)}
+            />
 
-        <Card>
-          <CardHeader>
-            <IconWrapper>
-              <Users size={20} />
-            </IconWrapper>
-            <CardTitle>Thống kê nhân viên</CardTitle>
-          </CardHeader>
-          <AssetsGradientBox>
-            <AssetsNumber>{totalEmployees}</AssetsNumber>
-            <AssetsLabel>Tổng nhân viên</AssetsLabel>
-          </AssetsGradientBox>
-          <AssetsListContainer>
-            <AssetsListTitle>
-              <strong>Phân bố nhân viên theo phòng ban</strong>
-            </AssetsListTitle>
-            {divisions.slice(0, 4).map((division) => (
-              <AssetsItem $marginBottom="0.25rem" key={division.id}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem' }}>{division.name}</span>
-                  <span style={{ 
-                    fontSize: '0.75rem', 
-                    fontWeight: '600', 
-                    color: division.status === 'active' ? 'var(--success-600)' : 'var(--text-muted)',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    backgroundColor: division.status === 'active' ? 'var(--success-100)' : 'var(--background-secondary)'
-                  }}>
-                    {division.employeeCount} nhân viên
-                  </span>
-                </div>
-              </AssetsItem>
-            ))}
-            {divisions.length > 4 && (
-              <AssetsItem $marginBottom="0.25rem" style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>
-                ... và {divisions.length - 4} phòng ban khác
-              </AssetsItem>
-            )}
-          </AssetsListContainer>
-        </Card>
-      </DashboardCol>
+            <ConfirmDeleteModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => {
+                    setIsDeleteModalOpen(false);
+                    setSelectedDivision(null);
+                }}
+                onConfirm={handleDeleteDivision}
+                title="Xóa phòng ban"
+                message={`Bạn có chắc chắn muốn xóa phòng ban "${selectedDivision?.name}"? Hành động này không thể hoàn tác.`}
+            />
+        </PersonalContainer>
     );
-  };
-
-  return (
-    <PersonalContainer>
-      <DashboardGrid>
-        {renderHeader()}
-        <DashboardCol $span={2}>
-          <Card>
-            <CardHeader>
-              <IconWrapper>
-                <Building2 size={20} />
-              </IconWrapper>
-              <CardTitle>Danh sách phòng ban</CardTitle>
-              <CardLink>Xem tất cả</CardLink>
-            </CardHeader>
-            
-            {filteredDivisions.length === 0 ? (
-              <EmptyState>
-                <EmptyIcon>
-                  <Building2 size={48} />
-                </EmptyIcon>
-                <EmptyText>
-                  {searchTerm ? "Không tìm thấy phòng ban nào phù hợp với từ khóa tìm kiếm" : "Chưa có phòng ban nào trong hệ thống"}
-                </EmptyText>
-                {!searchTerm && (
-                  <div style={{ marginTop: '16px' }}>
-                    <CreateButton onClick={() => setIsCreateModalOpen(true)}>
-                      <Plus size={20} />
-                      Tạo phòng ban đầu tiên
-                    </CreateButton>
-                  </div>
-                )}
-              </EmptyState>
-            ) : (
-              <DivisionGrid>
-                {filteredDivisions.map((division) => (
-                  <DivisionCard key={division.id}>
-                    <DivisionIcon>
-                      <Building2 size={24} />
-                    </DivisionIcon>
-                    <DivisionInfo>
-                      <DivisionName>{division.name}</DivisionName>
-                      <DivisionDescription>{division.description}</DivisionDescription>
-                      <DivisionStats>
-                        <div className="stat">
-                          <Users size={16} />
-                          <span>{division.employeeCount} nhân viên</span>
-                        </div>
-                        <div className="stat">
-                          <span 
-                            className="status" 
-                            style={{ 
-                              color: getStatusColor(division.status),
-                              backgroundColor: division.status === 'active' ? 'var(--success-100)' : 'var(--error-100)',
-                              padding: '4px 8px',
-                              borderRadius: 'var(--radius-sm)',
-                              fontSize: '12px',
-                              fontWeight: '600'
-                            }}
-                          >
-                            {getStatusText(division.status)}
-                          </span>
-                        </div>
-                      </DivisionStats>
-                      {division.manager && (
-                        <div style={{ 
-                          fontSize: "13px", 
-                          color: "var(--text-secondary)", 
-                          marginTop: "8px",
-                          padding: "6px 8px",
-                          backgroundColor: "var(--background-secondary)",
-                          borderRadius: "var(--radius-sm)",
-                          display: "inline-block"
-                        }}>
-                          👤 Quản lý: {division.manager}
-                        </div>
-                      )}
-                    </DivisionInfo>
-                    <CardActions>
-                      <ActionButton
-                        $variant="edit"
-                        onClick={() => handleEdit(division)}
-                        title="Chỉnh sửa phòng ban"
-                      >
-                        <Edit size={16} />
-                      </ActionButton>
-                      <ActionButton
-                        $variant="delete"
-                        onClick={() => handleDelete(division)}
-                        title="Xóa phòng ban"
-                      >
-                        <Trash2 size={16} />
-                      </ActionButton>
-                    </CardActions>
-                  </DivisionCard>
-                ))}
-              </DivisionGrid>
-            )}
-          </Card>
-        </DashboardCol>
-      </DashboardGrid>
-
-      {/* Modals */}
-      <CreateDivisionModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSave={handleCreateDivision}
-      />
-
-      <EditDivisionModal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setSelectedDivision(null);
-        }}
-        division={selectedDivision}
-        onSave={handleEditDivision}
-      />
-
-      <ConfirmDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setIsDeleteModalOpen(false);
-          setSelectedDivision(null);
-        }}
-        onConfirm={handleDeleteDivision}
-        title="Xóa phòng ban"
-        message={`Bạn có chắc chắn muốn xóa phòng ban "${selectedDivision?.name}"? Hành động này không thể hoàn tác.`}
-      />
-    </PersonalContainer>
-  );
 };
 
 export default DivisionManagement;

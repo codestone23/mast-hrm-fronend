@@ -19,6 +19,26 @@ export const Logo = styled.div`
   height: 46px;
 `;
 
+export const HeaderRight = styled.div`
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 0.5rem;
+`;
+
+export const LogoutButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+`;
+
 export const UserInfo = styled.div`
   display: flex;
   align-items: center;

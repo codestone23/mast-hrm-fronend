@@ -287,7 +287,6 @@ const UserManagement: React.FC = () => {
         </DashboardCol>
       </DashboardGridAccount>
 
-      {/* Modals sẽ được thêm sau */}
       {isCreateModalOpen && (
         <div>Create Modal</div>
       )}

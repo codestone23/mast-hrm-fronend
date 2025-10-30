@@ -53,3 +53,16 @@ export enum AssetStatus {
     LOST = "LOST",              // Mất
     DAMAGED = "DAMAGED",        // Hỏng
 }
+
+// Division
+export enum DivisionType {
+    TECHNICAL = "TECHNICAL",
+    BUSINESS = "BUSINESS",
+    OPERATIONS = "OPERATIONS",
+    OTHER = "OTHER",
+}
+
+export enum DivisionStatus {
+    ACTIVE = "ACTIVE",
+    INACTIVE = "INACTIVE",
+}

@@ -1,32 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { X, Building2, FileText, Users } from "lucide-react";
-import {
-  ModalOverlay,
-  ModalContainer,
-  ModalHeader,
-  ModalTitle,
-  ModalCloseButton,
-  ModalBody,
-  FormGroup,
-  FormLabel,
-  FormInput,
-  FormTextArea,
-  FormSelect,
-  FormRow,
-  ModalFooter,
-  CancelButton,
-  SaveButton,
-  IconWrapper,
-} from "../divisionStyle";
+import React, { useState, useEffect, useMemo } from "react";
+import Modal from "@/components/common/Modal/Modal";
+import Input from "@/components/common/Input/Input";
+import Select from "@/components/common/Select/Select";
 import { Division } from "@/constants/types";
+import { useDivisionsList } from "@/hooks/useDivisions";
+import { DivisionStatus, DivisionType } from "@/constants/enums";
+import { UpdateDivisionRequest } from "@/types/api";
 
 interface EditDivisionModalProps {
   isOpen: boolean;
   onClose: () => void;
   division: Division | null;
-  onSave: (divisionData: Division) => void;
+  onSave: (payload: UpdateDivisionRequest & { id?: number | string }) => void;
 }
 
 const EditDivisionModal: React.FC<EditDivisionModalProps> = ({
@@ -35,42 +22,34 @@ const EditDivisionModal: React.FC<EditDivisionModalProps> = ({
   division,
   onSave,
 }) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    manager: "",
-    status: "active" as "active" | "inactive",
-  });
+  const [form, setForm] = useState<UpdateDivisionRequest>({ name: "", description: "", parent_id: undefined, type: DivisionType.TECHNICAL, status: DivisionStatus.ACTIVE });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const parentsQuery = useDivisionsList({ page: 1, limit: 100 });
+  const parentOptions = useMemo(() => (parentsQuery.data?.data ?? []).map(d => ({ value: d.id, label: d.name })), [parentsQuery.data]);
 
   useEffect(() => {
     if (division) {
-      setFormData({
+      setForm({
         name: division.name || "",
         description: division.description || "",
-        manager: division.manager || "",
-        status: division.status || "active",
+        parent_id: undefined,
+        type: DivisionType.TECHNICAL,
+        status: division.status === "active" ? DivisionStatus.ACTIVE : DivisionStatus.INACTIVE,
       });
     }
   }, [division]);
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
-    }
-  };
+  // no-op
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
+    if (!form.name.trim()) {
       newErrors.name = "Tên phòng ban là bắt buộc";
     }
 
-    if (!formData.description.trim()) {
+    if (!form.description?.trim()) {
       newErrors.description = "Mô tả là bắt buộc";
     }
 
@@ -80,13 +59,8 @@ const EditDivisionModal: React.FC<EditDivisionModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
     if (validateForm() && division) {
-      onSave({
-        ...division,
-        ...formData,
-      });
-      
+      onSave({ ...form, status: form.status });
       setErrors({});
     }
   };
@@ -98,92 +72,43 @@ const EditDivisionModal: React.FC<EditDivisionModalProps> = ({
 
   if (!isOpen || !division) return null;
 
+  const footer = (
+    <>
+      <button type="button" onClick={handleClose} style={{ padding: '10px 16px', border: '1px solid var(--border)', borderRadius: 8, background: 'white' }}>Hủy</button>
+      <button type="submit" form="edit-division-form" style={{ padding: '10px 16px', border: 'none', borderRadius: 8, background: 'var(--primary-500)', color: 'white' }}>Lưu thay đổi</button>
+    </>
+  );
+
   return (
-    <ModalOverlay onClick={handleClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
-        <ModalHeader>
-          <ModalTitle>Chỉnh sửa phòng ban</ModalTitle>
-          <ModalCloseButton onClick={handleClose}>
-            <X size={20} />
-          </ModalCloseButton>
-        </ModalHeader>
-
-        <form onSubmit={handleSubmit}>
-          <ModalBody>
-            <FormGroup>
-              <FormLabel>
-                <IconWrapper>
-                  <Building2 size={16} />
-                </IconWrapper>
-                Tên phòng ban *
-              </FormLabel>
-              <FormInput
-                type="text"
-                value={formData.name}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange("name", e.target.value)}
-                placeholder="Nhập tên phòng ban"
-                $hasError={!!errors.name}
-              />
-              {errors.name && <span style={{ color: "var(--error-500)", fontSize: "12px" }}>{errors.name}</span>}
-            </FormGroup>
-
-            <FormGroup>
-              <FormLabel>
-                <IconWrapper>
-                  <FileText size={16} />
-                </IconWrapper>
-                Mô tả *
-              </FormLabel>
-              <FormTextArea
-                value={formData.description}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange("description", e.target.value)}
-                placeholder="Nhập mô tả phòng ban"
-                rows={4}
-                $hasError={!!errors.description}
-              />
-              {errors.description && <span style={{ color: "var(--error-500)", fontSize: "12px" }}>{errors.description}</span>}
-            </FormGroup>
-
-            <FormRow>
-              <FormGroup>
-                <FormLabel>
-                  <IconWrapper>
-                    <Users size={16} />
-                  </IconWrapper>
-                  Quản lý phòng ban
-                </FormLabel>
-                <FormInput
-                  type="text"
-                  value={formData.manager}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange("manager", e.target.value)}
-                  placeholder="Nhập tên quản lý"
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <FormLabel>Trạng thái</FormLabel>
-                <FormSelect
-                  value={formData.status}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleInputChange("status", e.target.value)}
-                >
-                  <option value="active">Hoạt động</option>
-                  <option value="inactive">Không hoạt động</option>
-                </FormSelect>
-              </FormGroup>
-            </FormRow>
-          </ModalBody>
-
-          <ModalFooter>
-            <CancelButton type="button" onClick={handleClose}>
-              Hủy
-            </CancelButton>
-            <SaveButton type="submit">
-              Lưu thay đổi
-            </SaveButton>
-          </ModalFooter>
-        </form>
-      </ModalContainer>
-    </ModalOverlay>
+    <Modal isOpen={isOpen} onClose={handleClose} title="Chỉnh sửa phòng ban" footer={footer} size="md">
+      <form id="edit-division-form" onSubmit={handleSubmit}>
+        <div style={{ display: 'grid', gap: 12 }}>
+          <Input label="Tên phòng ban" required value={form.name} onChange={(e)=>setForm({ ...form, name: e.target.value })} error={errors.name} />
+          <Input label="Mô tả" multiline rows={4} value={form.description || ''} onChange={(e)=>setForm({ ...form, description: e.target.value })} error={errors.description} />
+          <Select
+            options={[
+              { value: DivisionType.TECHNICAL, label: 'Kỹ thuật' },
+              { value: DivisionType.BUSINESS, label: 'Kinh doanh' },
+              { value: DivisionType.OPERATIONS, label: 'Vận hành' },
+              { value: DivisionType.OTHER, label: 'Khác' },
+            ]}
+            value={form.type}
+            onChange={(v)=>setForm({ ...form, type: String(v) })}
+          />
+          <Select
+            options={[{ value: '', label: 'Không có phòng ban cha' }, ...parentOptions]}
+            value={form.parent_id ?? ''}
+            onChange={(v)=>setForm({ ...form, parent_id: v ? Number(v) : undefined })}
+            placeholder="Phòng ban cha"
+          />
+          <Select
+            options={[{ value: DivisionStatus.ACTIVE, label: 'ACTIVE' }, { value: DivisionStatus.INACTIVE, label: 'INACTIVE' }]}
+            value={form.status}
+            onChange={(v)=>setForm({ ...form, status: String(v) as unknown as DivisionStatus })}
+          />
+        </div>
+      </form>
+    </Modal>
   );
 };
 

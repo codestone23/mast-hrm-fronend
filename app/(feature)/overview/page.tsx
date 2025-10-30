@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from '@/components/header/Header';
 import ModuleGrid from '../../../components/header/module-grid/ModuleGrid'; 
 import { ContentHeader, PageContainer } from "./overviewStyle";

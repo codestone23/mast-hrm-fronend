@@ -69,7 +69,6 @@ const AssetManagement: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Fetch assets
   const assetsParams: GetAssetsParams = useMemo(() => ({
     page: currentPage,
     limit: ITEMS_PER_PAGE,

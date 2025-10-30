@@ -244,7 +244,7 @@ const Select: React.FC<SelectProps> = ({
               <>
                 {filteredOptions.map((option) => (
                   <SelectOption
-                    key={option.value}
+                    key={`${option.value}-${option.label}`}
                     disabled={option.disabled}
                     selected={option.value === selectedValue}
                     onClick={() => handleSelect(option)}

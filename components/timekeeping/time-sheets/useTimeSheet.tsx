@@ -11,14 +11,21 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 export const useTimeSheet = () => {
-    const [payload, setPayload] = useState<{    
-        start_date?: string;    
+    const getCurrentMonthRange = () => {
+        const start = dayjs().startOf('month').format('YYYY-MM-DD');
+        const end = dayjs().endOf('month').format('YYYY-MM-DD');
+        return { start_date: start, end_date: end };
+    };
+
+    const [payload, setPayload] = useState<{
+        start_date?: string;
         end_date?: string;
-    }>({});
+    }>(getCurrentMonthRange());
 
     const { data, isLoading, error } = useQuery({
         queryKey: ['time-sheets', payload],
         queryFn: () => TimekeepingService.getMyTimeSheets(payload.start_date, payload.end_date),
+        enabled: Boolean(payload.start_date && payload.end_date),
     });
 
     let rawTimeSheetData: TimeSheet[] = [];

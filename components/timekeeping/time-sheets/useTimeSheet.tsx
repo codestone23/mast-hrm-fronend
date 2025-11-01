@@ -49,6 +49,9 @@ export const useTimeSheet = () => {
         type: string;
         remote: string;
         request_type: string | null;
+        requests?: {
+            request_type: string;
+        }[];
         paid_leave: number | null;
         unpaid_leave: number | null;
     }>, item: TimeSheet) => {
@@ -120,6 +123,7 @@ export const useTimeSheet = () => {
             isComplete: item.is_complete,
             type: item.type,
             remote: item.remote,
+            requests: item.requests,
             request_type: item.request_type,
             paid_leave: item.paid_leave,
             unpaid_leave: item.unpaid_leave

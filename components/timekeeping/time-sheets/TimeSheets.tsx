@@ -378,6 +378,7 @@ const TimeSheets: React.FC = () => {
               <CalendarGrid>
                   {getCurrentMonthDays().map((day, index) => {
                     const dayData = timeSheetData[day.fullDate];
+                    console.log(dayData);
                     
                     const todayString = getTodayInVietnamTimezone();
                     const isToday = day.fullDate === todayString;
@@ -425,15 +426,15 @@ const TimeSheets: React.FC = () => {
                               </>
                             ) : dayData ? (
                               <>
-                                {dayData.request_type && (
-                                  <RequestBadge $type={dayData.status}>
-                                    {dayData.request_type === 'LATE' || dayData.request_type === 'EARLY' || dayData.request_type === 'BOTH' ? 'Muộn/Sớm' :
-                                     dayData.request_type === 'PAID_LEAVE' ? 'Nghỉ lương' :
-                                     dayData.request_type === 'UNPAID_LEAVE' ? 'Nghỉ' :
-                                     dayData.request_type === 'REMOTE_WORK' || dayData.request_type === 'HYBRID' ? 'Remote' :
-                                     dayData.request_type === 'OVERTIME' ? 'OT' :
-                                     dayData.request_type === 'FORGOT_CHECKIN' ? 'Quên chấm' :
-                                     dayData.request_type}
+                                {dayData?.requests?.[0]?.request_type && (
+                                  <RequestBadge $type={dayData?.requests[0]?.request_type}>
+                                    {dayData?.requests[0]?.request_type === 'late_early' || dayData?.requests[0]?.request_type === 'early_out' || dayData?.requests[0]?.request_type === 'late_early' ? 'Muộn/Sớm' :
+                                     dayData?.requests[0]?.request_type === 'paid_leave' ? 'Nghỉ lương' :
+                                     dayData?.requests[0]?.request_type === 'unpaid_leave' ? 'Nghỉ' :
+                                     dayData?.requests[0]?.request_type === 'remote_work' || dayData?.requests[0]?.request_type === 'hybrid' ? 'Remote' :
+                                     dayData?.requests[0]?.request_type === 'overtime' ? 'OT' :
+                                     dayData?.requests[0]?.request_type === 'forgot_checkin' ? 'Quên chấm' :
+                                     dayData?.requests[0]?.request_type}
                                   </RequestBadge>
                                 )}
                                 <div>

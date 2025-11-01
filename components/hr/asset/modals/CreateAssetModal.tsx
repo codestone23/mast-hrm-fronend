@@ -34,22 +34,32 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
   onSave,
 }) => {
   const [formData, setFormData] = useState({
-    code: "",
+    asset_code: "",
     name: "",
     description: "",
     status: "available" as const,
     category: "",
-    price: "",
-    warehouse: "",
+    purchase_price: "",
+    model: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const statusOptions: SelectOption[] = [
-    { value: "available", label: "Trống" },
-    { value: "in_use", label: "Đang sử dụng" },
-    { value: "maintenance", label: "Bảo trì" },
-    { value: "disposed", label: "Thanh lý" },
+    { value: "AVAILABLE", label: "Trống" },
+    { value: "ASSIGNED", label: "Đang sử dụng" },
+    { value: "MAINTENANCE", label: "Bảo trì" },
+    { value: "RETIRED", label: "Thanh lý" },
+  ];
+
+  const categoryOptions: SelectOption[] = [
+    { value: "LAPTOP", label: "Laptop" },
+    { value: "DESKTOP", label: "Desktop" },
+    { value: "MONITOR", label: "Monitor" },
+    { value: "KEYBOARD", label: "Keyboard" },
+    { value: "MOUSE", label: "Mouse" },
+    { value: "HEADPHONE", label: "Headphone" },
+    { value: "PHONE", label: "Phone" },
   ];
 
   const handleInputChange = (field: string, value: string) => {
@@ -62,8 +72,8 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.code.trim()) {
-      newErrors.code = "Mã tài sản là bắt buộc";
+    if (!formData.asset_code.trim()) {
+      newErrors.asset_code = "Mã tài sản là bắt buộc";
     }
 
     if (!formData.name.trim()) {
@@ -79,25 +89,24 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
     
     if (validateForm()) {
       onSave({
-        asset_code: formData.code,
+        asset_code: formData.asset_code,
         // keep legacy code for backward compatibility
-        code: formData.code,
         name: formData.name,
         description: formData.description,
         status: formData.status,
         category: formData.category,
-        price: formData.price ? parseFloat(formData.price) : undefined,
-        warehouse: formData.warehouse,
+        purchase_price: formData.purchase_price ? formData.purchase_price : "",
+        model: formData.model,
       } as Omit<Asset, "id">);
       
       setFormData({
-        code: "",
+        asset_code: "",
         name: "",
         description: "",
         status: "available",
         category: "",
-        price: "",
-        warehouse: "",
+        purchase_price: "",
+        model: "",
       });
       setErrors({});
     }
@@ -105,13 +114,13 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
 
   const handleClose = () => {
     setFormData({
-      code: "",
+      asset_code: "",
       name: "",
       description: "",
       status: "available",
       category: "",
-      price: "",
-      warehouse: "",
+      purchase_price: "",
+      model: "",
     });
     setErrors({});
     onClose();
@@ -134,10 +143,10 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
             <FormRow>
               <Input
                 label="Mã tài sản"
-                value={formData.code}
-                onChange={(e) => handleInputChange("code", e.target.value)}
+                value={formData.asset_code}
+                onChange={(e) => handleInputChange("asset_code", e.target.value)}
                 placeholder="Nhập mã tài sản"
-                error={errors.code}
+                error={errors.asset_code}
                 required
                 fullWidth
               />
@@ -166,8 +175,8 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
               <Input
                 label="Giá (VNĐ)"
                 type="number"
-                value={formData.price}
-                onChange={(e) => handleInputChange("price", e.target.value)}
+                value={formData.purchase_price}
+                onChange={(e) => handleInputChange("purchase_price", e.target.value)}
                 placeholder="Nhập giá"
                 fullWidth
               />
@@ -182,19 +191,19 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
             </FormRow>
 
             <FormRow>
-              <Input
+              <Select
                 label="Danh mục"
+                options={categoryOptions}
                 value={formData.category}
-                onChange={(e) => handleInputChange("category", e.target.value)}
-                placeholder="Nhập danh mục"
+                onChange={(value) => handleInputChange("category", String(value))}
                 fullWidth
               />
 
               <Input
-                label="Kho"
-                value={formData.warehouse}
-                onChange={(e) => handleInputChange("warehouse", e.target.value)}
-                placeholder="Nhập kho"
+                label="Model"
+                value={formData.model}
+                onChange={(e) => handleInputChange("model", e.target.value)}
+                placeholder="Nhập Model"
                 fullWidth
               />
             </FormRow>

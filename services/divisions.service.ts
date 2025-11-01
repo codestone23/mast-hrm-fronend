@@ -57,11 +57,8 @@ class DivisionsService {
 
   async removeMemberFromDivision(
     userId: number,
-    divisionId: number
   ): Promise<void> {
-    await axiosInstance.delete(`/divisions/user-assignments`, {
-      params: { userId, divisionId },
-    });
+    await axiosInstance.delete(`/divisions/user-assignments/${userId}`);
   }
 
   async listMembersOfDivision(

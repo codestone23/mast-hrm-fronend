@@ -191,6 +191,9 @@ export interface TimeSheet {
   fines: number;
   group_id: number | null;
   deleted_at: string | null;
+  requests: {
+    request_type: string;
+  }[];
   created_at: string;
   updated_at: string;
   type: string;

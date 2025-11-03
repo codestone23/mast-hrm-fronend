@@ -54,7 +54,7 @@ const ConfirmApproveModal: React.FC<ConfirmApproveModalProps> = ({
               Bạn có chắc chắn muốn duyệt tin tức này không?
             </p>
             <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", margin: 0 }}>
-              "{news.title}"
+              &quot;{news.title}&quot;
             </p>
           </div>
         </ModalBody>

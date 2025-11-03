@@ -75,7 +75,7 @@ const ReviewNewsModal: React.FC<ReviewNewsModalProps> = ({
           <ModalBody>
             <div style={{ marginBottom: "1rem" }}>
               <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginBottom: "1rem" }}>
-                Vui lòng nhập lý do từ chối tin tức: <strong>"{news.title}"</strong>
+                Vui lòng nhập lý do từ chối tin tức: <strong>&quot;{news.title}&quot;</strong>
               </p>
             </div>
 

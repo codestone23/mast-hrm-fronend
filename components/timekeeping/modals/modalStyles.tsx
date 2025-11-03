@@ -199,23 +199,32 @@ export const RequestList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  
+  @media (max-width: 768px) {
+    gap: 0.75rem;
+  }
 `;
 
 export const RequestItem = styled.div<{
     $status?: REQUEST_STATUS;
 }>`
-  padding: 1.25rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
   background: white;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   
   &:hover {
-    border-color: var(--primary-300);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
+    border-color: #d1d5db;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
   }
   
   &::before {
@@ -237,82 +246,137 @@ export const RequestItem = styled.div<{
         }
     }};
   }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+`;
+
+export const RequestContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
 `;
 
 export const RequestHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 1rem;
+  flex: 1;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 `;
 
 export const RequestTitle = styled.h4`
   font-size: 1rem;
   font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.5;
 `;
 
 export const RequestLeft = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
 `;
 
 export const RequestRight = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: flex-end;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  
+  @media (max-width: 768px) {
+    align-items: flex-start;
+    width: 100%;
+  }
 `;
 
 export const RequestNote = styled.p`
   font-size: 0.875rem;
-  font-weight: 400;
-  color: var(--text-secondary);
+  font-weight: 500;
+  color: #374151;
   margin: 0;
+  line-height: 1.5;
 `;
 
 export const RequestDescription = styled.p`
   font-size: 0.875rem;
   font-weight: 400;
-  color: var(--text-secondary);
+  color: #6b7280;
   margin: 0;
+  line-height: 1.6;
+  word-break: break-word;
 `;
 
 export const RequestStatus = styled.span<{ $color?: string }>`
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--radius-sm);
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
   font-size: 0.75rem;
-  font-weight: 500;
-  background: ${({ $color }) => ($color ? `${$color}20` : "var(--gray-100)")};
-  color: ${({ $color }) => $color || "var(--gray-700)"};
-  text-align: right;
+  font-weight: 600;
+  background: ${({ $color }) => ($color ? `${$color}15` : "#f3f4f6")};
+  color: ${({ $color }) => $color || "#6b7280"};
+  text-align: center;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
 `;
 
 export const RequestMeta = styled.div`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 0.75rem;
+  margin-top: 0.5rem;
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: #6b7280;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
 `;
 
 export const RequestMetaItem = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.375rem;
   line-height: 1.5;
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: #6b7280;
+  
+  svg {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    color: #9ca3af;
+  }
+  
+  span {
+    white-space: nowrap;
+  }
 `;
 
 export const RequestReason = styled.p`
-  color: var(--text-secondary);
+  color: #6b7280;
   font-size: 0.875rem;
-  line-height: 1.5;
+  line-height: 1.6;
   margin: 0;
+  word-break: break-word;
 `;
 
 // Styled components for Request Detail Modal
@@ -432,6 +496,11 @@ export const InfoCardLabel = styled.div`
   text-transform: uppercase;
 `;
 
+export const TitleCard = styled.div`
+  font-size: 1.2rem;
+  font-weight: 500;
+`;
+
 export const InfoCardValue = styled.div`
   font-size: 1rem;
   font-weight: 600;
@@ -461,7 +530,7 @@ export const DetailHeaderTitle = styled.h3`
 
 export const DetailHeaderSubtitle = styled.p`
   margin: 0.5rem 0 0 0;
-  font-size: 0.875rem;
+  font-size: 1rem;
   opacity: 0.9;
 `;
 
@@ -631,35 +700,54 @@ export const IconWrapper = styled.span`
 // Request action buttons
 export const RequestActions = styled.div`
   display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 10px;
   gap: 0.5rem;
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border);
+  flex-shrink: 0;
 `;
 
 export const ApproveButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  flex: 1;
-  padding: 0.5rem 1rem;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  min-width: 110px;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   background: #22c55e;
   color: white;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   
-  &:hover {
+  &:hover:not(:disabled) {
     background: #16a34a;
+    box-shadow: 0 4px 6px -1px rgba(34, 197, 94, 0.3), 0 2px 4px -1px rgba(34, 197, 94, 0.2);
     transform: translateY(-1px);
   }
   
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(0);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #9ca3af;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  svg {
+    flex-shrink: 0;
   }
 `;
 
@@ -667,25 +755,43 @@ export const RejectButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  flex: 1;
-  padding: 0.5rem 1rem;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  min-width: 110px;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   background: #ef4444;
   color: white;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   
-  &:hover {
+  &:hover:not(:disabled) {
     background: #dc2626;
+    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3), 0 2px 4px -1px rgba(239, 68, 68, 0.2);
     transform: translateY(-1px);
   }
   
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(0);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #9ca3af;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  svg {
+    flex-shrink: 0;
   }
 `;
 

@@ -17,6 +17,7 @@ export default function Layout({
     { id: ROUTERS.HR.STATS, label: "Thống kê tài sản" },
     { id: ROUTERS.HR.ASSETS, label: "Quản lý tài sản" },
     { id: ROUTERS.HR.USERS, label: "Quản lý user" },
+    { id: ROUTERS.HR.NEWS, label: "Tin tức" },
   ];
 
   return (

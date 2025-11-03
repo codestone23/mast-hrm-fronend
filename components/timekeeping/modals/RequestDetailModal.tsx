@@ -5,10 +5,8 @@ import { Modal } from "@/components/common";
 import { Request } from '@/services/requests.service';
 import {
   ModalContent,
-  DetailSection,
   StatusBadge,
   Divider,
-  ReasonBox,
   InfoGrid,
   InfoCard,
   InfoCardLabel,
@@ -18,7 +16,6 @@ import {
   DetailHeaderTitle,
   DetailHeaderSubtitle,
   DetailInfoGrid,
-  SectionTitle,
   ApprovalSection,
   ApprovalSectionTitle,
   RejectionSection,
@@ -28,9 +25,11 @@ import {
   RequestActions,
   ApproveButton,
   RejectButton,
+  TitleCard,
 } from "./modalStyles";
 import { Calendar, Clock, User, CheckCircle, XCircle, Loader, FileText } from "lucide-react";
-import { REQUEST_STATUS } from "@/constants/enums";
+import { REQUEST_STATUS, REQUEST_TYPE } from "@/constants/enums";
+import { useAppSelector } from "@/store/hooks";
 
 interface RequestDetailModalProps {
   isOpen: boolean;
@@ -49,8 +48,9 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
   onApprove,
   onReject,
 }) => {
+  const { data: user } = useAppSelector((state) => state.user);
+  
   if (!request) return null;
-
   const handleApprove = () => {
     onApprove?.(request.id.toString());
     onClose();
@@ -102,11 +102,28 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
     }
   };
 
+  const getTitle = (type: REQUEST_TYPE) => {
+    switch (type) {
+      case REQUEST_TYPE.REMOTE_WORK:
+        return 'Làm việc từ xa';
+      case REQUEST_TYPE.DAY_OFF:
+        return 'Nghỉ phép';
+      case REQUEST_TYPE.OVERTIME:
+        return 'Làm thêm giờ';
+      case REQUEST_TYPE.LATE_EARLY:
+        return 'Đi muộn/Về sớm';
+      case REQUEST_TYPE.FORGOT_CHECKIN:
+        return 'Quên chấm công';
+      default:
+        return '';
+    }
+  };
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Chi tiết đề xuất"
+      title={`Loại yêu cầu: ${getTitle(request.request_type as REQUEST_TYPE)}`}
       size="lg"
     >
       <ModalContent style={{ padding: '0' }}>
@@ -114,11 +131,12 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
         <DetailHeader>
           <DetailHeaderContent>
             <div>
+              <TitleCard>Tiêu đề: {request.title}</TitleCard>
               <DetailHeaderTitle>
                 {getTypeLabel(request.type)}
               </DetailHeaderTitle>
               <DetailHeaderSubtitle>
-                Ngày làm việc: {formatDate(request.work_date)}
+                Lý do: {request.reason}
               </DetailHeaderSubtitle>
             </div>
             <StatusBadge $status={request.status}>
@@ -128,7 +146,6 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
           </DetailHeaderContent>
         </DetailHeader>
 
-        {/* Info Cards Grid */}
         <DetailInfoGrid>
           <InfoCard>
             <InfoCardLabel>
@@ -144,20 +161,25 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
             </InfoCardLabel>
             <InfoCardValue>{formatDateTime(request.created_at)}</InfoCardValue>
           </InfoCard>
-          <InfoCard>
-            <InfoCardLabel>
-              <IconWrapper><User size={12} /></IconWrapper>
-              Người tạo
-            </InfoCardLabel>
-            <InfoCardValue>{request.user.user_information.name}</InfoCardValue>
-          </InfoCard>
-          <InfoCard>
-            <InfoCardLabel>
-              <IconWrapper><User size={12} /></IconWrapper>
-              Chức vụ
-            </InfoCardLabel>
-            <InfoCardValue>{request.user.user_information.position}</InfoCardValue>
-          </InfoCard>
+
+          {request?.user_id !== user?.id && (
+            <>
+            <InfoCard>
+              <InfoCardLabel>
+                <IconWrapper><User size={12} /></IconWrapper>
+                Người tạo
+              </InfoCardLabel>
+              <InfoCardValue>{request?.user?.user_information?.name}</InfoCardValue>
+            </InfoCard>
+            <InfoCard>
+              <InfoCardLabel>
+                <IconWrapper><User size={12} /></IconWrapper>
+                Chức vụ
+              </InfoCardLabel>
+              <InfoCardValue>{request?.user?.user_information?.position}</InfoCardValue>
+            </InfoCard>
+            </>
+          )}
         </DetailInfoGrid>
 
         {/* Approval Section - chỉ hiển thị khi đã được duyệt */}

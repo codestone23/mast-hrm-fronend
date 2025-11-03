@@ -31,3 +31,6 @@ export type { ConfirmDeleteModalProps } from './ConfirmDeleteModal/ConfirmDelete
 
 export { default as Pagination } from './Pagination/Pagination';
 export type { PaginationProps } from './Pagination/Pagination';
+
+export { default as Loading } from './Loading/Loading';
+export type { LoadingProps } from './Loading/Loading';

@@ -7,6 +7,7 @@ import CreateRequestModal from './modals/CreateRequestModal';
 import {
   RequestList,
   RequestItem,
+  RequestContent,
   RequestHeader,
   RequestTitle,
   RequestStatus,
@@ -68,50 +69,7 @@ const ListRequest: React.FC<ListRequestProps> = ({
   onApproveAll,
   onRejectAll
 }) => {
-  const [requests, setRequests] = useState<RequestData[]>([
-    {
-      id: 'request_1',
-      type: 'leave',
-      title: 'Xin nghỉ phép',
-      startDate: '2024-09-25',
-      endDate: '2024-09-26',
-      reason: 'Về quê thăm gia đình, có việc gia đình cần giải quyết. Xin phép nghỉ 2 ngày để sắp xếp công việc.',
-      status: 'pending',
-      submittedAt: '2024-09-20T09:00:00Z',
-      employeeName: 'Nguyễn Văn A'
-    },
-    {
-      id: 'request_2',
-      type: 'overtime',
-      title: 'Đăng ký làm thêm giờ',
-      startDate: '2024-09-22',
-      endDate: '2024-09-22',
-      startTime: '18:00',
-      endTime: '20:00',
-      reason: 'Hoàn thành dự án MAST trước deadline. Cần hoàn thiện các tính năng còn lại và kiểm thử toàn diện.',
-      status: 'approved',
-      submittedAt: '2024-09-21T14:30:00Z',
-      employeeName: 'Trần Thị B',
-      approverName: 'Lê Văn C',
-      approvedAt: '2024-09-21T15:00:00Z'
-    },
-    {
-      id: 'request_3',
-      type: 'forgot_checkin',
-      title: 'Quên chấm công',
-      startDate: '2024-09-19',
-      endDate: '2024-09-19',
-      startTime: '08:30',
-      endTime: '17:30',
-      reason: 'Quên mang thẻ và điện thoại hết pin. Đã có mặt đúng giờ và làm việc đầy đủ. Xin xác nhận lại.',
-      status: 'rejected',
-      submittedAt: '2024-09-19T18:00:00Z',
-      employeeName: 'Phạm Văn D',
-      approverName: 'Nguyễn Thị E',
-      rejectionReason: 'Lý do không hợp lệ, đã kiểm tra camera và xác nhận không có mặt tại văn phòng vào thời gian này.'
-    }
-  ]);
-  
+  const [requests, setRequests] = useState<RequestData[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -145,17 +103,11 @@ const ListRequest: React.FC<ListRequestProps> = ({
 
   const getTypeLabel = (type: string) => {
     const typeMap: { [key: string]: string } = {
-      'leave': 'Xin nghỉ phép',
-      'sick_leave': 'Nghỉ ốm',
-      'personal_leave': 'Nghỉ việc riêng',
-      'maternity_leave': 'Nghỉ thai sản',
+      'day_off': 'Nghỉ phép',
       'overtime': 'Làm thêm giờ',
       'remote_work': 'Làm việc từ xa',
-      'late_arrival': 'Đi muộn',
-      'early_departure': 'Về sớm',
       'forgot_checkin': 'Quên chấm công',
-      'business_trip': 'Công tác',
-      'other': 'Khác'
+      'late_early': 'Đi muộn/Về sớm',
     };
     return typeMap[type] || type;
   };
@@ -287,40 +239,41 @@ const ListRequest: React.FC<ListRequestProps> = ({
               onClick={() => onRequestClick && onRequestClick(request)}
               style={{ cursor: onRequestClick ? 'pointer' : 'default' }}
             >
-              <RequestHeader>
-                <RequestTitle>{request.title}</RequestTitle>
-                <RequestStatus $color={getStatusColor(request.status as REQUEST_STATUS)}>
-                  {getStatusLabel(request.status)}
-                </RequestStatus>
-              </RequestHeader>
-              
-              <RequestMeta>
-                <RequestMetaItem>
-                  <User size={14} />
-                  <span>{getTypeLabel(request.type)}</span>
-                </RequestMetaItem>
-                <RequestMetaItem>
-                  <Calendar size={14} />
-                  <span>
-                    {request.endDate && request.startDate !== request.endDate 
-                      ? `${formatDate(request.startDate)} - ${formatDate(request.endDate)}`
-                      : formatDate(request.startDate)
-                    }
-                  </span>
-                </RequestMetaItem>
-                {request.startTime && request.endTime && (
+              <RequestContent>
+                <RequestHeader>
+                  <RequestTitle>{request.title}</RequestTitle>
+                  <RequestStatus $color={getStatusColor(request.status as REQUEST_STATUS)}>
+                    {getStatusLabel(request.status)}
+                  </RequestStatus>
+                </RequestHeader>
+                
+                <RequestMeta>
                   <RequestMetaItem>
-                    <Clock size={14} />
-                    <span>{request.startTime} - {request.endTime}</span>
+                    <User size={14} />
+                    <span>{getTypeLabel(request.type)}</span>
                   </RequestMetaItem>
-                )}
-                <RequestMetaItem>
-                  <span>•</span>
-                  <span>Gửi: {formatDateTime(request.submittedAt)}</span>
-                </RequestMetaItem>
-              </RequestMeta>
-              
-              <RequestReason>{request.reason}</RequestReason>
+                  <RequestMetaItem>
+                    <Calendar size={14} />
+                    <span>
+                      {request.endDate && request.startDate !== request.endDate 
+                        ? `${formatDate(request.startDate)} - ${formatDate(request.endDate)}`
+                        : formatDate(request.startDate)
+                      }
+                    </span>
+                  </RequestMetaItem>
+                  {request.startTime && request.endTime && (
+                    <RequestMetaItem>
+                      <Clock size={14} />
+                      <span>{request.startTime} - {request.endTime}</span>
+                    </RequestMetaItem>
+                  )}
+                  <RequestMetaItem>
+                    <span>Ngày gửi: {formatDateTime(request.submittedAt)}</span>
+                  </RequestMetaItem>
+                </RequestMeta>
+                
+                <RequestReason>{request.reason}</RequestReason>
+              </RequestContent>
 
               {!isMyRequestsOnly && request.status === 'pending' && (
                 <RequestActions>

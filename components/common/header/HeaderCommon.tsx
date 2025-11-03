@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Grid3X3, User, User as UserIcon, Lock, LogOut } from "lucide-react";
+import { Grid3X3, User, User as UserIcon, Lock, LogOut, Bell } from "lucide-react";
 import { ChangePasswordModal } from "@/components/common";
+import NotificationDropdown from "@/components/common/NotificationDropdown/NotificationDropdown";
 import {
   HeaderContainer,
   Logo,
@@ -48,6 +49,7 @@ const HeaderCommon = (props: HeaderCommonProps) => {
   const router = useRouter();
   const { activeTab = ROUTERS.PERSONAL.BASE, navItems = [] } = props;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -119,6 +121,15 @@ const HeaderCommon = (props: HeaderCommonProps) => {
         </Navigation>
 
         <UserSection>
+          <div style={{ position: 'relative' }}>
+            <IconButton onClick={() => setIsNotificationOpen(!isNotificationOpen)}>
+              <Bell size={18} />
+            </IconButton>
+            <NotificationDropdown
+              isOpen={isNotificationOpen}
+              onClose={() => setIsNotificationOpen(false)}
+            />
+          </div>
           <IconButton>
             <Link href={ROUTERS.OVERVIEW.BASE}><Grid3X3 size={18} /></Link>
           </IconButton>

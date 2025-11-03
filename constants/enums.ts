@@ -25,6 +25,14 @@ export enum REQUEST_TYPE {
     FORGOT_CHECKIN = "FORGOT_CHECKIN",
 }
 
+export enum REQUEST_TYPE_LABEL {
+    REMOTE_WORK = "Làm việc từ xa",
+    DAY_OFF = "Nghỉ phép",
+    OVERTIME = "Làm thêm giờ",
+    LATE_EARLY = "Đi muộn/Về sớm",
+    FORGOT_CHECKIN = "Quên chấm công",
+}
+
 export enum REQUEST_STATUS {
     PENDING = "PENDING",
     APPROVED = "APPROVED",
@@ -65,4 +73,11 @@ export enum DivisionType {
 export enum DivisionStatus {
     ACTIVE = "ACTIVE",
     INACTIVE = "INACTIVE",
+}
+
+export enum NewsStatus {
+    DRAFT = "DRAFT",
+    PENDING = "PENDING",
+    APPROVED = "APPROVED",
+    REJECTED = "REJECTED",
 }

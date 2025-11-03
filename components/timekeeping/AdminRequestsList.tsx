@@ -9,7 +9,7 @@ import {
     CheckCircle,
     XCircle,
 } from "lucide-react";
-import { Select, DatePicker, Pagination } from "@/components/common";
+import { Select, DatePicker, Pagination, Loading } from "@/components/common";
 import {
     useAdminRequests,
     useApproveRequest,
@@ -125,33 +125,44 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
         }
     };
 
-    const getTypeLabel = (type: string) => {
-        const typeLabels: { [key: string]: string } = {
-            remote_work: "Làm việc từ xa",
-            day_off: "Nghỉ phép",
-            overtime: "Làm thêm giờ",
-            late_early: "Đi muộn/Về sớm",
-            forgot_checkin: "Quên chấm công",
-        };
-        return typeLabels[type] || type;
+    const getTypeLabel = (type: REQUEST_TYPE) => {
+        switch (type.toUpperCase()) {
+            case REQUEST_TYPE.REMOTE_WORK:
+                return "Làm việc từ xa";
+            case REQUEST_TYPE.DAY_OFF:
+                return "Nghỉ phép";
+            case REQUEST_TYPE.OVERTIME:
+                return "Làm thêm giờ";
+            case REQUEST_TYPE.LATE_EARLY:
+                return "Đi muộn/Về sớm";
+            case REQUEST_TYPE.FORGOT_CHECKIN:
+                return "Quên chấm công";
+        }
+        return "";
     };
 
-    const getStatusLabel = (status: string) => {
-        const statusLabels: { [key: string]: string } = {
-            pending: "Chờ duyệt",
-            approved: "Đã duyệt",
-            rejected: "Từ chối",
-        };
-        return statusLabels[status] || status;
+    const getStatusLabel = (status: REQUEST_STATUS) => {
+        switch (status.toUpperCase()) {
+            case REQUEST_STATUS.PENDING:
+                return "Chờ duyệt";
+            case REQUEST_STATUS.APPROVED:
+                return "Đã duyệt";
+            case REQUEST_STATUS.REJECTED:
+                return "Từ chối";
+        }
+        return status;
     };
 
-    const getStatusColor = (status: string) => {
-        const statusColors: { [key: string]: string } = {
-            pending: "#FFA726",
-            approved: "#66BB6A",
-            rejected: "#EF5350",
-        };
-        return statusColors[status] || "#666";
+    const getStatusColor = (status: REQUEST_STATUS) => {
+        switch (status.toUpperCase()) {
+            case REQUEST_STATUS.PENDING:
+                return "#FFA726";
+            case REQUEST_STATUS.APPROVED:
+                return "#66BB6A";
+            case REQUEST_STATUS.REJECTED:
+                return "#EF5350";
+        }
+        return "";
     };
 
     const formatDate = (dateString: string) => {
@@ -165,6 +176,8 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
     };
 
     const requests = data?.data || [];
+
+    console.log(requests);
     const pagination = data?.pagination;
 
     return (
@@ -247,9 +260,7 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
 
                 {isLoading ? (
                     <ListRequestContainer>
-                        <div style={{ textAlign: "center", padding: "2rem" }}>
-                            <div>Đang tải...</div>
-                        </div>
+                        <Loading />
                     </ListRequestContainer>
                 ) : (
                     <>
@@ -272,6 +283,7 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                                     {requests.map((request) => (
                                         <RequestItem
                                             key={request.id}
+                                            $status={request.status as REQUEST_STATUS}
                                             onClick={() =>
                                                 onRequestClick?.(request)
                                             }
@@ -282,7 +294,7 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                                                     <RequestTitle>
                                                         Loại:{" "}
                                                         {getTypeLabel(
-                                                            request.request_type as REQUEST_TYPE
+                                                            request.type as REQUEST_TYPE
                                                         )}
                                                     </RequestTitle>
                                                     <RequestNote>
@@ -292,13 +304,30 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                                                         Lý do: {request.reason}
                                                     </RequestDescription>
                                                     <RequestMetaItem>
-                                                        <User size={14} /> Người gửi: 
+                                                        <User size={14} /> Người
+                                                        gửi:
                                                         <span>
                                                             {
                                                                 request.user
                                                                     .user_information
                                                                     .name
                                                             }
+                                                        </span>
+                                                    </RequestMetaItem>
+                                                    <RequestMetaItem>
+                                                        <Calendar size={14} />
+                                                        <span>
+                                                            {formatDate(
+                                                                request.work_date
+                                                            )}
+                                                        </span>
+                                                    </RequestMetaItem>
+                                                    <RequestMetaItem>
+                                                        <span>
+                                                            THời gian tạo:{" "}
+                                                            {formatDateTime(
+                                                                request.created_at
+                                                            )}
                                                         </span>
                                                     </RequestMetaItem>
                                                 </RequestLeft>
@@ -312,27 +341,6 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                                                             request.status
                                                         )}
                                                     </RequestStatus>
-                                                    <RequestMeta>
-                                                        <RequestMetaItem>
-                                                            <Calendar
-                                                                size={14}
-                                                            />
-                                                            <span>
-                                                                {formatDate(
-                                                                    request.work_date
-                                                                )}
-                                                            </span>
-                                                        </RequestMetaItem>
-                                                        <RequestMetaItem>
-                                                            <span>•</span>
-                                                            <span>
-                                                                Gửi:{" "}
-                                                                {formatDateTime(
-                                                                    request.created_at
-                                                                )}
-                                                            </span>
-                                                        </RequestMetaItem>
-                                                    </RequestMeta>
                                                 </RequestRight>
                                             </RequestHeader>
 

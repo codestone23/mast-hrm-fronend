@@ -11,6 +11,7 @@ const ROUTERS = {
         PROJECTS: "/me/projects",
         TIMEKEEPING: "/me/timekeeping/time-sheets",
         COMPANY: "/me/company",
+        NEWS: "/me/news",
     },
     DIVISION: {
         BASE: "/division/dashboard",
@@ -28,9 +29,11 @@ const ROUTERS = {
         STATS: "/hr/stats",
         ASSETS: "/hr/assets",
         USERS: "/hr/users",
+        NEWS: "/hr/news",
     },
     SETTINGS: {
-        BASE: "/settings",
+        BASE: "/settings/dashboard",
+        NEWS: "/settings/news",
     },
 };
 

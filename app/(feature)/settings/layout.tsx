@@ -15,6 +15,7 @@ export default function Layout({
 
   const navItems = [
     { id: ROUTERS.SETTINGS.BASE, label: "Cài đặt" },
+    { id: ROUTERS.SETTINGS.NEWS, label: "Tin tức" },
   ];
 
   return (

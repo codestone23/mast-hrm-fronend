@@ -6,7 +6,7 @@ import {
     Calendar,
     Filter,
 } from "lucide-react";
-import { Select, DatePicker, Pagination } from "@/components/common";
+import { Select, DatePicker, Pagination, Loading } from "@/components/common";
 import { useMyRequests } from "@/hooks/useRequests";
 import { Request } from "@/services/requests.service";
 import {
@@ -204,9 +204,7 @@ const MyRequestsList: React.FC<MyRequestsListProps> = ({ onRequestClick }) => {
 
             {isLoading ? (
                 <ListRequestContainer>
-                    <div style={{ textAlign: "center", padding: "2rem" }}>
-                        <div>Đang tải...</div>
-                    </div>
+                    <Loading />
                 </ListRequestContainer>
             ) : (
                 <>
@@ -272,7 +270,7 @@ const MyRequestsList: React.FC<MyRequestsListProps> = ({ onRequestClick }) => {
                                                     <RequestMetaItem>
                                                         <span>•</span>
                                                         <span>
-                                                            Gửi:{" "}
+                                                            Ngày gửi:{" "}
                                                             {formatDateTime(
                                                                 request.created_at
                                                             )}

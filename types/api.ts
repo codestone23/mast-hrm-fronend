@@ -556,3 +556,62 @@ export interface DivisionTeamUpdateRequest {
   name: string,
   foundingDate: string
 }
+
+// News types
+export enum NewsStatus {
+  DRAFT = 'DRAFT',
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED'
+}
+
+export interface NewsAuthor {
+  id: number;
+  email: string;
+  user_information: {
+    name: string;
+    avatar: string;
+  };
+}
+
+export interface News {
+  id: number;
+  title: string;
+  content: string;
+  status: NewsStatus;
+  author_id: number;
+  reason?: string | null;
+  reviewer_id?: number | null;
+  reviewed_at?: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string | null;
+  author?: NewsAuthor;
+  reviewer?: NewsAuthor | null;
+  authorName?: string;
+  reviewerName?: string | null;
+}
+
+export interface CreateNewsRequest {
+  title: string;
+  content: string;
+}
+
+export interface UpdateNewsRequest {
+  title?: string;
+  content?: string;
+}
+
+export interface ReviewNewsRequest {
+  status: NewsStatus.APPROVED | NewsStatus.REJECTED;
+  reason?: string;
+}
+
+// Notification types
+export interface Notification {
+  id: number;
+  title: string;
+  description: string;
+  id_new?: number | null;
+  created_at: string;
+}

@@ -455,3 +455,58 @@ export const FilterCount = styled.span<{ $active?: boolean }>`
     color: white;
   `}
 `;
+
+export const EmptyStateMessage = styled.div`
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+`;
+
+export const AvatarImageWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+`;
+
+export const ShowMoreContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+`;
+
+export const ShowMoreButton = styled.button`
+  padding: 0.625rem 1.25rem;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+  
+  &:hover {
+    background-color: #1976D2;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(33, 150, 243, 0.3);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+  }
+`;
+
+export const FilterItemContent = styled.div`
+  display: flex;
+  align-items: center;
+`;

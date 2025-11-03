@@ -16,7 +16,7 @@ import RegularOvertimeModal from '../modals/RegularOvertimeModal';
 import ForgotTimekeepingModal from '../modals/ForgotTimekeepingModal';
 import { RequestModalType, RequestModalState } from '../modals/modalTypes';
 import { useAppSelector } from "@/store/hooks";
-import { REQUEST_STATUS, ROLE_NAMES } from "@/constants/enums";
+import { REQUEST_STATUS, REQUEST_TYPE, REQUEST_TYPE_LABEL, ROLE_NAMES } from "@/constants/enums";
 import { Request } from '@/services/requests.service';
 import {
   CalendarContainer,
@@ -285,6 +285,23 @@ const TimeSheets: React.FC = () => {
     });
   };
 
+  // Helper function to format request type to display text
+  const getRequestTypeLabel = (requestType: string): string => {
+    switch (requestType.toUpperCase()) {
+      case REQUEST_TYPE.REMOTE_WORK:  
+        return REQUEST_TYPE_LABEL.REMOTE_WORK;
+      case REQUEST_TYPE.DAY_OFF:
+        return REQUEST_TYPE_LABEL.DAY_OFF;
+      case REQUEST_TYPE.OVERTIME:
+        return REQUEST_TYPE_LABEL.OVERTIME;
+      case REQUEST_TYPE.LATE_EARLY:
+        return REQUEST_TYPE_LABEL.LATE_EARLY;
+      case REQUEST_TYPE.FORGOT_CHECKIN:
+        return REQUEST_TYPE_LABEL.FORGOT_CHECKIN;
+      default:
+        return '';
+    }
+  };
 
   const monthNames = [
     "Tháng 01",
@@ -416,9 +433,6 @@ const TimeSheets: React.FC = () => {
                           <DayStatus>
                             {hasNoData ? (
                               <>
-                                <div>Đi Muộn: 0
-                                  <br />
-                                  Về Sớm: 0</div>
                                 <TimeDisplay>
                                   <span>In: 00:00</span>
                                   <span>Out: 00:00</span>
@@ -426,32 +440,35 @@ const TimeSheets: React.FC = () => {
                               </>
                             ) : dayData ? (
                               <>
-                                {dayData?.requests?.[0]?.request_type && (
-                                  <RequestBadge $type={dayData?.requests[0]?.request_type}>
-                                    {dayData?.requests[0]?.request_type === 'late_early' || dayData?.requests[0]?.request_type === 'early_out' || dayData?.requests[0]?.request_type === 'late_early' ? 'Muộn/Sớm' :
-                                     dayData?.requests[0]?.request_type === 'paid_leave' ? 'Nghỉ lương' :
-                                     dayData?.requests[0]?.request_type === 'unpaid_leave' ? 'Nghỉ' :
-                                     dayData?.requests[0]?.request_type === 'remote_work' || dayData?.requests[0]?.request_type === 'hybrid' ? 'Remote' :
-                                     dayData?.requests[0]?.request_type === 'overtime' ? 'OT' :
-                                     dayData?.requests[0]?.request_type === 'forgot_checkin' ? 'Quên chấm' :
-                                     dayData?.requests[0]?.request_type}
-                                  </RequestBadge>
+                                {dayData?.requests && dayData.requests.length > 0 && (
+                                  <>
+                                    {dayData.requests.map((request, requestIndex) => (
+                                      request?.request_type && (
+                                        <RequestBadge key={requestIndex} $type={request.request_type}>
+                                          {getRequestTypeLabel(request.request_type)}
+                                        </RequestBadge>
+                                      )
+                                    ))}
+                                  </>
                                 )}
                                 <div>
-                                  Đi Muộn: {dayData.lateTime || 0}
-                                  <br />
-                                  Về Sớm: {dayData.earlyTime || 0}
+                                  {dayData.lateTime > 0 && (
+                                    <span>
+                                      Đi Muộn: {dayData.lateTime || 0} phút
+                                    </span>
+                                  )} 
+                                  {dayData.earlyTime > 0 && <br/>}
+                                  {dayData.earlyTime > 0 && (
+                                    <span>
+                                      Về Sớm: {dayData.earlyTime || 0} phút
+                                    </span>
+                                  )}
                                 </div>
                                 {dayData.timeIn && dayData.timeIn !== 'N/A' && (
                                   <TimeDisplay>
                                     <span>In: {dayData.timeIn}</span>
                                     <span>Out: {dayData.timeOut || "N/A"}</span>
                                   </TimeDisplay>
-                                )}
-                                {dayData.fines > 0 && (
-                                  <div style={{ fontSize: '10px', color: 'var(--error-color)' }}>
-                                    Phạt: {dayData.fines} VNĐ
-                                  </div>
                                 )}
                               </>
                             ) : null}
@@ -616,7 +633,6 @@ const TimeSheets: React.FC = () => {
         selectedDate={requestModalState.selectedDate}
       />
 
-      {/* Request Detail Modal */}
       <RequestDetailModal
         isOpen={isDetailModalOpen}
         onClose={() => {

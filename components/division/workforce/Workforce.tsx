@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Container, Header, TopTabs, Tab, Placeholder } from "./workforceStyle";
+import { Container, Header, TabsContainer, Tab, Placeholder } from "./workforceStyle";
 import { Button } from "@/components/common";
 import EmployeeList from "./employee/EmployeeList";
 import TeamList from "./team/TeamList";
@@ -13,19 +13,17 @@ const Employee: React.FC = () => {
   return (
     <Container>
       <Header>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <TopTabs>
-            {Tabs.map((tab) => (
-              <Tab
-                key={tab}
-                $active={activeTab === tab}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab}
-              </Tab>
-            ))}
-          </TopTabs>
-        </div>
+        <TabsContainer>
+          {Tabs.map((tab) => (
+            <Tab
+              key={tab}
+              $active={activeTab === tab}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab}
+            </Tab>
+          ))}
+        </TabsContainer>
 
         <div>
           {activeTab === "Danh sách nhân sự" && (

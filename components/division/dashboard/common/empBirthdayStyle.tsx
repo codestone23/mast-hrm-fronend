@@ -3,13 +3,19 @@ import styled from "styled-components";
 export const Container = styled.div`
   width: 100%;
   background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(23, 42, 69, 0.06);
-  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-height: 400px;
+  gap: 16px;
+  min-height: 400px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
 `;
 
 export const Header = styled.div`
@@ -69,13 +75,25 @@ export const ListItem = styled.li`
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: rgba(0, 0, 0, 0.1);
+    transform: translateX(4px);
+  }
 `;
 
 export const Avatar = styled.img`
   width: 48px;
   height: 48px;
-  border-radius: 8px;
+  border-radius: 10px;
   object-fit: cover;
+  border: 2px solid rgba(0, 0, 0, 0.05);
 `;
 
 export const Info = styled.div`

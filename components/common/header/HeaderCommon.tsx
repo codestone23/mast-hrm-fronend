@@ -94,6 +94,8 @@ const HeaderCommon = (props: HeaderCommonProps) => {
         CookieManager.deleteCookie('access_token');
         CookieManager.deleteCookie('refresh_token');
         LocalStorageUtil.removeItem(LOCAL_KEY.USER);
+        LocalStorageUtil.removeItem(LOCAL_KEY.DIVISIONS);
+        LocalStorageUtil.removeItem(LOCAL_KEY.SELECTED_DIVISION_ID);
         router.push(ROUTERS.AUTH.LOGIN);
         break;
       default:

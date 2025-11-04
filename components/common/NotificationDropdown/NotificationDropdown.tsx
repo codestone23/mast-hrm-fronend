@@ -7,8 +7,6 @@ import notificationService from "@/services/notification.service";
 import { useRouter } from "next/navigation";
 import {
   NotificationContainer,
-  NotificationIconButton,
-  NotificationBadge,
   NotificationDropdownPanel,
   NotificationHeader,
   NotificationTitle,
@@ -25,6 +23,7 @@ import { Notification } from "@/types/api";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale/vi";
 import ROUTERS from "@/config/router";
+import Loading from "../Loading/Loading";
 
 interface NotificationDropdownProps {
   isOpen: boolean;
@@ -123,7 +122,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         </NotificationHeader>
 
         {isLoading ? (
-          <LoadingMore>Đang tải...</LoadingMore>
+          <Loading />
         ) : notifications.length === 0 ? (
           <EmptyNotifications>
             <Bell size={48} />
@@ -148,7 +147,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               </NotificationItem>
             ))}
             <NotificationSentinel ref={sentinelRef} />
-            {isFetchingNextPage && <LoadingMore>Đang tải thêm...</LoadingMore>}
+            {isFetchingNextPage && <Loading />}
           </NotificationList>
         )}
       </NotificationDropdownPanel>

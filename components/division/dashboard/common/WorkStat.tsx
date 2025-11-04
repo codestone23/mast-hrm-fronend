@@ -1,7 +1,9 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 import { Users2Icon, ArrowRight, BriefcaseBusiness } from "lucide-react";
-import { DatePicker } from "@/components/common";
+import { DatePicker, Loading } from "@/components/common";
 
 import {
   Container,
@@ -26,59 +28,26 @@ import {
 import EmpLeaveModal from "../modals/EmpLeaveModal";
 import EmpLateModal from "../modals/EmpLateModal";
 import EmpWorkModal from "../modals/EmpWorkModal";
-import divisionDashboardService from "@/services/division_dashboard.service";
-import { WorkInfoData } from "@/types/api";
-
-interface WorkStatData {
-  present: number;
-  total: number;
-  absent: number;
-  unauthorizedLeave: number;
-  authorizedLeave: number;
-  late: number;
-  lateMinutes: number;
-}
-
-const SAMPLE_DATA: WorkStatData = {
-  present: 20,
-  total: 27,
-  absent: 2,
-  unauthorizedLeave: 1,
-  authorizedLeave: 3,
-  late: 5,
-  lateMinutes: 45,
-};
+import { useWorkInfo } from "@/hooks/useDivisionDashboard";
 
 const WorkStat: React.FC = () => {
-  const [workData, setWorkData] = useState<WorkStatData>(SAMPLE_DATA);
-
   const [selectedTime, setSelectedTime] = useState<Date | undefined | null>(
     new Date()
   );
-
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const [workDataInfo, setWorkDataInfo] = useState<WorkInfoData | null>(null);
 
   const [isOpenEmpLeaveModal, setIsOpenEmpLeaveModal] = useState(false);
   const [isOpenEmpLateModal, setIsOpenEmpLateModal] = useState(false);
   const [isOpenEmpWorkModal, setIsOpenEmpWorkModal] = useState(false);
 
-  const DIVISION_ID = 1; // Replace with actual division ID as needed
+  const selectedDivisionId = useSelector(
+    (state: RootState) => state.division.selectedDivisionId
+  );
 
-  useEffect(() => {
-    try {
-      const date = selectedTime || new Date();
-      setIsLoading(true);
-      divisionDashboardService.getWorkInfo(DIVISION_ID, date).then((data) => {
-        setWorkDataInfo(data);
-      });
-    } catch (error) {
-      console.error("Error fetching employee data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedTime]);
+  const date = selectedTime || new Date();
+  const { data: workDataInfo, isLoading, error } = useWorkInfo(
+    selectedDivisionId,
+    date
+  );
 
   return (
     <Container>
@@ -100,8 +69,17 @@ const WorkStat: React.FC = () => {
 
       {isLoading ? (
         <LoadingContainer>
-          <LoadingText>Đang tải dữ liệu...</LoadingText>
+          <Loading />
         </LoadingContainer>
+      ) : error || !selectedDivisionId ? (
+        <EmptyDataContainer>
+          <BriefcaseBusiness size={100} style={{ color: "#e0e0e0" }} />
+          <EmptyDataText>
+            {!selectedDivisionId
+              ? "Vui lòng chọn phòng ban"
+              : "Không thể tải dữ liệu"}
+          </EmptyDataText>
+        </EmptyDataContainer>
       ) : workDataInfo ? (
         <Grid>
           <LeftCard
@@ -133,7 +111,7 @@ const WorkStat: React.FC = () => {
                   style={{ display: "flex", gap: 8, alignItems: "center" }}
                 >
                   <StatNumber $green={true}>
-                    {workDataInfo?.leave_requests?.approved_count}
+                    {workDataInfo?.leave_requests?.paid_leave_count}
                   </StatNumber>
                   <StatLabel>Có phép</StatLabel>
                 </StatGroup>
@@ -146,7 +124,7 @@ const WorkStat: React.FC = () => {
                   }}
                 >
                   <StatNumber $green={true}>
-                    {workDataInfo?.leave_requests?.pending_count}
+                    {workDataInfo?.leave_requests?.unpaid_leave_count}
                   </StatNumber>
                   <StatLabel>Không phép</StatLabel>
                 </StatGroup>
@@ -169,10 +147,10 @@ const WorkStat: React.FC = () => {
                   <StatLabel>Người</StatLabel>
                 </StatGroup>
 
-                <StatGroup>
+                {/* <StatGroup>
                   <StatNumber>{workDataInfo?.late_info?.minutes}</StatNumber>
                   <StatLabel>Phút</StatLabel>
-                </StatGroup>
+                </StatGroup> */}
               </StatBlock>
               <ArrowBtn>
                 <ArrowRight />

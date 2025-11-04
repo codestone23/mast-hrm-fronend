@@ -1,13 +1,40 @@
 import styled from "styled-components";
 
+// Import styles from personalStyle
+export {
+  PersonalContainer,
+  DashboardGrid,
+  Card,
+  WelcomeCard,
+  WelcomeContent,
+  ProfileCard,
+  ProfileAvatar,
+  ProfileInfo,
+  StatsCard,
+  StatsNumber,
+  StatsGrid,
+  CardHeader,
+  CardTitle,
+  CardLink,
+  IconWrapper,
+  ProfileDetail,
+  StatsHeader,
+  ButtonDetail,
+  ProfileDetailRight,
+  CardWrapper,
+  DashboardCol,
+  MetricsList,
+} from "../../personal/personalStyle";
+
 export const Container = styled.div`
-  background: linear-gradient(180deg,#ffffff 0%, #f7fafc 100%);
+  background: linear-gradient(180deg, var(--surface) 0%, var(--background-secondary) 100%);
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 6px 16px rgba(15,23,42,0.06);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  border: 1px solid var(--border-color);
 `;
 
 export const Header = styled.div`
@@ -17,28 +44,46 @@ export const Header = styled.div`
   gap: 12px;
 `;
 
-export const TopTabs = styled.div`
+export const TabsContainer = styled.div`
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: 12px;
+  gap: 0;
+  background-color: var(--surface);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
-export const Tab = styled.button<{ $active?: boolean }>`
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid ${(p) => (p.$active ? "var(--primary-500)" : "transparent")};
-  background: ${(p) => (p.$active ? "var(--primary-50)" : "transparent")};
-  color: ${(p) => (p.$active ? "var(--primary-600)" : "var(--text-primary)")};
-  font-weight: 600;
+export const Tab = styled.div<{ $active: boolean }>`
+  padding: 12px 24px;
   cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  
+  ${(props) =>
+    props.$active
+      ? `
+    background: #2196F3;
+    color: white;
+    box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);
+  `
+      : `
+    color: #666;
+    
+    &:hover {
+      background: #f5f5f5;
+      color: #333;
+    }
+  `}
 `;
 
 export const Placeholder = styled.div`
-  background: white;
-  border-radius: 8px;
+  background-color: var(--surface);
+  border-radius: 12px;
   padding: 20px;
-  border: 1px solid rgba(2,6,23,0.04);
+  border: 1px solid var(--border-color);
 `;
 
 export default {};

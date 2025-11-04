@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Search, FileText } from "lucide-react";
 import NewsCard from "./NewsCard";
-import { Input } from "@/components/common";
+import { Input, Loading } from "@/components/common";
 import newsService from "@/services/news.service";
 import {
   NewsListContainer,
@@ -118,7 +118,7 @@ const NewsList: React.FC<NewsListProps> = ({
       )}
 
       {isLoading ? (
-        <LoadingMore>Đang tải...</LoadingMore>
+        <Loading />
       ) : newsList.length === 0 ? (
         <EmptyState>
           <EmptyIcon>
@@ -144,7 +144,7 @@ const NewsList: React.FC<NewsListProps> = ({
           </NewsGrid>
           <NewsSentinel ref={sentinelRef} />
           {isFetchingNextPage && (
-            <LoadingMore>Đang tải thêm...</LoadingMore>
+            <Loading />
           )}
         </>
       )}

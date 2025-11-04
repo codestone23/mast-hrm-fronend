@@ -1,4 +1,31 @@
 import styled from "styled-components";
+
+// Import styles from personalStyle
+export {
+  PersonalContainer,
+  DashboardGrid,
+  Card as BaseCard,
+  WelcomeCard,
+  WelcomeContent,
+  ProfileCard,
+  ProfileAvatar,
+  ProfileInfo,
+  StatsCard,
+  StatsNumber,
+  StatsGrid,
+  CardHeader,
+  CardTitle as BaseCardTitle,
+  CardLink,
+  IconWrapper,
+  ProfileDetail,
+  StatsHeader,
+  ButtonDetail,
+  ProfileDetailRight,
+  CardWrapper,
+  DashboardCol,
+  MetricsList,
+} from "../../../personal/personalStyle";
+
 export const Header = styled.div`
   display: flex;
   align-items: center;
@@ -12,44 +39,79 @@ export const Title = styled.div`
   gap: 12px;
   font-size: 18px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--text-primary);
 `;
+
 export const StatWrapper = styled.div`
-  background: #fff;
-  padding: 18px;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(16,24,40,0.06);
+  background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   margin-bottom: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
 `;
 
 export const CardsRow = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
+
+  @media (max-width: 968px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 export const Card = styled.div`
   flex: 1;
-  padding: 18px;
-  border-radius: 6px;
+  padding: 20px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 72px;
+  min-height: 100px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  }
 `;
 
 export const CardTitle = styled.div`
-  font-size: 14px;
-  color: #6b7280;
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 `;
 
 export const CardValue = styled.div`
-  font-size: 20px;
+  font-size: 28px;
   font-weight: 700;
-  color: #111827;
+  color: #1e293b;
+  line-height: 1.2;
 `;
 
 export const ChartContainer = styled.div`
   width: 100%;
-  height: 320px;
+  height: 360px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 `;

@@ -7,7 +7,7 @@ import NewsCard from "@/components/news/NewsCard";
 import CreateNewsModal from "@/components/news/modals/CreateNewsModal";
 import EditNewsModal from "@/components/news/modals/EditNewsModal";
 import NewsDetailModal from "@/components/news/modals/NewsDetailModal";
-import { ConfirmDeleteModal } from "@/components/common";
+import { ConfirmDeleteModal, Loading } from "@/components/common";
 import { Button } from "@/components/common";
 import newsService from "@/services/news.service";
 import { News, CreateNewsRequest, UpdateNewsRequest, NewsStatus } from "@/types/api";
@@ -153,7 +153,7 @@ export default function HRNewsPage() {
       </HRNewsHeader>
 
       {isLoading ? (
-        <div style={{ textAlign: "center", padding: "3rem" }}>Đang tải...</div>
+        <Loading />
       ) : newsList.length === 0 ? (
         <div style={{ textAlign: "center", padding: "3rem" }}>
           <FileText size={48} style={{ opacity: 0.5, marginBottom: "1rem" }} />

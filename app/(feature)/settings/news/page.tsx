@@ -7,7 +7,7 @@ import NewsCard from "@/components/news/NewsCard";
 import ReviewNewsModal from "@/components/news/modals/ReviewNewsModal";
 import ConfirmApproveModal from "@/components/news/modals/ConfirmApproveModal";
 import NewsDetailModal from "@/components/news/modals/NewsDetailModal";
-import { Button } from "@/components/common";
+import { Button, Loading } from "@/components/common";
 import newsService from "@/services/news.service";
 import { News, ReviewNewsRequest, NewsStatus } from "@/types/api";
 import { useToast } from "@/hooks/useToast";
@@ -19,6 +19,7 @@ import {
   NewsCardWithReview,
   ReviewButtons,
 } from "./adminNewsStyle";
+import { EmptyStateContainer, EmptyStateTitle, EmptyStateIcon } from "@/components/timekeeping/modals/modalStyles";
 
 export default function AdminNewsPage() {
   const queryClient = useQueryClient();
@@ -107,12 +108,14 @@ export default function AdminNewsPage() {
       </AdminNewsHeader>
 
       {isLoading ? (
-        <div style={{ textAlign: "center", padding: "3rem" }}>Đang tải...</div>
+        <Loading />
       ) : newsList.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "3rem" }}>
-          <FileText size={48} style={{ opacity: 0.5, marginBottom: "1rem" }} />
-          <p>Không có tin tức nào cần duyệt</p>
-        </div>
+        <EmptyStateContainer>
+          <EmptyStateIcon>
+            <FileText size={48} />
+          </EmptyStateIcon>
+          <EmptyStateTitle>Không có tin tức nào cần duyệt</EmptyStateTitle>
+        </EmptyStateContainer>
       ) : (
         <NewsGridWithReview>
           {newsList.map((news) => (

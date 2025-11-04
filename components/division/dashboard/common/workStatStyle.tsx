@@ -4,13 +4,19 @@ export const Container = styled.div`
   width: 100%;
   max-width: 100%;
   background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(23, 42, 69, 0.08);
-  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-height: 400px;
+  gap: 16px;
+  min-height: 400px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
 `;
 
 export const Header = styled.div`
@@ -39,28 +45,35 @@ export const Grid = styled.div`
 `;
 
 const CardBase = styled.div`
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+  }
 `;
 
 export const LeftCard = styled(CardBase)`
-  background: #e6f2ff;
+  background: linear-gradient(135deg, #e6f2ff 0%, #dbeafe 100%);
   color: #0b63d3;
   position: relative;
 `;
 
 export const RightCard = styled(CardBase)`
-  background: #e9f9ef;
+  background: linear-gradient(135deg, #e9f9ef 0%, #d1fae5 100%);
   color: #0f5132;
   position: relative;
 `;
 
 export const BottomCard = styled(CardBase)`
-  background: #fdecec;
+  background: linear-gradient(135deg, #fdecec 0%, #fee2e2 100%);
   color: #b91c1c;
   grid-column: 1 / span 2;
 `;

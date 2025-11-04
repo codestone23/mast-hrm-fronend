@@ -7,6 +7,7 @@ import { useState } from "react";
 import Cookie from "js-cookie";
 import { useRouter } from "next/navigation";
 import ROUTERS from "@/config/router";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 interface LoginFormData {
     username: string;
@@ -17,17 +18,25 @@ export const useLogin = () => {
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
     const { error, success } = useToast();
+    const { refreshUser } = useAuthContext();
 
     const loginMutation = useMutation({
         mutationFn: async (data: LoginFormData): Promise<LoginResponse> => {    
             const response = await authService.login({ email: data.username, password: data.password });
             return response;
         },
-        onSuccess: (data: LoginResponse) => {
+        onSuccess: async (data: LoginResponse) => {
             if (data.access_token) {
                 success('Đăng nhập thành công');
                 Cookie.set('access_token', data.access_token);
                 Cookie.set('refresh_token', data.refresh_token);
+                
+                try {
+                    await refreshUser();
+                } catch (err) {
+                    console.error('Error refreshing user after login:', err);
+                }
+                
                 router.push(ROUTERS.OVERVIEW.BASE);
             }
             setIsLoading(false);

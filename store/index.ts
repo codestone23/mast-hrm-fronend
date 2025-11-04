@@ -1,10 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './slices/userSlice';
+import divisionReducer from './slices/divisionSlice';
 import { loggerMiddleware } from './middleware/logger';
 
 export const store = configureStore({
   reducer: {
     user: userReducer,
+    division: divisionReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

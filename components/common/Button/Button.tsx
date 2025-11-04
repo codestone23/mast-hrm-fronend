@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { StyledButton } from './buttonStyle';
+import Loading from "../Loading/Loading";
 
 export interface ButtonProps {
   children: React.ReactNode;
@@ -43,10 +44,7 @@ const Button: React.FC<ButtonProps> = ({
       {...props}
     >
       {loading ? (
-        <>
-          <span className="loading-spinner" />
-          Đang tải...
-        </>
+        <Loading />
       ) : (
         <>
           {icon && iconPosition === 'left' && <span className="icon-left">{icon}</span>}

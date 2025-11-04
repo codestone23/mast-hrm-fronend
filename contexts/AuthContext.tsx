@@ -3,6 +3,7 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { User } from '@/constants/types';
+import { DivisionInitializer } from '@/components/division/DivisionInitializer';
 
 interface AuthContextType {
   user: User | null;
@@ -26,6 +27,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return (
     <AuthContext.Provider value={auth}>
+      <DivisionInitializer />
       {children}
     </AuthContext.Provider>
   );

@@ -1,6 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { DatePicker } from "@/components/common";
+import React, { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { DatePicker, Loading } from "@/components/common";
 
 import {
   BarChart,
@@ -22,49 +24,56 @@ import {
   CardValue,
   ChartContainer,
 } from "./statisticStyle";
-import divisionDashboardService from "@/services/division_dashboard.service";
-import { WorkStatisticData } from "@/types/api";
+import { useWorkStatistics } from "@/hooks/useDivisionDashboard";
 
 const Statistic: React.FC = () => {
   const [selectedTime, setSelectedTime] = useState<Date | null>(new Date());
-  const [data, setData] = useState<WorkStatisticData | null>(null);
-  const [total, setTotal] = useState({ late_hours: 0, actual_late_hours: 0, overtime_hours: 0 });
+  const selectedDivisionId = useSelector(
+    (state: RootState) => state.division.selectedDivisionId
+  );
 
-  const DIVISION_ID = 1; // Replace with actual division ID as needed
+  const year = selectedTime ? selectedTime.getFullYear() : new Date().getFullYear();
+  const { data, isLoading, error } = useWorkStatistics(selectedDivisionId, year);
 
-  useEffect(() => {
-    try{
-      const year = selectedTime ? selectedTime.getFullYear() : new Date().getFullYear();
-      divisionDashboardService.getWorkStatisticData(DIVISION_ID, year).then((res)=>{
-        console.log("Fetched work statistic data:", res);
-        setData(res);
-
-        let late_hours = 0;
-        let actual_late_hours = 0;
-        let overtime_hours = 0;
-        res.attendance_stats.forEach(stat => {
-          late_hours += stat.late_hours;
-          actual_late_hours += stat.actual_late_hours;
-          overtime_hours += stat.overtime_hours;
-        })
-        setTotal({
-          late_hours,
-          actual_late_hours,
-          overtime_hours,
-        });
-      })
-    } catch (error) {
-      console.error("Error fetching work statistic data:", error);
+  const total = useMemo(() => {
+    if (!data?.attendance_stats) {
+      return { late_hours: 0, actual_late_hours: 0, overtime_hours: 0 };
     }
-   
-  }, [selectedTime]);
+
+    return data.attendance_stats.reduce(
+      (acc, stat) => ({
+        late_hours: acc.late_hours + stat.late_hours,
+        actual_late_hours: acc.actual_late_hours + stat.actual_late_hours,
+        overtime_hours: acc.overtime_hours + stat.overtime_hours,
+      }),
+      { late_hours: 0, actual_late_hours: 0, overtime_hours: 0 }
+    );
+  }, [data]);
+
+  if (isLoading) {
+    return (
+      <StatWrapper>
+        <Loading />
+      </StatWrapper>
+    );
+  }
+
+  if (error || !selectedDivisionId) {
+    return (
+      <StatWrapper>
+        <div style={{ textAlign: "center", padding: "20px", color: "#6b7280" }}>
+          {!selectedDivisionId
+            ? "Vui lòng chọn phòng ban"
+            : "Không thể tải dữ liệu thống kê"}
+        </div>
+      </StatWrapper>
+    );
+  }
 
   return (
     <StatWrapper>
       <Header>
-        <Title>
-          Thống kê số giờ đi muộn và OT
-        </Title>
+        <Title>Thống kê số giờ đi muộn và OT</Title>
 
         <DatePicker
           value={selectedTime}
@@ -97,7 +106,7 @@ const Statistic: React.FC = () => {
       <ChartContainer>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart
-            data={data ? data.attendance_stats : []}
+            data={data?.attendance_stats || []}
             margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" />

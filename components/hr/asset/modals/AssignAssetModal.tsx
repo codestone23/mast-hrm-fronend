@@ -22,6 +22,7 @@ import {
 import { Asset } from "@/constants/types";
 import userService from "@/services/user.service";
 import { useToast } from "@/hooks/useToast";
+import { Loading } from "@/components/common";
 
 interface AssignAssetModalProps {
   isOpen: boolean;
@@ -241,7 +242,7 @@ const AssignAssetModal: React.FC<AssignAssetModalProps> = ({
                       }}
                     >
                       {isFetchingNextPage ? (
-                        "Đang tải thêm..."
+                        <Loading />
                       ) : (
                         <button
                           onClick={() => fetchNextPage()}

@@ -47,7 +47,7 @@ import {
     UpdateDivisionRequest,
     DivisionListItem,
 } from "@/types/api";
-import { ConfirmDeleteModal } from "@/components/common";
+import { ConfirmDeleteModal, Loading } from "@/components/common";
 import { useToast } from "@/contexts/ToastContext";
 
 const DivisionManagement: React.FC = () => {
@@ -276,7 +276,7 @@ const DivisionManagement: React.FC = () => {
                         </CardHeader>
 
                         {isFetching ? (
-                            <div style={{ padding: "24px" }}>Đang tải...</div>
+                            <Loading />
                         ) : filteredDivisions.length === 0 ? (
                             <EmptyState>
                                 <EmptyIcon>

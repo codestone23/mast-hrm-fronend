@@ -15,10 +15,11 @@ const queryKeys = {
 
 export type DivisionListResponse = { data: DivisionListItem[]; pagination: PaginatedMeta };
 
-export function useDivisionsList(params: DivisionListParams) {
+export function useDivisionsList(params?: DivisionListParams, options?: { enabled?: boolean }) {
   return useQuery<DivisionListResponse>({
-    queryKey: queryKeys.list(params),
+    queryKey: queryKeys.list(params || {}),
     queryFn: () => divisionsService.getDivisions(params),
+    enabled: options?.enabled !== false,
   });
 }
 

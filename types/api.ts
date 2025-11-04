@@ -440,8 +440,8 @@ export interface WorkInfoData {
     employees: WorkingEntryData[];
   };
   leave_requests: {
-    approved_count: number;
-    pending_count: number;
+    paid_leave_count: number;
+    unpaid_leave_count: number;
     employees: LeaveEntryData[];
   };
   late_info: {

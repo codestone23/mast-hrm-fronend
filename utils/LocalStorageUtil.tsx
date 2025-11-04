@@ -2,6 +2,8 @@ import SessionStorageUtil, { COMMON_KEY } from './SessionStorageUtil';
 
 export enum LOCAL_KEY {
   USER = 'user',
+  DIVISIONS = 'divisions',
+  SELECTED_DIVISION_ID = 'selectedDivisionId',
 }
 
 class LocalStorageUtil {

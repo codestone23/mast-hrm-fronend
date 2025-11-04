@@ -34,7 +34,7 @@ import AssignAssetModal from "./modals/AssignAssetModal";
 import Pagination from "./Pagination";
 import ListAssetRequests from "./ListAssetRequests";
 import assetsService, { GetAssetsParams } from "@/services/assets.service";
-import { Select, Input } from "@/components/common";
+import { Select, Input, Loading } from "@/components/common";
 import { useToast } from "@/hooks/useToast";
 
 const ITEMS_PER_PAGE = 10;
@@ -434,7 +434,7 @@ const AssetManagement: React.FC = () => {
               </TableHeader>
               {isLoadingAssets ? (
                 <EmptyState>
-                  <EmptyText>Đang tải...</EmptyText>
+                  <Loading />
                 </EmptyState>
               ) : assets.length === 0 ? (
                 <EmptyState>

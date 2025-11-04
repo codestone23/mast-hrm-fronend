@@ -1,11 +1,37 @@
 import styled from "styled-components";
 
+// Import styles from personalStyle
+export {
+  PersonalContainer,
+  DashboardGrid,
+  Card,
+  WelcomeCard,
+  WelcomeContent,
+  ProfileCard,
+  ProfileAvatar,
+  ProfileInfo,
+  StatsCard,
+  StatsNumber,
+  StatsGrid,
+  CardHeader,
+  CardTitle,
+  CardLink,
+  IconWrapper,
+  ProfileDetail,
+  StatsHeader,
+  ButtonDetail,
+  ProfileDetailRight,
+  CardWrapper,
+  DashboardCol,
+  MetricsList,
+} from "../../personal/personalStyle";
+
 export const Container = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 20px;
+  padding: 16px;
 `;
 
 export const CommonRow = styled.div`
@@ -27,10 +53,11 @@ export const CommonRow = styled.div`
 `;
 
 export const Tags = styled.div`
-    font-size: 18px;
-    font-weight: 600;
-    border-left: 4px solid #3b82f6;
-    padding-left: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  border-left: 4px solid var(--primary-500);
+  padding-left: 8px;
+  color: var(--text-primary);
 `;
 
 export const StatisticRow = styled.div`

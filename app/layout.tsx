@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import StyledComponentsRegistry from "../components/StyledComponentsRegistry";
 import { ToastProvider } from "../contexts/ToastContext";
+import { AuthProvider } from "../contexts/AuthContext";
 import QueryProvider from "../components/providers/QueryProvider";
 import ReduxProvider from "../components/providers/ReduxProvider";
 import "./globals.css";
@@ -22,9 +23,11 @@ export default function RootLayout({
         <StyledComponentsRegistry>
           <ReduxProvider>
             <QueryProvider>
-              <ToastProvider>
-                {children}
-              </ToastProvider>
+              <AuthProvider>
+                <ToastProvider>
+                  {children}
+                </ToastProvider>
+              </AuthProvider>
             </QueryProvider>
           </ReduxProvider>
         </StyledComponentsRegistry>

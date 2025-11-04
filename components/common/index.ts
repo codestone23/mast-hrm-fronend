@@ -34,3 +34,6 @@ export type { PaginationProps } from './Pagination/Pagination';
 
 export { default as Loading } from './Loading/Loading';
 export type { LoadingProps } from './Loading/Loading';
+
+export { default as Table } from './Table/Table';
+export type { TableProps, TableColumn } from './Table/Table';

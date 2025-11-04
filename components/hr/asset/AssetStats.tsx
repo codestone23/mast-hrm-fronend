@@ -28,6 +28,7 @@ import {
     ChartContainer,
 } from "./assetStatsStyle";
 import assetsService from "@/services/assets.service";
+import { Loading } from "@/components/common";
 
 const COLORS = {
     assigned: "#10b981",
@@ -167,15 +168,7 @@ const AssetStats: React.FC = () => {
 
             {isLoading ? (
                 <StatsContainer>
-                    <div
-                        style={{
-                            textAlign: "center",
-                            padding: "2rem",
-                            color: "#666",
-                        }}
-                    >
-                        Đang tải dữ liệu...
-                    </div>
+                    <Loading />
                 </StatsContainer>
             ) : (
                 <div

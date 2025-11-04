@@ -14,7 +14,7 @@ import Input from "@/components/common/Input/Input";
 // Select is not used directly here (Pagination used instead)
 import Pagination from "@/components/common/Pagination/Pagination";
 import AddMemberModal from "@/components/company/division/modals/AddMemberModal";
-import { ConfirmDeleteModal } from "@/components/common";
+import { ConfirmDeleteModal, Loading } from "@/components/common";
 import {
     useAddMemberToDivision,
     useDivisionDetail,
@@ -54,8 +54,6 @@ const DivisionDetailPage: React.FC = () => {
     );
     const members = membersQuery.data?.data ?? [];
     const meta = membersQuery.data?.pagination;
-
-    console.log(membersQuery.data);
 
     const addMutation = useAddMemberToDivision();
     const removeMutation = useRemoveMemberFromDivision();
@@ -131,7 +129,7 @@ const DivisionDetailPage: React.FC = () => {
 
                 <SectionBody>
                     {membersQuery.isFetching && members.length === 0 ? (
-                        "Đang tải..."
+                        <Loading />
                     ) : (
                         <MembersGrid>
                             {members.map((m) => (

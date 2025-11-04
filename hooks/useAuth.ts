@@ -4,6 +4,9 @@ import TokenManager from '@/utils/token';
 import { User } from "@/constants/types";
 import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
 import { convertUserToUserProfile } from "@/store/slices/userSlice";
+import { clearDivisions } from "@/store/slices/divisionSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/store";
 
 interface AuthState {
   user: User | null;
@@ -13,6 +16,7 @@ interface AuthState {
 }
 
 export const useAuth = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
     isAuthenticated: false,
@@ -25,8 +29,25 @@ export const useAuth = () => {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
       if (authService.isAuthenticated()) {
+        try {
+          const fullUserData = await authService.getCurrentUser();
+          if (fullUserData) {
+            const userProfile = convertUserToUserProfile(fullUserData);
+            LocalStorageUtil.setItemObject(LOCAL_KEY.USER, userProfile);
+            setAuthState({
+              user: fullUserData,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null,
+            });
+            return;
+          }
+        } catch (apiError) {
+          console.error('Error fetching user from API:', apiError);
+          // Fallback: lấy từ token nếu API call thất bại
+        }
+
         const userFromToken = authService.getCurrentUserFromToken();
-        
         if (userFromToken) {
           setAuthState({
             user: userFromToken as User,
@@ -41,6 +62,25 @@ export const useAuth = () => {
       const newToken = await authService.refreshTokenIfNeeded();
       
       if (newToken) {
+        // Sau khi refresh token, fetch user từ API
+        try {
+          const fullUserData = await authService.getCurrentUser();
+          if (fullUserData) {
+            const userProfile = convertUserToUserProfile(fullUserData);
+            LocalStorageUtil.setItemObject(LOCAL_KEY.USER, userProfile);
+            setAuthState({
+              user: fullUserData,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null,
+            });
+            return;
+          }
+        } catch (apiError) {
+          console.error('Error fetching user after token refresh:', apiError);
+        }
+
+        // Fallback: lấy từ token
         const userFromToken = authService.getCurrentUserFromToken();
         setAuthState({
           user: userFromToken as User,
@@ -79,14 +119,40 @@ export const useAuth = () => {
         // Lưu tokens
         TokenManager.setTokens(access_token, refresh_token);
         
-        // Lấy thông tin user từ token
-        const userFromToken = authService.getCurrentUserFromToken();
-        setAuthState({
-          user: userFromToken as User,
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-        });
+        // Fetch full user data từ API thay vì chỉ lấy từ token
+        try {
+          const fullUserData = await authService.getCurrentUser();
+          if (fullUserData) {
+            const userProfile = convertUserToUserProfile(fullUserData);
+            LocalStorageUtil.setItemObject(LOCAL_KEY.USER, userProfile);
+            setAuthState({
+              user: fullUserData,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null,
+            });
+          } else {
+            // Fallback: lấy từ token nếu API call thất bại
+            const userFromToken = authService.getCurrentUserFromToken();
+            setAuthState({
+              user: userFromToken as User,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null,
+            });
+          }
+        } catch (userError) {
+          console.error('Error fetching user after login:', userError);
+          // Fallback: lấy từ token nếu API call thất bại
+          const userFromToken = authService.getCurrentUserFromToken();
+          setAuthState({
+            user: userFromToken as User,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        }
+        
         return { success: true, data: response };
       } else {
         throw new Error('Đăng nhập thất bại');
@@ -101,13 +167,16 @@ export const useAuth = () => {
       return { success: false, error: errorMessage };
     }
   }, []);
-  // Đăng xuất
+
   const logout = useCallback(async () => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true }));
 
       TokenManager.clearTokens();
       LocalStorageUtil.removeItem(LOCAL_KEY.USER);
+      LocalStorageUtil.removeItem(LOCAL_KEY.DIVISIONS);
+      LocalStorageUtil.removeItem(LOCAL_KEY.SELECTED_DIVISION_ID);
+      dispatch(clearDivisions());
       
       await authService.logout();
       
@@ -120,6 +189,7 @@ export const useAuth = () => {
     } catch (error) {
       console.error('Error during logout:', error);
       // Vẫn xóa state local dù API call thất bại
+      dispatch(clearDivisions());
       setAuthState({
         user: null,
         isAuthenticated: false,
@@ -127,7 +197,7 @@ export const useAuth = () => {
         error: null,
       });
     }
-  }, []);
+  }, [dispatch]);
 
   // Làm mới thông tin user
   const refreshUser = useCallback(async () => {

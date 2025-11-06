@@ -718,7 +718,6 @@ export const DashboardCol = styled.div<{ $span?: number }>`
 // News Sidebar Components
 export const NewsSidebar = styled(Card)`
   overflow-y: auto;
-  height: 100%;
   
   &::-webkit-scrollbar {
     width: 6px;
@@ -785,7 +784,7 @@ export const NewsSidebarItem = styled.div`
 `;
 
 export const NewsSidebarItemTitle = styled.h4`
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 0.5rem 0;
@@ -797,11 +796,12 @@ export const NewsSidebarItemTitle = styled.h4`
 `;
 
 export const NewsSidebarItemContent = styled.p`
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
+  font-weight: 500;
   margin: 0 0 0.5rem 0;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.5;
@@ -811,17 +811,15 @@ export const NewsSidebarItemMeta = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
   margin-top: 0.5rem;
 `;
 
 export const NewsSidebarViewMore = styled.button`
-  width: 100%;
-  margin-top: 1rem;
-  padding: 0.75rem;
   background: var(--primary-600);
   color: white;
+  padding: 0.5rem 1rem;
   border: none;
   border-radius: var(--radius-md);
   font-size: 0.875rem;

@@ -1,75 +1,61 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, User, Mail, Phone, Building, Briefcase } from "lucide-react";
-import {
-  ModalOverlay,
-  ModalContainer,
-  ModalHeader,
-  ModalTitle,
-  ModalCloseButton,
-  ModalBody,
-  FormGroup,
-  FormLabel,
-  FormInput,
-  FormSelect,
-  FormRow,
-  ModalFooter,
-  CancelButton,
-  SaveButton,
-  IconWrapper,
-} from "./modalStyle";
-import { Account } from "@/constants/types";
+import { Modal, Button, Input } from "@/components/common";
+import { User as UserType } from "@/types/api";
+
+interface EditAccountData {
+  name: string;
+  email: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+}
 
 interface EditAccountModalProps {
   isOpen: boolean;
   onClose: () => void;
-  account: Account | null;
-  onSave: (accountData: Account) => void;
+  user: UserType | null;
+  onSave: (accountData: EditAccountData) => void;
+  isLoading?: boolean;
 }
 
 const EditAccountModal: React.FC<EditAccountModalProps> = ({
   isOpen,
   onClose,
-  account,
+  user,
   onSave,
+  isLoading = false,
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<EditAccountData>({
     name: "",
     email: "",
-    role: "User",
-    status: "active" as "active" | "inactive",
     phone: "",
     department: "",
     position: "",
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof EditAccountData, string>>>({});
 
   useEffect(() => {
-    if (account) {
+    if (user && isOpen) {
+      const userInfo = user.user_information && Array.isArray(user.user_information) && user.user_information.length > 0
+        ? user.user_information[0] as { name?: string; phone?: string; department?: string; position?: string }
+        : null;
+      
       setFormData({
-        name: account.name || "",
-        email: account.email || "",
-        role: account.role || "User",
-        status: account.status || "active",
-        phone: account.phone || "",
-        department: account.department || "",
-        position: account.position || "",
+        name: userInfo?.name || user.name || "",
+        email: user.email || "",
+        phone: userInfo?.phone || "",
+        department: userInfo?.department || "",
+        position: userInfo?.position || "",
       });
+      setErrors({});
     }
-  }, [account]);
+  }, [user, isOpen]);
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+  const validate = (): boolean => {
+    const newErrors: Partial<Record<keyof EditAccountData, string>> = {};
 
     if (!formData.name.trim()) {
       newErrors.name = "Tên là bắt buộc";
@@ -81,170 +67,104 @@ const EditAccountModal: React.FC<EditAccountModalProps> = ({
       newErrors.email = "Email không hợp lệ";
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Số điện thoại là bắt buộc";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (validateForm() && account) {
-      onSave({
-        ...account,
-        ...formData,
-      });
-      
-      setErrors({});
+  const handleSubmit = () => {
+    if (validate()) {
+      onSave(formData);
     }
   };
 
-  const handleClose = () => {
-    setErrors({});
-    onClose();
+  const handleChange = (field: keyof EditAccountData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
   };
 
-  if (!isOpen || !account) return null;
+  if (!user) return null;
 
   return (
-    <ModalOverlay onClick={handleClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
-        <ModalHeader>
-          <ModalTitle>Chỉnh sửa tài khoản</ModalTitle>
-          <ModalCloseButton onClick={handleClose}>
-            <X size={20} />
-          </ModalCloseButton>
-        </ModalHeader>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Chỉnh sửa tài khoản"
+      size="lg"
+      closable
+      footer={
+        <>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+            disabled={isLoading}
+          >
+            Hủy
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleSubmit}
+            loading={isLoading}
+            disabled={isLoading}
+          >
+            Cập nhật
+          </Button>
+        </>
+      }
+    >
+      <div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+          <Input
+            label="Tên đầy đủ"
+            value={formData.name}
+            onChange={(e) => handleChange("name", e.target.value)}
+            placeholder="Nhập tên đầy đủ"
+            error={errors.name}
+            required
+            fullWidth
+          />
 
-        <form onSubmit={handleSubmit}>
-          <ModalBody>
-            <FormRow>
-              <FormGroup>
-                <FormLabel>
-                  <IconWrapper>
-                    <User size={16} />
-                  </IconWrapper>
-                  Tên đầy đủ *
-                </FormLabel>
-                <FormInput
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  placeholder="Nhập tên đầy đủ"
-                  $hasError={!!errors.name}
-                />
-                {errors.name && <span style={{ color: "var(--error-500)", fontSize: "12px" }}>{errors.name}</span>}
-              </FormGroup>
+          <Input
+            label="Email"
+            type="email"
+            value={formData.email}
+            onChange={(e) => handleChange("email", e.target.value)}
+            placeholder="Nhập email"
+            error={errors.email}
+            required
+            fullWidth
+          />
 
-              <FormGroup>
-                <FormLabel>
-                  <IconWrapper>
-                    <Mail size={16} />
-                  </IconWrapper>
-                  Email *
-                </FormLabel>
-                <FormInput
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  placeholder="Nhập email"
-                  $hasError={!!errors.email}
-                />
-                {errors.email && <span style={{ color: "var(--error-500)", fontSize: "12px" }}>{errors.email}</span>}
-              </FormGroup>
-            </FormRow>
+          <Input
+            label="Số điện thoại"
+            type="tel"
+            value={formData.phone || ""}
+            onChange={(e) => handleChange("phone", e.target.value)}
+            placeholder="Nhập số điện thoại"
+            fullWidth
+          />
 
-            <FormRow>
-              <FormGroup>
-                <FormLabel>
-                  <IconWrapper>
-                    <Phone size={16} />
-                  </IconWrapper>
-                  Số điện thoại *
-                </FormLabel>
-                <FormInput
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  placeholder="Nhập số điện thoại"
-                  $hasError={!!errors.phone}
-                />
-                {errors.phone && <span style={{ color: "var(--error-500)", fontSize: "12px" }}>{errors.phone}</span>}
-              </FormGroup>
+          <Input
+            label="Phòng ban"
+            value={formData.department || ""}
+            onChange={(e) => handleChange("department", e.target.value)}
+            placeholder="Nhập phòng ban"
+            fullWidth
+          />
 
-              <FormGroup>
-                <FormLabel>Vai trò</FormLabel>
-                <FormSelect
-                  value={formData.role}
-                  onChange={(e) => handleInputChange("role", e.target.value)}
-                >
-                  <option value="User">User</option>
-                  <option value="Admin">Admin</option>
-                  <option value="Manager">Manager</option>
-                </FormSelect>
-              </FormGroup>
-            </FormRow>
-
-            <FormRow>
-              <FormGroup>
-                <FormLabel>
-                  <IconWrapper>
-                    <Building size={16} />
-                  </IconWrapper>
-                  Phòng ban
-                </FormLabel>
-                <FormInput
-                  type="text"
-                  value={formData.department}
-                  onChange={(e) => handleInputChange("department", e.target.value)}
-                  placeholder="Nhập phòng ban"
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <FormLabel>
-                  <IconWrapper>
-                    <Briefcase size={16} />
-                  </IconWrapper>
-                  Vị trí
-                </FormLabel>
-                <FormInput
-                  type="text"
-                  value={formData.position}
-                  onChange={(e) => handleInputChange("position", e.target.value)}
-                  placeholder="Nhập vị trí"
-                />
-              </FormGroup>
-            </FormRow>
-
-            <FormRow>
-              <FormGroup>
-                <FormLabel>Trạng thái</FormLabel>
-                <FormSelect
-                  value={formData.status}
-                  onChange={(e) => handleInputChange("status", e.target.value)}
-                >
-                  <option value="active">Hoạt động</option>
-                  <option value="inactive">Không hoạt động</option>
-                </FormSelect>
-              </FormGroup>
-            </FormRow>
-          </ModalBody>
-
-          <ModalFooter>
-            <CancelButton type="button" onClick={handleClose}>
-              Hủy
-            </CancelButton>
-            <SaveButton type="submit">
-              Lưu thay đổi
-            </SaveButton>
-          </ModalFooter>
-        </form>
-      </ModalContainer>
-    </ModalOverlay>
+          <Input
+            label="Vị trí"
+            value={formData.position || ""}
+            onChange={(e) => handleChange("position", e.target.value)}
+            placeholder="Nhập vị trí"
+            fullWidth
+          />
+        </div>
+      </div>
+    </Modal>
   );
 };
 

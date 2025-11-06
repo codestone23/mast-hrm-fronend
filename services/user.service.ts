@@ -86,6 +86,15 @@ class UserService {
     const response = await axiosInstance.delete(`users/${userId}/avatar`);
     return response.data;
   }
+
+  async createUser(userData: {
+    name: string;
+    email: string;
+    password: string;
+  }): Promise<ApiResponse<User>> {
+    const response = await axiosInstance.post('users', userData);
+    return response.data;
+  }
 }
 
 export const userService = new UserService();

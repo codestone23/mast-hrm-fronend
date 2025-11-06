@@ -44,7 +44,7 @@ const Button: React.FC<ButtonProps> = ({
       {...props}
     >
       {loading ? (
-        <Loading />
+        <div className="loading-spinner" />
       ) : (
         <>
           {icon && iconPosition === 'left' && <span className="icon-left">{icon}</span>}

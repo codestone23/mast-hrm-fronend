@@ -4,6 +4,12 @@ export const TableContainer = styled.div`
   border-radius: 12px;
   border: 1px solid #e0e0e0;
   overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  
+  @media (max-width: 768px) {
+    overflow-x: scroll;
+  }
 `;
 
 export const TableHeader = styled.div<{ $gridTemplateColumns?: string }>`
@@ -16,6 +22,7 @@ export const TableHeader = styled.div<{ $gridTemplateColumns?: string }>`
   font-weight: 600;
   color: #333;
   font-size: 15px;
+  min-width: fit-content;
 `;
 
 export const TableRow = styled.div<{ 
@@ -29,6 +36,7 @@ export const TableRow = styled.div<{
   border-bottom: 1px solid #e0e0e0;
   transition: background-color 0.2s ease;
   cursor: ${(props) => (props.$clickable ? "pointer" : "default")};
+  min-width: fit-content;
 
   &:hover {
     background-color: ${(props) => (props.$clickable ? "#f9f9f9" : "transparent")};

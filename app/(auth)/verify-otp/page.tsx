@@ -2,23 +2,14 @@
 
 import React, { Suspense } from 'react';
 import OtpVerificationPage from '@/components/authComponents/otp-verification/OtpVerificationPage';
+import { Loading } from "@/components/common";
 
 const VerifyOtpContent = () => {
   return <OtpVerificationPage />;
 };
 
 const VerifyOtpFallback = () => {
-  return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      height: '100vh',
-      fontFamily: 'system-ui'
-    }}>
-      Đang tải...
-    </div>
-  );
+  return <Loading />;
 };
 
 export default function VerifyOtp() {

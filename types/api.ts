@@ -611,7 +611,48 @@ export interface ReviewNewsRequest {
 export interface Notification {
   id: number;
   title: string;
-  description: string;
-  id_new?: number | null;
+  content: string;
+  news_id: number | null;
+  created_by: number;
   created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  creator?: {
+    id: number;
+    email: string;
+    user_information: {
+      name: string;
+    };
+  };
+  news?: {
+    id: number;
+    title: string;
+  } | null;
+  creatorName?: string;
+  newsTitle?: string | null;
+  totalRecipients?: number;
+  readCount?: number;
+  // Legacy fields for backward compatibility
+  description?: string;
+  id_new?: number | null;
+}
+
+export interface CreateNotificationRequest {
+  title: string;
+  content: string;
+}
+
+export interface UpdateNotificationRequest {
+  title?: string;
+  content?: string;
+}
+
+export interface ReadNotificationRequest {
+  is_read: boolean;
+}
+
+export interface NotificationListParams {
+  page?: number;
+  limit?: number;
+  search?: string;
 }

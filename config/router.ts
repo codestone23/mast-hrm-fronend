@@ -34,6 +34,7 @@ const ROUTERS = {
     SETTINGS: {
         BASE: "/settings/dashboard",
         NEWS: "/settings/news",
+        NOTIFICATIONS: "/settings/notifications",
     },
 };
 

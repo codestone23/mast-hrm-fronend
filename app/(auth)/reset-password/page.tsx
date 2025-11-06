@@ -2,23 +2,14 @@
 
 import React, { Suspense } from 'react';
 import ResetPasswordPage from '@/components/authComponents/reset-password/ResetPasswordPage';
+import { Loading } from "@/components/common";
 
 const ResetPasswordContent = () => {
   return <ResetPasswordPage />;
 };
 
 const ResetPasswordFallback = () => {
-  return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      height: '100vh',
-      fontFamily: 'system-ui'
-    }}>
-      Đang tải...
-    </div>
-  );
+  return <Loading />;
 };
 
 export default function ResetPassword() {

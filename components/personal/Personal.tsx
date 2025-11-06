@@ -465,6 +465,20 @@ const Personal: React.FC = () => {
 									<Newspaper size={20} />
 									Tin tức mới nhất
 								</NewsSidebarTitle>
+                <NewsSidebarViewMore
+										onClick={() =>
+											router.push(ROUTERS.PERSONAL.NEWS)
+										}
+									>
+										Xem thêm
+										<ArrowRight
+											size={16}
+                        style={{
+												marginLeft: "0.5rem",
+												display: "inline",
+											}}
+										/>
+									</NewsSidebarViewMore>
 							</NewsSidebarHeader>
 							{isLoadingNews ? (
 								<NewsSidebarLoading>
@@ -526,20 +540,6 @@ const Personal: React.FC = () => {
 											</NewsSidebarItem>
 										))}
 									</NewsSidebarList>
-									<NewsSidebarViewMore
-										onClick={() =>
-											router.push(ROUTERS.PERSONAL.NEWS)
-										}
-									>
-										Xem thêm
-										<ArrowRight
-											size={16}
-                        style={{
-												marginLeft: "0.5rem",
-												display: "inline",
-											}}
-										/>
-									</NewsSidebarViewMore>
 								</>
 							)}
 						</NewsSidebar>

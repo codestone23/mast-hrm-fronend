@@ -187,6 +187,12 @@ export const NewsDetailContent = styled.div`
   li {
     margin-bottom: 0.5rem;
   }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 1rem;
+  }
 `;
 
 export const LoadingContainer = styled.div`

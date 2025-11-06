@@ -110,7 +110,6 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(({
         
         <StyledInput
           ref={ref as React.Ref<HTMLInputElement>}
-          id={inputId}
           type={inputType}
           $size={size}
           $variant={variant}

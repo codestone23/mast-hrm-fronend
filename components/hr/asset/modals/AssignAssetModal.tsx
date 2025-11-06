@@ -137,9 +137,7 @@ const AssignAssetModal: React.FC<AssignAssetModalProps> = ({
               padding: "8px"
             }}>
               {isLoading && users.length === 0 ? (
-                <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>
-                  Đang tải...
-                </div>
+                <Loading />
               ) : users.length === 0 ? (
                 <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>
                   Không tìm thấy người dùng nào

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { Bell, FileText } from "lucide-react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import React, { useEffect, useRef } from "react";
+import { Bell } from "lucide-react";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import notificationService from "@/services/notification.service";
 import { useRouter } from "next/navigation";
 import {
@@ -16,7 +16,6 @@ import {
   NotificationItemDescription,
   NotificationItemTime,
   EmptyNotifications,
-  LoadingMore,
   NotificationSentinel,
 } from "./notificationDropdownStyle";
 import { Notification } from "@/types/api";
@@ -35,6 +34,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   onClose,
 }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -55,6 +55,15 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     },
     initialPageParam: 1,
     enabled: isOpen,
+  });
+
+  const readNotificationMutation = useMutation({
+    mutationFn: (id: number) =>
+      notificationService.readNotification(id, { is_read: true }),
+    onSuccess: () => {
+      // Invalidate notifications query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
   });
 
   const notifications = data?.pages.flatMap((page) => page.data || []) || [];
@@ -96,10 +105,20 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     };
   }, [isOpen, onClose]);
 
-  const handleNotificationClick = (notification: Notification) => {
+  const handleNotificationClick = async (notification: Notification) => {
+    // Đọc notification
+    try {
+      await readNotificationMutation.mutateAsync(notification.id);
+    } catch (error) {
+      console.error("Error reading notification:", error);
+    }
+
     onClose();
-    if (notification.id_new) {
-      router.push(`${ROUTERS.PERSONAL.BASE}/news/${notification.id_new}`);
+    
+    // Nếu có news_id, chuyển đến trang chi tiết tin tức
+    const newsId = notification.news_id || notification.id_new;
+    if (newsId) {
+      router.push(`${ROUTERS.PERSONAL.NEWS}/${newsId}`);
     }
   };
 
@@ -139,7 +158,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   {notification.title}
                 </NotificationItemTitle>
                 <NotificationItemDescription>
-                  {notification.description}
+                  {notification.content || notification.description}
                 </NotificationItemDescription>
                 <NotificationItemTime>
                   {formatTime(notification.created_at)}

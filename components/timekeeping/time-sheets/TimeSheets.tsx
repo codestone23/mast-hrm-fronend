@@ -1,23 +1,35 @@
 "use client";
 
-import { Calendar, ChevronLeft, ChevronRight, ImageUp, Plus, ScanFace } from "lucide-react";
-import React, { useEffect, useState, useMemo } from "react";
-import FaceIdentify from "../face-identify/FaceIdentify";
-import MyRequestsList from '../MyRequestsList';
-import AdminRequestsList from '../AdminRequestsList';
-import CreateRequestModal from '../modals/CreateRequestModal';
-import RequestDetailModal from '../modals/RequestDetailModal';
-import RegisterFace from "../register-face/RegisterFace";
-import RequestTypeModal from '../modals/RequestTypeModal';
-import LateEarlyModal from '../modals/LateEarlyModal';
-import RemoteWorkModal from '../modals/RemoteWorkModal';
-import PaidLeaveModal from '../modals/PaidLeaveModal';
-import RegularOvertimeModal from '../modals/RegularOvertimeModal';
-import ForgotTimekeepingModal from '../modals/ForgotTimekeepingModal';
-import { RequestModalType, RequestModalState } from '../modals/modalTypes';
+import {
+  REQUEST_STATUS,
+  REQUEST_TYPE,
+  REQUEST_TYPE_LABEL,
+  ROLE_NAMES,
+} from "@/constants/enums";
+import { Request } from "@/services/requests.service";
 import { useAppSelector } from "@/store/hooks";
-import { REQUEST_STATUS, REQUEST_TYPE, REQUEST_TYPE_LABEL, ROLE_NAMES } from "@/constants/enums";
-import { Request } from '@/services/requests.service';
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  ImageUp,
+  Plus,
+  ScanFace,
+} from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import AdminRequestsList from "../AdminRequestsList";
+import FaceIdentify from "../face-identify/FaceIdentify";
+import CreateRequestModal from "../modals/CreateRequestModal";
+import ForgotTimekeepingModal from "../modals/ForgotTimekeepingModal";
+import LateEarlyModal from "../modals/LateEarlyModal";
+import { RequestModalState, RequestModalType } from "../modals/modalTypes";
+import PaidLeaveModal from "../modals/PaidLeaveModal";
+import RegularOvertimeModal from "../modals/RegularOvertimeModal";
+import RemoteWorkModal from "../modals/RemoteWorkModal";
+import RequestDetailModal from "../modals/RequestDetailModal";
+import RequestTypeModal from "../modals/RequestTypeModal";
+import MyRequestsList from "../MyRequestsList";
+import RegisterFace from "../register-face/RegisterFace";
 import {
   CalendarContainer,
   CalendarGrid,
@@ -38,6 +50,7 @@ import {
   MonthButton,
   MonthDisplay,
   MonthNavigation,
+  RequestBadge,
   SidebarCard,
   SidebarContainer,
   SidebarContent,
@@ -54,9 +67,8 @@ import {
   WeekDay,
   WorkSchedule,
   WorkScheduleTime,
-  RequestBadge,
 } from "./timeSheetStyle";
-import { useTimeSheet } from './useTimeSheet';
+import { useTimeSheet } from "./useTimeSheet";
 
 interface ProcessedTimeSheetData {
   [date: string]: {
@@ -79,19 +91,19 @@ interface ProcessedTimeSheetData {
 const TimeSheets: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState("BẢNG CHẤM CÔNG");
-  const [isCreateRequestModalOpen, setIsCreateRequestModalOpen] = useState(false);
+  const [isCreateRequestModalOpen, setIsCreateRequestModalOpen] =
+    useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
-  
-  // Get user role
+
   const userData = useAppSelector((state) => state.user.data);
-  const userRole = userData?.user_information?.role?.name?.toLowerCase() || '';
+  const userRoles = userData?.role_assignments?.map((role) => role?.name);
   const role = useMemo(() => {
-    if (!userRole) return null;
+    if (!userRoles) return null;
     const roleNames = Object.values(ROLE_NAMES);
-    return roleNames.find(r => r.toLowerCase() === userRole) as string;
-  }, [userRole]);
-  
+    return roleNames.find((r) => r.toLowerCase() === userRoles[0]) as string;
+  }, [userRoles]);
+
   const canSeeOtherRequests = useMemo(() => {
     if (!role) return false;
     return [
@@ -99,46 +111,48 @@ const TimeSheets: React.FC = () => {
       ROLE_NAMES.DIVISION_HEAD,
       ROLE_NAMES.HR_MANAGER,
       ROLE_NAMES.ADMIN,
-      ROLE_NAMES.SUPER_ADMIN
+      ROLE_NAMES.SUPER_ADMIN,
     ].includes(role as ROLE_NAMES);
   }, [role]);
-  
+
   // Request modals state - optimized with single state
-  const [requestModalState, setRequestModalState] = useState<RequestModalState>({
-    isRequestTypeModalOpen: false,
-    activeModal: RequestModalType.NONE,
-    selectedDate: ''
-  });
+  const [requestModalState, setRequestModalState] = useState<RequestModalState>(
+    {
+      isRequestTypeModalOpen: false,
+      activeModal: RequestModalType.NONE,
+      selectedDate: "",
+    }
+  );
 
   const getTodayInVietnamTimezone = () => {
     const now = new Date();
-    const vietnamTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+    const vietnamTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
     return vietnamTime.toISOString().split("T")[0];
   };
-  
+
   const { data: timeSheetData, isLoading, setPayload } = useTimeSheet();
 
   useEffect(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    const startDate = new Date(year, month, 1).toISOString().split('T')[0];
-    const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
-    
+    const startDate = new Date(year, month, 1).toISOString().split("T")[0];
+    const endDate = new Date(year, month + 1, 0).toISOString().split("T")[0];
+
     setPayload({
       start_date: startDate,
-      end_date: endDate
+      end_date: endDate,
     });
   }, [currentDate, setPayload]);
 
   const tabs = useMemo(() => {
     const baseTabs = ["BẢNG CHẤM CÔNG"];
-    
+
     baseTabs.splice(1, 0, "LIST ĐỀ XUẤT CỦA TÔI");
-    
+
     if (canSeeOtherRequests) {
       baseTabs.splice(2, 0, "LIST ĐỀ XUẤT");
     }
-    
+
     return baseTabs;
   }, [canSeeOtherRequests]);
 
@@ -166,8 +180,8 @@ const TimeSheets: React.FC = () => {
 
   const formatDateToVietnamTimezone = (date: Date) => {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
 
@@ -250,27 +264,27 @@ const TimeSheets: React.FC = () => {
     setRequestModalState({
       isRequestTypeModalOpen: true,
       activeModal: RequestModalType.NONE,
-      selectedDate: date
+      selectedDate: date,
     });
   };
 
   // Handle request actions
   const handleApproveRequest = (requestId: string) => {
-    console.log('Approve request:', requestId);
+    console.log("Approve request:", requestId);
   };
 
   const handleRejectRequest = (requestId: string) => {
-    console.log('Reject request:', requestId);
+    console.log("Reject request:", requestId);
   };
 
   // Handle request type selection
   const handleSelectRequestType = (requestType: string) => {
     const modalType = requestType as RequestModalType;
-    setRequestModalState(prev => {
+    setRequestModalState((prev) => {
       const newState = {
         ...prev,
         isRequestTypeModalOpen: false,
-        activeModal: modalType
+        activeModal: modalType,
       };
       return newState;
     });
@@ -281,14 +295,14 @@ const TimeSheets: React.FC = () => {
     setRequestModalState({
       isRequestTypeModalOpen: false,
       activeModal: RequestModalType.NONE,
-      selectedDate: ''
+      selectedDate: "",
     });
   };
 
   // Helper function to format request type to display text
   const getRequestTypeLabel = (requestType: string): string => {
     switch (requestType.toUpperCase()) {
-      case REQUEST_TYPE.REMOTE_WORK:  
+      case REQUEST_TYPE.REMOTE_WORK:
         return REQUEST_TYPE_LABEL.REMOTE_WORK;
       case REQUEST_TYPE.DAY_OFF:
         return REQUEST_TYPE_LABEL.DAY_OFF;
@@ -299,7 +313,7 @@ const TimeSheets: React.FC = () => {
       case REQUEST_TYPE.FORGOT_CHECKIN:
         return REQUEST_TYPE_LABEL.FORGOT_CHECKIN;
       default:
-        return '';
+        return "";
     }
   };
 
@@ -333,14 +347,16 @@ const TimeSheets: React.FC = () => {
           ))}
         </TabsContainer>
         <HeaderButtons>
-          <CreateButton onClick={() => {
-            const today = getTodayInVietnamTimezone();
-            setRequestModalState({
-              isRequestTypeModalOpen: true,
-              activeModal: RequestModalType.NONE,
-              selectedDate: today
-            });
-          }}>
+          <CreateButton
+            onClick={() => {
+              const today = getTodayInVietnamTimezone();
+              setRequestModalState({
+                isRequestTypeModalOpen: true,
+                activeModal: RequestModalType.NONE,
+                selectedDate: today,
+              });
+            }}
+          >
             <Plus size={16} />
             Tạo request
           </CreateButton>
@@ -351,11 +367,15 @@ const TimeSheets: React.FC = () => {
           <CreateButton onClick={() => setActiveTab("RegisterFace")}>
             <ImageUp size={16} />
           </CreateButton>
-         </HeaderButtons>
+        </HeaderButtons>
       </Header>
 
       <RequestTypeModal
-        isOpen={Boolean(requestModalState.isRequestTypeModalOpen && requestModalState.activeModal === RequestModalType.NONE && requestModalState.selectedDate)}
+        isOpen={Boolean(
+          requestModalState.isRequestTypeModalOpen &&
+            requestModalState.activeModal === RequestModalType.NONE &&
+            requestModalState.selectedDate
+        )}
         onClose={closeAllModals}
         onSelectRequestType={handleSelectRequestType}
         selectedDate={requestModalState.selectedDate}
@@ -370,7 +390,8 @@ const TimeSheets: React.FC = () => {
                   <ChevronLeft size={20} />
                 </MonthButton>
                 <MonthDisplay>
-                  {monthNames[currentDate.getMonth()]} / {currentDate.getFullYear()}
+                  {monthNames[currentDate.getMonth()]} /{" "}
+                  {currentDate.getFullYear()}
                 </MonthDisplay>
                 <MonthButton onClick={() => navigateMonth("next")}>
                   <ChevronRight size={20} />
@@ -393,91 +414,101 @@ const TimeSheets: React.FC = () => {
               </CalendarHeader>
 
               <CalendarGrid>
-                  {getCurrentMonthDays().map((day, index) => {
-                    const dayData = timeSheetData[day.fullDate];
-                    console.log(dayData);
-                    
-                    const todayString = getTodayInVietnamTimezone();
-                    const isToday = day.fullDate === todayString;
-                    
-                    // Kiểm tra ngày trong quá khứ không có data
-                    const dayDate = new Date(day.fullDate);
-                    const currentDate = new Date(todayString);
-                    const isPastDay = dayDate < currentDate;
-                    const hasNoData = !dayData && isPastDay && day.isCurrentMonth;
-                    
-                    let displayStatus = dayData?.status;
-                    if (hasNoData) {
-                      displayStatus = 'absent'; 
-                    }
+                {getCurrentMonthDays().map((day, index) => {
+                  const dayData = timeSheetData[day.fullDate];
+                  console.log(dayData);
 
-                    return (
-                      <DayCell
-                        key={index}
-                        $isCurrentMonth={day.isCurrentMonth}
-                        $status={displayStatus}
-                        $isToday={isToday}
-                      >
-                        <DayHeader>
-                          <DayNumber
-                            $isCurrentMonth={day.isCurrentMonth}
-                            $isToday={isToday}
-                          >
-                            {String(day.dayNumber).padStart(2, "0")}/
-                            {String(day.date.getMonth() + 1).padStart(2, "0")}
-                          </DayNumber>
-                          <DayMenu onClick={() => handleDayMenuClick(day.fullDate)}>...</DayMenu>
-                        </DayHeader>
+                  const todayString = getTodayInVietnamTimezone();
+                  const isToday = day.fullDate === todayString;
 
-                        {day.isCurrentMonth && (
-                          <DayStatus>
-                            {hasNoData ? (
-                              <>
-                                <TimeDisplay>
-                                  <span>In: 00:00</span>
-                                  <span>Out: 00:00</span>
-                                </TimeDisplay>
-                              </>
-                            ) : dayData ? (
-                              <>
-                                {dayData?.requests && dayData.requests.length > 0 && (
+                  // Kiểm tra ngày trong quá khứ không có data
+                  const dayDate = new Date(day.fullDate);
+                  const currentDate = new Date(todayString);
+                  const isPastDay = dayDate < currentDate;
+                  const hasNoData = !dayData && isPastDay && day.isCurrentMonth;
+
+                  let displayStatus = dayData?.status;
+                  if (hasNoData) {
+                    displayStatus = "absent";
+                  }
+
+                  return (
+                    <DayCell
+                      key={index}
+                      $isCurrentMonth={day.isCurrentMonth}
+                      $status={displayStatus}
+                      $isToday={isToday}
+                    >
+                      <DayHeader>
+                        <DayNumber
+                          $isCurrentMonth={day.isCurrentMonth}
+                          $isToday={isToday}
+                        >
+                          {String(day.dayNumber).padStart(2, "0")}/
+                          {String(day.date.getMonth() + 1).padStart(2, "0")}
+                        </DayNumber>
+                        <DayMenu
+                          onClick={() => handleDayMenuClick(day.fullDate)}
+                        >
+                          ...
+                        </DayMenu>
+                      </DayHeader>
+
+                      {day.isCurrentMonth && (
+                        <DayStatus>
+                          {hasNoData ? (
+                            <>
+                              <TimeDisplay>
+                                <span>In: 00:00</span>
+                                <span>Out: 00:00</span>
+                              </TimeDisplay>
+                            </>
+                          ) : dayData ? (
+                            <>
+                              {dayData?.requests &&
+                                dayData.requests.length > 0 && (
                                   <>
-                                    {dayData.requests.map((request, requestIndex) => (
-                                      request?.request_type && (
-                                        <RequestBadge key={requestIndex} $type={request.request_type}>
-                                          {getRequestTypeLabel(request.request_type)}
-                                        </RequestBadge>
-                                      )
-                                    ))}
+                                    {dayData.requests.map(
+                                      (request, requestIndex) =>
+                                        request?.request_type && (
+                                          <RequestBadge
+                                            key={requestIndex}
+                                            $type={request.request_type}
+                                          >
+                                            {getRequestTypeLabel(
+                                              request.request_type
+                                            )}
+                                          </RequestBadge>
+                                        )
+                                    )}
                                   </>
                                 )}
-                                <div>
-                                  {dayData.lateTime > 0 && (
-                                    <span>
-                                      Đi Muộn: {dayData.lateTime || 0} phút
-                                    </span>
-                                  )} 
-                                  {dayData.earlyTime > 0 && <br/>}
-                                  {dayData.earlyTime > 0 && (
-                                    <span>
-                                      Về Sớm: {dayData.earlyTime || 0} phút
-                                    </span>
-                                  )}
-                                </div>
-                                {dayData.timeIn && dayData.timeIn !== 'N/A' && (
-                                  <TimeDisplay>
-                                    <span>In: {dayData.timeIn}</span>
-                                    <span>Out: {dayData.timeOut || "N/A"}</span>
-                                  </TimeDisplay>
+                              <div>
+                                {dayData.lateTime > 0 && (
+                                  <span>
+                                    Đi Muộn: {dayData.lateTime || 0} phút
+                                  </span>
                                 )}
-                              </>
-                            ) : null}
-                          </DayStatus>
-                        )}
-                      </DayCell>
-                    );
-                  })
-                }
+                                {dayData.earlyTime > 0 && <br />}
+                                {dayData.earlyTime > 0 && (
+                                  <span>
+                                    Về Sớm: {dayData.earlyTime || 0} phút
+                                  </span>
+                                )}
+                              </div>
+                              {dayData.timeIn && dayData.timeIn !== "N/A" && (
+                                <TimeDisplay>
+                                  <span>In: {dayData.timeIn}</span>
+                                  <span>Out: {dayData.timeOut || "N/A"}</span>
+                                </TimeDisplay>
+                              )}
+                            </>
+                          ) : null}
+                        </DayStatus>
+                      )}
+                    </DayCell>
+                  );
+                })}
               </CalendarGrid>
             </CalendarContainer>
 
@@ -504,11 +535,18 @@ const TimeSheets: React.FC = () => {
                 <SidebarTitle>Tổng số công</SidebarTitle>
                 <SidebarContent>
                   <TotalWork>
-                    {isLoading ? '...' : 
-                      Object.values(timeSheetData).reduce((total: number, day: ProcessedTimeSheetData[string]) => 
-                        total + (day.hours || 0), 0
-                      ).toFixed(1)
-                    }/168
+                    {isLoading
+                      ? "..."
+                      : Object.values(timeSheetData)
+                          .reduce(
+                            (
+                              total: number,
+                              day: ProcessedTimeSheetData[string]
+                            ) => total + (day.hours || 0),
+                            0
+                          )
+                          .toFixed(1)}
+                    /168
                   </TotalWork>
                 </SidebarContent>
               </SidebarCard>
@@ -516,61 +554,78 @@ const TimeSheets: React.FC = () => {
               <StatsGrid>
                 <StatItem>
                   <StatNumber>
-                    {isLoading ? '...' : 
-                      Object.values(timeSheetData).reduce((total: number, day: ProcessedTimeSheetData[string]) => 
-                        total + (day.lateTime || 0), 0
-                      )
-                    }
+                    {isLoading
+                      ? "..."
+                      : Object.values(timeSheetData).reduce(
+                          (
+                            total: number,
+                            day: ProcessedTimeSheetData[string]
+                          ) => total + (day.lateTime || 0),
+                          0
+                        )}
                   </StatNumber>
                   <StatLabel>Số phút muộn</StatLabel>
                 </StatItem>
                 <StatItem>
                   <StatNumber>
-                    {isLoading ? '...' : 
-                      Object.values(timeSheetData).reduce((total: number, day: ProcessedTimeSheetData[string]) => 
-                        total + (day.earlyTime || 0), 0
-                      )
-                    }/120
+                    {isLoading
+                      ? "..."
+                      : Object.values(timeSheetData).reduce(
+                          (
+                            total: number,
+                            day: ProcessedTimeSheetData[string]
+                          ) => total + (day.earlyTime || 0),
+                          0
+                        )}
+                    /120
                   </StatNumber>
                   <StatLabel>Quý phút đi muộn, về sớm</StatLabel>
                 </StatItem>
                 <StatItem>
                   <StatNumber>
-                    {isLoading ? '...' : 
-                      Object.values(timeSheetData).reduce((total: number, day: ProcessedTimeSheetData[string]) => 
-                        total + (day.status === 'leave' ? 8 : 0), 0
-                      )
-                    }
+                    {isLoading
+                      ? "..."
+                      : Object.values(timeSheetData).reduce(
+                          (
+                            total: number,
+                            day: ProcessedTimeSheetData[string]
+                          ) => total + (day.status === "leave" ? 8 : 0),
+                          0
+                        )}
                   </StatNumber>
                   <StatLabel>Nghỉ có lương (h)</StatLabel>
                 </StatItem>
                 <StatItem>
                   <StatNumber>
-                    {isLoading ? '...' : 
-                      Object.values(timeSheetData).reduce((total: number, day: ProcessedTimeSheetData[string]) => 
-                        total + (day.status === 'holiday' ? 8 : 0), 0
-                      )
-                    }
+                    {isLoading
+                      ? "..."
+                      : Object.values(timeSheetData).reduce(
+                          (
+                            total: number,
+                            day: ProcessedTimeSheetData[string]
+                          ) => total + (day.status === "holiday" ? 8 : 0),
+                          0
+                        )}
                   </StatNumber>
                   <StatLabel>Nghỉ không lương (h)</StatLabel>
                 </StatItem>
               </StatsGrid>
-
             </SidebarContainer>
           </>
         )}
 
-        {(activeTab === "LIST ĐỀ XUẤT CỦA TÔI" || activeTab === "LIST ĐỀ XUẤT") && (
-          <div style={{ width: '100%' }}>
+        {(activeTab === "LIST ĐỀ XUẤT CỦA TÔI" ||
+          activeTab === "LIST ĐỀ XUẤT") && (
+          <div style={{ width: "100%" }}>
             {activeTab === "LIST ĐỀ XUẤT CỦA TÔI" ? (
-              <MyRequestsList 
+              <MyRequestsList
                 onRequestClick={(request) => {
                   setSelectedRequest(request);
                   setIsDetailModalOpen(true);
                 }}
               />
             ) : (
-              <AdminRequestsList 
+              <AdminRequestsList
                 onRequestClick={(request) => {
                   setSelectedRequest(request);
                   setIsDetailModalOpen(true);
@@ -579,28 +634,44 @@ const TimeSheets: React.FC = () => {
             )}
           </div>
         )}
-        
+
         {activeTab === "FaceIdentify" && (
-          <div style={{ padding: '1rem', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <h3 style={{ marginBottom: '1rem' }}>Xác thực khuôn mặt</h3>
+          <div
+            style={{
+              padding: "1rem",
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <h3 style={{ marginBottom: "1rem" }}>Xác thực khuôn mặt</h3>
             <FaceIdentify />
           </div>
         )}
 
         {activeTab === "RegisterFace" && (
-          <div style={{ padding: '1rem', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <h3 style={{ marginBottom: '1rem' }}>Đăng ký khuôn mặt</h3>
+          <div
+            style={{
+              padding: "1rem",
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <h3 style={{ marginBottom: "1rem" }}>Đăng ký khuôn mặt</h3>
             <RegisterFace />
           </div>
         )}
-
       </MainContent>
 
       <CreateRequestModal
         isOpen={isCreateRequestModalOpen}
         onClose={() => setIsCreateRequestModalOpen(false)}
       />
-
 
       {/* Specific Request Modals */}
       <LateEarlyModal
@@ -622,13 +693,17 @@ const TimeSheets: React.FC = () => {
       />
 
       <RegularOvertimeModal
-        isOpen={requestModalState.activeModal === RequestModalType.REGULAR_OVERTIME}
+        isOpen={
+          requestModalState.activeModal === RequestModalType.REGULAR_OVERTIME
+        }
         onClose={closeAllModals}
         selectedDate={requestModalState.selectedDate}
       />
 
       <ForgotTimekeepingModal
-        isOpen={requestModalState.activeModal === RequestModalType.FORGOT_TIMEKEEPING}
+        isOpen={
+          requestModalState.activeModal === RequestModalType.FORGOT_TIMEKEEPING
+        }
         onClose={closeAllModals}
         selectedDate={requestModalState.selectedDate}
       />
@@ -640,7 +715,12 @@ const TimeSheets: React.FC = () => {
           setSelectedRequest(null);
         }}
         request={selectedRequest}
-        canApprove={selectedRequest ? (activeTab === "LIST ĐỀ XUẤT" && selectedRequest.status === REQUEST_STATUS.PENDING) : false} 
+        canApprove={
+          selectedRequest
+            ? activeTab === "LIST ĐỀ XUẤT" &&
+              selectedRequest.status === REQUEST_STATUS.PENDING
+            : false
+        }
         onApprove={handleApproveRequest}
         onReject={handleRejectRequest}
       />

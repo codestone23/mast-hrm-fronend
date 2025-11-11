@@ -183,7 +183,7 @@ const DevDebugPage: React.FC = () => {
         <Value>Error: {error || 'None'}</Value>
         <Value>User ID: {user?.id || 'None'}</Value>
         <Value>User Name: {user?.name || 'None'}</Value>
-        <Value>User Role: {user?.user_information?.role?.name || 'None'}</Value>
+        <Value>User Role: {user?.role_assignments?.map((role) => role.name).join(", ") || 'None'}</Value>
       </Section>
 
       <Section>

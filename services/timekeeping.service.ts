@@ -73,6 +73,11 @@ class TimekeepingService {
     return response.data;
   }
 
+  async verifyFace(data: FormData): Promise<ApiResponse<{ is_registered: boolean }>> {
+    const response = await axiosInstance.get('timesheet/face-recognition-status');
+    return response.data;
+  }
+
   // Lấy timesheet theo ngày
   async getTimeSheetByDate(date: string): Promise<ApiResponse<TimeSheet | null>> {
     const response = await axiosInstance.get(`timekeeping/timesheets/date/${date}`);

@@ -353,7 +353,7 @@ export const UserName = styled.div`
   margin-bottom: 4px;
 `;
 
-export const UserRole = styled.div`
+export const UserPosition = styled.div`
   font-size: 14px;
   color: var(--text-secondary);
   margin-top: 4px;

@@ -27,6 +27,7 @@ export const convertUserToUserProfile = (user: User): UserProfile => {
     updated_at: user.updated_at,
     deleted_at: user.deleted_at,
     user_information: user.user_information as unknown as UserProfile['user_information'],
+    role_assignments: user.role_assignments,
     education: undefined,
     experience: undefined,
     user_certificates: undefined,
@@ -44,8 +45,10 @@ export const fetchUserData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await authService.getCurrentUser();
+      console.log('API Response:', response);
       if (response?.id) {
         const userProfile = convertUserToUserProfile(response);
+        console.log('Fetched User Profile:', userProfile);
         LocalStorageUtil.setItemObject(LOCAL_KEY.USER, userProfile);
         return userProfile;
       }

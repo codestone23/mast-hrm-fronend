@@ -37,7 +37,6 @@ export interface User {
     temp_address: string;
     phone: string;
     tax_code: string;
-    role_id: number;
     status: string;
     description: string;
     level_id: number;
@@ -48,10 +47,6 @@ export interface User {
     main_task: string;
     language_id: number;
     position?: {
-      id: number;
-      name: string;
-    };
-    role?: {
       id: number;
       name: string;
     };
@@ -75,6 +70,12 @@ export interface User {
     is_complete: boolean;
     has_attendance: boolean;
   };
+  role_assignments: Array<{
+    id: number;
+    name: string | null;
+    scope_type: string;
+    scope_id: number | null;
+  }>;
   remaining_leave_days: number;
   assigned_devices: unknown[];
   annual_leave_quota?: number;
@@ -96,6 +97,12 @@ export interface UserProfile {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  role_assignments: Array<{
+    id: number;
+    name: string | null;
+    scope_type: string;
+    scope_id: number | null;
+  }>;
   user_information?: {
     id: number;
     user_id: number;
@@ -114,7 +121,6 @@ export interface UserProfile {
     temp_address: string;
     phone: string;
     tax_code: string;
-    role_id: number;
     status: string;
     description: string;
     level_id: number;
@@ -125,10 +131,6 @@ export interface UserProfile {
     main_task: string;
     language_id: number;
     position?: {
-      id: number;
-      name: string;
-    };
-    role?: {
       id: number;
       name: string;
     };
@@ -206,7 +208,7 @@ export interface Account {
   id: string;
   name: string;
   email: string;
-  role: string;
+  roles: string[];
   status: "active" | "inactive";
   avatar?: string;
   phone?: string;

@@ -20,14 +20,12 @@ export const useDivisionInitialization = ({
 }: UseDivisionInitializationProps) => {
   const dispatch = useDispatch<AppDispatch>();
 
-  // Lấy role name từ user
-  const userRoleName = user?.user_information?.role?.name?.toLowerCase();
+  const userRoleNames = user?.role_assignments.map(role => role?.name?.toLowerCase());
 
-  // Chỉ fetch divisions nếu user là admin hoặc super_admin
   const shouldFetchDivisions =
     isAuthenticated &&
     !!user &&
-    (userRoleName === ROLE_NAMES.ADMIN || userRoleName === ROLE_NAMES.SUPER_ADMIN);
+    (userRoleNames?.includes(ROLE_NAMES.ADMIN) || userRoleNames?.includes(ROLE_NAMES.SUPER_ADMIN));
 
   const { data: divisionsData } = useDivisionsList(
     shouldFetchDivisions ? { limit: 100 } : undefined,
@@ -39,10 +37,10 @@ export const useDivisionInitialization = ({
       return;
     }
 
-    const roleName = user.user_information?.role?.name?.toLowerCase();
+    const roleNames = user?.role_assignments.map(role => role.name?.toLowerCase());
 
     // Xử lý cho admin và super_admin
-    if (roleName === ROLE_NAMES.ADMIN || roleName === ROLE_NAMES.SUPER_ADMIN) {
+    if (roleNames?.includes(ROLE_NAMES.ADMIN) || roleNames?.includes(ROLE_NAMES.SUPER_ADMIN)) {
       if (divisionsData?.data && divisionsData.data.length > 0) {
         // Lưu divisions vào redux và localStorage
         dispatch(setDivisions(divisionsData.data));
@@ -66,7 +64,7 @@ export const useDivisionInitialization = ({
       }
     }
     // Xử lý cho division_head
-    else if (roleName === ROLE_NAMES.DIVISION_HEAD) {
+    else if (roleNames?.includes(ROLE_NAMES.DIVISION_HEAD)) {
       // Kiểm tra user_division trong user data (có thể là array hoặc object)
       const userWithDivision = user as User & {
         user_division?: Array<{

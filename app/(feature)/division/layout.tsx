@@ -21,9 +21,8 @@ export default function Layout({
   const { user } = useAuthContext();
   const divisions = useSelector((state: RootState) => state.division.divisions);
 
-  const userRoleName = user?.user_information?.role?.name?.toLowerCase();
-  const isAdminOrSuperAdmin =
-    userRoleName === ROLE_NAMES.ADMIN || userRoleName === ROLE_NAMES.SUPER_ADMIN;
+  const userRoleNames = user?.role_assignments.map(role => role?.name?.toLowerCase());
+  const isAdminOrSuperAdmin = userRoleNames?.includes(ROLE_NAMES.ADMIN) || userRoleNames?.includes(ROLE_NAMES.SUPER_ADMIN);
 
   const navItems = [
     { id: ROUTERS.DIVISION.BASE, label: "Dashboard" },

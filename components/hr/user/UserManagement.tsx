@@ -46,7 +46,7 @@ const UserManagement: React.FC = () => {
       id: "1",
       name: "Nguyễn Văn A",
       email: "nguyenvana@company.com",
-      role: "Admin",
+      roles: ["Admin"],
       status: "active",
       phone: "0123456789",
       department: "IT",
@@ -57,7 +57,7 @@ const UserManagement: React.FC = () => {
       id: "2",
       name: "Trần Thị B",
       email: "tranthib@company.com",
-      role: "User",
+      roles: ["User"],
       status: "active",
       phone: "0987654321",
       department: "HR",
@@ -68,7 +68,7 @@ const UserManagement: React.FC = () => {
       id: "3",
       name: "Lê Văn C",
       email: "levanc@company.com",
-      role: "User",
+      roles: ["User"],
       status: "inactive",
       phone: "0369258147",
       department: "Finance",
@@ -189,7 +189,7 @@ const UserManagement: React.FC = () => {
             <span>
               Admin:{" "}
               <strong style={{ color: "var(--primary-600)" }}>
-                {accounts.filter((acc) => acc.role === "Admin").length}
+                {accounts.filter((acc) => acc.roles.includes("Admin")).length}
               </strong>
             </span>
           </div>
@@ -248,7 +248,7 @@ const UserManagement: React.FC = () => {
                         </div>
                       </UserInfo>
                     </TableCell>
-                    <TableCell>{account.role}</TableCell>
+                    <TableCell>{account.roles}</TableCell>
                     <TableCell>
                       <StatusBadge $color={getStatusColor(account.status)}>
                         {getStatusText(account.status)}

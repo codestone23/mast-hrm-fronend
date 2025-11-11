@@ -80,12 +80,12 @@ const modules: Module[] = [
 interface ModuleGridProps {
     onModuleClick?: (moduleId: string) => void;
     userName?: string;
-    userRole?: string;
+    userRoles?: string[] | null;
     isLoading?: boolean;
 }
 
 const ModuleGrid: React.FC<ModuleGridProps> = (props: ModuleGridProps) => {
-    const { onModuleClick, userName, userRole, isLoading } = props;
+    const { onModuleClick, userName, userRoles, isLoading } = props;
     const handleModuleClick = (modulePath: string) => {
         if (onModuleClick) {
             onModuleClick(modulePath);
@@ -104,9 +104,10 @@ const ModuleGrid: React.FC<ModuleGridProps> = (props: ModuleGridProps) => {
     };
 
     // Filter modules based on user role
+    console.log("User Roles in ModuleGrid:", userRoles);
     const filteredModules = modules.filter(
         (module) =>
-            !module.allowedRoles || module.allowedRoles.includes(userRole || "")
+            !module.allowedRoles || module.allowedRoles.some((role) => userRoles?.includes(role))
     );
 
     return (

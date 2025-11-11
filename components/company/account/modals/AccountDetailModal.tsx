@@ -19,7 +19,7 @@ import {
   UserProfile,
   UserAvatar,
   UserName,
-  UserRole,
+  UserPosition,
   UserDetails,
   DetailItem as SidebarDetailItem,
   DetailLabel as SidebarDetailLabel,
@@ -94,7 +94,7 @@ const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                   )}
                 </UserAvatar>
                 <UserName>{account.name}</UserName>
-                <UserRole>{account.role}</UserRole>
+                <UserPosition>{account.position}</UserPosition>
               </UserProfile>
 
               <UserDetails>

@@ -53,7 +53,7 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
       id: accountId,
       name: "Nguyễn Văn A",
       email: "nguyenvana@example.com",
-      role: "Admin",
+      roles: ["admin"],
       status: "active",
       avatar: "https://i.pravatar.cc/150?img=1",
       phone: "0987654321",
@@ -120,8 +120,8 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
               <SidebarDetailValue>{account.email}</SidebarDetailValue>
             </SidebarDetailItem>
             <SidebarDetailItem>
-              <SidebarDetailLabel>Vai trò</SidebarDetailLabel>
-              <SidebarDetailValue>{account.role}</SidebarDetailValue>
+              <SidebarDetailLabel>Chức vụ</SidebarDetailLabel>
+              <SidebarDetailValue>{account.position}</SidebarDetailValue>
             </SidebarDetailItem>
             <SidebarDetailItem>
               <SidebarDetailLabel>Phòng ban</SidebarDetailLabel>

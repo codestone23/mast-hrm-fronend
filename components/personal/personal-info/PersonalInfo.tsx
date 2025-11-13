@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import EditPersonalInfoModal from "./EditPersonalInfoModal";
 import SkillModal from "./modals/SkillModal";
 import ExperienceModal from "./modals/ExperienceModal";
-import CertificateModal from "./modals/CertificateModal";
 import EducationModal from "./modals/EducationModal";
 import DeleteConfirmModal from "./modals/DeleteConfirmModal";
 import PersonalInfoSidebar from "./PersonalInfoSidebar";
@@ -11,7 +10,6 @@ import SkillsTab from "./SkillsTab";
 import {
     Skill,
     Experience,
-    Certificate,
     Education,
 } from "@/services/profile.service";
 import profileService from "@/services/profile.service";
@@ -65,17 +63,6 @@ const PersonalInfo = () => {
     >("add");
     const [selectedExperience, setSelectedExperience] =
         useState<Experience | null>(null);
-
-    // Certificates state
-    const [certificates, setCertificates] = useState<Certificate[]>([]);
-    const [isCertificatesModalOpen, setIsCertificatesModalOpen] =
-        useState(false);
-    const [certificatesModalMode, setCertificatesModalMode] = useState<
-        "add" | "edit"
-    >("add");
-    const [selectedCertificate, setSelectedCertificate] =
-        useState<Certificate | null>(null);
-
     // Education state
     const [educations, setEducations] = useState<Education[]>([]);
     const [isEducationModalOpen, setIsEducationModalOpen] = useState(false);
@@ -88,10 +75,10 @@ const PersonalInfo = () => {
     // Delete confirm modal states
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deleteModalType, setDeleteModalType] = useState<
-        "skill" | "experience" | "certificate" | "education" | null
+        "skill" | "experience" | "education" | null
     >(null);
     const [itemToDelete, setItemToDelete] = useState<
-        Skill | Experience | Certificate | Education | null
+        Skill | Experience | Education | null
     >(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState("");
@@ -153,26 +140,6 @@ const PersonalInfo = () => {
         setDeleteModalType("experience");
         setIsDeleteModalOpen(true);
     };
-
-    // Certificates handlers
-    const handleAddCertificate = () => {
-        setCertificatesModalMode("add");
-        setSelectedCertificate(null);
-        setIsCertificatesModalOpen(true);
-    };
-
-    const handleEditCertificate = (certificate: Certificate) => {
-        setCertificatesModalMode("edit");
-        setSelectedCertificate(certificate);
-        setIsCertificatesModalOpen(true);
-    };
-
-    const handleDeleteCertificate = (certificate: Certificate) => {
-        setItemToDelete(certificate);
-        setDeleteModalType("certificate");
-        setIsDeleteModalOpen(true);
-    };
-
     // Education handlers
     const handleAddEducation = () => {
         setEducationModalMode("add");
@@ -209,16 +176,6 @@ const PersonalInfo = () => {
         } else {
             setExperiences((prev) =>
                 prev.map((e) => (e.id === experience.id ? experience : e))
-            );
-        }
-    };
-
-    const handleSaveCertificate = (certificate: Certificate) => {
-        if (certificatesModalMode === "add") {
-            setCertificates((prev) => [...prev, certificate]);
-        } else {
-            setCertificates((prev) =>
-                prev.map((c) => (c.id === certificate.id ? certificate : c))
             );
         }
     };
@@ -262,16 +219,6 @@ const PersonalInfo = () => {
                         );
                     }
                     break;
-                case "certificate":
-                    if (itemToDelete && "certificate_id" in itemToDelete) {
-                        await profileService.deleteCertificates(
-                            itemToDelete.id!.toString()
-                        );
-                        setCertificates((prev) =>
-                            prev.filter((c) => c.id !== itemToDelete.id)
-                        );
-                    }
-                    break;
                 case "education":
                     if (itemToDelete && "major" in itemToDelete) {
                         await profileService.deleteEducation(
@@ -308,8 +255,6 @@ const PersonalInfo = () => {
                 return "Xóa kỹ năng";
             case "experience":
                 return "Xóa kinh nghiệm";
-            case "certificate":
-                return "Xóa chứng chỉ";
             case "education":
                 return "Xóa học vấn";
             default:
@@ -323,8 +268,6 @@ const PersonalInfo = () => {
                 return "Bạn có chắc chắn muốn xóa kỹ năng này?";
             case "experience":
                 return "Bạn có chắc chắn muốn xóa kinh nghiệm này?";
-            case "certificate":
-                return "Bạn có chắc chắn muốn xóa chứng chỉ này?";
             case "education":
                 return "Bạn có chắc chắn muốn xóa học vấn này?";
             default:
@@ -346,8 +289,6 @@ const PersonalInfo = () => {
                     return itemToDelete.job_title || "Kinh nghiệm";
                 }
                 return "Kinh nghiệm";
-            case "certificate":
-                return `Chứng chỉ #${itemToDelete.id}`;
             case "education":
                 if ("name" in itemToDelete) {
                     return itemToDelete.name || "Học vấn";
@@ -362,7 +303,6 @@ const PersonalInfo = () => {
         if (data) {
             setSkills(data.user_skills || []);
             setExperiences(data.experience || []);
-            setCertificates(data.user_certificates || []);
             setEducations(
                 (data.education || []).map((edu) => ({
                     ...edu,
@@ -411,7 +351,6 @@ const PersonalInfo = () => {
                         <SkillsTab
                             skills={skills}
                             experiences={experiences}
-                            certificates={certificates}
                             educations={educations}
                             onAddSkill={handleAddSkill}
                             onEditSkill={handleEditSkill}
@@ -419,9 +358,6 @@ const PersonalInfo = () => {
                             onAddExperience={handleAddExperience}
                             onEditExperience={handleEditExperience}
                             onDeleteExperience={handleDeleteExperience}
-                            onAddCertificate={handleAddCertificate}
-                            onEditCertificate={handleEditCertificate}
-                            onDeleteCertificate={handleDeleteCertificate}
                             onAddEducation={handleAddEducation}
                             onEditEducation={handleEditEducation}
                             onDeleteEducation={handleDeleteEducation}
@@ -480,16 +416,6 @@ const PersonalInfo = () => {
                 initialData={selectedExperience}
                 onSave={handleSaveExperience}
             />
-
-            {/* Certificate Modal */}
-            <CertificateModal
-                isOpen={isCertificatesModalOpen}
-                onClose={() => setIsCertificatesModalOpen(false)}
-                mode={certificatesModalMode}
-                initialData={selectedCertificate}
-                onSave={handleSaveCertificate}
-            />
-
             {/* Education Modal */}
             <EducationModal
                 isOpen={isEducationModalOpen}

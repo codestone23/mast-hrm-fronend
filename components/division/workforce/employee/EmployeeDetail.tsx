@@ -34,10 +34,6 @@ const SAMPLE_DATA = {
   projects: 15,
   score: 430,
   skills: ["React", "TypeScript", "Node.js"],
-  certificates: [
-    { title: "Chứng chỉ A", date: "2023-01-10" },
-    { title: "Chứng chỉ B", date: "2022-05-20" },
-  ],
 };
 
 const EmployeeDetail: React.FC<{ id?: string }> = ({ id }) => {

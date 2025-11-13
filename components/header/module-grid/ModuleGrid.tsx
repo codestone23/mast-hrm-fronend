@@ -103,8 +103,6 @@ const ModuleGrid: React.FC<ModuleGridProps> = (props: ModuleGridProps) => {
         return now.toLocaleDateString("vi-VN", options);
     };
 
-    // Filter modules based on user role
-    console.log("User Roles in ModuleGrid:", userRoles);
     const filteredModules = modules.filter(
         (module) =>
             !module.allowedRoles || module.allowedRoles.some((role) => userRoles?.includes(role))

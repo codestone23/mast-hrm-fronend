@@ -22,7 +22,7 @@ export default function Layout({
   const divisions = useSelector((state: RootState) => state.division.divisions);
 
   const userRoleNames = user?.role_assignments.map(role => role?.name?.toLowerCase());
-  const isAdminOrSuperAdmin = userRoleNames?.includes(ROLE_NAMES.ADMIN) || userRoleNames?.includes(ROLE_NAMES.SUPER_ADMIN);
+  const isAdminOrSuperAdmin = userRoleNames?.includes(ROLE_NAMES.ADMIN);
 
   const navItems = [
     { id: ROUTERS.DIVISION.BASE, label: "Dashboard" },

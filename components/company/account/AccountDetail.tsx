@@ -257,17 +257,6 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
 
               <SectionHeader style={{ marginTop: '32px' }}>
                 <SectionTitle>
-                  <Award size={20} style={{ marginRight: '8px' }} />
-                  Chứng chỉ
-                </SectionTitle>
-                <SectionAction onClick={() => console.log('Add certificate')}>
-                  <Plus size={16} />
-                </SectionAction>
-              </SectionHeader>
-              <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Chưa có chứng chỉ nào</p>
-
-              <SectionHeader style={{ marginTop: '32px' }}>
-                <SectionTitle>
                   <GraduationCap size={20} style={{ marginRight: '8px' }} />
                   Học vấn
                 </SectionTitle>

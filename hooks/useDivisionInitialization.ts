@@ -25,7 +25,7 @@ export const useDivisionInitialization = ({
   const shouldFetchDivisions =
     isAuthenticated &&
     !!user &&
-    (userRoleNames?.includes(ROLE_NAMES.ADMIN) || userRoleNames?.includes(ROLE_NAMES.SUPER_ADMIN));
+    (userRoleNames?.includes(ROLE_NAMES.ADMIN));
 
   const { data: divisionsData } = useDivisionsList(
     shouldFetchDivisions ? { limit: 100 } : undefined,
@@ -40,7 +40,7 @@ export const useDivisionInitialization = ({
     const roleNames = user?.role_assignments.map(role => role.name?.toLowerCase());
 
     // Xử lý cho admin và super_admin
-    if (roleNames?.includes(ROLE_NAMES.ADMIN) || roleNames?.includes(ROLE_NAMES.SUPER_ADMIN)) {
+    if (roleNames?.includes(ROLE_NAMES.ADMIN)) {
       if (divisionsData?.data && divisionsData.data.length > 0) {
         // Lưu divisions vào redux và localStorage
         dispatch(setDivisions(divisionsData.data));

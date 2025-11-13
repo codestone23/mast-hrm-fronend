@@ -299,32 +299,6 @@ const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                       </div>
                     </div>
 
-                    {/* Certificates Section */}
-                    <SectionHeader>
-                      <SectionTitle>
-                        <Award size={20} style={{ marginRight: '8px' }} />
-                        Chứng chỉ
-                      </SectionTitle>
-                      <SectionAction>
-                        <Plus size={16} />
-                      </SectionAction>
-                    </SectionHeader>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
-                      <div style={{
-                        textAlign: 'center',
-                        padding: '40px 20px',
-                        color: '#6b7280',
-                        background: '#f9fafb',
-                        borderRadius: '8px',
-                        border: '1px dashed #d1d5db'
-                      }}>
-                        <Award size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                        <p style={{ margin: '0', fontSize: '16px' }}>Chưa có chứng chỉ nào</p>
-                        <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>Nhấn nút + để thêm chứng chỉ mới</p>
-                      </div>
-                    </div>
-
                     {/* Education Section */}
                     <SectionHeader>
                       <SectionTitle>

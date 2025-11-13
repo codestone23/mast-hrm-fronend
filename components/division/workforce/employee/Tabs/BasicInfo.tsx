@@ -30,10 +30,6 @@ const SAMPLE_DATA = {
   projects: 15,
   score: 430,
   skills: ["React", "TypeScript", "Node.js"],
-  certificates: [
-    { title: "Chứng chỉ A", date: "2023-01-10" },
-    { title: "Chứng chỉ B", date: "2022-05-20" },
-  ],
 };
 
 const fmtDate = (d?: string) => {
@@ -91,18 +87,6 @@ const EmployeeDetail: React.FC<{ id?: string }> = ({ id }) => {
             <Label>Khóa học bên ngoài</Label>
             <Value>Thiết kế hệ thống • 2023</Value>
           </Row>
-        </Grid>
-      </Card>
-
-      <Card>
-        <SectionTitle>Chứng chỉ</SectionTitle>
-        <Grid>
-          {data.certificates.map((c, i) => (
-            <Row key={i}>
-              <Label>{c.title}</Label>
-              <Value>{fmtDate(c.date)}</Value>
-            </Row>
-          ))}
         </Grid>
       </Card>
 

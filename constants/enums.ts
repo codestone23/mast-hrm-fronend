@@ -14,7 +14,6 @@ export enum ROLE_NAMES {
     PROJECT_MANAGER = "project_manager",
     HR_MANAGER = "hr_manager",
     ADMIN = "admin",
-    SUPER_ADMIN = "super_admin",
 }
 
 export enum REQUEST_TYPE {

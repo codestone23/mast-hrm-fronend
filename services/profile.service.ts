@@ -20,18 +20,6 @@ export interface Experience {
   start_date: string;
   end_date: string;
 }
-
-export interface Certificate {
-  id?: number;
-  user_id?: number;
-  certificate_id: number;
-  issued_at: string;
-  start_date: string;
-  name?: string;
-  authority?: string;
-  type?: string;
-}
-
 export interface Skill {
   id?: number;
   user_id?: number;
@@ -136,26 +124,6 @@ class ProfileService {
     const response = await axiosInstance.patch('user-profile/experience/' + id, data);
     return response.data;
   } 
-
-  async addCertificates(data: Certificate): Promise<Certificate> {
-    const response = await axiosInstance.post('user-profile/certificates', data);
-    return response.data;
-  }
-
-  async updateCertificates(data: Certificate): Promise<Certificate> {
-    const response = await axiosInstance.patch('user-profile/certificates', data);
-    return response.data;
-  }
-  
-  async deleteCertificates(id: string): Promise<void> {
-    const response = await axiosInstance.delete('user-profile/certificates/' + id);
-    return response.data;
-  }
-
-  async updateCertificatesById(id: string, data: Certificate): Promise<Certificate> {
-    const response = await axiosInstance.patch('user-profile/certificates/' + id, data);
-    return response.data;
-  }
 
   async addSkills(data: Skill): Promise<Skill> {
     const response = await axiosInstance.post('user-profile/skills', data);

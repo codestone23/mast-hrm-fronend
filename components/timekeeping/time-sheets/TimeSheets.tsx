@@ -98,20 +98,19 @@ const TimeSheets: React.FC = () => {
 
   const userData = useAppSelector((state) => state.user.data);
   const userRoles = userData?.role_assignments?.map((role) => role?.name);
+  console.log(userRoles);
   const role = useMemo(() => {
     if (!userRoles) return null;
     const roleNames = Object.values(ROLE_NAMES);
-    return roleNames.find((r) => r.toLowerCase() === userRoles[0]) as string;
+    return roleNames.find((r) => userRoles.includes(r.toLowerCase())) as string;
   }, [userRoles]);
+  console.log(role);
 
   const canSeeOtherRequests = useMemo(() => {
     if (!role) return false;
     return [
       ROLE_NAMES.TEAM_LEADER,
-      ROLE_NAMES.DIVISION_HEAD,
-      ROLE_NAMES.HR_MANAGER,
-      ROLE_NAMES.ADMIN,
-      ROLE_NAMES.SUPER_ADMIN,
+      ROLE_NAMES.DIVISION_HEAD
     ].includes(role as ROLE_NAMES);
   }, [role]);
 

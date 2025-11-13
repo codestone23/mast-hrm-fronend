@@ -159,13 +159,6 @@ export interface UserProfile {
     start_date: string;
     end_date: string;
   }>;
-  user_certificates?: Array<{
-    id: number;
-    user_id: number;
-    certificate_id: number;
-    issued_at: string;
-    start_date: string;
-  }>;
   user_skills?: Array<{
     id: number;
     user_id: number;

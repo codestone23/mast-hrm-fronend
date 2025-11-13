@@ -44,7 +44,6 @@ export default function Layout({
           ROLE_NAMES.PROJECT_MANAGER,
           ROLE_NAMES.HR_MANAGER,
           ROLE_NAMES.ADMIN,
-          ROLE_NAMES.SUPER_ADMIN,
         ],
       },
       {
@@ -57,7 +56,6 @@ export default function Layout({
           ROLE_NAMES.PROJECT_MANAGER,
           ROLE_NAMES.HR_MANAGER,
           ROLE_NAMES.ADMIN,
-          ROLE_NAMES.SUPER_ADMIN,
         ],
       },
       // {
@@ -75,7 +73,6 @@ export default function Layout({
           ROLE_NAMES.PROJECT_MANAGER,
           ROLE_NAMES.HR_MANAGER,
           ROLE_NAMES.ADMIN,
-          ROLE_NAMES.SUPER_ADMIN,
         ],
       },
       {
@@ -88,7 +85,6 @@ export default function Layout({
           ROLE_NAMES.PROJECT_MANAGER,
           ROLE_NAMES.HR_MANAGER,
           ROLE_NAMES.ADMIN,
-          ROLE_NAMES.SUPER_ADMIN,
         ],
       },
       {
@@ -101,7 +97,6 @@ export default function Layout({
           ROLE_NAMES.PROJECT_MANAGER,
           ROLE_NAMES.HR_MANAGER,
           ROLE_NAMES.ADMIN,
-          ROLE_NAMES.SUPER_ADMIN,
         ],
       },
     ],

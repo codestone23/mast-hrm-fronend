@@ -1,14 +1,12 @@
 import React from "react";
-import { Skill, Experience, Certificate, Education } from "@/services/profile.service";
+import { Skill, Experience, Education } from "@/services/profile.service";
 import SkillsList from "./lists/SkillsList";
 import ExperienceList from "./lists/ExperienceList";
-import CertificateList from "./lists/CertificateList";
 import EducationList from "./lists/EducationList";
 
 interface SkillsTabProps {
   skills: Skill[];
   experiences: Experience[];
-  certificates: Certificate[];
   educations: Education[];
   onAddSkill: () => void;
   onEditSkill: (skill: Skill) => void;
@@ -16,9 +14,6 @@ interface SkillsTabProps {
   onAddExperience: () => void;
   onEditExperience: (experience: Experience) => void;
   onDeleteExperience: (experience: Experience) => void;
-  onAddCertificate: () => void;
-  onEditCertificate: (certificate: Certificate) => void;
-  onDeleteCertificate: (certificate: Certificate) => void;
   onAddEducation: () => void;
   onEditEducation: (education: Education) => void;
   onDeleteEducation: (education: Education) => void;
@@ -27,7 +22,6 @@ interface SkillsTabProps {
 const SkillsTab: React.FC<SkillsTabProps> = ({
   skills,
   experiences,
-  certificates,
   educations,
   onAddSkill,
   onEditSkill,
@@ -35,9 +29,6 @@ const SkillsTab: React.FC<SkillsTabProps> = ({
   onAddExperience,
   onEditExperience,
   onDeleteExperience,
-  onAddCertificate,
-  onEditCertificate,
-  onDeleteCertificate,
   onAddEducation,
   onEditEducation,
   onDeleteEducation,
@@ -55,12 +46,6 @@ const SkillsTab: React.FC<SkillsTabProps> = ({
         onAdd={onAddExperience}
         onEdit={onEditExperience}
         onDelete={onDeleteExperience}
-      />
-      <CertificateList
-        certificates={certificates}
-        onAdd={onAddCertificate}
-        onEdit={onEditCertificate}
-        onDelete={onDeleteCertificate}
       />
       <EducationList
         educations={educations}

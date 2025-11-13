@@ -120,7 +120,7 @@ export default function AdminNewsPage() {
         <NewsGridWithReview>
           {newsList.map((news) => (
             <NewsCardWithReview key={news.id}>
-              <div onClick={() => handleViewDetail(news)} style={{ cursor: "pointer" }}>
+              <div onClick={() => handleViewDetail(news)} style={{ cursor: "pointer", height: "100%" }}>
                 <NewsCard news={news} showStatus={true} />
               </div>
               {news.status === NewsStatus.PENDING && (

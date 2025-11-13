@@ -273,15 +273,50 @@ export interface AssetStatistics {
 }
 
 export interface AssetRequest {
-  id: string;
-  assetId: string;
-  asset?: Asset;
-  userId: string;
+  id: string | number;
+  user_id: number;
+  asset_id: number | string | null;
+  request_type: "REQUEST" | "RETURN" | "MAINTENANCE";
+  category: string;
+  description: string;
+  justification: string;
+  expected_date: string;
+  status: REQUEST_STATUS | string;
+  approved_by: number | null;
+  approved_at: string | null;
+  rejection_reason: string | null;
+  fulfilled_at: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  user?: {
+    id: number;
+    email: string;
+    user_information: {
+      name: string;
+    };
+  };
+  asset?: {
+    id: number;
+    name: string;
+    asset_code: string;
+    status: string;
+  } | null;
+  approver?: {
+    id: number;
+    email: string;
+    user_information: {
+      name: string;
+    };
+  } | null;
+  // Legacy fields for backward compatibility
+  assetId?: string;
+  userId?: string;
   userName?: string;
   userAvatar?: string;
-  reason: string;
-  status: REQUEST_STATUS;
-  requestedAt: string;
+  reason?: string;
+  requestedAt?: string;
   reviewedAt?: string;
   reviewedBy?: string;
 }

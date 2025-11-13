@@ -36,6 +36,7 @@ import {
     DangerButton,
     LoadMoreContainer,
 } from "@/components/company/division/detailStyle";
+import { DivisionStatus } from "@/constants/enums";
 
 const DivisionDetailPage: React.FC = () => {
     const params = useParams<{ id: string }>();
@@ -79,6 +80,17 @@ const DivisionDetailPage: React.FC = () => {
         membersQuery.refetch();
     };
 
+    const getStatusText = (status: DivisionStatus) => {
+        switch (status) {
+            case DivisionStatus.ACTIVE:
+                return "Hoạt động";
+            case DivisionStatus.INACTIVE:
+                return "Không hoạt động";
+            default:
+                return status;
+        }
+    }
+
     const header = useMemo(
         () => (
             <Card>
@@ -91,7 +103,7 @@ const DivisionDetailPage: React.FC = () => {
                     </CardTitle>
                 </CardHeader>
                 <div style={{ padding: 16, color: "var(--text-secondary)" }}>
-                    <div>Trạng thái: {division?.status}</div>
+                    <div>Trạng thái: {getStatusText(division?.status ?? DivisionStatus.ACTIVE)}</div>
                     <div>Mô tả: {division?.description || "-"}</div>
                 </div>
             </Card>

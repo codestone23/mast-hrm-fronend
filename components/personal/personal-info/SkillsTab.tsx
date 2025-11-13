@@ -17,6 +17,7 @@ interface SkillsTabProps {
   onAddEducation: () => void;
   onEditEducation: (education: Education) => void;
   onDeleteEducation: (education: Education) => void;
+  readOnly?: boolean;
 }
 
 const SkillsTab: React.FC<SkillsTabProps> = ({
@@ -32,6 +33,7 @@ const SkillsTab: React.FC<SkillsTabProps> = ({
   onAddEducation,
   onEditEducation,
   onDeleteEducation,
+  readOnly = false,
 }) => {
   return (
     <>
@@ -40,18 +42,21 @@ const SkillsTab: React.FC<SkillsTabProps> = ({
         onAdd={onAddSkill}
         onEdit={onEditSkill}
         onDelete={onDeleteSkill}
+        readOnly={readOnly}
       />
       <ExperienceList
         experiences={experiences}
         onAdd={onAddExperience}
         onEdit={onEditExperience}
         onDelete={onDeleteExperience}
+        readOnly={readOnly}
       />
       <EducationList
         educations={educations}
         onAdd={onAddEducation}
         onEdit={onEditEducation}
         onDelete={onDeleteEducation}
+        readOnly={readOnly}
       />
     </>
   );

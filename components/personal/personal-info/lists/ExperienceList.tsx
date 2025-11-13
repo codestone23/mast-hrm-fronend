@@ -26,6 +26,7 @@ interface ExperienceListProps {
   onAdd: () => void;
   onEdit: (experience: Experience) => void;
   onDelete: (experience: Experience) => void;
+  readOnly?: boolean;
 }
 
 const ExperienceList: React.FC<ExperienceListProps> = ({
@@ -33,6 +34,7 @@ const ExperienceList: React.FC<ExperienceListProps> = ({
   onAdd,
   onEdit,
   onDelete,
+  readOnly = false,
 }) => {
   return (
     <>
@@ -41,9 +43,11 @@ const ExperienceList: React.FC<ExperienceListProps> = ({
           <Briefcase size={20} />
           Kinh nghiệm làm việc
         </SectionTitle>
-        <SectionAction onClick={onAdd}>
-          <Plus size={16} />
-        </SectionAction>
+        {!readOnly && (
+          <SectionAction onClick={onAdd}>
+            <Plus size={16} />
+          </SectionAction>
+        )}
       </SectionHeader>
 
       <ExperienceContainer>
@@ -58,14 +62,16 @@ const ExperienceList: React.FC<ExperienceListProps> = ({
                   {new Date(exp.end_date).toLocaleDateString("vi-VN")}
                 </ExperienceDate>
               </ExperienceInfo>
-              <ExperienceActions>
-                <ExperienceActionButton onClick={() => onEdit(exp)}>
-                  <Edit size={16} />
-                </ExperienceActionButton>
-                <ExperienceDeleteButton onClick={() => onDelete(exp)}>
-                  <Trash2 size={16} />
-                </ExperienceDeleteButton>
-              </ExperienceActions>
+              {!readOnly && (
+                <ExperienceActions>
+                  <ExperienceActionButton onClick={() => onEdit(exp)}>
+                    <Edit size={16} />
+                  </ExperienceActionButton>
+                  <ExperienceDeleteButton onClick={() => onDelete(exp)}>
+                    <Trash2 size={16} />
+                  </ExperienceDeleteButton>
+                </ExperienceActions>
+              )}
             </ExperienceCardHeader>
           </ExperienceCard>
         ))}
@@ -75,9 +81,11 @@ const ExperienceList: React.FC<ExperienceListProps> = ({
               <Briefcase size={48} />
             </EmptyStateIcon>
             <EmptyStateTitle>Chưa có kinh nghiệm nào</EmptyStateTitle>
-            <EmptyStateDescription>
-              Nhấn nút + để thêm kinh nghiệm mới
-            </EmptyStateDescription>
+            {!readOnly && (
+              <EmptyStateDescription>
+                Nhấn nút + để thêm kinh nghiệm mới
+              </EmptyStateDescription>
+            )}
           </EmptyState>
         )}
       </ExperienceContainer>

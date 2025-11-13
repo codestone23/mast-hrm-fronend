@@ -42,7 +42,9 @@ export const NewsCardContainer = styled.div`
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
   transition: all 0.2s ease;
-  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 
   &:hover {
     box-shadow: var(--shadow-md);
@@ -75,6 +77,7 @@ export const NewsCardContent = styled.p`
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  flex: 1;
 `;
 
 export const NewsCardMeta = styled.div`

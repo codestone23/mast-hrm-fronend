@@ -34,6 +34,7 @@ export const NewsCardWithActions = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  height: 100%;
 `;
 
 export const ActionButtons = styled.div`

@@ -81,7 +81,7 @@ const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                 <Package size={20} />
               </IconWrapper>
               <DetailLabel>Mã tài sản:</DetailLabel>
-              <DetailValue>{asset.code}</DetailValue>
+              <DetailValue>{asset.asset_code || asset.code || "N/A"}</DetailValue>
             </DetailField>
 
             <DetailField>
@@ -106,54 +106,26 @@ const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
               <DetailValue>{asset.category || "N/A"}</DetailValue>
             </DetailField>
 
-            <DetailField>
-              <IconWrapper>
-                <DollarSign size={20} />
-              </IconWrapper>
-              <DetailLabel>Giá:</DetailLabel>
-              <DetailValue>
-                {asset.price ? new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND"
-                }).format(asset.price) : "N/A"}
-              </DetailValue>
-            </DetailField>
-
-            <DetailField>
-              <IconWrapper>
-                <Tag size={20} />
-              </IconWrapper>
-              <DetailLabel>Trạng thái:</DetailLabel>
-              <DetailValue>
-                <span style={{
-                  padding: "4px 12px",
-                  borderRadius: "12px",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  backgroundColor: `${getStatusColor(asset.status)}20`,
-                  color: getStatusColor(asset.status),
-                }}>
-                  {getStatusText(asset.status)}
-                </span>
-              </DetailValue>
-            </DetailField>
-
-            <DetailField>
-              <IconWrapper>
-                <MapPin size={20} />
-              </IconWrapper>
-              <DetailLabel>Kho:</DetailLabel>
-              <DetailValue>{asset.warehouse || "N/A"}</DetailValue>
-            </DetailField>
-
-            {asset.importDate && (
+            {asset.purchase_date && (
               <DetailField>
                 <IconWrapper>
                   <Calendar size={20} />
                 </IconWrapper>
-                <DetailLabel>Ngày nhập:</DetailLabel>
+                <DetailLabel>Ngày mua:</DetailLabel>
                 <DetailValue>
-                  {new Date(asset.importDate).toLocaleDateString("vi-VN")}
+                  {new Date(asset.purchase_date).toLocaleDateString("vi-VN")}
+                </DetailValue>
+              </DetailField>
+            )}
+
+            {asset.assigned_date && (
+              <DetailField>
+                <IconWrapper>
+                  <Calendar size={20} />
+                </IconWrapper>
+                <DetailLabel>Ngày gán:</DetailLabel>
+                <DetailValue>
+                  {new Date(asset.assigned_date).toLocaleDateString("vi-VN")}
                 </DetailValue>
               </DetailField>
             )}

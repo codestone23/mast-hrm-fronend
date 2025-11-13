@@ -11,21 +11,14 @@ import {
   TabButton,
   ContentContainer,
   CreateButton,
-  AssetTable,
-  TableHeader,
-  TableRow,
-  TableCell,
   UserInfo,
   Avatar,
   UserName,
   StatusBadge,
   ActionButton,
-  EmptyState,
-  EmptyIcon,
-  EmptyText,
 } from "./assetStyle";
-import { Asset, AssetRequest } from "@/constants/types";
-import { AssetCategory, AssetStatus, REQUEST_STATUS } from "@/constants/enums";
+import { Asset } from "@/constants/types";
+import { AssetCategory, AssetStatus } from "@/constants/enums";
 import CreateAssetModal from "./modals/CreateAssetModal";
 import EditAssetModal from "./modals/EditAssetModal";
 import AssetDetailModal from "./modals/AssetDetailModal";
@@ -34,7 +27,7 @@ import AssignAssetModal from "./modals/AssignAssetModal";
 import Pagination from "./Pagination";
 import ListAssetRequests from "./ListAssetRequests";
 import assetsService, { GetAssetsParams } from "@/services/assets.service";
-import { Select, Input, Loading } from "@/components/common";
+import { Select, Input, Table, TableColumn, Loading } from "@/components/common";
 import { useToast } from "@/hooks/useToast";
 
 const ITEMS_PER_PAGE = 10;
@@ -145,36 +138,21 @@ const AssetManagement: React.FC = () => {
     return getStatusLabel(status);
   };
 
-  // Mock requests data (tạm thời giữ nguyên, sẽ tích hợp API sau)
-  const [requests, setRequests] = useState<AssetRequest[]>([
-    {
-      id: "req1",
-      assetId: "1",
-      asset: assets[0],
-      userId: "user3",
-      userName: "Lê Văn C",
-      userAvatar: "",
-      reason: "Cần laptop để làm việc tại nhà vì dự án deadline gần",
-      status: REQUEST_STATUS.PENDING,
-      requestedAt: "2024-01-10",
-    },
-  ]);
+  // Fetch requests
+  const { data: requestsData, isLoading: isLoadingRequests } = useQuery({
+    queryKey: ['asset-requests', currentRequestPage],
+    queryFn: () => assetsService.getRequestHr(),
+  });
 
-  const filteredRequests = useMemo(() => {
-    return requests.filter(
-      (request) =>
-        request.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        request.asset?.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [requests, searchTerm]);
+  const requests = requestsData?.data || [];
+  const requestPagination = requestsData?.pagination || {
+    total: 0,
+    current_page: 1,
+    total_pages: 1,
+    limit: ITEMS_PER_PAGE,
+  };
 
-  const totalRequestPages = Math.ceil(filteredRequests.length / ITEMS_PER_PAGE);
-
-  const paginatedRequests = useMemo(() => {
-    const start = (currentRequestPage - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    return filteredRequests.slice(start, end);
-  }, [filteredRequests, currentRequestPage]);
+  const totalRequestPages = requestPagination.total_pages || 1;
 
   // Mutations
   const createMutation = useMutation({
@@ -289,24 +267,35 @@ const AssetManagement: React.FC = () => {
     setIsAssignModalOpen(true);
   };
 
-  const handleApproveRequest = (requestId: string) => {
-    setRequests(
-      requests.map((req) =>
-        req.id === requestId
-          ? { ...req, status: REQUEST_STATUS.APPROVED, reviewedAt: new Date().toISOString() } as AssetRequest
-          : req
-      )
-    );
+  const approveRequestMutation = useMutation({
+    mutationFn: ({ requestId, data }: { requestId: number | string; data: { action: "APPROVED" | "REJECTED"; asset_id?: number | string; rejection_reason?: string; notes?: string } }) =>
+      assetsService.approveRequest(requestId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['asset-requests'] });
+      showSuccessToast("Duyệt yêu cầu thành công");
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      showErrorToast(err?.response?.data?.message || "Có lỗi xảy ra khi duyệt yêu cầu");
+    },
+  });
+
+  const handleApproveRequest = (requestId: string | number) => {
+    approveRequestMutation.mutate({
+      requestId,
+      data: {
+        action: "APPROVED",
+      },
+    });
   };
 
-  const handleRejectRequest = (requestId: string) => {
-    setRequests(
-      requests.map((req) =>
-        req.id === requestId
-          ? { ...req, status: REQUEST_STATUS.REJECTED, reviewedAt: new Date().toISOString() } as AssetRequest
-          : req
-      )
-    );
+  const handleRejectRequest = (requestId: string | number) => {
+    approveRequestMutation.mutate({
+      requestId,
+      data: {
+        action: "REJECTED",
+      },
+    });
   };
 
   // Reset page when tab changes
@@ -353,6 +342,99 @@ const AssetManagement: React.FC = () => {
     return "";
   };
 
+  // Table columns for assets
+  const assetColumns: TableColumn<Asset>[] = [
+    {
+      key: "asset_code",
+      label: "Mã TS",
+      width: "120px",
+      render: (_, row) => getAssetCode(row),
+    },
+    {
+      key: "name",
+      label: "Tên tài sản",
+      width: "2fr",
+      render: (_, row) => (
+        <div>
+          <div style={{ fontWeight: 500 }}>{row.name}</div>
+          {row.description && (
+            <div style={{ fontSize: "12px", color: "#6b7280" }}>
+              {row.description}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "user",
+      label: "Người sử dụng",
+      width: "1.5fr",
+      render: (_, row) => {
+        const user = getAssetUser(row);
+        return user ? (
+          <UserInfo>
+            <Avatar>
+              {user.avatar ? (
+                <Image src={user.avatar} alt={user.name} width={40} height={40} />
+              ) : (
+                <span>{user.name.charAt(0)}</span>
+              )}
+            </Avatar>
+            <div>
+              <UserName>{user.name}</UserName>
+            </div>
+          </UserInfo>
+        ) : (
+          <span style={{ color: "#9ca3af" }}>-</span>
+        );
+      },
+    },
+    {
+      key: "status",
+      label: "Trạng thái",
+      width: "1fr",
+      render: (_, row) => (
+        <StatusBadge $color={getStatusColor(row.status)}>
+          {getStatusText(row.status)}
+        </StatusBadge>
+      ),
+    },
+    {
+      key: "actions",
+      label: "Hành động",
+      width: "150px",
+      align: "center",
+      render: (_, row) => (
+        <div style={{ display: "flex", gap: "8px" }}>
+          <ActionButton $variant="view" onClick={(e) => {
+            e.stopPropagation();
+            handleViewAsset(row);
+          }}>
+            <Eye size={16} />
+          </ActionButton>
+          <ActionButton $variant="edit" onClick={(e) => {
+            e.stopPropagation();
+            handleEditClick(row);
+          }}>
+            <Edit size={16} />
+          </ActionButton>
+          <ActionButton $variant="edit" onClick={(e) => {
+            e.stopPropagation();
+            handleAssignClick(row);
+          }} title="Gán tài sản">
+            <UserPlus size={16} />
+          </ActionButton>
+          <ActionButton $variant="delete" onClick={(e) => {
+            e.stopPropagation();
+            handleDeleteClick(row);
+          }}>
+            <Trash2 size={16} />
+          </ActionButton>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <Container>
       <HeaderContainer>
@@ -369,7 +451,7 @@ const AssetManagement: React.FC = () => {
             onClick={() => handleTabChange("requests")}
           >
             <FileText size={18} />
-            List Request
+            Danh sách yêu cầu tài sản
           </TabButton>
         </TabContainer>
       </HeaderContainer>
@@ -423,91 +505,18 @@ const AssetManagement: React.FC = () => {
 
         {activeTab === "assets" ? (
           <>
-            <AssetTable>
-              <TableHeader>
-                <TableCell>Mã TS</TableCell>
-                <TableCell>Tên tài sản</TableCell>
-                <TableCell>Người sử dụng</TableCell>
-                <TableCell>Giá (VNĐ)</TableCell>
-                <TableCell>Trạng thái</TableCell>
-                <TableCell>Hành động</TableCell>
-              </TableHeader>
-              {isLoadingAssets ? (
-                <EmptyState>
-                  <Loading />
-                </EmptyState>
-              ) : assets.length === 0 ? (
-                <EmptyState>
-                  <EmptyIcon>
-                    <Package size={48} />
-                  </EmptyIcon>
-                  <EmptyText>
-                    {debouncedSearch || categoryFilter || statusFilter
-                      ? "Không tìm thấy tài sản nào"
-                      : "Chưa có tài sản nào"}
-                  </EmptyText>
-                </EmptyState>
-              ) : (
-                assets.map((asset) => {
-                  const user = getAssetUser(asset);
-                  return (
-                  <TableRow key={asset.id}>
-                      <TableCell>{getAssetCode(asset)}</TableCell>
-                    <TableCell>
-                      <div>
-                        <div style={{ fontWeight: 500 }}>{asset.name}</div>
-                        {asset.description && (
-                          <div style={{ fontSize: "12px", color: "#6b7280" }}>
-                            {asset.description}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                        {user ? (
-                        <UserInfo>
-                          <Avatar>
-                              {user.avatar ? (
-                                <Image src={user.avatar} alt={user.name} width={40} height={40} />
-                            ) : (
-                                <span>{user.name.charAt(0)}</span>
-                            )}
-                          </Avatar>
-                          <div>
-                              <UserName>{user.name}</UserName>
-                          </div>
-                        </UserInfo>
-                      ) : (
-                        <span style={{ color: "#9ca3af" }}>-</span>
-                      )}
-                    </TableCell>
-                      <TableCell>{getAssetPrice(asset)}</TableCell>
-                    <TableCell>
-                      <StatusBadge $color={getStatusColor(asset.status)}>
-                        {getStatusText(asset.status)}
-                      </StatusBadge>
-                    </TableCell>
-                    <TableCell>
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <ActionButton $variant="view" onClick={() => handleViewAsset(asset)}>
-                          <Eye size={16} />
-                        </ActionButton>
-                        <ActionButton $variant="edit" onClick={() => handleEditClick(asset)}>
-                          <Edit size={16} />
-                        </ActionButton>
-                          <ActionButton $variant="edit" onClick={() => handleAssignClick(asset)} title="Gán tài sản">
-                            <UserPlus size={16} />
-                        </ActionButton>
-                        <ActionButton $variant="delete" onClick={() => handleDeleteClick(asset)}>
-                          <Trash2 size={16} />
-                        </ActionButton>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                  );
-                })
-              )}
-            </AssetTable>
+            <Table
+              columns={assetColumns}
+              data={assets}
+              loading={isLoadingAssets}
+              emptyState={{
+                icon: <Package size={48} />,
+                message: debouncedSearch || categoryFilter || statusFilter
+                  ? "Không tìm thấy tài sản nào"
+                  : "Chưa có tài sản nào",
+              }}
+              rowKey="id"
+            />
             {assets.length > 0 && totalPages > 1 && (
               <Pagination
                 currentPage={currentPage}
@@ -524,24 +533,31 @@ const AssetManagement: React.FC = () => {
                   Danh sách yêu cầu tài sản
                 </h3>
                 <p style={{ margin: 0, fontSize: "15px", color: "#6b7280" }}>
-                  Tổng cộng: <strong style={{ color: "#2196F3" }}>{filteredRequests.length}</strong> yêu cầu
+                  Tổng cộng: <strong style={{ color: "#2196F3" }}>{requestPagination.total || requests.length}</strong> yêu cầu
                 </p>
               </div>
               
-              <ListAssetRequests
-                requests={paginatedRequests}
-                onApprove={handleApproveRequest}
-                onReject={handleRejectRequest}
-              />
+              {isLoadingRequests ? (
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "60px 20px" }}>
+                  <Loading />
+                </div>
+              ) : (
+                <>
+                  <ListAssetRequests
+                    requests={requests}
+                    onApprove={handleApproveRequest}
+                    onReject={handleRejectRequest}
+                  />
+                  {totalRequestPages > 1 && (
+                    <Pagination
+                      currentPage={currentRequestPage}
+                      totalPages={totalRequestPages}
+                      onPageChange={setCurrentRequestPage}
+                    />
+                  )}
+                </>
+              )}
             </div>
-            
-            {paginatedRequests.length > 0 && filteredRequests.length > ITEMS_PER_PAGE && (
-              <Pagination
-                currentPage={currentRequestPage}
-                totalPages={totalRequestPages}
-                onPageChange={setCurrentRequestPage}
-              />
-            )}
           </>
         )}
       </ContentContainer>

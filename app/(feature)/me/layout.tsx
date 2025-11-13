@@ -99,6 +99,18 @@ export default function Layout({
           ROLE_NAMES.ADMIN,
         ],
       },
+      {
+        id: ROUTERS.PERSONAL.ASSETS,
+        label: "Tài sản",
+        roles: [
+          ROLE_NAMES.EMPLOYEE,
+          ROLE_NAMES.TEAM_LEADER,
+          ROLE_NAMES.DIVISION_HEAD,
+          ROLE_NAMES.PROJECT_MANAGER,
+          ROLE_NAMES.HR_MANAGER,
+          ROLE_NAMES.ADMIN,
+        ],
+      },
     ],
     []
   );

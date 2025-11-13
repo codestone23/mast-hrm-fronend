@@ -12,6 +12,7 @@ const ROUTERS = {
         TIMEKEEPING: "/me/timekeeping/time-sheets",
         COMPANY: "/me/company",
         NEWS: "/me/news",
+        ASSETS: "/me/assets",
     },
     DIVISION: {
         BASE: "/division/dashboard",

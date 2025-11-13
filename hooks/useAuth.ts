@@ -223,10 +223,9 @@ export const useAuth = () => {
         }));
       }
     } catch (error) {
-      console.error('Error refreshing user:', error);
       await logout();
     }
-  }, [logout]);
+  }, []);
 
   // Kiểm tra token sắp hết hạn và refresh nếu cần
   const checkAndRefreshToken = useCallback(async () => {
@@ -242,14 +241,13 @@ export const useAuth = () => {
             isAuthenticated: true,
           }));
         } else {
-          // Không thể refresh token, đăng xuất
           await logout();
         }
       }
     } catch (error) {
       console.error('Error checking/refreshing token:', error);
     }
-  }, [logout]);
+  }, []);
 
   // Khởi tạo khi component mount
   useEffect(() => {

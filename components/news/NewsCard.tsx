@@ -21,9 +21,10 @@ interface NewsCardProps {
   news: News;
   onClick?: () => void;
   showStatus?: boolean;
+  actions?: React.ReactNode;
 }
 
-const NewsCard: React.FC<NewsCardProps> = ({ news, onClick, showStatus = false }) => {
+const NewsCard: React.FC<NewsCardProps> = ({ news, onClick, showStatus = false, actions }) => {
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "dd/MM/yyyy HH:mm", { locale: vi });
@@ -56,36 +57,45 @@ const NewsCard: React.FC<NewsCardProps> = ({ news, onClick, showStatus = false }
   };
 
   return (
-    <NewsCardContainer onClick={onClick}>
-      <NewsCardHeader>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem", width: "100%" }}>
-          <NewsCardTitle style={{ flex: 1, margin: 0 }}>{news.title}</NewsCardTitle>
-          {showStatus && (
-            <StatusBadge $status={news.status}>
-              {getStatusLabel(news.status)}
-            </StatusBadge>
-          )}
-        </div>
-      </NewsCardHeader>
-      <NewsCardContent>{truncatedContent}</NewsCardContent>
-      {showStatus && news.status === NewsStatus.REJECTED && news.reason && (
-        <RejectionReason>
-          <AlertCircle size={14} />
-          <span>
-            <strong>Lý do từ chối:</strong> {news.reason}
-          </span>
-        </RejectionReason>
-      )}
-      <NewsCardMeta>
-        <NewsCardMetaItem>
-          <Calendar size={14} />
-          <span>{formatDate(news.created_at)}</span>
-        </NewsCardMetaItem>
-        <NewsCardAuthor>
-          <User size={14} />
-          <span>{news.authorName || news.author?.user_information?.name || "Không xác định"}</span>
-        </NewsCardAuthor>
-      </NewsCardMeta>
+    <NewsCardContainer>
+      <div onClick={onClick} style={{ cursor: onClick ? "pointer" : "default", flex: 1, display: "flex", flexDirection: "column" }}>
+        <NewsCardHeader>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem", width: "100%" }}>
+            <NewsCardTitle style={{ flex: 1, margin: 0 }}>{news.title}</NewsCardTitle>
+            {showStatus && (
+              <StatusBadge $status={news.status}>
+                {getStatusLabel(news.status)}
+              </StatusBadge>
+            )}
+          </div>
+        </NewsCardHeader>
+        <NewsCardContent>{truncatedContent}</NewsCardContent>
+        {showStatus && news.status === NewsStatus.REJECTED && news.reason && (
+          <RejectionReason>
+            <AlertCircle size={14} />
+            <span>
+              <strong>Lý do từ chối:</strong> {news.reason}
+            </span>
+          </RejectionReason>
+        )}
+      </div>
+      <div style={{ marginTop: "auto" }}>
+        <NewsCardMeta>
+          <NewsCardMetaItem>
+            <Calendar size={14} />
+            <span>{formatDate(news.created_at)}</span>
+          </NewsCardMetaItem>
+          <NewsCardAuthor>
+            <User size={14} />
+            <span>{news.authorName || news.author?.user_information?.name || "Không xác định"}</span>
+          </NewsCardAuthor>
+        </NewsCardMeta>
+        {actions && (
+          <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid var(--border)" }}>
+            {actions}
+          </div>
+        )}
+      </div>
     </NewsCardContainer>
   );
 };

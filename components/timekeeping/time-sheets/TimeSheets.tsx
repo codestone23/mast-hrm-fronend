@@ -98,23 +98,15 @@ const TimeSheets: React.FC = () => {
 
   const userData = useAppSelector((state) => state.user.data);
   const userRoles = userData?.role_assignments?.map((role) => role?.name);
-  console.log(userRoles);
-  const role = useMemo(() => {
-    if (!userRoles) return null;
-    const roleNames = Object.values(ROLE_NAMES);
-    return roleNames.find((r) => userRoles.includes(r.toLowerCase())) as string;
-  }, [userRoles]);
-  console.log(role);
 
   const canSeeOtherRequests = useMemo(() => {
-    if (!role) return false;
-    return [
+    if (!userRoles) return false;
+    return userRoles.some((role) => [
       ROLE_NAMES.TEAM_LEADER,
       ROLE_NAMES.DIVISION_HEAD
-    ].includes(role as ROLE_NAMES);
-  }, [role]);
+    ].includes(role as ROLE_NAMES));
+  }, [userRoles]);
 
-  // Request modals state - optimized with single state
   const [requestModalState, setRequestModalState] = useState<RequestModalState>(
     {
       isRequestTypeModalOpen: false,
@@ -415,7 +407,6 @@ const TimeSheets: React.FC = () => {
               <CalendarGrid>
                 {getCurrentMonthDays().map((day, index) => {
                   const dayData = timeSheetData[day.fullDate];
-                  console.log(dayData);
 
                   const todayString = getTodayInVietnamTimezone();
                   const isToday = day.fullDate === todayString;

@@ -163,44 +163,46 @@ export default function HRNewsPage() {
         <NewsGridWithActions>
           {newsList.map((news) => (
             <NewsCardWithActions key={news.id}>
-              <div onClick={() => handleViewDetail(news)} style={{ cursor: "pointer" }}>
+              <div onClick={() => handleViewDetail(news)} style={{ cursor: "pointer", height: "100%" }}>
                 <NewsCard news={news} showStatus={true} />
               </div>
-              <ActionButtons>
-                {canEdit(news) && (
-                  <>
+              {(canSubmit(news) || canEdit(news)) && (
+                <ActionButtons>
+                  {canEdit(news) && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEdit(news)}
+                        icon={<Edit size={16} />}
+                        iconPosition="left"
+                      >
+                        Sửa
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDelete(news)}
+                        icon={<Trash2 size={16} />}
+                        iconPosition="left"
+                      >
+                        Xóa
+                      </Button>
+                    </>
+                  )}
+                  {canSubmit(news) && (
                     <Button
                       size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(news)}
-                      icon={<Edit size={16} />}
+                      variant="primary"
+                      onClick={() => handleSubmit(news)}
+                      icon={<Send size={16} />}
                       iconPosition="left"
                     >
-                      Sửa
+                      Gửi duyệt
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDelete(news)}
-                      icon={<Trash2 size={16} />}
-                      iconPosition="left"
-                    >
-                      Xóa
-                    </Button>
-                  </>
-                )}
-                {canSubmit(news) && (
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    onClick={() => handleSubmit(news)}
-                    icon={<Send size={16} />}
-                    iconPosition="left"
-                  >
-                    Gửi duyệt
-                  </Button>
-                )}
-              </ActionButtons>
+                  )}
+                </ActionButtons>
+              )}
             </NewsCardWithActions>
           ))}
         </NewsGridWithActions>

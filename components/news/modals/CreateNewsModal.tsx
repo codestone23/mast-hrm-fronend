@@ -88,7 +88,7 @@ const CreateNewsModal: React.FC<CreateNewsModalProps> = ({
           </ModalCloseButton>
         </ModalHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={{ maxHeight: "500px", overflowY: "auto" }}>
           <ModalBody>
             <Input
               label="Tiêu đề"

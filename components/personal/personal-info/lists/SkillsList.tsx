@@ -26,6 +26,7 @@ interface SkillsListProps {
   onAdd: () => void;
   onEdit: (skill: Skill) => void;
   onDelete: (skill: Skill) => void;
+  readOnly?: boolean;
 }
 
 const SkillsList: React.FC<SkillsListProps> = ({
@@ -33,6 +34,7 @@ const SkillsList: React.FC<SkillsListProps> = ({
   onAdd,
   onEdit,
   onDelete,
+  readOnly = false,
 }) => {
   return (
     <>
@@ -41,9 +43,11 @@ const SkillsList: React.FC<SkillsListProps> = ({
           <Star size={20} />
           Kỹ năng
         </SectionTitle>
-        <SectionAction onClick={onAdd}>
-          <Plus size={16} />
-        </SectionAction>
+        {!readOnly && (
+          <SectionAction onClick={onAdd}>
+            <Plus size={16} />
+          </SectionAction>
+        )}
       </SectionHeader>
 
       <SkillsContainer>
@@ -58,14 +62,16 @@ const SkillsList: React.FC<SkillsListProps> = ({
                 </SkillDescription>
                 {skill.is_main && <SkillMainTag>Kỹ năng chính</SkillMainTag>}
               </SkillInfo>
-              <SkillActions>
-                <SkillActionButton onClick={() => onEdit(skill)}>
-                  <Edit size={16} />
-                </SkillActionButton>
-                <SkillDeleteButton onClick={() => onDelete(skill)}>
-                  <Trash2 size={16} />
-                </SkillDeleteButton>
-              </SkillActions>
+              {!readOnly && (
+                <SkillActions>
+                  <SkillActionButton onClick={() => onEdit(skill)}>
+                    <Edit size={16} />
+                  </SkillActionButton>
+                  <SkillDeleteButton onClick={() => onDelete(skill)}>
+                    <Trash2 size={16} />
+                  </SkillDeleteButton>
+                </SkillActions>
+              )}
             </SkillCardHeader>
           </SkillCard>
         ))}
@@ -75,9 +81,11 @@ const SkillsList: React.FC<SkillsListProps> = ({
               <Star size={48} />
             </EmptyStateIcon>
             <EmptyStateTitle>Chưa có kỹ năng nào</EmptyStateTitle>
-            <EmptyStateDescription>
-              Nhấn nút + để thêm kỹ năng mới
-            </EmptyStateDescription>
+            {!readOnly && (
+              <EmptyStateDescription>
+                Nhấn nút + để thêm kỹ năng mới
+              </EmptyStateDescription>
+            )}
           </EmptyState>
         )}
       </SkillsContainer>

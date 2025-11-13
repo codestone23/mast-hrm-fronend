@@ -1,3 +1,5 @@
+import { DivisionStatus, DivisionType, ROLE_NAMES } from "@/constants/enums";
+
 // Base API Response types
 export interface ApiResponse<T = unknown> {
   success: boolean;
@@ -26,18 +28,13 @@ export enum DivisionTypeEnum {
   OTHER = 'OTHER',
 }
 
-export enum DivisionStatusEnum {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-}
-
 export interface DivisionListItem {
   id: number;
   name: string;
   head_id: number | null;
   is_active_project: boolean;
   type: DivisionTypeEnum | string;
-  status: DivisionStatusEnum | string;
+  status: DivisionStatus;
   level: number;
   address: string | null;
   parent_id: number | null;
@@ -61,18 +58,18 @@ export interface DivisionListParams {
   limit?: number;
   search?: string;
   type?: DivisionTypeEnum | string;
-  status?: DivisionStatusEnum | string;
+  status?: DivisionStatus;
 }
 
 export interface CreateDivisionRequest {
   name: string;
-  type: DivisionTypeEnum | string;
+  type: DivisionType;
   parent_id?: number | null;
   description?: string;
 }
 
 export interface UpdateDivisionRequest extends CreateDivisionRequest {
-  status?: DivisionStatusEnum | string;
+  status?: DivisionStatus;
 }
 
 export type DivisionDetail = DivisionListItem;
@@ -156,7 +153,32 @@ export interface User {
   name: string;
   remember_token: string | null;
   updated_at: string;
-  user_information: unknown[];
+  user_information: unknown[] | {
+    id: number;
+    user_id: number;
+    personal_email: string | null;
+    nationality: string | null;
+    name: string;
+    code: string | null;
+    avatar: string | null;
+    gender: string | null;
+    marital: string | null;
+    birthday: string | null;
+    position_id: number | null;
+    address: string | null;
+    temp_address: string | null;
+    phone: string | null;
+    tax_code: string | null;
+    level_id: number | null;
+    expertise: string | null;
+    language_id: number | null;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+  };
+  user_role_assignments?: UserRoleAssignment[];
+  user_division?: unknown[];
+  status?: string;
 }
 
 export enum UserRole {
@@ -173,6 +195,31 @@ export interface UpdateUserRequest {
   avatar?: string;
   department?: string;
   position?: string;
+}
+
+// Role types
+export enum ScopeType {
+  COMPANY = 'COMPANY',
+  DIVISION = 'DIVISION',
+  TEAM = 'TEAM',
+  PROJECT = 'PROJECT'
+}
+
+export interface Role {
+  id: number;
+  name: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface UserRoleAssignment {
+  role: {
+    id: number;
+    name: ROLE_NAMES;
+  };
+  scope_id: number | null;
+  scope_type: ScopeType;
 }
 
 // Timekeeping types

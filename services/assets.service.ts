@@ -1,4 +1,4 @@
-import { Asset, AssetStatistics } from "@/constants/types";
+import { Asset, AssetRequest, AssetStatistics } from "@/constants/types";
 import axiosInstance from "@/lib/axios";
 import { ApiResponse, PaginatedResponse } from "@/types/api";
 
@@ -58,6 +58,50 @@ class AssetsService {
             user_id: userId, 
             ...(notes && { notes }) 
         });
+        return response.data;
+    }
+
+    async getMyAssets(): Promise<ApiResponse<Asset[]>> {
+        const response = await axiosInstance.get('/assets/my-devices');
+        return response.data;
+    }
+
+    async createRequest(data: {
+        request_type: "REQUEST" | "RETURN" | "MAINTENANCE";
+        category: string;
+        description: string;
+        justification: string;
+        expected_date: string;
+        asset_id?: number | string | null;
+        notes?: string;
+        user_id?: number;
+    }): Promise<ApiResponse<void>> {
+        const response = await axiosInstance.post(`/assets/requests`, data);
+        return response.data;
+    }
+
+    async getRequestHr(): Promise<PaginatedResponse<AssetRequest>> {
+        const response = await axiosInstance.get('/assets/requests');
+        return response.data;
+    }
+
+    async getMyRequests(): Promise<PaginatedResponse<AssetRequest>> {
+        const response = await axiosInstance.get('/assets/requests/my');
+        return response.data;
+    }
+
+    async detailAssetRequest(requestId: number | string): Promise<ApiResponse<AssetRequest>> {
+        const response = await axiosInstance.get(`/assets/requests/${requestId}`);
+        return response.data;
+    }
+
+    async approveRequest(requestId: number | string, data: {
+        action: "APPROVED" | "REJECTED";
+        asset_id?: number | string;
+        rejection_reason?: string;
+        notes?: string;
+    }): Promise<ApiResponse<void>> {
+        const response = await axiosInstance.post(`/assets/requests/${requestId}/approve`, data);
         return response.data;
     }
 

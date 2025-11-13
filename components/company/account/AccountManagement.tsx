@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Eye, Edit, Trash2, User, Users, Search } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, User, Users, Search, Shield } from "lucide-react";
 import { Button, Input, Table, Pagination } from "@/components/common";
 import { TableColumn } from "@/components/common/Table/Table";
 import {
@@ -17,11 +17,13 @@ import {
 } from "./accountStyle";
 import CreateAccountModal from "./modals/CreateAccountModal";
 import EditAccountModal from "./modals/EditAccountModal";
+import AssignRoleModal from "./modals/AssignRoleModal";
 import { ConfirmDeleteModal } from "@/components/common";
 import { User as UserType, UpdateUserRequest } from "@/types/api";
 import userService from "@/services/user.service";
 import { useToast } from "@/hooks/useToast";
 import { useRouter } from "next/navigation";
+import { ROLE_NAMES } from "@/constants/enums";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -39,6 +41,29 @@ interface EditAccountData {
   position?: string;
 }
 
+export const getRoleName = (roleName: ROLE_NAMES) => {
+  switch (roleName) {
+    case ROLE_NAMES.EMPLOYEE: 
+      return "Nhân viên";
+    case ROLE_NAMES.TEAM_LEADER:
+      return "Trưởng nhóm";
+    case ROLE_NAMES.DIVISION_HEAD:
+      return "Trưởng phòng";
+    case ROLE_NAMES.PROJECT_MANAGER:
+      return "Trưởng dự án";
+    case ROLE_NAMES.HR_MANAGER:
+      return "Trưởng HR";
+    case ROLE_NAMES.ADMIN:
+      return "Quản trị viên";
+    case ROLE_NAMES.SUPER_ADMIN:
+      return "Quản trị hệ thống";
+    case ROLE_NAMES.COMPANY_OWNER:
+      return "Chủ công ty";
+    default:
+      return roleName;
+  }
+};
+
 const AccountManagement: React.FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -50,6 +75,7 @@ const AccountManagement: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isAssignRoleModalOpen, setIsAssignRoleModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
 
   // Debounce search
@@ -161,6 +187,11 @@ const AccountManagement: React.FC = () => {
     setIsDeleteModalOpen(true);
   };
 
+  const handleAssignRole = (user: UserType) => {
+    setSelectedUser(user);
+    setIsAssignRoleModalOpen(true);
+  };
+
   const getUserName = (user: UserType) => {
     if (user.user_information && Array.isArray(user.user_information) && user.user_information.length > 0) {
       const info = user.user_information[0] as { name?: string };
@@ -199,7 +230,7 @@ const AccountManagement: React.FC = () => {
     {
       key: "userInfo",
       label: "Thông tin",
-      width: "2fr",
+      width: "300px",
       render: (_, row) => {
         const userName = getUserName(row);
         const userInfo = getUserInfo(row);
@@ -235,13 +266,37 @@ const AccountManagement: React.FC = () => {
     {
       key: "role",
       label: "Vai trò",
-      width: "1fr",
-      render: () => "User", // TODO: Get role from user data
+      render: (_, row) => {
+        const roles = row.user_role_assignments || [];
+        if (roles.length === 0) {
+          return <span style={{ color: "#6b7280", fontSize: "14px" }}>Chưa có vai trò</span>;
+        }
+        return (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+            {roles.map((assignment, index) => (
+              <span
+                key={index}
+                style={{
+                  display: "inline-block",
+                  padding: "4px 10px",
+                  borderRadius: "12px",
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  backgroundColor: "#e0e7ff",
+                  color: "#6366f1",
+                }}
+              >
+                {getRoleName(assignment.role.name)}
+              </span>
+            ))}
+          </div>
+        );
+      },
     },
     {
       key: "status",
       label: "Trạng thái",
-      width: "1fr",
+      width: "200px",
       render: (_, row) => {
         const status = getUserStatus(row);
         return (
@@ -264,7 +319,7 @@ const AccountManagement: React.FC = () => {
     {
       key: "department",
       label: "Phòng ban",
-      width: "1fr",
+      width: "200px",
       render: (_, row) => {
         const userInfo = getUserInfo(row);
         return userInfo?.department || "Chưa phân công";
@@ -273,7 +328,7 @@ const AccountManagement: React.FC = () => {
     {
       key: "actions",
       label: "Hành động",
-      width: "120px",
+      width: "300px",
       align: "center",
       render: (_, row) => (
         <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
@@ -298,6 +353,19 @@ const AccountManagement: React.FC = () => {
             icon={<Edit size={14} />}
           >
             <span style={{ display: "none" }}>Sửa</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAssignRole(row);
+            }}
+            icon={<Shield size={14} />}
+            title="Gán vai trò"
+            aria-label="Gán vai trò"
+          >
+            <span style={{ display: "none" }}>Gán vai trò</span>
           </Button>
           <Button
             size="sm"
@@ -445,6 +513,15 @@ const AccountManagement: React.FC = () => {
         onConfirm={handleDeleteAccount}
         title="Xóa tài khoản"
         message={`Bạn có chắc chắn muốn xóa tài khoản "${selectedUser ? getUserName(selectedUser) : ""}"?`}
+      />
+
+      <AssignRoleModal
+        isOpen={isAssignRoleModalOpen}
+        onClose={() => {
+          setIsAssignRoleModalOpen(false);
+          setSelectedUser(null);
+        }}
+        user={selectedUser}
       />
     </PersonalContainer>
   );

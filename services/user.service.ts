@@ -19,13 +19,13 @@ class UserService {
     return response.data;
   }
 
-  async getUserById(userId: string): Promise<ApiResponse<User>> {
+  async getUserById(userId: string): Promise<User> {
     const response = await axiosInstance.get(`users/${userId}`);
     return response.data;
   }
 
   async updateUser(userId: string, userData: UpdateUserRequest): Promise<ApiResponse<User>> {
-    const response = await axiosInstance.put(`users/${userId}`, userData);
+    const response = await axiosInstance.patch(`users/${userId}`, userData);
     return response.data;
   }
 

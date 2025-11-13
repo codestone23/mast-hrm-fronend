@@ -27,6 +27,7 @@ interface EducationListProps {
   onAdd: () => void;
   onEdit: (education: Education) => void;
   onDelete: (education: Education) => void;
+  readOnly?: boolean;
 }
 
 const EducationList: React.FC<EducationListProps> = ({
@@ -34,6 +35,7 @@ const EducationList: React.FC<EducationListProps> = ({
   onAdd,
   onEdit,
   onDelete,
+  readOnly = false,
 }) => {
   return (
     <>
@@ -42,9 +44,11 @@ const EducationList: React.FC<EducationListProps> = ({
           <GraduationCap size={20} />
           Học vấn
         </SectionTitle>
-        <SectionAction onClick={onAdd}>
-          <Plus size={16} />
-        </SectionAction>
+        {!readOnly && (
+          <SectionAction onClick={onAdd}>
+            <Plus size={16} />
+          </SectionAction>
+        )}
       </SectionHeader>
 
       <EducationContainer>
@@ -60,14 +64,16 @@ const EducationList: React.FC<EducationListProps> = ({
                   {new Date(edu.end_date).toLocaleDateString("vi-VN")}
                 </EducationDate>
               </EducationInfo>
-              <EducationActions>
-                <EducationActionButton onClick={() => onEdit(edu)}>
-                  <Edit size={16} />
-                </EducationActionButton>
-                <EducationDeleteButton onClick={() => onDelete(edu)}>
-                  <Trash2 size={16} />
-                </EducationDeleteButton>
-              </EducationActions>
+              {!readOnly && (
+                <EducationActions>
+                  <EducationActionButton onClick={() => onEdit(edu)}>
+                    <Edit size={16} />
+                  </EducationActionButton>
+                  <EducationDeleteButton onClick={() => onDelete(edu)}>
+                    <Trash2 size={16} />
+                  </EducationDeleteButton>
+                </EducationActions>
+              )}
             </EducationCardHeader>
           </EducationCard>
         ))}
@@ -77,9 +83,11 @@ const EducationList: React.FC<EducationListProps> = ({
               <GraduationCap size={48} />
             </EmptyStateIcon>
             <EmptyStateTitle>Chưa có học vấn nào</EmptyStateTitle>
-            <EmptyStateDescription>
-              Nhấn nút + để thêm học vấn mới
-            </EmptyStateDescription>
+            {!readOnly && (
+              <EmptyStateDescription>
+                Nhấn nút + để thêm học vấn mới
+              </EmptyStateDescription>
+            )}
           </EmptyState>
         )}
       </EducationContainer>

@@ -23,7 +23,6 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
     const candidatesQuery = useDivisionCandidates(divisionId, search);
-    console.log(candidatesQuery.data);
     const options = useMemo(
         () =>
             (candidatesQuery.data?.pages.flatMap((p) => p.data) ?? []).map(
@@ -34,9 +33,6 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
             ),
         [candidatesQuery.data]
     );
-
-
-    console.log(options);
 
     const footer = (
         <>

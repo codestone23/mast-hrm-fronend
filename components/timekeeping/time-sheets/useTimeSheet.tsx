@@ -114,8 +114,8 @@ export const useTimeSheet = () => {
 
         acc[date] = {
             status,
-            timeIn: checkinTime || 'N/A',
-            timeOut: checkoutTime || 'N/A',
+            timeIn: checkinTime || 'Không có',
+            timeOut: checkoutTime || 'Không có', 
             hours: totalWorkHours,
             lateTime: item.late_time,
             earlyTime: item.early_time,

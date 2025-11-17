@@ -15,7 +15,7 @@ export default function Layout({
 
   const navItems = [
     { id: ROUTERS.COMPANY.ACCOUNTS, label: "Quản lý tài khoản" },
-    { id: ROUTERS.COMPANY.DIVISIONS, label: "Các divisions" },
+    { id: ROUTERS.COMPANY.DIVISIONS, label: "Các phòng ban" },
   ];
 
   return (

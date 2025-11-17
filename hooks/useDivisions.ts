@@ -97,7 +97,6 @@ export function useDivisionCandidates(divisionId: number, search: string) {
       queryKey: queryKeys.candidates(divisionId, search),
       queryFn: ({ pageParam = 1 }) => divisionsService.listUserForAddToDivision(pageParam as number, 10, search),
       getNextPageParam: (lastPage) => {
-        console.log(lastPage);
         if (!lastPage?.pagination) return undefined;
         const { current_page, total_pages } = lastPage.pagination;
         return current_page < total_pages ? current_page + 1 : undefined;

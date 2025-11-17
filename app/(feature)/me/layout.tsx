@@ -36,7 +36,7 @@ export default function Layout({
     () => [
       {
         id: ROUTERS.PERSONAL.BASE,
-        label: "Dashboard",
+        label: "Tổng quan",
         roles: [
           ROLE_NAMES.EMPLOYEE,
           ROLE_NAMES.TEAM_LEADER,

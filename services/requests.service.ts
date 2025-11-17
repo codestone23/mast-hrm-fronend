@@ -30,8 +30,6 @@ export interface Request {
 export interface RequestParams {
   page?: number;
   limit?: number;
-  sort_by?: string;
-  sort_order?: 'asc' | 'desc';
   status?: string;
   start_date?: string;
   end_date?: string;

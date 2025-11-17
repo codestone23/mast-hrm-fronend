@@ -273,10 +273,10 @@ const TimeSheets: React.FC = () => {
                           <br />
                           Về Sớm: {dayData.earlyTime || 0}
                         </div>
-                        {dayData.timeIn && dayData.timeIn !== "N/A" && (
+                        {dayData.timeIn && dayData.timeIn !== "Không có" && (
                           <TimeDisplay>
                             <span>In: {dayData.timeIn}</span>
-                            <span>Out: {dayData.timeOut || "N/A"}</span>
+                            <span>Out: {dayData.timeOut || "Không có"}</span>
                           </TimeDisplay>
                         )}
                         {dayData.fines > 0 && (

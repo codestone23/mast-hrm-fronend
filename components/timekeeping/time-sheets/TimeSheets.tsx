@@ -138,10 +138,10 @@ const TimeSheets: React.FC = () => {
   const tabs = useMemo(() => {
     const baseTabs = ["BẢNG CHẤM CÔNG"];
 
-    baseTabs.splice(1, 0, "LIST ĐỀ XUẤT CỦA TÔI");
+    baseTabs.splice(1, 0, "DANH SÁCH ĐỀ XUẤT CỦA TÔI");
 
     if (canSeeOtherRequests) {
-      baseTabs.splice(2, 0, "LIST ĐỀ XUẤT");
+      baseTabs.splice(2, 0, "DANH SÁCH ĐỀ XUẤT CỦA NHÂN VIÊN");
     }
 
     return baseTabs;
@@ -349,11 +349,11 @@ const TimeSheets: React.FC = () => {
             }}
           >
             <Plus size={16} />
-            Tạo request
+            Tạo đề xuất
           </CreateButton>
           <CreateButton onClick={() => setActiveTab("FaceIdentify")}>
             <ScanFace size={16} />
-            Quét mặt
+            Chấm công 
           </CreateButton>
           <CreateButton onClick={() => setActiveTab("RegisterFace")}>
             <ImageUp size={16} />
@@ -411,11 +411,13 @@ const TimeSheets: React.FC = () => {
                   const todayString = getTodayInVietnamTimezone();
                   const isToday = day.fullDate === todayString;
 
-                  // Kiểm tra ngày trong quá khứ không có data
+                  // Kiểm tra ngày trong quá khứ hoặc ngày hôm nay không có data
                   const dayDate = new Date(day.fullDate);
                   const currentDate = new Date(todayString);
-                  const isPastDay = dayDate < currentDate;
-                  const hasNoData = !dayData && isPastDay && day.isCurrentMonth;
+                  currentDate.setHours(0, 0, 0, 0);
+                  dayDate.setHours(0, 0, 0, 0);
+                  const isPastOrToday = dayDate <= currentDate;
+                  const hasNoData = !dayData && isPastOrToday && day.isCurrentMonth;
 
                   let displayStatus = dayData?.status;
                   if (hasNoData) {
@@ -486,10 +488,10 @@ const TimeSheets: React.FC = () => {
                                   </span>
                                 )}
                               </div>
-                              {dayData.timeIn && dayData.timeIn !== "N/A" && (
+                              {dayData.timeIn && dayData.timeIn !== "Không có" && ( 
                                 <TimeDisplay>
                                   <span>In: {dayData.timeIn}</span>
-                                  <span>Out: {dayData.timeOut || "N/A"}</span>
+                                  <span>Out: {dayData.timeOut || "Không có"}</span>
                                 </TimeDisplay>
                               )}
                             </>
@@ -604,10 +606,10 @@ const TimeSheets: React.FC = () => {
           </>
         )}
 
-        {(activeTab === "LIST ĐỀ XUẤT CỦA TÔI" ||
-          activeTab === "LIST ĐỀ XUẤT") && (
+        {(activeTab === "DANH SÁCH ĐỀ XUẤT CỦA TÔI" ||
+          activeTab === "DANH SÁCH ĐỀ XUẤT CỦA NHÂN VIÊN") && (
           <div style={{ width: "100%" }}>
-            {activeTab === "LIST ĐỀ XUẤT CỦA TÔI" ? (
+            {activeTab === "DANH SÁCH ĐỀ XUẤT CỦA TÔI" ? (
               <MyRequestsList
                 onRequestClick={(request) => {
                   setSelectedRequest(request);

@@ -70,9 +70,10 @@ class DivisionWorkforceService {
     const response = await axiosInstance.post(
       `/divisions/${data.divisionId}/teams`,
       {
-        managerId: data.managerId,
+        leader_Id: data.leaderId,
         name: data.name,
         foundingDate: data.foundingDate,
+        divisionId: data.divisionId,
       }
     );
     return response.data;
@@ -83,7 +84,6 @@ class DivisionWorkforceService {
     data: DivisionTeamUpdateRequest
   ): Promise<void> {
     const response = await axiosInstance.patch(`/divisions/teams/${teamId}`, {
-      managerId: data.managerId,
       name: data.name,
       foundingDate: data.foundingDate,
     });

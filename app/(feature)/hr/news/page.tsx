@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Edit, Trash2, Send, FileText } from "lucide-react";
 import NewsCard from "@/components/news/NewsCard";
 import CreateNewsModal from "@/components/news/modals/CreateNewsModal";
 import EditNewsModal from "@/components/news/modals/EditNewsModal";
 import NewsDetailModal from "@/components/news/modals/NewsDetailModal";
-import { ConfirmDeleteModal, Loading } from "@/components/common";
+import { ConfirmDeleteModal, Loading, Pagination } from "@/components/common";
 import { Button } from "@/components/common";
 import newsService from "@/services/news.service";
 import { News, CreateNewsRequest, UpdateNewsRequest, NewsStatus } from "@/types/api";
@@ -22,6 +22,8 @@ import {
   ActionButtons,
 } from "./hrNewsStyle";
 
+const ITEMS_PER_PAGE = 10;
+
 export default function HRNewsPage() {
   const queryClient = useQueryClient();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
@@ -31,29 +33,31 @@ export default function HRNewsPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedNews, setSelectedNews] = useState<News | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const {
     data,
     isLoading,
-  } = useInfiniteQuery({
-    queryKey: ["hr-news"],
-    queryFn: ({ pageParam = 1 }) =>
-      newsService.getNews(pageParam, 10),
-    getNextPageParam: (lastPage) => {
-      const totalPages = lastPage.pagination?.total_pages || 0;
-      const currentPage = lastPage.pagination?.current_page || 1;
-      return currentPage < totalPages ? currentPage + 1 : undefined;
-    },
-    initialPageParam: 1,
+  } = useQuery({
+    queryKey: ["hr-news", currentPage],
+    queryFn: () => newsService.getNews(currentPage, ITEMS_PER_PAGE),
   });
 
-  const newsList = data?.pages.flatMap((page) => page.data || []) || [];
+  const newsList = data?.data || [];
+  const pagination = data?.pagination || {
+    total: 0,
+    current_page: 1,
+    totalPages: 1,
+    limit: ITEMS_PER_PAGE,
+  };
+  const totalPages = pagination.totalPages || 1;
 
   const createMutation = useMutation({
     mutationFn: (news: CreateNewsRequest) => newsService.createNews(news),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["hr-news"] });
       showSuccessToast("Tạo tin tức thành công");
+      setCurrentPage(1); // Reset to first page after creating
     },
     onError: () => {
       showErrorToast("Có lỗi xảy ra khi tạo tin tức");
@@ -160,52 +164,63 @@ export default function HRNewsPage() {
           <p>Chưa có tin tức nào</p>
         </div>
       ) : (
-        <NewsGridWithActions>
-          {newsList.map((news) => (
-            <NewsCardWithActions key={news.id}>
-              <div onClick={() => handleViewDetail(news)} style={{ cursor: "pointer", height: "100%" }}>
-                <NewsCard news={news} showStatus={true} />
-              </div>
-              {(canSubmit(news) || canEdit(news)) && (
-                <ActionButtons>
-                  {canEdit(news) && (
-                    <>
+        <>
+          <NewsGridWithActions>
+            {newsList.map((news) => (
+              <NewsCardWithActions key={news.id}>
+                <div onClick={() => handleViewDetail(news)} style={{ cursor: "pointer", height: "100%" }}>
+                  <NewsCard news={news} showStatus={true} />
+                </div>
+                {(canSubmit(news) || canEdit(news)) && (
+                  <ActionButtons>
+                    {canEdit(news) && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEdit(news)}
+                          icon={<Edit size={16} />}
+                          iconPosition="left"
+                        >
+                          Sửa
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDelete(news)}
+                          icon={<Trash2 size={16} />}
+                          iconPosition="left"
+                        >
+                          Xóa
+                        </Button>
+                      </>
+                    )}
+                    {canSubmit(news) && (
                       <Button
                         size="sm"
-                        variant="outline"
-                        onClick={() => handleEdit(news)}
-                        icon={<Edit size={16} />}
+                        variant="primary"
+                        onClick={() => handleSubmit(news)}
+                        icon={<Send size={16} />}
                         iconPosition="left"
                       >
-                        Sửa
+                        Gửi duyệt
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDelete(news)}
-                        icon={<Trash2 size={16} />}
-                        iconPosition="left"
-                      >
-                        Xóa
-                      </Button>
-                    </>
-                  )}
-                  {canSubmit(news) && (
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      onClick={() => handleSubmit(news)}
-                      icon={<Send size={16} />}
-                      iconPosition="left"
-                    >
-                      Gửi duyệt
-                    </Button>
-                  )}
-                </ActionButtons>
-              )}
-            </NewsCardWithActions>
-          ))}
-        </NewsGridWithActions>
+                    )}
+                  </ActionButtons>
+                )}
+              </NewsCardWithActions>
+            ))}
+          </NewsGridWithActions>
+          {newsList.length > 0 && totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={pagination.total}
+              itemsPerPage={ITEMS_PER_PAGE}
+              onPageChange={setCurrentPage}
+            />
+          )}
+        </>
       )}
 
       <CreateNewsModal

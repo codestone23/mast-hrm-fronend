@@ -509,12 +509,6 @@ export const InfoValue = styled.div`
   color: var(--text-primary);
 `;
 
-export const FamilyTable = styled.div`
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  overflow: hidden;
-`;
-
 export const TableHeader = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 80px;

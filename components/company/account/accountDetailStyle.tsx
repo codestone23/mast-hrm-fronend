@@ -27,7 +27,6 @@ export {
   InfoItem,
   InfoLabel,
   InfoValue,
-  FamilyTable,
   TableHeader,
   TableRow,
   TableCell,

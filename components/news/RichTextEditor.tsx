@@ -33,20 +33,35 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const savedSelectionRef = useRef<Range | null>(null);
+  const isInternalUpdateRef = useRef(false);
+  const lastValueRef = useRef<string>(value);
 
   useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== value) {
+    // Only update if value changed from outside (not from user input)
+    if (editorRef.current && !isInternalUpdateRef.current && editorRef.current.innerHTML !== value) {
       const wasFocused = document.activeElement === editorRef.current;
       const selection = window.getSelection();
       const range = selection && selection.rangeCount > 0 ? selection.getRangeAt(0).cloneRange() : null;
       
       editorRef.current.innerHTML = value || "";
+      lastValueRef.current = value || "";
       
       if (wasFocused && editorRef.current && range) {
         // Restore cursor position if we had a valid range
         try {
-          selection?.removeAllRanges();
-          selection?.addRange(range);
+          // Check if range is still valid
+          if (range.startContainer && editorRef.current.contains(range.startContainer)) {
+            selection?.removeAllRanges();
+            selection?.addRange(range);
+          } else {
+            // If range is invalid, place cursor at end
+            const newRange = document.createRange();
+            const newSel = window.getSelection();
+            newRange.selectNodeContents(editorRef.current);
+            newRange.collapse(false);
+            newSel?.removeAllRanges();
+            newSel?.addRange(newRange);
+          }
         } catch {
           // If range is invalid, place cursor at end
           const newRange = document.createRange();
@@ -58,6 +73,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         }
       }
     }
+    // Reset flag after sync
+    isInternalUpdateRef.current = false;
   }, [value]);
 
   const saveSelection = () => {
@@ -114,7 +131,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   const updateContent = () => {
     if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
+      const newContent = editorRef.current.innerHTML;
+      // Only update if content actually changed
+      if (newContent !== lastValueRef.current) {
+        isInternalUpdateRef.current = true;
+        lastValueRef.current = newContent;
+        onChange(newContent);
+      }
     }
   };
 
@@ -205,7 +228,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       <RichTextContent
         ref={editorRef}
         contentEditable={!disabled}
-        onInput={updateContent}
+        onInput={(e) => {
+          e.preventDefault();
+          updateContent();
+        }}
         onBlur={handleEditorBlur}
         onFocus={handleEditorFocus}
         onMouseUp={saveSelection}
@@ -214,7 +240,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         suppressContentEditableWarning
         $hasError={!!error}
         data-placeholder={placeholder}
-        dangerouslySetInnerHTML={{ __html: value || "" }}
       />
       {error && <div style={{ color: "var(--error-500)", fontSize: "0.875rem", marginTop: "0.5rem" }}>{error}</div>}
     </RichTextEditorContainer>

@@ -233,10 +233,6 @@ export const InfoValue = styled.div`
   font-weight: 500;
 `;
 
-export const FamilyTable = styled.div`
-  margin-top: 1rem;
-`;
-
 export const TableHeader = styled.div`
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr 80px;
@@ -289,9 +285,10 @@ export const ActionButton = styled.button<{ $type: 'edit' | 'delete' }>`
 // Skills Section Styles
 export const SkillsContainer = styled.div`
   display: flex;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
   flex-direction: column;
   gap: 16px;
-  margin-bottom: 24px;
 `;
 
 export const SkillCard = styled.div`
@@ -300,6 +297,7 @@ export const SkillCard = styled.div`
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   position: relative;
+  flex-basis: 50%;
 `;
 
 export const SkillCardHeader = styled.div`

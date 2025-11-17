@@ -84,7 +84,7 @@ const PersonalInfoSidebar: React.FC<PersonalInfoSidebarProps> = ({
           {data?.user_information?.name || data?.name}
         </UserName>
         <UserRole>
-          {data?.user_information?.expertise || "N/A"}
+          {data?.user_information?.expertise || "Không có"} 
         </UserRole>
       </UserProfile>
 
@@ -98,7 +98,7 @@ const PersonalInfoSidebar: React.FC<PersonalInfoSidebarProps> = ({
         <DetailItem>
           <DetailLabel>Mã nhân viên</DetailLabel>
           <DetailValue>
-            {data?.user_information?.code || "N/A"}
+            {data?.user_information?.code || "Không có"} 
           </DetailValue>
         </DetailItem>
       </UserDetails>

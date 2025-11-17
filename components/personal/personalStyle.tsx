@@ -264,7 +264,6 @@ export const AttendanceStatus = styled.div`
   border: 1px solid var(--success-200);
   border-radius: var(--radius-md);
   padding: 1rem;
-  margin-bottom: 1rem;
   box-shadow: 0 2px 4px rgba(34, 197, 94, 0.1);
   transition: all 0.2s ease;
   

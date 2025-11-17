@@ -338,7 +338,7 @@ const PersonalInfo = () => {
                         $active={activeTab === "skills"}
                         onClick={() => setActiveTab("skills")}
                     >
-                        SKILL SHEET
+                        THÔNG TIN CÔNG VIỆC
                     </TabItem>
                 </ContentTabs>
 

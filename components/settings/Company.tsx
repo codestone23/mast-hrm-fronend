@@ -146,7 +146,7 @@ const Company: React.FC = () => {
         : null;
       
       // Get position name
-      const position = userWithDetails.position?.name || "N/A";
+      const position = userWithDetails.position?.name || "Không có"; 
       
       // Get user_information for avatar
       const userInfo = Array.isArray(userWithDetails.user_information) 
@@ -156,7 +156,7 @@ const Company: React.FC = () => {
       
       return {
         id: user.id,
-        name: user.name || "N/A",
+        name: user.name || "Không có", 
         email: user.email || "",
         position: position,
         division: divisionName || "Còn lại",
@@ -267,7 +267,7 @@ const Company: React.FC = () => {
                       {visibleEmployees.map((employee, index) => (
                         <EmployeeCard key={`${employee.name}-${index}-${employee.id}`}>
                       <EmployeeAvatar>
-                            {employee.avatar ? (
+                            {(employee.avatar && employee.avatar.includes("https://")) ? (
                               <AvatarImageWrapper>
                                 <Image
                                   src={employee.avatar}
@@ -329,7 +329,7 @@ const Company: React.FC = () => {
           <SidebarCard>
             <SidebarCardTitle>
               <Building size={18} />
-              Division
+              Phòng ban
             </SidebarCardTitle>
             <FilterList>
               {divisions.map((division) => (

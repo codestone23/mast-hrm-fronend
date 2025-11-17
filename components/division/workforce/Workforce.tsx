@@ -5,7 +5,7 @@ import { Button } from "@/components/common";
 import EmployeeList from "./employee/EmployeeList";
 import TeamList from "./team/TeamList";
 
-const Tabs = ["Danh sách nhân sự", "Quản lý team"];
+const Tabs = ["Danh sách nhân sự", "Quản lý đội nhóm"];
 
 const Employee: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>(Tabs[0]);
@@ -36,7 +36,7 @@ const Employee: React.FC = () => {
 
       {activeTab === "Danh sách nhân sự" ? (
         <EmployeeList />
-      ) : activeTab === "Quản lý team" ? (
+      ) : activeTab === "Quản lý đội nhóm" ? (    
         <TeamList />
       ) : (
         <Placeholder>

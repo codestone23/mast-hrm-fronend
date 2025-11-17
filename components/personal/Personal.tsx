@@ -449,11 +449,6 @@ const Personal: React.FC = () => {
 										</div>
                   </div>
                 </StatsGrid>
-                <StatsNewest>
-									<StatsNewestLabel>
-										Cập nhật mới nhất
-									</StatsNewestLabel>
-                </StatsNewest>
               </Card>
 						</DashboardCol>
 					</DashboardCol>

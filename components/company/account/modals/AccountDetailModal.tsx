@@ -39,9 +39,6 @@ import {
   InfoItem,
   InfoLabel,
   InfoValue,
-  FamilyTable,
-  TableHeader,
-  TableRow,
 } from "./modalStyle";
 import { Account } from "@/constants/types";
 
@@ -148,7 +145,7 @@ const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                   $active={activeTab === 'skills'} 
                   onClick={() => setActiveTab('skills')}
                 >
-                  SKILL SHEET
+                  THÔNG TIN CÔNG VIỆC
                 </TabItem>
               </ContentTabs>
 
@@ -216,32 +213,6 @@ const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                         <InfoValue>Chưa cập nhật</InfoValue>
                       </InfoItem>
                     </InfoGrid>
-
-                    <SectionHeader>
-                      <SectionTitle>Thông tin thân nhân</SectionTitle>
-                      <SectionAction>
-                        <Plus size={16} />
-                      </SectionAction>
-                    </SectionHeader>
-
-                    <FamilyTable>
-                      <TableHeader>
-                        <div>Họ và tên</div>
-                        <div>Mối quan hệ</div>
-                        <div>Giới tính</div>
-                        <div>Ngày sinh</div>
-                        <div>Số điện thoại</div>
-                        <div>Người phụ thuộc</div>
-                        <div>Ghi nhận phụ thuộc</div>
-                        <div></div>
-                      </TableHeader>
-                      
-                      <TableRow>
-                        <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-                          Chưa có thông tin thân nhân
-                        </div>
-                      </TableRow>
-                    </FamilyTable>
                   </>
                 )}
 

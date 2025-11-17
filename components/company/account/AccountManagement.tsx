@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Eye, Edit, Trash2, User, Users, Search, Shield } from "lucide-react";
-import { Button, Input, Table, Pagination } from "@/components/common";
+import { Plus, Eye, Edit, Trash2, User, Users, Search, Shield, MoreVertical } from "lucide-react";
+import { Input, Table, Pagination } from "@/components/common";
 import { TableColumn } from "@/components/common/Table/Table";
 import {
   PersonalContainer,
@@ -14,6 +15,13 @@ import {
   IconWrapper,
   DashboardCol,
   CreateButton,
+  ActionMenuContainer,
+  ActionMenuButton,
+  ActionMenuDropdown,
+  ActionMenuList,
+  ActionMenuItem,
+  ActionMenuLink,
+  ActionMenuDivider,
 } from "./accountStyle";
 import CreateAccountModal from "./modals/CreateAccountModal";
 import EditAccountModal from "./modals/EditAccountModal";
@@ -77,6 +85,9 @@ const AccountManagement: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAssignRoleModalOpen, setIsAssignRoleModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPositions, setMenuPositions] = React.useState<Record<string, { rect: DOMRect; position: 'top' | 'bottom' }>>({});
+  const buttonRefs = React.useRef<Record<string, HTMLButtonElement | null>>({});
 
   // Debounce search
   useEffect(() => {
@@ -86,6 +97,27 @@ const AccountManagement: React.FC = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!openMenuId) return;
+      
+      const target = event.target as Node;
+      const clickedOutside = Object.values(buttonRefs.current).every(
+        (ref) => !ref || !ref.contains(target)
+      );
+      
+      if (clickedOutside) {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openMenuId]);
 
   // Query users
   const { data, isLoading, error } = useQuery({
@@ -328,58 +360,110 @@ const AccountManagement: React.FC = () => {
     {
       key: "actions",
       label: "Hành động",
-      width: "300px",
+      width: "100px",
       align: "center",
-      render: (_, row) => (
-        <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleViewDetail(row);
-            }}
-            icon={<Eye size={14} />}
-          >
-            <span style={{ display: "none" }}>Xem</span>
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEdit(row);
-            }}
-            icon={<Edit size={14} />}
-          >
-            <span style={{ display: "none" }}>Sửa</span>
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAssignRole(row);
-            }}
-            icon={<Shield size={14} />}
-            title="Gán vai trò"
-            aria-label="Gán vai trò"
-          >
-            <span style={{ display: "none" }}>Gán vai trò</span>
-          </Button>
-          <Button
-            size="sm"
-            variant="error"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete(row);
-            }}
-            icon={<Trash2 size={14} />}
-          >
-            <span style={{ display: "none" }}>Xóa</span>
-          </Button>
-        </div>
-      ),
+      render: (_, row) => {
+        const menuId = `menu-${row.id}`;
+        const isOpen = openMenuId === menuId;
+        const menuPosition = menuPositions[menuId];
+
+        const handleToggle = (e: React.MouseEvent) => {
+          e.stopPropagation();
+          if (isOpen) {
+            setOpenMenuId(null);
+          } else {
+            const button = buttonRefs.current[menuId];
+            if (button) {
+              const rect = button.getBoundingClientRect();
+              const dropdownHeight = 200; // Approximate height of dropdown
+              const spaceBelow = window.innerHeight - rect.bottom;
+              const spaceAbove = rect.top;
+              const position: 'top' | 'bottom' = spaceBelow < dropdownHeight && spaceAbove > spaceBelow ? 'top' : 'bottom';
+              
+              setMenuPositions(prev => ({
+                ...prev,
+                [menuId]: { rect, position }
+              }));
+              setOpenMenuId(menuId);
+            }
+          }
+        };
+
+        return (
+          <ActionMenuContainer onClick={(e) => e.stopPropagation()}>
+            <ActionMenuButton
+              ref={(el) => {
+                buttonRefs.current[menuId] = el;
+              }}
+              onClick={handleToggle}
+              aria-label="Menu hành động"
+            >
+              <MoreVertical size={18} />
+            </ActionMenuButton>
+            {isOpen && menuPosition && typeof window !== 'undefined' && createPortal(
+              <ActionMenuDropdown 
+                $isOpen={isOpen}
+                $triggerRect={menuPosition.rect}
+                $position={menuPosition.position}
+              >
+                <ActionMenuList>
+                  <ActionMenuItem>
+                    <ActionMenuLink
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(null);
+                        handleViewDetail(row);
+                      }}
+                    >
+                      <Eye size={16} />
+                      <span>Xem chi tiết</span>
+                    </ActionMenuLink>
+                  </ActionMenuItem>
+                  <ActionMenuItem>
+                    <ActionMenuLink
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(null);
+                        handleEdit(row);
+                      }}
+                    >
+                      <Edit size={16} />
+                      <span>Chỉnh sửa</span>
+                    </ActionMenuLink>
+                  </ActionMenuItem>
+                  <ActionMenuItem>
+                    <ActionMenuLink
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(null);
+                        handleAssignRole(row);
+                      }}
+                    >
+                      <Shield size={16} />
+                      <span>Gán vai trò</span>
+                    </ActionMenuLink>
+                  </ActionMenuItem>
+                  <ActionMenuDivider />
+                  <ActionMenuItem>
+                    <ActionMenuLink
+                      $danger
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(null);
+                        handleDelete(row);
+                      }}
+                    >
+                      <Trash2 size={16} />
+                      <span>Xóa tài khoản</span>
+                    </ActionMenuLink>
+                  </ActionMenuItem>
+                </ActionMenuList>
+              </ActionMenuDropdown>,
+              document.body
+            )}
+          </ActionMenuContainer>
+        );
+      },
     },
   ];
 

@@ -250,3 +250,114 @@ export const EmptyText = styled.p`
   color: var(--text-secondary);
   margin: 0;
 `;
+
+export const ActionMenuContainer = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+export const ActionMenuButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-primary);
+
+  &:hover {
+    background-color: var(--background-hover);
+    border-color: var(--primary-500);
+  }
+
+  &:active {
+    background-color: var(--background-secondary);
+  }
+`;
+
+export const ActionMenuDropdown = styled.div.withConfig({
+  shouldForwardProp: (prop) => !prop.startsWith('$'),
+})<{ 
+  $isOpen: boolean;
+  $triggerRect?: DOMRect;
+  $position?: 'top' | 'bottom';
+}>`
+  position: fixed;
+  top: ${({ $triggerRect, $position }) => {
+    if (!$triggerRect) return 'auto';
+    if ($position === 'top') {
+      return `${$triggerRect.top - 4}px`;
+    }
+    return `${$triggerRect.bottom + 4}px`;
+  }};
+  right: ${({ $triggerRect }) => {
+    if (!$triggerRect) return 'auto';
+    return `${window.innerWidth - $triggerRect.right}px`;
+  }};
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-color);
+  min-width: 180px;
+  z-index: 1002;
+  opacity: ${props => props.$isOpen ? 1 : 0};
+  visibility: ${props => props.$isOpen ? 'visible' : 'hidden'};
+  transform: ${({ $isOpen, $position }) => {
+    if (!$isOpen) return 'translateY(-10px)';
+    if ($position === 'top') return 'translateY(-100%)';
+    return 'translateY(0)';
+  }};
+  transition: all 0.2s ease;
+  overflow: hidden;
+`;
+
+export const ActionMenuList = styled.ul`
+  list-style: none;
+  padding: 4px 0;
+  margin: 0;
+`;
+
+export const ActionMenuItem = styled.li`
+  padding: 0;
+  margin: 0;
+`;
+
+export const ActionMenuLink = styled.button<{ $danger?: boolean }>`
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: ${props => props.$danger ? 'var(--error-600)' : 'var(--text-primary)'};
+  font-size: 14px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.$danger ? 'var(--error-50)' : 'var(--background-hover)'};
+    color: ${props => props.$danger ? 'var(--error-700)' : 'var(--primary-600)'};
+  }
+
+  &:active {
+    background-color: ${props => props.$danger ? 'var(--error-100)' : 'var(--background-secondary)'};
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+`;
+
+export const ActionMenuDivider = styled.div`
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 0;
+`;

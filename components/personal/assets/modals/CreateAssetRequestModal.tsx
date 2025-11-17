@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
 import {
@@ -20,7 +20,7 @@ import {
   SaveButton,
 } from "@/components/hr/asset/modals/modalStyle";
 import { AssetCategory, AssetStatus } from "@/constants/enums";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import assetsService from "@/services/assets.service";
 import { useToast } from "@/hooks/useToast";
 import { Select, DatePicker } from "@/components/common";
@@ -51,6 +51,8 @@ const CreateAssetRequestModal: React.FC<CreateAssetRequestModalProps> = ({
   const queryClient = useQueryClient();
   const { user } = useAuthContext();
   const [error, setError] = useState("");
+  const [assetSearchTerm, setAssetSearchTerm] = useState("");
+  const [debouncedAssetSearch, setDebouncedAssetSearch] = useState("");
 
   const {
     register,
@@ -76,25 +78,62 @@ const CreateAssetRequestModal: React.FC<CreateAssetRequestModalProps> = ({
   const assetIdValue = watch("asset_id");
   const expectedDateValue = watch("expected_date");
 
-  // Fetch available assets
-  const { data: availableAssetsData, isLoading: isLoadingAssets } = useQuery({
-    queryKey: ['available-assets'],
-    queryFn: () => assetsService.getListAssets({
-      status: AssetStatus.AVAILABLE,
-      limit: 100, // Get more assets for selection
-    }),
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedAssetSearch(assetSearchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [assetSearchTerm]);
+
+  // Reset search when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setAssetSearchTerm("");
+      setDebouncedAssetSearch("");
+    }
+  }, [isOpen]);
+
+  // Fetch available assets with infinite query
+  const {
+    data: availableAssetsData,
+    isLoading: isLoadingAssets,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['available-assets', debouncedAssetSearch],
+    queryFn: ({ pageParam = 1 }) =>
+      assetsService.getListAssets({
+        status: AssetStatus.AVAILABLE,
+        page: pageParam,
+        limit: 20,
+        search: debouncedAssetSearch || undefined,
+      }),
     enabled: isOpen, // Only fetch when modal is open
+    getNextPageParam: (lastPage) => {
+      const totalPages = lastPage.pagination?.total_pages || 0;
+      const currentPage = lastPage.pagination?.current_page || 1;
+      return currentPage < totalPages ? currentPage + 1 : undefined;
+    },
+    initialPageParam: 1,
   });
 
-  const availableAssets = availableAssetsData?.data || [];
+  const availableAssets = useMemo(
+    () => availableAssetsData?.pages.flatMap((page) => page.data || []) || [],
+    [availableAssetsData]
+  );
 
-  const assetOptions = [
-    { value: "", label: "Không chọn (yêu cầu mới)" },
-    ...availableAssets.map((asset: Asset) => ({
-      value: String(asset.id),
-      label: `${asset.asset_code || asset.code || "N/A"} - ${asset.name}`,
-    })),
-  ];
+  const assetOptions = useMemo(
+    () => [
+      { value: "", label: "Không chọn (yêu cầu mới)" },
+      ...availableAssets.map((asset: Asset) => ({
+        value: String(asset.id),
+        label: `${asset.asset_code || asset.code || "Không có"} - ${asset.name}`, 
+      })),
+    ],
+    [availableAssets]
+  );
 
   const createRequestMutation = useMutation({
     mutationFn: (data: RequestFormData) =>
@@ -276,6 +315,12 @@ const CreateAssetRequestModal: React.FC<CreateAssetRequestModalProps> = ({
                     }}
                     placeholder="Chọn tài sản (tùy chọn)"
                     fullWidth
+                    searchable={true}
+                    onSearchChange={setAssetSearchTerm}
+                    hasNextPage={hasNextPage}
+                    isFetchingNextPage={isFetchingNextPage}
+                    fetchNextPage={fetchNextPage}
+                    loadingText="Đang tải thêm tài sản..."
                     disabled={isSubmitting || createRequestMutation.isPending || isLoadingAssets}
                   />
                   {isLoadingAssets && (

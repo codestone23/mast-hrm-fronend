@@ -93,7 +93,7 @@ const ListAssetRequests: React.FC<ListAssetRequestsProps> = ({
     <RequestList>
       {requests.map((request) => {
         return (
-          <RequestItem key={request.id} $status={request.status}>
+          <RequestItem key={request.id} $status={request.status as REQUEST_STATUS}>
             <RequestHeader>
               <div style={{ flex: 1 }}>
                 <RequestTitle>{request.asset?.name || request.description || "Yêu cầu tài sản"}</RequestTitle>
@@ -130,7 +130,7 @@ const ListAssetRequests: React.FC<ListAssetRequestsProps> = ({
                   Ngày yêu cầu:{" "}
                   {request.created_at
                     ? new Date(request.created_at).toLocaleDateString("vi-VN")
-                    : request.requestedAt || "N/A"}
+                    : request.requestedAt || "Không có"}
                 </span>
               </RequestMetaItem>
               {request.asset && (

@@ -24,10 +24,9 @@ import EditAssetModal from "./modals/EditAssetModal";
 import AssetDetailModal from "./modals/AssetDetailModal";
 import ConfirmDeleteModal from "./modals/ConfirmDeleteModal";
 import AssignAssetModal from "./modals/AssignAssetModal";
-import Pagination from "./Pagination";
 import ListAssetRequests from "./ListAssetRequests";
 import assetsService, { GetAssetsParams } from "@/services/assets.service";
-import { Select, Input, Table, TableColumn, Loading } from "@/components/common";
+import { Select, Input, Table, TableColumn, Loading, Pagination } from "@/components/common";
 import { useToast } from "@/hooks/useToast";
 
 const ITEMS_PER_PAGE = 10;
@@ -68,8 +67,6 @@ const AssetManagement: React.FC = () => {
     ...(debouncedSearch && { search: debouncedSearch }),
     ...(categoryFilter && { category: categoryFilter }),
     ...(statusFilter && { status: statusFilter }),
-    sort_by: "created_at",
-    sort_order: "desc",
   }), [currentPage, debouncedSearch, categoryFilter, statusFilter]);
 
   const { data: assetsData, isLoading: isLoadingAssets } = useQuery({
@@ -385,7 +382,7 @@ const AssetManagement: React.FC = () => {
             </div>
           </UserInfo>
         ) : (
-          <span style={{ color: "#9ca3af" }}>-</span>
+          <span style={{ color: "#9ca3af" }}>Chưa có người sử dụng</span>
         );
       },
     },
@@ -521,6 +518,8 @@ const AssetManagement: React.FC = () => {
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
+                totalItems={pagination.total}
+                itemsPerPage={ITEMS_PER_PAGE}
                 onPageChange={setCurrentPage}
               />
             )}
@@ -552,6 +551,8 @@ const AssetManagement: React.FC = () => {
                     <Pagination
                       currentPage={currentRequestPage}
                       totalPages={totalRequestPages}
+                      totalItems={requestPagination.total}
+                      itemsPerPage={ITEMS_PER_PAGE}
                       onPageChange={setCurrentRequestPage}
                     />
                   )}

@@ -116,7 +116,25 @@ export const SelectDropdown = styled.div.withConfig({
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   max-height: 200px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+`;
+
+export const SelectSearchContainer = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 0.5rem;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+`;
+
+export const SelectOptionsContainer = styled.div`
   overflow-y: auto;
+  flex: 1;
+  min-height: 0;
   
   /* Custom scrollbar */
   &::-webkit-scrollbar {

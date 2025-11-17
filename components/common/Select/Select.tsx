@@ -10,6 +10,8 @@ import {
   SelectValue,
   SelectIcon,
   SelectDropdown,
+  SelectSearchContainer,
+  SelectOptionsContainer,
   SelectOption,
   ErrorMessage,
   HelperText
@@ -35,6 +37,7 @@ export interface SelectProps {
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   searchable?: boolean;
+  onSearchChange?: (searchTerm: string) => void;
   className?: string;
   id?: string;
   // Infinite scroll props
@@ -58,6 +61,7 @@ const Select: React.FC<SelectProps> = ({
   size = 'md',
   fullWidth = true,
   searchable = false,
+  onSearchChange,
   className,
   id,
   hasNextPage = false,
@@ -129,7 +133,9 @@ const Select: React.FC<SelectProps> = ({
 
   const selectedOption = options.find(option => option.value === selectedValue);
   
-  const filteredOptions = searchable 
+  // If onSearchChange is provided, don't filter client-side (server-side search)
+  // Otherwise, filter client-side
+  const filteredOptions = searchable && !onSearchChange
     ? options.filter(option => 
         option.label.toLowerCase().includes(searchTerm.toLowerCase())
       )
@@ -217,13 +223,17 @@ const Select: React.FC<SelectProps> = ({
         {isOpen && createPortal(
           <SelectDropdown ref={dropdownRef} $triggerRect={triggerRect || undefined} role="listbox">
             {searchable && (
-              <div style={{ padding: '0.5rem' }}>
+              <SelectSearchContainer>
                 <input
                   ref={searchInputRef}
                   type="text"
                   placeholder="Tìm kiếm..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    const newSearchTerm = e.target.value;
+                    setSearchTerm(newSearchTerm);
+                    onSearchChange?.(newSearchTerm);
+                  }}
                   style={{
                     width: '100%',
                     padding: '0.5rem',
@@ -233,58 +243,60 @@ const Select: React.FC<SelectProps> = ({
                     outline: 'none'
                   }}
                 />
-              </div>
+              </SelectSearchContainer>
             )}
             
-            {filteredOptions.length === 0 ? (
-              <div style={{ padding: '0.75rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                Không có tùy chọn nào
-              </div>
-            ) : (
-              <>
-                {filteredOptions.map((option) => (
-                  <SelectOption
-                    key={`${option.value}-${option.label}`}
-                    disabled={option.disabled}
-                    selected={option.value === selectedValue}
-                    onClick={() => handleSelect(option)}
-                    role="option"
-                    aria-selected={option.value === selectedValue}
-                  >
-                    <span>{option.label}</span>
-                    {option.value === selectedValue && (
-                      <Check size={16} />
-                    )}
-                  </SelectOption>
-                ))}
-                
-                {/* Sentinel element for infinite scroll */}
-                {hasNextPage && (
-                  <div 
-                    ref={sentinelRef}
-                    style={{ 
-                      height: '1px', 
-                      marginTop: '8px',
-                      visibility: 'hidden'
-                    }}
-                  />
-                )}
-                
-                {/* Loading indicator for infinite scroll */}
-                {isFetchingNextPage && (
-                  <div style={{ 
-                    padding: '0.75rem', 
-                    textAlign: 'center', 
-                    color: 'var(--text-muted)', 
-                    fontSize: '0.875rem',
-                    borderTop: '1px solid var(--border)',
-                    marginTop: '4px'
-                  }}>
-                    {loadingText}
-                  </div>
-                )}
-              </>
-            )}
+            <SelectOptionsContainer>
+              {filteredOptions.length === 0 ? (
+                <div style={{ padding: '0.75rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                  Không có tùy chọn nào
+                </div>
+              ) : (
+                <>
+                  {filteredOptions.map((option, index) => (
+                    <SelectOption
+                      key={`${option.value}-${option.label}-${index}`}
+                      disabled={option.disabled}
+                      selected={option.value === selectedValue}
+                      onClick={() => handleSelect(option)}
+                      role="option"
+                      aria-selected={option.value === selectedValue}
+                    >
+                      <span>{option.label}</span>
+                      {option.value === selectedValue && (
+                        <Check size={16} />
+                      )}
+                    </SelectOption>
+                  ))}
+                  
+                  {/* Sentinel element for infinite scroll */}
+                  {hasNextPage && (
+                    <div 
+                      ref={sentinelRef}
+                      style={{ 
+                        height: '1px', 
+                        marginTop: '8px',
+                        visibility: 'hidden'
+                      }}
+                    />
+                  )}
+                  
+                  {/* Loading indicator for infinite scroll */}
+                  {isFetchingNextPage && (
+                    <div style={{ 
+                      padding: '0.75rem', 
+                      textAlign: 'center', 
+                      color: 'var(--text-muted)', 
+                      fontSize: '0.875rem',
+                      borderTop: '1px solid var(--border)',
+                      marginTop: '4px'
+                    }}>
+                      {loadingText}
+                    </div>
+                  )}
+                </>
+              )}
+            </SelectOptionsContainer>
           </SelectDropdown>,
           document.body
         )}

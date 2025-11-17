@@ -25,7 +25,6 @@ const masterDataItems: MasterDataItem[] = [
   { id: "position", name: "Vị trí (Position)", icon: <Briefcase size={20} /> },
   { id: "roles", name: "Vai trò (Roles)", icon: <Shield size={20} /> },
   { id: "language", name: "Ngôn ngữ (Language)", icon: <Languages size={20} /> },
-  { id: "salary", name: "Lương (Salary)", icon: <DollarSign size={20} /> },
 ];
 
 const Settings: React.FC = () => {
@@ -33,7 +32,7 @@ const Settings: React.FC = () => {
   const [activeItem, setActiveItem] = useState<string>("level");
 
   const tabs = [
-    { id: "master-data", label: "Master Data", icon: <Settings2 size={20} /> },
+    { id: "master-data", label: "Dữ liệu chính", icon: <Settings2 size={20} /> },
     { id: "system", label: "Hệ thống", icon: <Users size={20} /> },
   ];
 

@@ -24,7 +24,7 @@ import { Loading } from "@/components/common";
 const modules: Module[] = [
     {
         id: "personal",
-        name: "Personal",
+        name: "Cá nhân",
         description: "Quản lý thông tin cá nhân và hồ sơ nhân viên",
         icon: Users,
         color: "#3b82f6",
@@ -41,7 +41,7 @@ const modules: Module[] = [
     },
     {
         id: "hr",
-        name: "HR",
+        name: "Nhân sự",
         description: "Quản lý tài sản và thống kê",
         icon: UserCheck,
         color: "#f59e0b",
@@ -50,7 +50,7 @@ const modules: Module[] = [
     },
     {
         id: "division",
-        name: "Division",
+        name: "Phòng ban",
         description: "Quản lý phòng ban và cơ cấu tổ chức",
         icon: Building2,
         color: "#ef4444",
@@ -59,7 +59,7 @@ const modules: Module[] = [
     },
     {
         id: "company",
-        name: "Company",
+        name: "Công ty",
         description: "Quản lý công ty và cấu hình hệ thống",
         icon: Briefcase,
         color: "#8b5cf6",
@@ -68,7 +68,7 @@ const modules: Module[] = [
     },
     {
         id: "settings",
-        name: "Settings",
+        name: "Cài đặt",
         description: "Cài đặt hệ thống và cấu hình",
         icon: Settings,
         color: "#6b7280",

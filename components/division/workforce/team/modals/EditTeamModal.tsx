@@ -31,7 +31,7 @@ const EditTeamModal: React.FC<Props> = ({ isOpen, onClose, team, onSave }) => {
       setData({
         name: team.name,
         foundingDate: team.founding_date,
-        managerId: team.manager.id,
+        leaderId: team.manager.id || 0,
       });
     }
   }, [team, isOpen]);
@@ -95,9 +95,9 @@ const EditTeamModal: React.FC<Props> = ({ isOpen, onClose, team, onSave }) => {
           <Col>
             <Label>Người quản lý *</Label>
             <Select
-              value={data?.managerId || ""}
+              value={data?.leaderId || ""}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                updateField("managerId", e.target.value)
+                updateField("leaderId", Number(e.target.value))
               }
             >
               <option value="">-- Chọn --</option>

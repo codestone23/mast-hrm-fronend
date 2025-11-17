@@ -13,10 +13,12 @@ export interface PaginatedResponse<T> {
   message: string;
   data: T[];
   pagination: {
-    current_page: number;
-    total_pages: number;
+    page: number;
+    totalPages: number;
     total: number;
     limit: number;
+    total_pages: number;
+    current_page: number;
   };
 }
 
@@ -593,13 +595,13 @@ export interface DivisionTeamDetailData {
 
 export interface DivisionTeamCreateRequest {
   divisionId: number,
-  managerId: number,
+  leaderId: number, 
   name: string,
   foundingDate: string
 }
 
 export interface DivisionTeamUpdateRequest {
-  managerId: number,
+  leaderId: number,
   name: string,
   foundingDate: string
 }

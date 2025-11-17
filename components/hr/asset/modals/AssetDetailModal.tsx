@@ -81,7 +81,7 @@ const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                 <Package size={20} />
               </IconWrapper>
               <DetailLabel>Mã tài sản:</DetailLabel>
-              <DetailValue>{asset.asset_code || asset.code || "N/A"}</DetailValue>
+              <DetailValue>{asset.asset_code || asset.code || "Không có"}</DetailValue> 
             </DetailField>
 
             <DetailField>
@@ -103,7 +103,7 @@ const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                 <Tag size={20} />
               </IconWrapper>
               <DetailLabel>Danh mục:</DetailLabel>
-              <DetailValue>{asset.category || "N/A"}</DetailValue>
+              <DetailValue>{asset.category || "Không có"}</DetailValue>
             </DetailField>
 
             {asset.purchase_date && (

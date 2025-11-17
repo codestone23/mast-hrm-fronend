@@ -31,7 +31,7 @@ class CompanyService {
   async createDepartment(departmentData: {
     name: string;
     description?: string;
-    managerId?: string;
+    managerId?: string; 
   }): Promise<ApiResponse<Department>> {
     const response = await axiosInstance.post('company/departments', departmentData);
     return response.data;

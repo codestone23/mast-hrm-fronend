@@ -1,55 +1,44 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { useRouter } from "next/navigation";
-import { Input, Pagination, Loading } from "@/components/common";
-import { Users, Edit, Trash2 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Input, Pagination, Table, TableColumn, Button, ConfirmDeleteModal } from "@/components/common";
+import { Users, Edit, Trash2, Plus, Eye } from "lucide-react";
 import Image from "next/image";
 import AddTeamModal from "./modals/AddTeamModal";
 import EditTeamModal from "./modals/EditTeamModal";
 import {
   Container,
   ContentContainer,
-  CreateButton,
-  TeamTable,
-  TableHeader,
-  TableRow,
-  TableCell,
   UserInfo,
   Avatar,
   UserName,
-  ActionButton,
-  Actions,
-  EmptyState,
-  EmptyIcon,
-  EmptyText,
 } from "./teamListStyle";
-import {
-  useDivisionTeams,
-  useCreateTeam,
-  useUpdateTeam,
-  useDeleteTeam,
-} from "@/hooks/useDivisionWorkforce";
+import divisionWorkforceService from "@/services/division_workforce.service";
 import { DivisionTeamData, DivisionTeamUpdateRequest, DivisionTeamCreateRequest } from "@/types/api";
 import { useToast } from "@/hooks/useToast";
 
+const ITEMS_PER_PAGE = 10;
+
 const TeamList: React.FC = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const selectedDivisionId = useSelector(
     (state: RootState) => state.division.selectedDivisionId
   );
-  const { success, error: showError } = useToast();
+  const { success: showSuccessToast, error: showErrorToast } = useToast();
 
-  const [open, setOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [editing, setEditing] = useState<DivisionTeamData | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<DivisionTeamData | null>(null);
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
   const [sortBy] = useState("id");
   const [sortOrder] = useState("asc");
 
@@ -61,53 +50,93 @@ const TeamList: React.FC = () => {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { data, isLoading, error } = useDivisionTeams(
-    selectedDivisionId,
-    debouncedSearch,
-    page,
-    limit,
-    sortBy,
-    sortOrder
-  );
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["division-workforce", "teams", selectedDivisionId, debouncedSearch, page, ITEMS_PER_PAGE, sortBy, sortOrder],
+    queryFn: () =>
+      divisionWorkforceService.getTeams(
+        selectedDivisionId!,
+        debouncedSearch,
+        page,
+        ITEMS_PER_PAGE,
+        sortBy,
+        sortOrder
+      ),
+    enabled: !!selectedDivisionId,
+  });
 
-  const createTeamMutation = useCreateTeam();
-  const updateTeamMutation = useUpdateTeam(editing?.id || 0);
-  const deleteTeamMutation = useDeleteTeam();
+  const teams = data?.data || [];
+  const pagination = data?.pagination || {
+    total: 0,
+    current_page: 1,
+    total_pages: 1,
+    limit: ITEMS_PER_PAGE,
+  };
+  const totalPages = pagination.total_pages || 1;
+
+  const createTeamMutation = useMutation({
+    mutationFn: (formData: DivisionTeamCreateRequest) =>
+      divisionWorkforceService.createTeam(formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["division-workforce", "teams"] });
+      showSuccessToast("Tạo team thành công");
+      setIsCreateModalOpen(false);
+      setPage(1);
+    },
+    onError: () => {
+      showErrorToast("Không thể tạo team");
+    },
+  });
+
+  const updateTeamMutation = useMutation({
+    mutationFn: ({ teamId, data }: { teamId: number; data: DivisionTeamUpdateRequest }) =>
+      divisionWorkforceService.updateTeam(teamId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["division-workforce", "teams"] });
+      queryClient.invalidateQueries({ queryKey: ["division-workforce", "team"] });
+      showSuccessToast("Cập nhật team thành công");
+      setIsEditModalOpen(false);
+      setSelectedTeam(null);
+    },
+    onError: () => {
+      showErrorToast("Không thể cập nhật team");
+    },
+  });
+
+  const deleteTeamMutation = useMutation({
+    mutationFn: (teamId: number) => divisionWorkforceService.deleteTeam(teamId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["division-workforce", "teams"] });
+      showSuccessToast("Xóa team thành công");
+      setIsDeleteModalOpen(false);
+      setSelectedTeam(null);
+    },
+    onError: () => {
+      showErrorToast("Không thể xóa team");
+    },
+  });
 
   const handleCreate = async (formData: DivisionTeamCreateRequest) => {
-    try {
-      await createTeamMutation.mutateAsync(formData);
-      success("Tạo team thành công");
-      setOpen(false);
-    } catch {
-      showError("Không thể tạo team");
-    }
+    await createTeamMutation.mutateAsync(formData);
   };
 
-  const handleEditSave = async (formData: DivisionTeamUpdateRequest) => {
-    if (!editing) return;
-    try {
-      await updateTeamMutation.mutateAsync(formData);
-      success("Cập nhật team thành công");
-      setEditOpen(false);
-      setEditing(null);
-    } catch {
-      showError("Không thể cập nhật team");
-    }
+  const handleEdit = (team: DivisionTeamData) => {
+    setSelectedTeam(team);
+    setIsEditModalOpen(true);
   };
 
-  const openEdit = (e: React.MouseEvent, team: DivisionTeamData) => {
-    e.stopPropagation();
-    setEditing(team);
-    setEditOpen(true);
+  const handleUpdate = async (formData: DivisionTeamUpdateRequest) => {
+    if (!selectedTeam) return;
+    await updateTeamMutation.mutateAsync({ teamId: selectedTeam.id, data: formData });
   };
 
-  const handleDeleteTeam = async (teamId: number) => {
-    try {
-      await deleteTeamMutation.mutateAsync(teamId);
-      success("Xóa team thành công");
-    } catch {
-      showError("Không thể xóa team");
+  const handleDeleteClick = (team: DivisionTeamData) => {
+    setSelectedTeam(team);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedTeam) {
+      deleteTeamMutation.mutate(selectedTeam.id);
     }
   };
 
@@ -120,13 +149,143 @@ const TeamList: React.FC = () => {
     }
   };
 
+  const formatResourceByLevel = (resourceByLevel: unknown) => {
+    if (!resourceByLevel) return "-";
+    try {
+      if (typeof resourceByLevel === "string") {
+        return resourceByLevel;
+      }
+      return JSON.stringify(resourceByLevel);
+    } catch {
+      return "-";
+    }
+  };
+
+  const teamColumns: TableColumn<DivisionTeamData>[] = useMemo(() => [
+    {
+      key: "id",
+      label: "STT",
+      width: "80px",
+      align: "center",
+    },
+    {
+      key: "name",
+      label: "Tên team",
+      width: "2fr",
+      render: (_, row) => (
+        <div style={{ fontWeight: 500 }}>{row.name}</div>
+      ),
+    },
+    {
+      key: "manager",
+      label: "Người quản lý",
+      width: "1.5fr",
+      render: (_, row) => (
+        <UserInfo>
+          <Avatar>
+            {row.manager.avatar ? (
+              <Image src={row.manager.avatar} alt={row.manager.name} width={40} height={40} />
+            ) : (
+              <span>{row.manager.name.charAt(0)}</span>
+            )}
+          </Avatar>
+          <UserName>{row.manager.name}</UserName>
+        </UserInfo>
+      ),
+    },
+    {
+      key: "member_count",
+      label: "Số lượng thành viên",
+      width: "1fr",
+      align: "center",
+    },
+    {
+      key: "resource_by_level",
+      label: "Resource theo level",
+      width: "1.5fr",
+      render: (_, row) => formatResourceByLevel(row.resource_by_level),
+    },
+    {
+      key: "active_projects",
+      label: "Dự án đang hoạt động",
+      width: "1fr",
+      align: "center",
+    },
+    {
+      key: "created_at",
+      label: "Ngày thành lập",
+      width: "1fr",
+      render: (_, row) => formatDate(row.created_at),
+    },
+    {
+      key: "actions",
+      label: "Hành động",
+      width: "150px",
+      align: "center",
+      render: (_, row) => (
+        <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/division/workforce/team/${row.id}`);
+            }}
+            icon={<Eye size={16} />}
+            title="Xem chi tiết"
+          >
+            <span style={{ width: 0, height: 0, overflow: "hidden" }}>Xem</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit(row);
+            }}
+            icon={<Edit size={16} />}
+            title="Sửa"
+          >
+            <span style={{ width: 0, height: 0, overflow: "hidden" }}>Sửa</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteClick(row);
+            }}
+            icon={<Trash2 size={16} />}
+            title="Xóa"
+          >
+            <span style={{ width: 0, height: 0, overflow: "hidden" }}>Xóa</span>
+          </Button>
+        </div>
+      ),
+    },
+  ], [router]);
+
+  const emptyStateMessage = useMemo(() => {
+    if (!selectedDivisionId) {
+      return "Vui lòng chọn phòng ban";
+    }
+    if (debouncedSearch) {
+      return "Không tìm thấy team nào";
+    }
+    return "Chưa có team nào";
+  }, [selectedDivisionId, debouncedSearch]);
+
   return (
     <Container>
       <ContentContainer>
         <div style={{ marginBottom: "12px", display: "flex", gap: "12px", alignItems: "flex-end" }}>
-          <CreateButton onClick={() => setOpen(true)}>
-            + Tạo team
-          </CreateButton>
+          <Button
+            onClick={() => setIsCreateModalOpen(true)}
+            icon={<Plus size={18} />}
+            iconPosition="left"
+          >
+            Tạo team
+          </Button>
           
           <div style={{ flex: 1 }}>
             <Input
@@ -138,115 +297,61 @@ const TeamList: React.FC = () => {
           </div>
         </div>
 
-        <TeamTable>
-          <TableHeader>
-            <TableCell>STT</TableCell>
-            <TableCell>Tên team</TableCell>
-            <TableCell>Người quản lý</TableCell>
-            <TableCell>Số lượng thành viên</TableCell>
-            <TableCell>Resource theo level</TableCell>
-            <TableCell>Dự án đang hoạt động</TableCell>
-            <TableCell>Ngày thành lập</TableCell>
-            <TableCell>Hành động</TableCell>
-          </TableHeader>
-          {isLoading ? (
-            <EmptyState>
-              <Loading />
-            </EmptyState>
-          ) : error || !selectedDivisionId ? (
-            <EmptyState>
-              <EmptyIcon>
-                <Users size={48} />
-              </EmptyIcon>
-              <EmptyText>
-                {!selectedDivisionId
-                  ? "Vui lòng chọn phòng ban"
-                  : "Không thể tải dữ liệu"}
-              </EmptyText>
-            </EmptyState>
-          ) : !data || data.data.length === 0 ? (
-            <EmptyState>
-              <EmptyIcon>
-                <Users size={48} />
-              </EmptyIcon>
-              <EmptyText>
-                {debouncedSearch
-                  ? "Không tìm thấy team nào"
-                  : "Chưa có team nào"}
-              </EmptyText>
-            </EmptyState>
-          ) : (
-            data.data.map((t) => (
-              <TableRow
-                key={t.id}
-                onClick={() => router.push(`/division/workforce/team/${t.id}`)}
-              >
-                <TableCell>{t.id}</TableCell>
-                <TableCell>
-                  <div style={{ fontWeight: 500 }}>{t.name}</div>
-                </TableCell>
-                <TableCell>
-                  <UserInfo>
-                    <Avatar>
-                      {t.manager.avatar ? (
-                        <Image src={t.manager.avatar} alt={t.manager.name} width={40} height={40} />
-                      ) : (
-                        <span>{t.manager.name.charAt(0)}</span>
-                      )}
-                    </Avatar>
-                    <UserName>{t.manager.name}</UserName>
-                  </UserInfo>
-                </TableCell>
-                <TableCell>{t.member_count}</TableCell>
-                <TableCell>
-                  {t.resource_by_level ? JSON.stringify(t.resource_by_level) : "-"}
-                </TableCell>
-                <TableCell>{t.active_projects}</TableCell>
-                <TableCell>{formatDate(t.created_at)}</TableCell>
-                <TableCell>
-                  <Actions>
-                    <ActionButton
-                      $variant="edit"
-                      title="Edit"
-                      onClick={(e) => openEdit(e, t)}
-                    >
-                      <Edit size={16} />
-                    </ActionButton>
-                    <ActionButton
-                      $variant="delete"
-                      title="Delete"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteTeam(t.id);
-                      }}
-                    >
-                      <Trash2 size={16} />
-                    </ActionButton>
-                  </Actions>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TeamTable>
-        {data && data.data.length > 0 && data.pagination.total_pages > 1 && (
+        <Table
+          columns={teamColumns}
+          data={teams}
+          loading={isLoading}
+          error={error as Error | null}
+          emptyState={{
+            icon: <Users size={48} />,
+            message: emptyStateMessage,
+          }}
+          onRowClick={(row) => router.push(`/division/workforce/team/${row.id}`)}
+          rowKey="id"
+        />
+
+        {teams.length > 0 && totalPages > 1 && (
           <Pagination
             currentPage={page}
-            totalPages={data.pagination.total_pages}
-            totalItems={data.pagination.total}
-            itemsPerPage={limit}
+            totalPages={totalPages}
+            totalItems={pagination.total}
+            itemsPerPage={ITEMS_PER_PAGE}
             onPageChange={setPage}
-            showInfo={true}
           />
         )}
       </ContentContainer>
 
       <AddTeamModal
-        isOpen={open}
-        onClose={() => setOpen(false)}
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
         onSave={handleCreate}
         divisionId={selectedDivisionId || 0}
       />
-      <EditTeamModal isOpen={editOpen} onClose={() => setEditOpen(false)} team={editing} onSave={handleEditSave} />
+
+      {selectedTeam && (
+        <>
+          <EditTeamModal
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setSelectedTeam(null);
+            }}
+            team={selectedTeam}
+            onSave={handleUpdate}
+          />
+
+          <ConfirmDeleteModal
+            isOpen={isDeleteModalOpen}
+            onClose={() => {
+              setIsDeleteModalOpen(false);
+              setSelectedTeam(null);
+            }}
+            onConfirm={handleConfirmDelete}
+            title="Xóa team"
+            message={`Bạn có chắc chắn muốn xóa team "${selectedTeam.name}"?`}
+          />
+        </>
+      )}
     </Container>
   );
 };

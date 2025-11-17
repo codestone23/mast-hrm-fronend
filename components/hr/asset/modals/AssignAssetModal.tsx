@@ -56,7 +56,6 @@ const AssignAssetModal: React.FC<AssignAssetModalProps> = ({
     getNextPageParam: (lastPage) => {
       const totalPages = lastPage.pagination?.total_pages || 0;
       const currentPage = lastPage.pagination?.current_page || 1;
-      console.log(currentPage, "currentPage", totalPages);
       return currentPage < totalPages ? currentPage + 1 : undefined;
     },
     initialPageParam: 1,
@@ -148,7 +147,7 @@ const AssignAssetModal: React.FC<AssignAssetModalProps> = ({
                   const userInfo = Array.isArray(user.user_information) 
                     ? null 
                     : user.user_information as { name?: string; avatar?: string } | null;
-                  const userName = userInfo?.name || user.name || "N/A";
+                  const userName = userInfo?.name || user.name || "Không có";
                   const userAvatar = userInfo?.avatar || "";
                   const isSelected = selectedUserId === user.id;
 

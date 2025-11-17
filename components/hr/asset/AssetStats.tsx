@@ -44,8 +44,6 @@ const AssetStats: React.FC = () => {
         queryFn: () => assetsService.getAssetsStatistics(),
     });
 
-    console.log(data);
-
     const stats = data || {
         assets: {
             total: 0,

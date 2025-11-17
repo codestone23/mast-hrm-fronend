@@ -25,7 +25,7 @@ export default function Layout({
   const isAdminOrSuperAdmin = userRoleNames?.includes(ROLE_NAMES.ADMIN);
 
   const navItems = [
-    { id: ROUTERS.DIVISION.BASE, label: "Dashboard" },
+    { id: ROUTERS.DIVISION.BASE, label: "Tổng quan" },
     { id: ROUTERS.DIVISION.WORKFORCE, label: "Quản lý nhân sự" },
   ];
 

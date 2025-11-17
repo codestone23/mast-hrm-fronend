@@ -53,8 +53,6 @@ const MyRequestsList: React.FC<MyRequestsListProps> = ({ onRequestClick }) => {
 
     const { data, isLoading } = useMyRequests(filters);
 
-    console.log(data);
-
     const handleFilterChange = (key: string, value: string | number) => {
         setFilters((prev) => ({
             ...prev,

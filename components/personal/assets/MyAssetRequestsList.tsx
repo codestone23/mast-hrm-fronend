@@ -86,7 +86,7 @@ const MyAssetRequestsList: React.FC<MyAssetRequestsListProps> = ({ requests }) =
       {requests.map((request) => {
         const statusColor = getStatusColor(request.status);
         return (
-          <RequestItem key={request.id} $status={request.status}>
+          <RequestItem key={request.id} $status={request.status as REQUEST_STATUS}> 
             <RequestHeader>
               <div style={{ flex: 1 }}>
                 <RequestTitle>
@@ -126,7 +126,7 @@ const MyAssetRequestsList: React.FC<MyAssetRequestsListProps> = ({ requests }) =
                     <span>
                       {request.expected_date
                         ? new Date(request.expected_date).toLocaleDateString("vi-VN")
-                        : "N/A"}
+                        : "Không có"} 
                     </span>
                   </div>
                 </div>
@@ -145,7 +145,7 @@ const MyAssetRequestsList: React.FC<MyAssetRequestsListProps> = ({ requests }) =
                   Ngày tạo:{" "}
                   {request.created_at
                     ? new Date(request.created_at).toLocaleDateString("vi-VN")
-                    : "N/A"}
+                    : "Không có"} 
                 </span>
               </RequestMetaItem>
               {request.asset && (

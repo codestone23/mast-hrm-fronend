@@ -8,8 +8,6 @@ export interface GetAssetsParams {
     search?: string;
     category?: string;
     status?: string;
-    sort_by?: string;
-    sort_order?: "asc" | "desc";
 }
 
 class AssetsService {
@@ -31,8 +29,6 @@ class AssetsService {
                 ...(params.search && { search: params.search }),
                 ...(params.category && { category: params.category }),
                 ...(params.status && { status: params.status }),
-                ...(params.sort_by && { sort_by: params.sort_by }),
-                ...(params.sort_order && { sort_order: params.sort_order }),
             },
         });
         return response.data;

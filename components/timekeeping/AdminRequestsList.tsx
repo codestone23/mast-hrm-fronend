@@ -176,8 +176,6 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
     };
 
     const requests = data?.data || [];
-
-    console.log(requests);
     const pagination = data?.pagination;
 
     return (

@@ -63,7 +63,7 @@ const MyAssets: React.FC = () => {
       key: "asset_code",
       label: "Mã TS",
       width: "120px",
-      render: (_, row) => row.asset_code || row.code || "N/A",
+      render: (_, row) => row.asset_code || row.code || "Không có", 
     },
     {
       key: "name",
@@ -84,7 +84,7 @@ const MyAssets: React.FC = () => {
       key: "category",
       label: "Danh mục",
       width: "1fr",
-      render: (_, row) => row.category || "N/A",
+      render: (_, row) => row.category || "Không có", 
     },
     {
       key: "actions",

@@ -8,12 +8,13 @@ import {
   ContentBox404,
   Link404,
 } from "./notFoundStyle";
+import ROUTERS from "@/config/router";
 
 const NotFoundPage = () => {
   const router = useRouter();
 
   const handleGoHome = () => {
-    router.push("/");
+    router.push(ROUTERS.OVERVIEW.BASE);
   };
 
   const handleGoBack = () => {

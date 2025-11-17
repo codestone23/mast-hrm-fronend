@@ -1,4 +1,7 @@
 "use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import HeaderCommon from "@/components/common/header/HeaderCommon";
 import ROUTERS from "@/config/router";
 import { ROLE_NAMES } from "@/constants/enums";
@@ -7,6 +10,8 @@ import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { PersonalPageContainer } from "../me/staff/personalStyle";
 import { ContentWrapper } from "../overview/overviewStyle";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { hasRolePermission, getModuleAllowedRoles } from "@/utils/rolePermission";
 
 interface NavItem {
   id: string;
@@ -19,9 +24,22 @@ export default function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const router = useRouter();
+  const { user } = useAuthContext();
   const pathname = usePathname().split("/");
   const activeTab = pathname.slice(1, pathname.length).join("/");
   const userData = useAppSelector((state) => state.user.data);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const userRoles = user.role_assignments?.map((role) => role.name?.toLowerCase()).filter((role): role is string => Boolean(role)) || [];
+    const allowedRoles = getModuleAllowedRoles("personal");
+
+    if (!hasRolePermission(userRoles, allowedRoles)) {
+      router.push(ROUTERS.NOT_FOUND); 
+    }
+  }, [user, router]);
 
   const roles = useMemo(() => {
     const userRoles =

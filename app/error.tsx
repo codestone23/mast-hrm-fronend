@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import ROUTERS from "@/config/router";
 
 export default function Error({
   error,
@@ -18,7 +19,7 @@ export default function Error({
   }, [error]);
 
   const handleGoHome = () => {
-    router.push('/');
+    router.push(ROUTERS.OVERVIEW.BASE); 
   };
 
   const handleRetry = () => {

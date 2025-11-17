@@ -32,6 +32,7 @@ import userService from "@/services/user.service";
 import { useToast } from "@/hooks/useToast";
 import { useRouter } from "next/navigation";
 import { ROLE_NAMES } from "@/constants/enums";
+import ROUTERS from "@/config/router";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -206,7 +207,7 @@ const AccountManagement: React.FC = () => {
   };
 
   const handleViewDetail = (user: UserType) => {
-    router.push(`/company/accounts/${user.id}`);
+    router.push(`${ROUTERS.COMPANY.ACCOUNTS}/${user.id}`); 
   };
 
   const handleEdit = (user: UserType) => {

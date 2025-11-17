@@ -21,6 +21,7 @@ import EditAccountInfoModal from "./EditAccountInfoModal";
 import BasicInfoTab from "@/components/personal/personal-info/BasicInfoTab";
 import SkillsTab from "@/components/personal/personal-info/SkillsTab";
 import PersonalInfoSidebar from "@/components/personal/personal-info/PersonalInfoSidebar";
+import ROUTERS from "@/config/router";
 
 interface AccountDetailProps {
   accountId: string;
@@ -46,7 +47,7 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
   const [educations, setEducations] = useState<Education[]>([]);
 
   const handleBack = () => {
-    router.push("/company/accounts");
+    router.push(ROUTERS.COMPANY.ACCOUNTS); 
   };
 
   const handleEditPersonalInfo = () => {

@@ -31,6 +31,7 @@ import {
 import { Account } from "@/constants/types";
 import { useRouter } from "next/navigation";
 import { DashboardGridAccount } from "@/components/company/account/accountStyle";
+import ROUTERS from "@/config/router";
 
 const UserManagement: React.FC = () => {
   const router = useRouter();
@@ -113,7 +114,7 @@ const UserManagement: React.FC = () => {
   };
 
   const handleViewDetail = (account: Account) => {
-    router.push(`/hr/users/${account.id}`);
+    router.push(`${ROUTERS.HR.USERS}/${account.id}`); 
   };
 
   const handleEdit = (account: Account) => {

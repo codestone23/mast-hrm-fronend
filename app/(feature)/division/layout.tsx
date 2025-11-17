@@ -1,4 +1,7 @@
 "use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { ContentWrapper } from "../overview/overviewStyle";
 import { PersonalPageContainer } from "../me/staff/personalStyle";
 import HeaderCommon from "@/components/common/header/HeaderCommon";
@@ -10,16 +13,29 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { ROLE_NAMES } from "@/constants/enums";
+import { hasRolePermission, getModuleAllowedRoles } from "@/utils/rolePermission";
 
 export default function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const router = useRouter();
   const pathname = usePathname().split("/");
   const activeTab = pathname.slice(1, pathname.length).join("/");
   const { user } = useAuthContext();
   const divisions = useSelector((state: RootState) => state.division.divisions);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const userRoles = user.role_assignments?.map((role) => role.name?.toLowerCase()).filter((role): role is string => Boolean(role)) || [];
+    const allowedRoles = getModuleAllowedRoles("division");
+
+    if (!hasRolePermission(userRoles, allowedRoles)) {
+      router.push(ROUTERS.NOT_FOUND); 
+    }
+  }, [user, router]);
 
   const userRoleNames = user?.role_assignments.map(role => role?.name?.toLowerCase());
   const isAdminOrSuperAdmin = userRoleNames?.includes(ROLE_NAMES.ADMIN);

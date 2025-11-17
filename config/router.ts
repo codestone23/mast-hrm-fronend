@@ -1,6 +1,9 @@
 const ROUTERS = {
     AUTH: {
+        DEFAULT: "/",
         LOGIN: "/login",
+        FORGOT_PASSWORD: "/forgot-password",
+        RESET_PASSWORD: "/reset-password",
     },
     OVERVIEW: {
         BASE: "/overview",
@@ -37,6 +40,7 @@ const ROUTERS = {
         NEWS: "/settings/news",
         NOTIFICATIONS: "/settings/notifications",
     },
+    NOT_FOUND: "/404",
 };
 
 export default ROUTERS;

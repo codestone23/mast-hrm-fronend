@@ -7,14 +7,6 @@ import ModuleGrid from "../../../components/header/module-grid/ModuleGrid";
 import { ContentHeader, PageContainer } from "./overviewStyle";
 import { useOverview } from "./useOverview";
 
-interface UserInfoWithRole {
-  roles?: [
-    {
-      name: string;
-    }
-  ];
-}
-
 const OverviewPage: React.FC = () => {
   const router = useRouter();
   const { data, isLoading } = useOverview();

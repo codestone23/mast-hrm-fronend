@@ -49,6 +49,8 @@ import {
 } from "@/types/api";
 import { ConfirmDeleteModal, Loading } from "@/components/common";
 import { useToast } from "@/contexts/ToastContext";
+import ROUTERS from "@/config/router";
+import { DivisionStatus } from "@/constants/enums";
 
 const DivisionManagement: React.FC = () => {
     const router = useRouter();
@@ -70,7 +72,7 @@ const DivisionManagement: React.FC = () => {
         limit,
         search: searchTerm || undefined,
         type: typeFilter,
-        status: statusFilter,
+        status: statusFilter as DivisionStatus,
     });
     const response = listData as DivisionListResponse | undefined;
     const divisions = response?.data ?? [];
@@ -306,7 +308,7 @@ const DivisionManagement: React.FC = () => {
                                     divisions={filteredDivisions}
                                     onOpen={(d) =>
                                         router.push(
-                                            `/company/divisions/${d.id}`
+                                            `${ROUTERS.COMPANY.DIVISIONS}/${d.id}` 
                                         )
                                     }
                                     onEdit={handleEdit}

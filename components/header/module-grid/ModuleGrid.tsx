@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Users, UserCheck, Building2, Settings, Briefcase } from "lucide-react";
 import {
     GridContainer,
     WelcomeSection,
@@ -17,65 +16,10 @@ import {
     ModuleName,
     ModuleDescription,
 } from "./moduleGridStyle";
-import { Module } from "@/constants/types";
-import ROUTERS from "@/config/router";
 import { Loading } from "@/components/common";
+import { getModules } from "@/constants/modules";
 
-const modules: Module[] = [
-    {
-        id: "personal",
-        name: "Cá nhân",
-        description: "Quản lý thông tin cá nhân và hồ sơ nhân viên",
-        icon: Users,
-        color: "#3b82f6",
-        path: ROUTERS.PERSONAL.BASE,
-        allowedRoles: [
-            "super_admin",
-            "admin",
-            "hr_manager",
-            "project_manager",
-            "division_head",
-            "team_leader",
-            "employee",
-        ],
-    },
-    {
-        id: "hr",
-        name: "Nhân sự",
-        description: "Quản lý tài sản và thống kê",
-        icon: UserCheck,
-        color: "#f59e0b",
-        path: ROUTERS.HR.STATS,
-        allowedRoles: ["hr_manager"],
-    },
-    {
-        id: "division",
-        name: "Phòng ban",
-        description: "Quản lý phòng ban và cơ cấu tổ chức",
-        icon: Building2,
-        color: "#ef4444",
-        path: ROUTERS.DIVISION.BASE,
-        allowedRoles: ["super_admin", "admin", "division_head"],
-    },
-    {
-        id: "company",
-        name: "Công ty",
-        description: "Quản lý công ty và cấu hình hệ thống",
-        icon: Briefcase,
-        color: "#8b5cf6",
-        path: ROUTERS.COMPANY.BASE,
-        allowedRoles: ["super_admin", "admin", "hr_manager"],
-    },
-    {
-        id: "settings",
-        name: "Cài đặt",
-        description: "Cài đặt hệ thống và cấu hình",
-        icon: Settings,
-        color: "#6b7280",
-        path: ROUTERS.SETTINGS.BASE,
-        allowedRoles: ["super_admin", "admin"],
-    },
-];
+const modules = getModules();
 
 interface ModuleGridProps {
     onModuleClick?: (moduleId: string) => void;
@@ -103,6 +47,21 @@ const ModuleGrid: React.FC<ModuleGridProps> = (props: ModuleGridProps) => {
         return now.toLocaleDateString("vi-VN", options);
     };
 
+    const getGreeting = () => {
+        const now = new Date();
+        const hour = now.getHours();
+        
+        if (hour >= 5 && hour < 12) {
+            return "Chào buổi sáng";
+        } else if (hour >= 12 && hour < 18) {
+            return "Chào buổi trưa";
+        } else if (hour >= 18 && hour < 22) {
+            return "Chào buổi tối";
+        } else {
+            return "Chào buổi tối";
+        }
+    };
+
     const filteredModules = modules.filter(
         (module) =>
             !module.allowedRoles || module.allowedRoles.some((role) => userRoles?.includes(role))
@@ -111,7 +70,7 @@ const ModuleGrid: React.FC<ModuleGridProps> = (props: ModuleGridProps) => {
     return (
         <GridContainer>
             <WelcomeSection>
-                <WelcomeGreeting>Chào buổi tối {userName}</WelcomeGreeting>
+                <WelcomeGreeting>{getGreeting()} {userName}</WelcomeGreeting>
                 <WelcomeDate>{getCurrentDate()}</WelcomeDate>
                 <WelcomeDivider />
             </WelcomeSection>

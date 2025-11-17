@@ -170,13 +170,13 @@ const OtpVerificationPage: React.FC = () => {
   };
 
   const handleBackToForgotPassword = () => {
-    router.push("/forgot-password");
+    router.push(ROUTERS.AUTH.FORGOT_PASSWORD); 
   };
 
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
     // Chuyển hướng đến trang reset password với token
-    router.push(`/reset-password?token=${btoa(email + ":" + otp.join(""))}`);
+    router.push(`${ROUTERS.AUTH.RESET_PASSWORD}?token=${btoa(email + ":" + otp.join(""))}`);
   };
 
 

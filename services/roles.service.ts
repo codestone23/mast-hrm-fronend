@@ -16,7 +16,7 @@ class RolesService {
     return response.data;
   }
 
-  async unassignRole(userId: string, roleId: string): Promise<ApiResponse<void>> {
+  async unassignRole(userId: number, roleId: number): Promise<ApiResponse<void>> {
     const response = await axiosInstance.delete(`/role-assignments/revoke`, { params: { user_id: userId, role_id: roleId } });
     return response.data; 
   }

@@ -47,10 +47,10 @@ export default function HRNewsPage() {
   const pagination = data?.pagination || {
     total: 0,
     current_page: 1,
-    totalPages: 1,
+    total_pages : 1,
     limit: ITEMS_PER_PAGE,
   };
-  const totalPages = pagination.totalPages || 1;
+  const totalPages = pagination.total_pages  || 1;
 
   const createMutation = useMutation({
     mutationFn: (news: CreateNewsRequest) => newsService.createNews(news),

@@ -8,15 +8,15 @@ interface SkillsTabProps {
   skills: Skill[];
   experiences: Experience[];
   educations: Education[];
-  onAddSkill: () => void;
-  onEditSkill: (skill: Skill) => void;
-  onDeleteSkill: (skill: Skill) => void;
-  onAddExperience: () => void;
-  onEditExperience: (experience: Experience) => void;
-  onDeleteExperience: (experience: Experience) => void;
-  onAddEducation: () => void;
-  onEditEducation: (education: Education) => void;
-  onDeleteEducation: (education: Education) => void;
+  onAddSkill?: () => void;
+  onEditSkill?: (skill: Skill) => void;
+  onDeleteSkill?: (skill: Skill) => void;
+  onAddExperience?: () => void;
+  onEditExperience?: (experience: Experience) => void;
+  onDeleteExperience?: (experience: Experience) => void;
+  onAddEducation?: () => void;
+  onEditEducation?: (education: Education) => void;
+  onDeleteEducation?: (education: Education) => void;
   readOnly?: boolean;
 }
 
@@ -39,23 +39,23 @@ const SkillsTab: React.FC<SkillsTabProps> = ({
     <>
       <SkillsList
         skills={skills}
-        onAdd={onAddSkill}
-        onEdit={onEditSkill}
-        onDelete={onDeleteSkill}
+        onAdd={() => onAddSkill?.()}
+        onEdit={(skill) => onEditSkill?.(skill)}
+        onDelete={(skill) => onDeleteSkill?.(skill)}
         readOnly={readOnly}
       />
       <ExperienceList
         experiences={experiences}
-        onAdd={onAddExperience}
-        onEdit={onEditExperience}
-        onDelete={onDeleteExperience}
+        onAdd={() => onAddExperience?.()  }
+        onEdit={(experience) => onEditExperience?.(experience)}
+        onDelete={(experience) => onDeleteExperience?.(experience)}
         readOnly={readOnly}
       />
       <EducationList
         educations={educations}
-        onAdd={onAddEducation}
-        onEdit={onEditEducation}
-        onDelete={onDeleteEducation}
+        onAdd={() => onAddEducation?.()}
+        onEdit={(education) => onEditEducation?.(education)}
+        onDelete={(education) => onDeleteEducation?.(education)}
         readOnly={readOnly}
       />
     </>

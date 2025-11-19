@@ -84,7 +84,7 @@ const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
             <LeftSidebar>
               <UserProfile>
                 <UserAvatar>
-                  {account.avatar ? (
+                  {account.avatar && account.avatar.includes('https') ? (
                     <img src={account.avatar} alt={account.name} width={120} height={120} />
                   ) : (
                     <User size={60} />

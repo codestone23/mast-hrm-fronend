@@ -20,6 +20,7 @@ const ROUTERS = {
     DIVISION: {
         BASE: "/division/dashboard",
         WORKFORCE: "/division/workforce",
+        PROJECTS: "/division/projects",
         INVOICE: "/division/invoice",
         CUSTOMER: "/division/customer",
         REVENUE: "/division/revenue",

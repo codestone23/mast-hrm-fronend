@@ -121,7 +121,7 @@ const EmployeeList: React.FC = () => {
       render: (_, row) => (
         <UserInfo>
           <Avatar>
-            {row.avatar ? (
+            {row.avatar && row.avatar.includes('https') ? (
               <Image src={row.avatar ?? "/images/avatar.png"} alt={row.name} width={40} height={40} />
             ) : (
               <span>{row.name.charAt(0)}</span>

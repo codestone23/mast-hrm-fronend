@@ -23,9 +23,9 @@ import {
 
 interface ExperienceListProps {
   experiences: Experience[];
-  onAdd: () => void;
-  onEdit: (experience: Experience) => void;
-  onDelete: (experience: Experience) => void;
+  onAdd?: () => void;
+  onEdit?: (experience: Experience) => void;
+  onDelete?: (experience: Experience) => void; 
   readOnly?: boolean;
 }
 
@@ -44,7 +44,7 @@ const ExperienceList: React.FC<ExperienceListProps> = ({
           Kinh nghiệm làm việc
         </SectionTitle>
         {!readOnly && (
-          <SectionAction onClick={onAdd}>
+          <SectionAction onClick={() => onAdd?.()}>
             <Plus size={16} />
           </SectionAction>
         )}
@@ -64,10 +64,10 @@ const ExperienceList: React.FC<ExperienceListProps> = ({
               </ExperienceInfo>
               {!readOnly && (
                 <ExperienceActions>
-                  <ExperienceActionButton onClick={() => onEdit(exp)}>
+                  <ExperienceActionButton onClick={() => onEdit?.(exp)}>
                     <Edit size={16} />
                   </ExperienceActionButton>
-                  <ExperienceDeleteButton onClick={() => onDelete(exp)}>
+                  <ExperienceDeleteButton onClick={() => onDelete?.(exp)}>
                     <Trash2 size={16} />
                   </ExperienceDeleteButton>
                 </ExperienceActions>

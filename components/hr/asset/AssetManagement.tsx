@@ -371,7 +371,7 @@ const AssetManagement: React.FC = () => {
         return user ? (
           <UserInfo>
             <Avatar>
-              {user.avatar ? (
+              {user.avatar && user.avatar.includes('https') ? (
                 <Image src={user.avatar} alt={user.name} width={40} height={40} />
               ) : (
                 <span>{user.name.charAt(0)}</span>

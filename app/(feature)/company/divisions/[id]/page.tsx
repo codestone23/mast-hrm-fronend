@@ -150,8 +150,7 @@ const DivisionDetailPage: React.FC = () => {
                                         <Avatar
                                             src={
                                                 m.user.user_information
-                                                    ?.avatar ||
-                                                "/images/background-login.png"
+                                                    ?.avatar && m.user.user_information.avatar.includes('https') ? m.user.user_information.avatar : `/images/background-login.png`
                                             }
                                             alt="avatar"
                                         />

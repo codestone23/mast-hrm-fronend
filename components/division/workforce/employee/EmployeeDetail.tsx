@@ -45,7 +45,7 @@ const EmployeeDetail: React.FC<{ id?: string }> = ({ id }) => {
     <Container>
       <LeftCol>
         <Card style={{ textAlign: "center" }}>
-          <Avatar src={data.avatar} alt={data.name} />
+          <Avatar src={data.avatar && data.avatar.includes('https') ? data.avatar : `/images/background-login.png`} alt={data.name} />
           <Name>{data.name}</Name>
           <SmallText style={{ marginTop: 6 }}>
             {data.position} • {data.team}

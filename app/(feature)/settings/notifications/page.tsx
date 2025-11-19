@@ -47,7 +47,7 @@ export default function NotificationsPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["notifications", currentPage, debouncedSearch],
     queryFn: () =>
-      notificationService.getNotifications(currentPage, ITEMS_PER_PAGE, debouncedSearch || undefined),
+      notificationService.getNotificationsAdmin(currentPage, ITEMS_PER_PAGE, debouncedSearch || undefined),
   });
 
   const notifications = data?.data || [];
@@ -152,16 +152,27 @@ export default function NotificationsPage() {
       key: "content",
       label: "Nội dung",
       width: "45%",
-      render: (value) => (
-        <div style={{ 
-          maxWidth: "400px", 
-          overflow: "hidden", 
-          textOverflow: "ellipsis", 
-          whiteSpace: "nowrap" 
-        }}>
-          {String(value || "")}
-        </div>
-      ),
+      render: (value) => {
+        const content = String(value || "");
+        return (
+          <div 
+            style={{ 
+              maxWidth: "400px",
+              position: "relative",
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              lineHeight: "1.5",
+              maxHeight: "4.5em",
+            }}
+            title={content}
+          >
+            {content}
+          </div>
+        );
+      },
     },
     {
       key: "creatorName",
@@ -178,7 +189,7 @@ export default function NotificationsPage() {
     {
       key: "actions",
       label: "Hành động",
-      width: "20%",
+      width: "10%",
       align: "center",
       render: (_, row) => (
         <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>

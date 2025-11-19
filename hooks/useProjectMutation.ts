@@ -11,6 +11,7 @@ export const useProjectMutation = () => {
     mutationFn: (data: ProjectCreateRequest) => projectService.createProject(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['projects-admin'] });
       queryClient.invalidateQueries({ queryKey: ['my-projects'] });
       showSuccessToast('Dự án đã được tạo thành công!');
     },
@@ -27,7 +28,9 @@ export const useProjectMutation = () => {
       projectService.updateProject(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['projects-admin'] });
       queryClient.invalidateQueries({ queryKey: ['my-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project'] });
       showSuccessToast('Dự án đã được cập nhật thành công!');
     },
     onError: (error: unknown) => {
@@ -42,6 +45,7 @@ export const useProjectMutation = () => {
     mutationFn: (id: string) => projectService.deleteProject(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['projects-admin'] });
       queryClient.invalidateQueries({ queryKey: ['my-projects'] });
       showSuccessToast('Dự án đã được xóa thành công!');
     },

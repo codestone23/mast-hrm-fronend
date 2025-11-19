@@ -337,7 +337,7 @@ const Personal: React.FC = () => {
               </ProfileDetail>
               <ProfileDetailRight>
                 <div>
-                  Người quản lý: <strong>Không có</strong>
+                  Người quản lý: <strong>{user?.organization.division.division_head.name !== user?.user_information?.name ? user?.organization.division.division_head.name : 'Không có'}</strong>
                 </div>
                 <ButtonDetail onClick={handleClickDetail}>
                   Xem chi tiết

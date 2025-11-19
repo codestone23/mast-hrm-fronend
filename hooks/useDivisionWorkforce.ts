@@ -86,13 +86,11 @@ export function useDivisionTeams(
   search: string,
   page: number,
   limit: number,
-  sortBy?: string,
-  sortOrder?: string
 ) {
   return useQuery<TeamsResponse>({
-    queryKey: queryKeys.teams(divisionId, search, page, limit, sortBy, sortOrder),
+    queryKey: queryKeys.teams(divisionId, search, page, limit),
     queryFn: () =>
-      divisionWorkforceService.getTeams(divisionId!, search, page, limit, sortBy, sortOrder),
+      divisionWorkforceService.getTeams(divisionId!, search, page, limit),
     enabled: !!divisionId,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });

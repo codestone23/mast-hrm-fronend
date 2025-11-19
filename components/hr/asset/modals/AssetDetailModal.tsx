@@ -138,7 +138,7 @@ const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                 <DetailLabel>Người sử dụng:</DetailLabel>
                 <DetailValue>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    {asset.user.avatar && (
+                    {asset.user.avatar && asset.user.avatar.includes('https') && (
                       <Image 
                         src={asset.user.avatar} 
                         alt={asset.user.name} 

@@ -8,11 +8,21 @@ import {
 } from '@/types/api';
 
 class UserService {
-  async getUsers(page: number = 1, limit: number = 10, search?: string): Promise<PaginatedResponse<User>> {
+  async getUsers(
+    page: number = 1, 
+    limit: number = 10, 
+    search?: string,
+    role_id?: number,
+    status?: string,
+    division_id?: number
+  ): Promise<PaginatedResponse<User>> {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
-      ...(search && { search })
+      ...(search && { search }),
+      ...(role_id && { role_id: role_id.toString() }),
+      ...(status && { status }),
+      ...(division_id && { division_id: division_id.toString() })
     });
     
     const response = await axiosInstance.get(`users?${params}`);

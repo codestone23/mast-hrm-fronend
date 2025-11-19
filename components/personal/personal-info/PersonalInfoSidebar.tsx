@@ -38,11 +38,12 @@ const PersonalInfoSidebar: React.FC<PersonalInfoSidebarProps> = ({
   fileInputRef,
   initPersonalInfo,
 }) => {
+  console.log(data);
   return (
     <LeftSidebar>
       <UserProfile>
         <UserAvatar onClick={onAvatarClick} style={{ cursor: 'pointer', position: 'relative' }}>
-          {avatarUrl ? (
+          {avatarUrl && avatarUrl.includes('https') ? (
             <Image
               src={avatarUrl}
               alt="User Avatar"
@@ -99,6 +100,12 @@ const PersonalInfoSidebar: React.FC<PersonalInfoSidebarProps> = ({
           <DetailLabel>Mã nhân viên</DetailLabel>
           <DetailValue>
             {data?.user_information?.code || "Không có"} 
+          </DetailValue>
+        </DetailItem>
+        <DetailItem>
+          <DetailLabel>Người quản lý</DetailLabel>
+          <DetailValue>
+            {data?.division.division_head.name !== data?.user_information?.name ? data?.division.division_head.name : 'Không có'}
           </DetailValue>
         </DetailItem>
       </UserDetails>

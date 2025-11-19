@@ -79,6 +79,42 @@ export interface User {
   remaining_leave_days: number;
   assigned_devices: unknown[];
   annual_leave_quota?: number;
+  division: {
+    id: number;
+    name: string;
+    description: string;
+    status: string;
+    type: string;
+    division_head: {
+        id: number;
+        email: string;
+        name: string;
+        avatar: string;
+        phone: string;
+    };  
+  };
+  organization: {
+    division: {
+      id: number;
+      name: string;
+      description: string;
+      status: string;
+      type: string;
+      division_head: {
+        id: number;
+        email: string;
+        name: string;
+        avatar: string;
+        phone: string;
+      };
+    };
+    team: {
+      id: number;
+      name: string;
+      division_id: number | null;
+      founding_date: string | null;
+    } | null;
+  };
 }
 
 export interface UserInformation {
@@ -103,6 +139,42 @@ export interface UserProfile {
     scope_type: string;
     scope_id: number | null;
   }>;
+  division: {
+    id: number;
+    name: string;
+    description: string;
+    status: string;
+    type: string;
+    division_head: {
+        id: number;
+        email: string;
+        name: string;
+        avatar: string;
+        phone: string;
+    };  
+  };
+  organization: {
+    division: {
+      id: number;
+      name: string;
+      description: string;
+      status: string;
+      type: string;
+      division_head: {
+          id: number;
+          email: string;
+          name: string;
+          avatar: string;
+          phone: string;
+      };  
+    };
+    team: {
+        id: number;
+        name: string;
+        division_id: number | null;
+        founding_date: string | null;
+    };
+  };
   user_information?: {
     id: number;
     user_id: number;

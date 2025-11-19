@@ -310,7 +310,7 @@ const PersonalInfo = () => {
                         (edu as { description?: string }).description || "",
                 }))
             );
-            setAvatarUrl(data.user_information?.avatar || null);
+            setAvatarUrl(data.user_information?.avatar && data.user_information.avatar.includes('https') ? data.user_information.avatar : null);
         }
     }, [data]);
 

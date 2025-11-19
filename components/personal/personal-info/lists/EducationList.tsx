@@ -24,9 +24,9 @@ import {
 
 interface EducationListProps {
   educations: Education[];
-  onAdd: () => void;
-  onEdit: (education: Education) => void;
-  onDelete: (education: Education) => void;
+  onAdd?: () => void;
+  onEdit?: (education: Education) => void;
+  onDelete?: (education: Education) => void;
   readOnly?: boolean;
 }
 
@@ -45,7 +45,7 @@ const EducationList: React.FC<EducationListProps> = ({
           Học vấn
         </SectionTitle>
         {!readOnly && (
-          <SectionAction onClick={onAdd}>
+          <SectionAction onClick={() => onAdd?.()}>
             <Plus size={16} />
           </SectionAction>
         )}
@@ -66,10 +66,10 @@ const EducationList: React.FC<EducationListProps> = ({
               </EducationInfo>
               {!readOnly && (
                 <EducationActions>
-                  <EducationActionButton onClick={() => onEdit(edu)}>
+                  <EducationActionButton onClick={() => onEdit?.(edu)}>
                     <Edit size={16} />
                   </EducationActionButton>
-                  <EducationDeleteButton onClick={() => onDelete(edu)}>
+                  <EducationDeleteButton onClick={() => onDelete?.(edu)}>
                     <Trash2 size={16} />
                   </EducationDeleteButton>
                 </EducationActions>

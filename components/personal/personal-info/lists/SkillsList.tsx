@@ -23,9 +23,9 @@ import {
 
 interface SkillsListProps {
   skills: Skill[];
-  onAdd: () => void;
-  onEdit: (skill: Skill) => void;
-  onDelete: (skill: Skill) => void;
+  onAdd?: () => void;
+  onEdit?: (skill: Skill) => void;
+  onDelete?: (skill: Skill) => void;
   readOnly?: boolean;
 }
 
@@ -44,7 +44,7 @@ const SkillsList: React.FC<SkillsListProps> = ({
           Kỹ năng
         </SectionTitle>
         {!readOnly && (
-          <SectionAction onClick={onAdd}>
+          <SectionAction onClick={() => onAdd?.()}>
             <Plus size={16} />
           </SectionAction>
         )}
@@ -64,10 +64,10 @@ const SkillsList: React.FC<SkillsListProps> = ({
               </SkillInfo>
               {!readOnly && (
                 <SkillActions>
-                  <SkillActionButton onClick={() => onEdit(skill)}>
+                  <SkillActionButton onClick={() => onEdit?.(skill)}>
                     <Edit size={16} />
                   </SkillActionButton>
-                  <SkillDeleteButton onClick={() => onDelete(skill)}>
+                  <SkillDeleteButton onClick={() => onDelete?.(skill)}>
                     <Trash2 size={16} />
                   </SkillDeleteButton>
                 </SkillActions>

@@ -63,17 +63,6 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
     // Disabled for admin
   };
 
-  // Empty handlers for read-only mode
-  const handleAddSkill = () => {};
-  const handleEditSkill = () => {};
-  const handleDeleteSkill = () => {};
-  const handleAddExperience = () => {};
-  const handleEditExperience = () => {};
-  const handleDeleteExperience = () => {};
-  const handleAddEducation = () => {};
-  const handleEditEducation = () => {};
-  const handleDeleteEducation = () => {};
-
   useEffect(() => {
     if (data) {
       setSkills(data.user_skills || []);
@@ -84,7 +73,7 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
           description: (edu as { description?: string }).description || "",
         }))
       );
-      setAvatarUrl(data.user_information?.avatar || null);
+      setAvatarUrl(data.user_information?.avatar && data.user_information.avatar.includes('https') ? data.user_information.avatar : null); 
     }
   }, [data]);
 
@@ -151,15 +140,6 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
               skills={skills}
               experiences={experiences}
               educations={educations}
-              onAddSkill={handleAddSkill}
-              onEditSkill={handleEditSkill}
-              onDeleteSkill={handleDeleteSkill}
-              onAddExperience={handleAddExperience}
-              onEditExperience={handleEditExperience}
-              onDeleteExperience={handleDeleteExperience}
-              onAddEducation={handleAddEducation}
-              onEditEducation={handleEditEducation}
-              onDeleteEducation={handleDeleteEducation}
               readOnly={true}
             />
           )}

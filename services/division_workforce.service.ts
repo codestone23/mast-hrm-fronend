@@ -45,17 +45,13 @@ class DivisionWorkforceService {
     search?: string,
     page?: number,
     limit?: number,
-    sortBy?: string,
-    sortOrder?: string
   ): Promise<PaginatedResponse<DivisionTeamData>> {
     const response = await axiosInstance.get(`/divisions/teams`, {
       params: {
-        divisionId,
+        division_id: divisionId,
         search,
         page,
         limit,
-        sortBy,
-        sortOrder,
       },
     });
     return response.data;
@@ -73,7 +69,7 @@ class DivisionWorkforceService {
         leader_Id: data.leaderId,
         name: data.name,
         foundingDate: data.foundingDate,
-        divisionId: data.divisionId,
+        division_id: data.divisionId,
       }
     );
     return response.data;

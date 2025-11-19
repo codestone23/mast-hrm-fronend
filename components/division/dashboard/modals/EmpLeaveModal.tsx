@@ -52,7 +52,7 @@ const EmployeeLeaveModal: React.FC<EmployeeLeaveModalProps> = ({
         <List>
           {entries.map((e) => (
             <Row key={e.user_id}>
-              <Avatar src={e.avatar || ''} alt={e.name} />
+              <Avatar src={e.avatar && e.avatar.includes('https') ? e.avatar : `/images/background-login.png`} alt={e.name} />
               <Info>
                 <Name>{e.name}</Name>
                 <Meta>

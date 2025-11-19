@@ -43,6 +43,7 @@ export default function Layout({
   const navItems = [
     { id: ROUTERS.DIVISION.BASE, label: "Tổng quan" },
     { id: ROUTERS.DIVISION.WORKFORCE, label: "Quản lý nhân sự" },
+    { id: ROUTERS.DIVISION.PROJECTS, label: "Quản lý dự án" },
   ];
 
   return (

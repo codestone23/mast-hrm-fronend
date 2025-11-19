@@ -39,8 +39,6 @@ const TeamList: React.FC = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [sortBy] = useState("id");
-  const [sortOrder] = useState("asc");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -51,15 +49,13 @@ const TeamList: React.FC = () => {
   }, [search]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["division-workforce", "teams", selectedDivisionId, debouncedSearch, page, ITEMS_PER_PAGE, sortBy, sortOrder],
+    queryKey: ["division-workforce", "teams", selectedDivisionId, debouncedSearch, page, ITEMS_PER_PAGE],
     queryFn: () =>
       divisionWorkforceService.getTeams(
         selectedDivisionId!,
         debouncedSearch,
         page,
         ITEMS_PER_PAGE,
-        sortBy,
-        sortOrder
       ),
     enabled: !!selectedDivisionId,
   });
@@ -183,7 +179,7 @@ const TeamList: React.FC = () => {
       render: (_, row) => (
         <UserInfo>
           <Avatar>
-            {row.manager.avatar ? (
+            {row.manager.avatar && row.manager.avatar.includes('https') ? (
               <Image src={row.manager.avatar} alt={row.manager.name} width={40} height={40} />
             ) : (
               <span>{row.manager.name.charAt(0)}</span>

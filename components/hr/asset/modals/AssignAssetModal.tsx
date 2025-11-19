@@ -148,7 +148,7 @@ const AssignAssetModal: React.FC<AssignAssetModalProps> = ({
                     ? null 
                     : user.user_information as { name?: string; avatar?: string } | null;
                   const userName = userInfo?.name || user.name || "Không có";
-                  const userAvatar = userInfo?.avatar || "";
+                  const userAvatar = userInfo?.avatar && userInfo.avatar.includes('https') ? userInfo.avatar : "";
                   const isSelected = selectedUserId === user.id;
 
                   return (

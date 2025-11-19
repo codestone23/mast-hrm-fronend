@@ -82,7 +82,7 @@ const EmployeeBirthday: React.FC = () => {
         <List>
           {employeeData.employees.map((emp) => (
             <ListItem key={emp.user_id}>
-              <Avatar src={emp.avatar} alt={emp.name} />
+              <Avatar src={emp.avatar && emp.avatar.includes('https') ? emp.avatar : `/images/background-login.png`} alt={emp.name} />
               <Info>
                 <Name>{emp.name}</Name>
                 <Email>{emp.email}</Email>

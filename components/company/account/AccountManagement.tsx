@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Eye, Edit, Trash2, User, Users, Search, Shield, MoreVertical } from "lucide-react";
-import { Input, Table, Pagination } from "@/components/common";
+import { Plus, Eye, Edit, Trash2, User, Users, Search, Shield, MoreVertical, UserMinus } from "lucide-react";
+import { Input, Table, Pagination, Select } from "@/components/common";
 import { TableColumn } from "@/components/common/Table/Table";
 import {
   PersonalContainer,
@@ -26,13 +26,17 @@ import {
 import CreateAccountModal from "./modals/CreateAccountModal";
 import EditAccountModal from "./modals/EditAccountModal";
 import AssignRoleModal from "./modals/AssignRoleModal";
+import UnassignRoleModal from "./modals/UnassignRoleModal";
 import { ConfirmDeleteModal } from "@/components/common";
 import { User as UserType, UpdateUserRequest } from "@/types/api";
 import userService from "@/services/user.service";
 import { useToast } from "@/hooks/useToast";
 import { useRouter } from "next/navigation";
-import { ROLE_NAMES } from "@/constants/enums";
+import { ROLE_NAMES, DivisionStatus } from "@/constants/enums";
 import ROUTERS from "@/config/router";
+import rolesService from "@/services/roles.service";
+import divisionsService from "@/services/divisions.service";
+import { Role, DivisionListItem } from "@/types/api";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -81,14 +85,19 @@ const AccountManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedRoleId, setSelectedRoleId] = useState<number | undefined>(undefined);
+  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined);
+  const [selectedDivisionId, setSelectedDivisionId] = useState<number | undefined>(undefined);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAssignRoleModalOpen, setIsAssignRoleModalOpen] = useState(false);
+  const [isUnassignRoleModalOpen, setIsUnassignRoleModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPositions, setMenuPositions] = React.useState<Record<string, { rect: DOMRect; position: 'top' | 'bottom' }>>({});
   const buttonRefs = React.useRef<Record<string, HTMLButtonElement | null>>({});
+  const dropdownRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
 
   // Debounce search
   useEffect(() => {
@@ -101,30 +110,60 @@ const AccountManagement: React.FC = () => {
 
   // Close menu when clicking outside
   useEffect(() => {
+    if (!openMenuId) return;
+
     const handleClickOutside = (event: MouseEvent) => {
-      if (!openMenuId) return;
-      
       const target = event.target as Node;
-      const clickedOutside = Object.values(buttonRefs.current).every(
-        (ref) => !ref || !ref.contains(target)
-      );
+      const button = buttonRefs.current[openMenuId];
+      const dropdown = dropdownRefs.current[openMenuId];
       
-      if (clickedOutside) {
+      // Check if click is outside both button and dropdown
+      const clickedOutsideButton = !button || !button.contains(target);
+      const clickedOutsideDropdown = !dropdown || !dropdown.contains(target);
+      
+      if (clickedOutsideButton && clickedOutsideDropdown) {
         setOpenMenuId(null);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    const timeoutId = setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+    }, 10);
+
     return () => {
+      clearTimeout(timeoutId);
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [openMenuId]);
 
+  // Fetch roles for filter
+  const { data: rolesData } = useQuery({
+    queryKey: ["roles"],
+    queryFn: () => rolesService.getRoles(),
+  });
+
+  const roles = rolesData || [];
+
+  // Fetch divisions for filter
+  const { data: divisionsData } = useQuery({
+    queryKey: ["divisions", "filter"],
+    queryFn: () => divisionsService.getDivisions({ limit: 100 }),
+  });
+
+  const divisions = divisionsData?.data || [];
+
   // Query users
   const { data, isLoading, error } = useQuery({
-    queryKey: ["users", currentPage, debouncedSearch],
+    queryKey: ["users", currentPage, debouncedSearch, selectedRoleId, selectedStatus, selectedDivisionId],
     queryFn: () =>
-      userService.getUsers(currentPage, ITEMS_PER_PAGE, debouncedSearch || undefined),
+      userService.getUsers(
+        currentPage, 
+        ITEMS_PER_PAGE, 
+        debouncedSearch || undefined,
+        selectedRoleId,
+        selectedStatus,
+        selectedDivisionId
+      ),
   });
 
   const users = data?.data || [];
@@ -225,6 +264,11 @@ const AccountManagement: React.FC = () => {
     setIsAssignRoleModalOpen(true);
   };
 
+  const handleUnassignRole = (user: UserType) => {
+    setSelectedUser(user);
+    setIsUnassignRoleModalOpen(true);
+  };
+
   const getUserName = (user: UserType) => {
     if (user.user_information && Array.isArray(user.user_information) && user.user_information.length > 0) {
       const info = user.user_information[0] as { name?: string };
@@ -282,7 +326,7 @@ const AccountManagement: React.FC = () => {
                 overflow: "hidden",
               }}
             >
-              {userInfo?.avatar ? (
+              {userInfo?.avatar && userInfo.avatar.includes('https') ? (
                 <img src={userInfo.avatar} alt={userName} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
               ) : (
                 <User size={20} />
@@ -403,15 +447,20 @@ const AccountManagement: React.FC = () => {
             </ActionMenuButton>
             {isOpen && menuPosition && typeof window !== 'undefined' && createPortal(
               <ActionMenuDropdown 
+                ref={(el) => {
+                  dropdownRefs.current[menuId] = el;
+                }}
                 $isOpen={isOpen}
                 $triggerRect={menuPosition.rect}
                 $position={menuPosition.position}
+                onClick={(e) => e.stopPropagation()}
               >
                 <ActionMenuList>
                   <ActionMenuItem>
                     <ActionMenuLink
                       onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
                         setOpenMenuId(null);
                         handleViewDetail(row);
                       }}
@@ -424,6 +473,7 @@ const AccountManagement: React.FC = () => {
                     <ActionMenuLink
                       onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
                         setOpenMenuId(null);
                         handleEdit(row);
                       }}
@@ -436,6 +486,7 @@ const AccountManagement: React.FC = () => {
                     <ActionMenuLink
                       onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
                         setOpenMenuId(null);
                         handleAssignRole(row);
                       }}
@@ -444,12 +495,26 @@ const AccountManagement: React.FC = () => {
                       <span>Gán vai trò</span>
                     </ActionMenuLink>
                   </ActionMenuItem>
+                  <ActionMenuItem>
+                    <ActionMenuLink
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        setOpenMenuId(null);
+                        handleUnassignRole(row);
+                      }}
+                    >
+                      <UserMinus size={16} />
+                      <span>Thu hồi vai trò</span>
+                    </ActionMenuLink>
+                  </ActionMenuItem>
                   <ActionMenuDivider />
                   <ActionMenuItem>
                     <ActionMenuLink
                       $danger
                       onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
                         setOpenMenuId(null);
                         handleDelete(row);
                       }}
@@ -481,25 +546,96 @@ const AccountManagement: React.FC = () => {
           <div
             style={{
               display: "flex",
-              gap: "12px",
-              alignItems: "center",
-              justifyContent: "space-between",
+              flexDirection: "column",
+              gap: "16px",
               marginBottom: "16px",
             }}
           >
-            <div style={{ flex: 1, maxWidth: "400px" }}>
-              <Input
-                placeholder="Tìm kiếm theo tên hoặc email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                icon={<Search size={18} />}
-                fullWidth={true}
-              />
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ flex: 1, maxWidth: "400px" }}>
+                <Input
+                  placeholder="Tìm kiếm theo tên hoặc email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  icon={<Search size={18} />}
+                  fullWidth={true}
+                />
+              </div>
+              <CreateButton onClick={() => setIsCreateModalOpen(true)}>
+                <Plus size={20} />
+                Tạo tài khoản mới
+              </CreateButton>
             </div>
-            <CreateButton onClick={() => setIsCreateModalOpen(true)}>
-              <Plus size={20} />
-              Tạo tài khoản mới
-            </CreateButton>
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                alignItems: "flex-end",
+              }}
+            >
+              <div style={{ flex: 1, maxWidth: "300px" }}>
+                <Select
+                  label="Lọc theo vai trò"
+                  options={[
+                    { value: "", label: "Tất cả vai trò" },
+                    ...roles.map((role: Role) => ({
+                      value: role.id,
+                      label: getRoleName(role.name as ROLE_NAMES),
+                    })),
+                  ]}
+                  value={selectedRoleId || ""}
+                  onChange={(value) => {
+                    setSelectedRoleId(value === "" ? undefined : Number(value));
+                    setCurrentPage(1);
+                  }}
+                  placeholder="Chọn vai trò"
+                  fullWidth
+                />
+              </div>
+              <div style={{ flex: 1, maxWidth: "300px" }}>
+                <Select
+                  label="Lọc theo phòng ban"
+                  options={[
+                    { value: "", label: "Tất cả phòng ban" },
+                    ...divisions.map((division: DivisionListItem) => ({
+                      value: division.id,
+                      label: division.name,
+                    })),
+                  ]}
+                  value={selectedDivisionId || ""}
+                  onChange={(value) => {
+                    setSelectedDivisionId(value === "" ? undefined : Number(value));
+                    setCurrentPage(1);
+                  }}
+                  placeholder="Chọn phòng ban"
+                  fullWidth
+                />
+              </div>
+              <div style={{ flex: 1, maxWidth: "300px" }}>
+                <Select
+                  label="Lọc theo trạng thái"
+                  options={[
+                    { value: "", label: "Tất cả trạng thái" },
+                    { value: DivisionStatus.ACTIVE, label: "Hoạt động" },
+                    { value: DivisionStatus.INACTIVE, label: "Không hoạt động" },
+                  ]}
+                  value={selectedStatus || ""}
+                  onChange={(value) => {
+                    setSelectedStatus(value === "" ? undefined : String(value));
+                    setCurrentPage(1);
+                  }}
+                  placeholder="Chọn trạng thái"
+                  fullWidth
+                />
+              </div>
+            </div>
           </div>
           <div
             style={{
@@ -604,6 +740,15 @@ const AccountManagement: React.FC = () => {
         isOpen={isAssignRoleModalOpen}
         onClose={() => {
           setIsAssignRoleModalOpen(false);
+          setSelectedUser(null);
+        }}
+        user={selectedUser}
+      />
+
+      <UnassignRoleModal
+        isOpen={isUnassignRoleModalOpen}
+        onClose={() => {
+          setIsUnassignRoleModalOpen(false);
           setSelectedUser(null);
         }}
         user={selectedUser}

@@ -10,7 +10,7 @@ import {
   Tag,
   Target
 } from 'lucide-react';
-import { Breadcrumb, BreadcrumbItemData } from '@/components/common';
+import { Breadcrumb, BreadcrumbItemData, Loading } from '@/components/common';
 import {
   ProjectDetailContainer,
   ProjectDetailHeader,
@@ -33,6 +33,7 @@ import {
 } from './projectDetailStyle';
 import projectService from '@/services/project.service';
 import ROUTERS from "@/config/router";
+import { ROLE_NAMES } from "@/constants/enums";
 
 interface ProjectDetailProps {
   projectId: string;
@@ -67,11 +68,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
 
   const breadcrumbItems: BreadcrumbItemData[] = [
     {
-      label: 'Trang chủ',
-      href: ROUTERS.PERSONAL.BASE    
-    },
-    {
-      label: 'Dự án',
+      label: 'Danh sách dự án',
       href: ROUTERS.PERSONAL.PROJECTS,
       icon: <Briefcase size={16} />
     },
@@ -81,12 +78,35 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
     }
   ];
 
+  const getRoleName = (role: ROLE_NAMES) => {
+    switch (role) {
+      case ROLE_NAMES.EMPLOYEE:
+        return 'Nhân viên';
+      case ROLE_NAMES.TEAM_LEADER:
+        return 'Trưởng nhóm';
+      case ROLE_NAMES.DIVISION_HEAD:
+        return 'Trưởng phòng';
+      case ROLE_NAMES.PROJECT_MANAGER:
+        return 'Trưởng dự án';
+      case ROLE_NAMES.HR_MANAGER:
+        return 'Trưởng HR';
+      case ROLE_NAMES.ADMIN:
+        return 'Quản trị viên';
+      case ROLE_NAMES.SUPER_ADMIN:
+        return 'Quản trị hệ thống';
+      case ROLE_NAMES.COMPANY_OWNER:
+        return 'Chủ công ty';
+      default:
+        return role;
+    }
+  };
+
   if (isLoading) {
     return (
       <ProjectDetailContainer>
         <Breadcrumb items={breadcrumbItems} />
         <ProjectDetailHeader>
-          <ProjectDetailTitle>Đang tải dữ liệu...</ProjectDetailTitle>
+          <Loading />
         </ProjectDetailHeader>
       </ProjectDetailContainer>
     );
@@ -165,12 +185,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
                   <ProjectInfoValue>{new Date(project.end_date).toLocaleDateString('vi-VN')}</ProjectInfoValue>
                 </ProjectInfoItem>
               )}
-              {project.progress !== null && (
-                <ProjectInfoItem>
-                  <ProjectInfoLabel>Tiến độ:</ProjectInfoLabel>
-                  <ProjectInfoValue>{project.progress}%</ProjectInfoValue>
-                </ProjectInfoItem>
-              )}
               <ProjectInfoItem>
                 <ProjectInfoLabel>Số thành viên:</ProjectInfoLabel>
                 <ProjectInfoValue>{project.member_count || 0} người</ProjectInfoValue>
@@ -190,14 +204,14 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
             
             <ProjectOverview>
               <ProjectInfo>
-                {project.members.map((member) => (
+                {project.members.map((member, index) => (
                   <ProjectInfoItem key={member.id}>
-                    <ProjectInfoLabel>{member.name}</ProjectInfoLabel>
+                    <ProjectInfoLabel>{index + 1}. {member.name}</ProjectInfoLabel> 
                     <ProjectInfoValue>
                       <div>
                         <div>{member.email}</div>
                         <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                          Vai trò: {member.role}
+                          Vai trò: {getRoleName(member.role)}
                         </div>
                       </div>
                     </ProjectInfoValue>

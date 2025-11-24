@@ -1,10 +1,11 @@
+import { ROLE_NAMES } from "@/constants/enums";
 import axiosInstance from "@/lib/axios";
 
 export interface ProjectMember {
   id: number;
   name: string;
   email: string;
-  role: string;
+  role: ROLE_NAMES;
 }
 
 export interface Project {
@@ -115,7 +116,6 @@ class ProjectService {
     await axiosInstance.delete(`/projects/${id}`);
   }
 
-  // Lấy projects của user hiện tại
   async getMyProjects(
     page: number = 1, 
     search?: string, 

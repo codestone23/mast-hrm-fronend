@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Settings2, Users, GraduationCap, Briefcase, Shield, Languages, DollarSign } from "lucide-react";
+import { Settings2, Users, GraduationCap, Briefcase, Languages, Brain } from "lucide-react";
 import {
   SettingsContainer,
   SettingsHeader,
@@ -13,6 +13,10 @@ import {
   SidebarItem,
   MainContent,
 } from "./settingsStyle";
+import SkillManagement from "./SkillManagement";
+import LanguageManagement from "./LanguageManagement";
+import LevelManagement from "./LevelManagement";
+import PositionManagement from "./PositionManagement";
 
 interface MasterDataItem {
   id: string;
@@ -23,8 +27,8 @@ interface MasterDataItem {
 const masterDataItems: MasterDataItem[] = [
   { id: "level", name: "Cấp độ (Level)", icon: <GraduationCap size={20} /> },
   { id: "position", name: "Vị trí (Position)", icon: <Briefcase size={20} /> },
-  { id: "roles", name: "Vai trò (Roles)", icon: <Shield size={20} /> },
   { id: "language", name: "Ngôn ngữ (Language)", icon: <Languages size={20} /> },
+  { id: "skill", name: "Kỹ năng (Skill)", icon: <Brain size={20} /> },
 ];
 
 const Settings: React.FC = () => {
@@ -84,11 +88,10 @@ const Settings: React.FC = () => {
             </Sidebar>
             <MainContent>
               {/* Content will be rendered based on activeItem */}
-              {activeItem === "level" && <div>Level Management - Coming soon</div>}
-              {activeItem === "position" && <div>Position Management - Coming soon</div>}
-              {activeItem === "roles" && <div>Roles Management - Coming soon</div>}
-              {activeItem === "language" && <div>Language Management - Coming soon</div>}
-              {activeItem === "salary" && <div>Salary Management - Coming soon</div>}
+              {activeItem === "level" && <LevelManagement />}
+              {activeItem === "position" && <PositionManagement />}
+              {activeItem === "language" && <LanguageManagement />}
+              {activeItem === "skill" && <SkillManagement />}
             </MainContent>
           </>
         )}

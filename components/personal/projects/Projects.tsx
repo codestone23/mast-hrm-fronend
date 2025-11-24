@@ -10,7 +10,7 @@ import {
   Building,
   Search
 } from 'lucide-react';
-import { Breadcrumb, BreadcrumbItemData, Input } from '@/components/common';
+import { Breadcrumb, BreadcrumbItemData, Input, Loading } from '@/components/common';
 import {
   ProjectsContainer,
   ProjectsHeader,
@@ -42,19 +42,15 @@ const Projects: React.FC = () => {
 
   const breadcrumbItems: BreadcrumbItemData[] = [
     {
-      label: 'Trang chủ',
-      href: ROUTERS.PERSONAL.BASE
-    },
-    {
-      label: 'Dự án',
-      icon: <Briefcase size={16} />
+      label: 'Danh sách dự án',
+      href: ROUTERS.PERSONAL.PROJECTS,
     }
   ];
 
   // Fetch projects data
   const { data: projectsResponse, isLoading, error } = useQuery({
     queryKey: ['my-projects', searchTerm, selectedDivisionId],
-    queryFn: () => projectService.getMyProjects(1, searchTerm || undefined, selectedDivisionId || undefined),
+    queryFn: () => projectService.getMyProjects(1, searchTerm || undefined),
   });
 
   const projects = projectsResponse?.data || [];
@@ -63,31 +59,7 @@ const Projects: React.FC = () => {
     router.push(`${ROUTERS.PERSONAL.PROJECTS}/${projectId}`);
   };
 
-  if (isLoading) {
-    return (
-      <ProjectsContainer>
-        <Breadcrumb items={breadcrumbItems} />
-        <ProjectsHeader>
-          <ProjectsTitle>Dự án của tôi</ProjectsTitle>
-          <ProjectsSubtitle>Đang tải dữ liệu...</ProjectsSubtitle>
-        </ProjectsHeader>
-      </ProjectsContainer>
-    );
-  }
-
-  if (error) {
-    return (
-      <ProjectsContainer>
-        <Breadcrumb items={breadcrumbItems} />
-        <ProjectsHeader>
-          <ProjectsTitle>Dự án của tôi</ProjectsTitle>
-          <ProjectsSubtitle>Có lỗi xảy ra khi tải dữ liệu</ProjectsSubtitle>
-        </ProjectsHeader>
-      </ProjectsContainer>
-    );
-  }
-
-  if (projects.length === 0) {
+  const renderNoProjects = () => {
     return (
       <ProjectsContainer>
         <Breadcrumb items={breadcrumbItems} />
@@ -142,36 +114,46 @@ const Projects: React.FC = () => {
         />
       </div>
 
-      <ProjectsGrid>
-        {projects.map((project) => (
-          <ProjectCard key={project.id}>
-            <ProjectInfo>
-              <ProjectName>{project.name}</ProjectName>
-              <ProjectDescription>{project.description || project.scope}</ProjectDescription>
-              
-              <ProjectMeta>
-                <ProjectMetaItem>
-                  <Users size={14} />
-                  <span>{project.member_count || 0} thành viên</span>
-                </ProjectMetaItem>
-                {project.code && (
-                  <ProjectMetaItem>
-                    <Building size={14} />
-                    <span>{project.code}</span>
-                  </ProjectMetaItem>
-                )}
-              </ProjectMeta>
-            </ProjectInfo>
+        {isLoading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%' }}>
+            <Loading />
+          </div>
+        ) : (
+          <ProjectsGrid>
+            {projects.length === 0 ? renderNoProjects() : (
+              <>
+                {projects.map((project) => (
+                  <ProjectCard key={project.id}>
+                    <ProjectInfo>
+                      <ProjectName>{project.name}</ProjectName>
+                      <ProjectDescription>{project.description || project.scope}</ProjectDescription>
+                      
+                      <ProjectMeta>
+                        <ProjectMetaItem>
+                          <Users size={14} />
+                          <span>{project.member_count || 0} thành viên</span>
+                        </ProjectMetaItem>
+                        {project.code && (
+                          <ProjectMetaItem>
+                            <Building size={14} />
+                            <span>{project.code}</span>
+                          </ProjectMetaItem>
+                        )}
+                      </ProjectMeta>
+                    </ProjectInfo>
 
-            <ProjectActions>
-              <ProjectActionButton onClick={() => handleViewDetail(project.id)}>
-                <Eye size={14} />
-                Xem chi tiết
-              </ProjectActionButton>
-            </ProjectActions>
-          </ProjectCard>
-        ))}
-      </ProjectsGrid>
+                    <ProjectActions>
+                      <ProjectActionButton onClick={() => handleViewDetail(project.id)}>
+                        <Eye size={14} />
+                        Xem chi tiết
+                      </ProjectActionButton>
+                    </ProjectActions>
+                  </ProjectCard>
+                ))}
+              </>
+            )}
+          </ProjectsGrid>
+        )}
     </ProjectsContainer>
   );
 };

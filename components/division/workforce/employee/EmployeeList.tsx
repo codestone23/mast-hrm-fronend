@@ -77,8 +77,6 @@ const EmployeeList: React.FC = () => {
   const [positionId, setPositionId] = useState<number | undefined>(undefined);
   const [skillId, setSkillId] = useState<number | undefined>(undefined);
   const [levelId, setLevelId] = useState<number | undefined>(undefined);
-  const [sortBy] = useState("id");
-  const [sortOrder] = useState("asc");
 
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -103,8 +101,6 @@ const EmployeeList: React.FC = () => {
       positionId,
       skillId,
       levelId,
-      sortBy,
-      sortOrder,
     }
   );
 

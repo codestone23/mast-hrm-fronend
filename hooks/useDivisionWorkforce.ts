@@ -22,8 +22,6 @@ const queryKeys = {
       positionId?: number;
       skillId?: number;
       levelId?: number;
-      sortBy?: string;
-      sortOrder?: string;
     }
   ) => ["division-workforce", "members", divisionId, page, limit, search, filters] as const,
   teams: (
@@ -31,9 +29,7 @@ const queryKeys = {
     search: string,
     page: number,
     limit: number,
-    sortBy?: string,
-    sortOrder?: string
-  ) => ["division-workforce", "teams", divisionId, search, page, limit, sortBy, sortOrder] as const,
+  ) => ["division-workforce", "teams", divisionId, search, page, limit] as const,
   teamDetail: (teamId: number) => ["division-workforce", "team", teamId] as const,
 };
 
@@ -57,8 +53,6 @@ export function useDivisionMembers(
     positionId?: number;
     skillId?: number;
     levelId?: number;
-    sortBy?: string;
-    sortOrder?: string;
   }
 ) {
   return useQuery<MembersResponse>({
@@ -73,8 +67,6 @@ export function useDivisionMembers(
         filters?.positionId,
         filters?.skillId,
         filters?.levelId,
-        filters?.sortBy || "id",
-        filters?.sortOrder || "asc"
       ),
     enabled: !!divisionId,
     staleTime: 2 * 60 * 1000, // 2 minutes

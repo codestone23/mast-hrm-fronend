@@ -18,8 +18,6 @@ class DivisionWorkforceService {
     positionId?: number,
     skillId?: number,
     levelId?: number,
-    sortBy?: string,
-    sortOrder?: string
   ): Promise<PaginatedResponse<DivisionMemberData>> {
     const response = await axiosInstance.get(
       `/divisions/${divisionId}/members`,
@@ -32,8 +30,6 @@ class DivisionWorkforceService {
           positionId: positionId,
           skillId: skillId,
           levelId: levelId,
-          sortBy: sortBy,
-          sortOrder: sortOrder,
         },
       }
     );

@@ -14,7 +14,7 @@ import {
   Search,
   Building
 } from "lucide-react";
-import { Button, Input, Pagination, ConfirmDeleteModal } from "@/components/common";
+import { Button, Input, Pagination, ConfirmDeleteModal, Loading } from "@/components/common";
 import {
   ProjectsContainer,
   ProjectsHeader,
@@ -223,47 +223,52 @@ const DivisionProjects: React.FC = () => {
         />
       </div>
 
-      <ProjectsGrid>
-        {projects.map((project) => (
-          <ProjectCard key={project.id}>
-            <ProjectInfo>
-              <ProjectName>{project.name}</ProjectName>
-              <ProjectDescription>{project.description || project.scope}</ProjectDescription>
-              
-              <ProjectMeta>
-                <ProjectMetaItem>
-                  <Users size={14} />
-                  <span>{project.member_count || 0} thành viên</span>
-                </ProjectMetaItem>
-                {project.code && (
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <ProjectsGrid>
+          {projects.map((project) => (
+            <ProjectCard key={project.id}>
+              <ProjectInfo>
+                <ProjectName>{project.name}</ProjectName>
+                <ProjectDescription>{project.description || project.scope}</ProjectDescription>
+                
+                <ProjectMeta>
                   <ProjectMetaItem>
-                    <Building size={14} />
-                    <span>{project.code}</span>
+                    <Users size={14} />
+                    <span>{project.member_count || 0} thành viên</span>
                   </ProjectMetaItem>
-                )}
-                <ProjectMetaItem>
-                  <Briefcase size={14} />
-                  <span>{statusLabels[project.status] || project.status}</span>
-                </ProjectMetaItem>
-              </ProjectMeta>
-            </ProjectInfo>
+                  {project.code && (
+                    <ProjectMetaItem>
+                      <Building size={14} />
+                      <span>{project.code}</span>
+                    </ProjectMetaItem>
+                  )}
+                  <ProjectMetaItem>
+                    <Briefcase size={14} />
+                    <span>{statusLabels[project.status] || project.status}</span>
+                  </ProjectMetaItem>
+                </ProjectMeta>
+              </ProjectInfo>
 
-            <ProjectActions>
-              <ProjectActionButton onClick={() => handleViewDetail(project.id)}>
-                <Eye size={14} />
-                Chi tiết
-              </ProjectActionButton>
-              <ProjectActionButton 
-                onClick={() => handleDeleteProject(project)}
-                $danger
-              >
-                <Trash2 size={14} />
-                Xóa
-              </ProjectActionButton>
-            </ProjectActions>
-          </ProjectCard>
-        ))}
-      </ProjectsGrid>
+              <ProjectActions>
+                <ProjectActionButton onClick={() => handleViewDetail(project.id)}>
+                  <Eye size={14} />
+                  Chi tiết
+                </ProjectActionButton>
+                <ProjectActionButton 
+                  onClick={() => handleDeleteProject(project)}
+                  $danger
+                >
+                  <Trash2 size={14} />
+                  Xóa
+                </ProjectActionButton>
+              </ProjectActions>
+            </ProjectCard>
+          ))}
+        </ProjectsGrid>
+      )}
+
 
       {pagination && pagination.total_pages > 1 && (
         <div style={{ marginTop: '2rem' }}>

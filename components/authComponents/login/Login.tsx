@@ -21,7 +21,6 @@ import {
   ErrorMessage,
   Input,
 } from "./loginStyle";
-import { useRouter } from "next/navigation";
 import { useLogin } from "./useLogin";
 
 interface LoginProps {

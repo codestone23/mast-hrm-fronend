@@ -4,7 +4,7 @@ import {
   BirthdayEmployeeData,
   WorkStatisticData,
 } from '@/types/api';
-import { formatDateForApi } from "@/utils/api";
+import { formatDateForApi } from "@/utils/dateUtils";
 
 class DivisionDashboardService {
   async getWorkInfo(divisionId: number, date: Date): Promise<WorkInfoData> {

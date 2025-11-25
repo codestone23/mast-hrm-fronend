@@ -82,3 +82,31 @@ export enum NewsStatus {
     APPROVED = "APPROVED",
     REJECTED = "REJECTED",
 }
+
+export enum ProjectStatus {
+    OPEN = "OPEN",
+    IN_PROGRESS = "IN_PROGRESS",
+    PENDING = "PENDING",
+    CLOSED = "CLOSED",
+}
+
+export enum ProjectType {
+    CUSTOMER = "CUSTOMER",
+    IN_HOUSE = "IN_HOUSE",
+    START_UP = "START_UP",
+    INTERNAL = "INTERNAL",
+}
+
+export enum ProjectIndustry {
+    IT = "IT",
+    FINANCE = "FINANCE",
+    MANUFACTURING = "MANUFACTURING",
+    OTHER = "OTHER",
+}
+
+export enum ProjectCritical {
+    LOW = "Low",
+    MEDIUM = "Medium",
+    HIGH = "High",
+    CRITICAL = "Critical",
+}

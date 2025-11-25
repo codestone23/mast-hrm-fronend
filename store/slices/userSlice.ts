@@ -37,14 +37,12 @@ export const convertUserToUserProfile = (user: User): UserProfile => {
     today_attendance: user.today_attendance || undefined,
     remaining_leave_days: user.remaining_leave_days,
     organization: {
-      division: {
-        ...(user.organization.division as unknown as Omit<UserProfile['organization']['division'], 'team'>),
-        team: user.organization.team || {
-          id: 0,
-          name: '',
-          division_id: null,
-          founding_date: null,
-        },
+      division: user.organization.division as unknown as UserProfile['organization']['division'],
+      team: user.organization.team || {
+        id: 0,
+        name: '',
+        division_id: null,
+        founding_date: null,
       },
     },
   };
@@ -92,6 +90,7 @@ const userSlice = createSlice({
     clearUser: (state) => {
       state.data = null;
       state.error = null;
+      state.isInitialized = false;
       LocalStorageUtil.removeItem(LOCAL_KEY.USER);
     },
     updateUser: (state, action: PayloadAction<Partial<UserProfile>>) => {

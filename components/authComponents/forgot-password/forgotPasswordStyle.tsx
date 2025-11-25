@@ -246,6 +246,9 @@ export const SubmitButton = styled.button`
 `;
 
 export const BackToLogin = styled.a`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background-color: transparent;
   border: none;
   text-align: center;

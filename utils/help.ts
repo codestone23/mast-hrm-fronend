@@ -1,11 +1,5 @@
 import { DivisionStatus } from "@/constants/enums";
 
-
-
-
-
-
-
 export const getDivisionStatus = (status: DivisionStatus) => {
     switch (status) {
         case DivisionStatus.ACTIVE:

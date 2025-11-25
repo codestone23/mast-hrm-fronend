@@ -39,7 +39,7 @@ export default function Layout({
     if (!hasRolePermission(userRoles, allowedRoles)) {
       router.push(ROUTERS.NOT_FOUND); 
     }
-  }, [user, router]);
+  }, [user]);
 
   const roles = useMemo(() => {
     const userRoles =

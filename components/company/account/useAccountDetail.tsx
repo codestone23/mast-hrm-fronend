@@ -25,6 +25,7 @@ export const useAccountDetail = (accountId: string) => {
                 join_date: user.join_date || undefined,
                 today_attendance: user.today_attendance || undefined,
                 remaining_leave_days: user.remaining_leave_days,
+                organization: user.organization as UserProfile['organization'],
             };
             return userProfile;
         },

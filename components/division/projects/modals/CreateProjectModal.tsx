@@ -6,6 +6,7 @@ import { ProjectCreateRequest } from "@/services/project.service";
 import { useProjectMutation } from "@/hooks/useProjectMutation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+import { ProjectCritical, ProjectIndustry, ProjectStatus, ProjectType } from "@/constants/enums";
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -207,6 +208,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             required
             value={formData.name || ''}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder="Nhập tên dự án"
             error={errors.name}
             disabled={isPending}
           />
@@ -215,6 +217,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             required
             value={formData.code || ''}
             onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+            placeholder="Nhập mã dự án"
             error={errors.code}
             disabled={isPending}
           />
@@ -226,7 +229,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             required
             options={statusOptions}
             value={formData.status || 'OPEN'}
-            onChange={(v) => setFormData({ ...formData, status: v as any })}
+            onChange={(v) => setFormData({ ...formData, status: v as ProjectStatus })} 
             error={errors.status}
             disabled={isPending}
           />
@@ -235,7 +238,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             required
             options={projectTypeOptions}
             value={formData.project_type || 'INTERNAL'}
-            onChange={(v) => setFormData({ ...formData, project_type: v as any })}
+            onChange={(v) => setFormData({ ...formData, project_type: v as ProjectType })}
             error={errors.project_type}
             disabled={isPending}
           />
@@ -247,7 +250,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             required
             options={industryOptions}
             value={formData.industry || 'IT'}
-            onChange={(v) => setFormData({ ...formData, industry: v as any })}
+            onChange={(v) => setFormData({ ...formData, industry: v as ProjectIndustry })}
             error={errors.industry}
             disabled={isPending}
           />
@@ -256,7 +259,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             required
             options={criticalOptions}
             value={formData.critical || 'Medium'}
-            onChange={(v) => setFormData({ ...formData, critical: v as any })}
+            onChange={(v) => setFormData({ ...formData, critical: v as ProjectCritical })}
             error={errors.critical}
             disabled={isPending}
           />
@@ -280,6 +283,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               ...formData, 
               team_id: e.target.value ? Number(e.target.value) : undefined 
             })}
+            placeholder="Nhập Team ID"
             disabled={isPending}
           />
         </div>
@@ -289,6 +293,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
           required
           value={formData.description || ''}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          placeholder="Nhập mô tả dự án"
           error={errors.description}
           disabled={isPending}
           rows={3}
@@ -299,6 +304,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
           required
           value={formData.scope || ''}
           onChange={(e) => setFormData({ ...formData, scope: e.target.value })}
+          placeholder="Nhập phạm vi dự án"
           error={errors.scope}
           disabled={isPending}
           rows={3}
@@ -308,6 +314,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
           label="Thông tin hợp đồng (tùy chọn)"
           value={formData.contract_information || ''}
           onChange={(e) => setFormData({ ...formData, contract_information: e.target.value })}
+          placeholder="Nhập thông tin hợp đồng"
           disabled={isPending}
         />
 
@@ -315,6 +322,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
           label="Ghi chú (tùy chọn)"
           value={formData.note || ''}
           onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+          placeholder="Nhập ghi chú"
           disabled={isPending}
           rows={2}
         />

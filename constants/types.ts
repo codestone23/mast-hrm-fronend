@@ -139,7 +139,7 @@ export interface UserProfile {
     scope_type: string;
     scope_id: number | null;
   }>;
-  division: {
+  division?: {
     id: number;
     name: string;
     description: string;

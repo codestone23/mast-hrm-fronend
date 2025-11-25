@@ -6,16 +6,16 @@ import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
 export const useOverview = () => {
     const dispatch = useAppDispatch();
     const { data, isLoading, error, isInitialized } = useAppSelector((state) => state.user);
+    const user = LocalStorageUtil.getItemObject(LOCAL_KEY.USER);
 
     useEffect(() => {
-        const user = LocalStorageUtil.getItemObject(LOCAL_KEY.USER);
-        if (user) {
+        if (!user) {
             dispatch(fetchUserData(user));
         }
     }, []);
 
     useEffect(() => {
-        if (!isInitialized && !data) {
+        if (!isInitialized && !data && !user) {
             const loadData = async () => {
                 await dispatch(fetchUserData());
             };

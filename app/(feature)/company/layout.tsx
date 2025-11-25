@@ -29,7 +29,7 @@ export default function Layout({
     if (!hasRolePermission(userRoles, allowedRoles)) {
       router.push(ROUTERS.NOT_FOUND); 
     }
-  }, [user, router]);
+  }, [user]);
 
   const navItems = [
     { id: ROUTERS.COMPANY.ACCOUNTS, label: "Quản lý tài khoản" },

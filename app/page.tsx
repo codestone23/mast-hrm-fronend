@@ -77,12 +77,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to login after a short delay
-    const timer = setTimeout(() => {
-      router.push(ROUTERS.AUTH.LOGIN);
-    }, 2000);
-
-    return () => clearTimeout(timer);
+    router.push(ROUTERS.AUTH.LOGIN);
   }, [router]);
 
   return (

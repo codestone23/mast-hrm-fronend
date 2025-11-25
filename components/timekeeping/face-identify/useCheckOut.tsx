@@ -15,20 +15,20 @@ export const useCheckOut = () => {
         mutationFn: async (data: CheckOutData): Promise<unknown> => {
             // 1) Verify image at Face service
             let uploadedUrl: string | undefined;
-            if ((data as any).image) {
+            if ((data as unknown as CheckOutData).image) {
                 const verifyForm = new FormData();
-                verifyForm.append('image', (data as any).image as unknown as Blob);
+                verifyForm.append('image', (data as unknown as CheckOutData).image as unknown as Blob);
                 await TimekeepingService.verifyFace(verifyForm);
 
                 // 2) Request presigned URL (Cloudinary style)
                 const presign = await profileService.getPresignedUrl({
-                    file_type: ((data as any).image as File).type,
+                    file_type: ((data as unknown as CheckOutData).image as File).type,
                     folder: 'timekeeping-checkout',
                 });
 
                 // 3) Upload using provided signature fields
                 const uploadForm = new FormData();
-                uploadForm.append('file', (data as any).image as unknown as Blob);
+                uploadForm.append('file', (data as unknown as CheckOutData).image as unknown as Blob);
                 uploadForm.append('public_id', presign.public_id);
                 uploadForm.append('signature', presign.signature);
                 uploadForm.append('timestamp', presign.timestamp.toString());
@@ -51,7 +51,7 @@ export const useCheckOut = () => {
             // 4) Call backend checkout with photo_url
             const payload = new FormData();
             Object.entries(data).forEach(([key, value]) => {
-                if (key !== 'image') payload.append(key, value as any);
+                if (key !== 'image') payload.append(key, value as unknown as string);
             });
             if (uploadedUrl) payload.set('photo_url', uploadedUrl);
 

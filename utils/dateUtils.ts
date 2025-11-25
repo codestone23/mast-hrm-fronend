@@ -55,3 +55,19 @@ export const parseDateFromDisplay = (
   const [day, month, year] = dateString.split("/").map(Number);
   return new Date(year, month - 1, day);
 };
+
+export const formatDateForApi = (date: Date | string): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toISOString().split('T')[0]; // YYYY-MM-DD format
+};
+
+// Helper function to format datetime for API
+export const formatDateTimeForApi = (date: Date | string): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toISOString(); // ISO 8601 format
+};
+
+// Helper function to parse API date
+export const parseApiDate = (dateString: string): Date => {
+  return new Date(dateString);
+};

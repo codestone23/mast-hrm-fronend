@@ -181,6 +181,28 @@ export interface User {
   user_role_assignments?: UserRoleAssignment[];
   user_division?: unknown[];
   status?: string;
+  organization?: {
+    division: {
+      id: number;
+      name: string;
+      description: string;
+      status: string;
+      type: string;
+      division_head: {
+          id: number;
+          email: string;
+          name: string;
+          avatar: string;
+          phone: string;
+      };  
+    };
+    team: {
+        id: number;
+        name: string;
+        division_id: number | null;
+        founding_date: string | null;
+    };
+  };
 }
 
 export enum UserRole {

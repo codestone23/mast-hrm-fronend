@@ -166,6 +166,7 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
               {...register("name", {
                 required: "Vui lòng nhập tên",
               })}
+              placeholder="Nhập tên đầy đủ"
               icon={<User size={16} />}
               required
               disabled={isSubmitting}
@@ -190,6 +191,7 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
               {...register("nationality", {
                 required: "Vui lòng nhập quốc tịch",
               })}
+              placeholder="Nhập quốc tịch"
               icon={<MapPin size={16} />}
               required
               disabled={isSubmitting}
@@ -210,6 +212,7 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
               {...register("expertise", {
                 required: "Vui lòng nhập chuyên môn",
               })}
+              placeholder="Nhập chuyên môn"
               icon={<Briefcase size={16} />}
               required
               disabled={isSubmitting}
@@ -231,6 +234,7 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
                   message: "Số điện thoại không hợp lệ",
                 },
               })}
+              placeholder="Nhập số điện thoại (10-11 số)"
               icon={<Phone size={16} />}
               required
               disabled={isSubmitting}
@@ -247,6 +251,7 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
                   message: "Email không hợp lệ",
                 },
               })}
+              placeholder="Nhập email cá nhân"
               icon={<Mail size={16} />}
               required
               disabled={isSubmitting}
@@ -269,6 +274,7 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
             <Input
               label="Địa chỉ tạm trú"
               {...register("temporaryAddress")}
+              placeholder="Nhập địa chỉ tạm trú"
               icon={<MapPin size={16} />}
               disabled={isSubmitting}
             />
@@ -276,6 +282,7 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
             <Input
               label="Địa chỉ thường trú"
               {...register("permanentAddress")}
+              placeholder="Nhập địa chỉ thường trú"
               icon={<MapPin size={16} />}
               disabled={isSubmitting}
             />

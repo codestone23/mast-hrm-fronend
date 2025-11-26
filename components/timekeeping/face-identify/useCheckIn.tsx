@@ -1,11 +1,10 @@
 import { useToast } from "@/hooks/useToast";
+import profileService from "@/services/profile.service";
 import TimekeepingService from "@/services/timekeeping.service";
-import { ApiResponse, LoginResponse } from "@/types/api";
+import { ApiResponse, CheckInData, LoginResponse } from "@/types/api";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useState } from "react";
-import { CheckInData } from "@/types/api";
-import profileService from "@/services/profile.service";
 
 export const useCheckIn = () => {
     const [isCheckInLoading, setIsCheckInLoading] = useState(false);
@@ -13,18 +12,35 @@ export const useCheckIn = () => {
 
     const checkInMutation = useMutation({
         mutationFn: async (data: CheckInData): Promise<unknown> => {
-            // 1) Verify image at Face service
             const verifyForm = new FormData();
             verifyForm.append('image', data.image as unknown as Blob);
-            await TimekeepingService.verifyFace(verifyForm);
 
-            // 2) Request presigned URL from backend (Cloudinary style)
+            const faceUrl =
+                process.env.NEXT_PUBLIC_FACE_IDENTIFICATION_URL
+
+            if (!faceUrl) {
+                throw new Error("FACE_IDENTIFICATION_URL không được cấu hình");
+            }
+
+            const verifyRes = await fetch(`${faceUrl}/identify`, {
+                method: 'POST',
+                body: verifyForm,
+            });
+
+            if (!verifyRes.ok) {
+                const errText = await verifyRes.text();
+                throw new Error(
+                    `Xác thực khuôn mặt thất bại: ${verifyRes.status} - ${errText}`,
+                );
+            }
+
+            await verifyRes.json();
+
             const presign = await profileService.getPresignedUrl({
                 file_type: (data.image as unknown as File).type,
                 folder: 'timekeeping-checkin',
             });
 
-            // 3) Upload to Cloudinary using provided signature fields
             const uploadForm = new FormData();
             uploadForm.append('file', data.image as unknown as Blob);
             uploadForm.append('public_id', presign.public_id);
@@ -45,7 +61,6 @@ export const useCheckIn = () => {
             const uploadedUrl = uploadJson.secure_url as string;
             if (!uploadedUrl) throw new Error('Không xác định được URL ảnh sau upload');
 
-            // 4) Call backend check-in with photo_url
             const payload = new FormData();
             Object.entries(data).forEach(([key, value]) => {
                 if (key !== 'image') payload.append(key, value as any);

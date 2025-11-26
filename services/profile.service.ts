@@ -177,11 +177,6 @@ class ProfileService {
     return response.data;
   }
 
-  async uploadImage(data: ImageUpdate): Promise<ImageUpdate> {
-    const response = await axiosInstance.post('upload/presigned-url', data);
-    return response.data;
-  }
-
   async uploadAvatarFile(file: File): Promise<string> {
     try {
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];

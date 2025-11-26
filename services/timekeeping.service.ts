@@ -1,12 +1,12 @@
 import axiosInstance from '@/lib/axios';
 import {
   ApiResponse,
+  CreateLeaveRequest,
+  LeaveRequest,
   PaginatedResponse,
+  RequestStatus,
   TimeSheet,
   TimeSheetRequest,
-  LeaveRequest,
-  CreateLeaveRequest,
-  RequestStatus,
 } from '@/types/api';
 
 class TimekeepingService {
@@ -44,32 +44,25 @@ class TimekeepingService {
     return response.data;
   }
 
-  async registerFace(data: FormData): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.post('timesheet/register-face', data, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+  async registerFace(data: { user_id: number; photo_url: string }): Promise<ApiResponse<{
+    success: boolean;
+    message: string;
+    user_id: number;
+    photo_url: string;
+  }>> {
+    const response = await axiosInstance.post('timesheet/register-face', data);
     return response.data;
   }
 
   // Check in
   async checkIn(data: FormData): Promise<ApiResponse<TimeSheet>> {
-    const response = await axiosInstance.post('timesheet/checkin', data, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await axiosInstance.post('timesheet/checkin', data);
     return response.data;
   }
 
   // Check out
   async checkOut(data: FormData): Promise<ApiResponse<TimeSheet>> {
-    const response = await axiosInstance.post('timesheet/checkout', data, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await axiosInstance.post('timesheet/checkout', data);
     return response.data;
   }
 

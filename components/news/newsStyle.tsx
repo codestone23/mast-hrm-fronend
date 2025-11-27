@@ -4,6 +4,10 @@ import styled from "styled-components";
 export const NewsListContainer = styled.div`
   width: 100%;
   padding: 1.5rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 export const NewsListHeader = styled.div`
@@ -15,6 +19,10 @@ export const NewsListTitle = styled.h1`
   font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 0.5rem 0;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 `;
 
 export const NewsListSubtitle = styled.p`
@@ -32,6 +40,11 @@ export const NewsGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 `;
 
 // NewsCard styles
@@ -109,6 +122,11 @@ export const NewsDetailContainer = styled.div`
   max-width: calc(100% - 100px);
   margin: 0 auto;
   padding: 1.5rem;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    padding: 1rem;
+  }
 `;
 
 export const NewsDetailHeader = styled.div`
@@ -143,6 +161,10 @@ export const NewsDetailTitle = styled.h1`
   color: var(--text-primary);
   margin: 0 0 1rem 0;
   line-height: 1.3;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 `;
 
 export const NewsDetailMeta = styled.div`

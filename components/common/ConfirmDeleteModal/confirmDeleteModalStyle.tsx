@@ -25,5 +25,3 @@ export const ActionsRow = styled.div`
 export const Spacer = styled.div`
   flex: 1 1 auto;
 `;
-
-export default {};

@@ -4,6 +4,10 @@ export const PersonalContainer = styled.div`
   background-color: var(--background-secondary);
   min-height: calc(100vh - 60px);
   padding: 1.5rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 export const DashboardGrid = styled.div`
@@ -142,6 +146,19 @@ export const ProfileInfo = styled.div`
   .role {
     font-size: 0.8rem;
     opacity: 0.8;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.5rem;
+    
+    h3 {
+      font-size: 1rem;
+    }
+    
+    p {
+      font-size: 0.75rem;
+    }
   }
 `;
 
@@ -740,6 +757,11 @@ export const ContainerDashboard = styled.div`
   display: flex;
   flex-direction: row;
   gap: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 `;
 
 export const NewsSidebarHeader = styled.div`

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Settings2, Users, GraduationCap, Briefcase, Languages, Brain } from "lucide-react";
+import { useMobile } from "@/hooks/useMobile";
 import {
   SettingsContainer,
   SettingsHeader,
@@ -32,6 +33,7 @@ const masterDataItems: MasterDataItem[] = [
 ];
 
 const Settings: React.FC = () => {
+  const isMobile = useMobile();
   const [activeTab, setActiveTab] = useState<string>("master-data");
   const [activeItem, setActiveItem] = useState<string>("level");
 

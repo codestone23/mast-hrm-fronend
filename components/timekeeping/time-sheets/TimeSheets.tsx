@@ -12,11 +12,11 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  ImageUp,
   Plus,
   ScanFace,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
+import { useMobile } from "@/hooks/useMobile";
 import AdminRequestsList from "../AdminRequestsList";
 import FaceIdentify from "../face-identify/FaceIdentify";
 import CreateRequestModal from "../modals/CreateRequestModal";
@@ -67,6 +67,7 @@ import {
   WeekDay,
   WorkSchedule,
   WorkScheduleTime,
+  TabContentWrapper,
 } from "./timeSheetStyle";
 import { useTimeSheet } from "./useTimeSheet";
 
@@ -89,6 +90,7 @@ interface ProcessedTimeSheetData {
 }
 
 const TimeSheets: React.FC = () => {
+  const isMobile = useMobile();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState("BẢNG CHẤM CÔNG");
   const [isCreateRequestModalOpen, setIsCreateRequestModalOpen] =
@@ -114,6 +116,7 @@ const TimeSheets: React.FC = () => {
       selectedDate: "",
     }
   );
+  const [editRequest, setEditRequest] = useState<Request | null>(null);
 
   const getTodayInVietnamTimezone = () => {
     const now = new Date();
@@ -271,6 +274,7 @@ const TimeSheets: React.FC = () => {
   // Handle request type selection
   const handleSelectRequestType = (requestType: string) => {
     const modalType = requestType as RequestModalType;
+    setEditRequest(null); // Reset editRequest when creating new request
     setRequestModalState((prev) => {
       const newState = {
         ...prev,
@@ -288,6 +292,7 @@ const TimeSheets: React.FC = () => {
       activeModal: RequestModalType.NONE,
       selectedDate: "",
     });
+    setEditRequest(null);
   };
 
   // Helper function to format request type to display text
@@ -306,6 +311,18 @@ const TimeSheets: React.FC = () => {
       default:
         return "";
     }
+  };
+
+  // Helper function to map REQUEST_TYPE to API endpoint type
+  const getRequestTypeEndpoint = (requestType: REQUEST_TYPE): string => {
+    const typeMap: Record<REQUEST_TYPE, string> = {
+      [REQUEST_TYPE.REMOTE_WORK]: "remote-work",
+      [REQUEST_TYPE.DAY_OFF]: "day-off",
+      [REQUEST_TYPE.OVERTIME]: "overtime",
+      [REQUEST_TYPE.LATE_EARLY]: "late-early",
+      [REQUEST_TYPE.FORGOT_CHECKIN]: "forgot-checkin",
+    };
+    return typeMap[requestType] || requestType.toLowerCase();
   };
 
   const monthNames = [
@@ -331,14 +348,16 @@ const TimeSheets: React.FC = () => {
             <Tab
               key={tab}
               $active={activeTab === tab}
+              $isMobile={isMobile}
               onClick={() => setActiveTab(tab)}
             >
-              {tab}
+              {isMobile && tab.length > 15 ? tab.substring(0, 15) + "..." : tab}
             </Tab>
           ))}
         </TabsContainer>
-        <HeaderButtons>
+        <HeaderButtons $isMobile={isMobile}>
           <CreateButton
+            $isMobile={isMobile}
             onClick={() => {
               const today = getTodayInVietnamTimezone();
               setRequestModalState({
@@ -348,15 +367,15 @@ const TimeSheets: React.FC = () => {
               });
             }}
           >
-            <Plus size={16} />
-            Tạo đề xuất
+            <Plus size={isMobile ? 14 : 16} />
+            {isMobile ? "Đề xuất" : "Tạo đề xuất"}
           </CreateButton>
-          <CreateButton onClick={() => setActiveTab("FaceIdentify")}>
-            <ScanFace size={16} />
-            Chấm công 
-          </CreateButton>
-          <CreateButton onClick={() => setActiveTab("RegisterFace")}>
-            <ImageUp size={16} />
+          <CreateButton 
+            $isMobile={isMobile}
+            onClick={() => setActiveTab("FaceIdentify")}
+          >
+            <ScanFace size={isMobile ? 14 : 16} />
+            {isMobile ? "Chấm công" : "Chấm công"}
           </CreateButton>
         </HeaderButtons>
       </Header>
@@ -615,6 +634,25 @@ const TimeSheets: React.FC = () => {
                   setSelectedRequest(request);
                   setIsDetailModalOpen(true);
                 }}
+                onEditRequest={(request) => {
+                  setEditRequest(request);
+                  const endpointType = getRequestTypeEndpoint(request.request_type as REQUEST_TYPE);
+                  const modalTypeMap: Record<string, RequestModalType> = {
+                    'remote-work': RequestModalType.REMOTE_WORK,
+                    'day-off': RequestModalType.PAID_LEAVE,
+                    'overtime': RequestModalType.REGULAR_OVERTIME,
+                    'late-early': RequestModalType.LATE_EARLY,
+                    'forgot-checkin': RequestModalType.FORGOT_TIMEKEEPING,
+                  };
+                  const modalType = modalTypeMap[endpointType];
+                  if (modalType) {
+                    setRequestModalState({
+                      isRequestTypeModalOpen: false,
+                      activeModal: modalType,
+                      selectedDate: request.work_date || "",
+                    });
+                  }
+                }}
               />
             ) : (
               <AdminRequestsList
@@ -628,35 +666,17 @@ const TimeSheets: React.FC = () => {
         )}
 
         {activeTab === "FaceIdentify" && (
-          <div
-            style={{
-              padding: "1rem",
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <TabContentWrapper $isMobile={isMobile}>
             <h3 style={{ marginBottom: "1rem" }}>Xác thực khuôn mặt</h3>
             <FaceIdentify />
-          </div>
+          </TabContentWrapper>
         )}
 
         {activeTab === "RegisterFace" && (
-          <div
-            style={{
-              padding: "1rem",
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <TabContentWrapper $isMobile={isMobile}>
             <h3 style={{ marginBottom: "1rem" }}>Đăng ký khuôn mặt</h3>
             <RegisterFace />
-          </div>
+          </TabContentWrapper>
         )}
       </MainContent>
 
@@ -668,36 +688,61 @@ const TimeSheets: React.FC = () => {
       {/* Specific Request Modals */}
       <LateEarlyModal
         isOpen={requestModalState.activeModal === RequestModalType.LATE_EARLY}
-        onClose={closeAllModals}
+        onClose={() => {
+          closeAllModals();
+          setEditRequest(null);
+        }}
         selectedDate={requestModalState.selectedDate}
+        requestId={editRequest?.id}
+        requestType={editRequest ? getRequestTypeEndpoint(editRequest.request_type as REQUEST_TYPE) : undefined}
       />
 
       <RemoteWorkModal
         isOpen={requestModalState.activeModal === RequestModalType.REMOTE_WORK}
-        onClose={closeAllModals}
+        onClose={() => {
+          closeAllModals();
+          setEditRequest(null);
+        }}
         selectedDate={requestModalState.selectedDate}
+        requestId={editRequest?.id}
+        requestType={editRequest ? getRequestTypeEndpoint(editRequest.request_type as REQUEST_TYPE) : undefined}
       />
 
       <PaidLeaveModal
         isOpen={requestModalState.activeModal === RequestModalType.PAID_LEAVE}
-        onClose={closeAllModals}
+        onClose={() => {
+          closeAllModals();
+          setEditRequest(null);
+        }}
         selectedDate={requestModalState.selectedDate}
+        requestId={editRequest?.id}
+        requestType={editRequest ? getRequestTypeEndpoint(editRequest.request_type as REQUEST_TYPE) : undefined}
       />
 
       <RegularOvertimeModal
         isOpen={
           requestModalState.activeModal === RequestModalType.REGULAR_OVERTIME
         }
-        onClose={closeAllModals}
+        onClose={() => {
+          closeAllModals();
+          setEditRequest(null);
+        }}
         selectedDate={requestModalState.selectedDate}
+        requestId={editRequest?.id}
+        requestType={editRequest ? getRequestTypeEndpoint(editRequest.request_type as REQUEST_TYPE) : undefined}
       />
 
       <ForgotTimekeepingModal
         isOpen={
           requestModalState.activeModal === RequestModalType.FORGOT_TIMEKEEPING
         }
-        onClose={closeAllModals}
+        onClose={() => {
+          closeAllModals();
+          setEditRequest(null);
+        }}
         selectedDate={requestModalState.selectedDate}
+        requestId={editRequest?.id}
+        requestType={editRequest ? getRequestTypeEndpoint(editRequest.request_type as REQUEST_TYPE) : undefined}
       />
 
       <RequestDetailModal

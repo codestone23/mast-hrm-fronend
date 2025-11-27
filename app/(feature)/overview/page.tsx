@@ -2,7 +2,7 @@
 
 import Header from "@/components/header/Header";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useMemo } from "react";
 import ModuleGrid from "../../../components/header/module-grid/ModuleGrid";
 import { ContentHeader, PageContainer } from "./overviewStyle";
 import { useOverview } from "./useOverview";
@@ -11,10 +11,10 @@ const OverviewPage: React.FC = () => {
   const router = useRouter();
   const { data, isLoading } = useOverview();
 
-  const getUserRoles = () => {
-    const roles = data?.role_assignments?.map((role) => role?.name ?? "");
+  const userRoles = useMemo(() => {
+    const roles = data?.role_assignments?.map((role: { name: string }) => role?.name ?? "");
     return Array.isArray(roles) ? roles : [];
-  };
+  }, [data]);
 
   const handleModuleClick = (modulePath: string) => {
     router.push(modulePath);
@@ -27,7 +27,7 @@ const OverviewPage: React.FC = () => {
         <ModuleGrid
           onModuleClick={handleModuleClick}
           userName={data?.user_information?.name ?? ""}
-          userRoles={getUserRoles()}
+          userRoles={userRoles}
           isLoading={isLoading}
         />
       </ContentHeader>

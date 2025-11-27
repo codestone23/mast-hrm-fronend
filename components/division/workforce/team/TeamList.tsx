@@ -6,17 +6,25 @@ import { RootState } from "@/store";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Input, Pagination, Table, TableColumn, Button, ConfirmDeleteModal } from "@/components/common";
-import { Users, Edit, Trash2, Plus, Eye } from "lucide-react";
+import { Users, Edit, Trash2, Plus, Eye, Search } from "lucide-react";
 import Image from "next/image";
+import { useMobile } from "@/hooks/useMobile";
 import AddTeamModal from "./modals/AddTeamModal";
 import EditTeamModal from "./modals/EditTeamModal";
 import {
-  Container,
-  ContentContainer,
-  UserInfo,
-  Avatar,
-  UserName,
-} from "./teamListStyle";
+  PersonalContainer,
+  DashboardGridAccount,
+  Card,
+  CardHeader,
+  CardTitle,
+  IconWrapper,
+  DashboardCol,
+  CreateButton,
+  SearchContainer,
+  HeaderRow,
+  FilterContainer,
+  StatsRow,
+} from "@/components/company/account/accountStyle";
 import divisionWorkforceService from "@/services/division_workforce.service";
 import { DivisionTeamData, DivisionTeamUpdateRequest, DivisionTeamCreateRequest } from "@/types/api";
 import { useToast } from "@/hooks/useToast";
@@ -26,6 +34,7 @@ const ITEMS_PER_PAGE = 10;
 const TeamList: React.FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const isMobile = useMobile();
   const selectedDivisionId = useSelector(
     (state: RootState) => state.division.selectedDivisionId
   );
@@ -36,25 +45,25 @@ const TeamList: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<DivisionTeamData | null>(null);
 
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [page, setPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-      setPage(1);
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1);
     }, 500);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [searchTerm]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["division-workforce", "teams", selectedDivisionId, debouncedSearch, page, ITEMS_PER_PAGE],
+    queryKey: ["division-workforce", "teams", selectedDivisionId, debouncedSearch, currentPage, ITEMS_PER_PAGE],
     queryFn: () =>
       divisionWorkforceService.getTeams(
         selectedDivisionId!,
         debouncedSearch,
-        page,
+        currentPage,
         ITEMS_PER_PAGE,
       ),
     enabled: !!selectedDivisionId,
@@ -67,7 +76,6 @@ const TeamList: React.FC = () => {
     total_pages: 1,
     limit: ITEMS_PER_PAGE,
   };
-  const totalPages = pagination.total_pages || 1;
 
   const createTeamMutation = useMutation({
     mutationFn: (formData: DivisionTeamCreateRequest) =>
@@ -76,10 +84,11 @@ const TeamList: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["division-workforce", "teams"] });
       showSuccessToast("Tạo team thành công");
       setIsCreateModalOpen(false);
-      setPage(1);
+      setCurrentPage(1);
     },
-    onError: () => {
-      showErrorToast("Không thể tạo team");
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      showErrorToast(err?.response?.data?.message || "Không thể tạo team");
     },
   });
 
@@ -93,8 +102,9 @@ const TeamList: React.FC = () => {
       setIsEditModalOpen(false);
       setSelectedTeam(null);
     },
-    onError: () => {
-      showErrorToast("Không thể cập nhật team");
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      showErrorToast(err?.response?.data?.message || "Không thể cập nhật team");
     },
   });
 
@@ -106,8 +116,9 @@ const TeamList: React.FC = () => {
       setIsDeleteModalOpen(false);
       setSelectedTeam(null);
     },
-    onError: () => {
-      showErrorToast("Không thể xóa team");
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      showErrorToast(err?.response?.data?.message || "Không thể xóa team");
     },
   });
 
@@ -136,6 +147,10 @@ const TeamList: React.FC = () => {
     }
   };
 
+  const handleViewDetail = (team: DivisionTeamData) => {
+    router.push(`/division/workforce/team/${team.id}`);
+  };
+
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -151,7 +166,12 @@ const TeamList: React.FC = () => {
       if (typeof resourceByLevel === "string") {
         return resourceByLevel;
       }
-      return JSON.stringify(resourceByLevel);
+      if (typeof resourceByLevel === "object") {
+        const entries = Object.entries(resourceByLevel);
+        if (entries.length === 0) return "-";
+        return entries.map(([key, value]) => `${key}: ${value}`).join(", ");
+      }
+      return String(resourceByLevel);
     } catch {
       return "-";
     }
@@ -159,58 +179,77 @@ const TeamList: React.FC = () => {
 
   const teamColumns: TableColumn<DivisionTeamData>[] = useMemo(() => [
     {
-      key: "id",
-      label: "STT",
-      width: "80px",
-      align: "center",
-    },
-    {
       key: "name",
       label: "Tên team",
       width: "2fr",
       render: (_, row) => (
-        <div style={{ fontWeight: 500 }}>{row.name}</div>
+        <div style={{ fontWeight: 500, color: "#111827" }}>{row.name}</div>
       ),
     },
     {
       key: "manager",
       label: "Người quản lý",
-      width: "1.5fr",
+      width: "2fr",
       render: (_, row) => (
-        <UserInfo>
-          <Avatar>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              backgroundColor: "#e0e7ff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#6366f1",
+              overflow: "hidden",
+            }}
+          >
             {row.manager.avatar && row.manager.avatar.includes('https') ? (
-              <Image src={row.manager.avatar} alt={row.manager.name} width={40} height={40} />
+              <Image src={row.manager.avatar} alt={row.manager.name} width={40} height={40} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
             ) : (
-              <span>{row.manager.name.charAt(0)}</span>
+              <span style={{ fontWeight: 500 }}>{row.manager.name.charAt(0).toUpperCase()}</span>
             )}
-          </Avatar>
-          <UserName>{row.manager.name}</UserName>
-        </UserInfo>
+          </div>
+          <div>
+            <div style={{ fontWeight: 500, color: "#111827", marginBottom: "2px" }}>{row.manager.name}</div>
+            <div style={{ fontSize: "12px", color: "#6b7280" }}>{row.manager.email}</div>
+          </div>
+        </div>
       ),
     },
     {
       key: "member_count",
       label: "Số lượng thành viên",
-      width: "1fr",
+      width: "150px",
       align: "center",
+      render: (_, row) => (
+        <span style={{ fontWeight: 500 }}>{row.member_count || 0}</span>
+      ),
     },
     {
       key: "resource_by_level",
       label: "Resource theo level",
-      width: "1.5fr",
-      render: (_, row) => formatResourceByLevel(row.resource_by_level),
+      width: "200px",
+      render: (_, row) => (
+        <span style={{ fontSize: "14px", color: "#6b7280" }}>
+          {formatResourceByLevel(row.resource_by_level)}
+        </span>
+      ),
     },
     {
       key: "active_projects",
       label: "Dự án đang hoạt động",
-      width: "1fr",
+      width: "150px",
       align: "center",
+      render: (_, row) => (
+        <span style={{ fontSize: "14px" }}>{row.active_projects || "-"}</span>
+      ),
     },
     {
       key: "created_at",
       label: "Ngày thành lập",
-      width: "1fr",
+      width: "150px",
       render: (_, row) => formatDate(row.created_at),
     },
     {
@@ -225,7 +264,7 @@ const TeamList: React.FC = () => {
             variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
-              router.push(`/division/workforce/team/${row.id}`);
+              handleViewDetail(row);
             }}
             icon={<Eye size={16} />}
             title="Xem chi tiết"
@@ -241,6 +280,7 @@ const TeamList: React.FC = () => {
             }}
             icon={<Edit size={16} />}
             title="Sửa"
+            disabled={updateTeamMutation.isPending}
           >
             <span style={{ width: 0, height: 0, overflow: "hidden" }}>Sửa</span>
           </Button>
@@ -253,13 +293,14 @@ const TeamList: React.FC = () => {
             }}
             icon={<Trash2 size={16} />}
             title="Xóa"
+            disabled={deleteTeamMutation.isPending}
           >
             <span style={{ width: 0, height: 0, overflow: "hidden" }}>Xóa</span>
           </Button>
         </div>
       ),
     },
-  ], [router]);
+  ], [router, updateTeamMutation.isPending, deleteTeamMutation.isPending]);
 
   const emptyStateMessage = useMemo(() => {
     if (!selectedDivisionId) {
@@ -271,57 +312,95 @@ const TeamList: React.FC = () => {
     return "Chưa có team nào";
   }, [selectedDivisionId, debouncedSearch]);
 
+  const renderHeader = () => {
+    return (
+      <DashboardCol>
+        <Card>
+          <CardHeader>
+            <IconWrapper>
+              <Users size={20} />
+            </IconWrapper>
+            <CardTitle>Quản lý đội nhóm</CardTitle>
+          </CardHeader>
+          <FilterContainer>
+            <HeaderRow $isMobile={isMobile}>
+              <SearchContainer $isMobile={isMobile}>
+                <Input
+                  placeholder="Tìm kiếm theo tên team..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  icon={<Search size={18} />}
+                  fullWidth={true}
+                />
+              </SearchContainer>
+              <CreateButton 
+                $isMobile={isMobile}
+                onClick={() => setIsCreateModalOpen(true)}
+              >
+                <Plus size={20} />
+                Tạo team mới
+              </CreateButton>
+            </HeaderRow>
+            <StatsRow>
+              <span>
+                Tổng số:{" "}
+                <strong style={{ color: "var(--text-primary)" }}>{pagination.total || teams.length}</strong>
+              </span>
+            </StatsRow>
+          </FilterContainer>
+        </Card>
+      </DashboardCol>
+    );
+  };
+
   return (
-    <Container>
-      <ContentContainer>
-        <div style={{ marginBottom: "12px", display: "flex", gap: "12px", alignItems: "flex-end" }}>
-          <Button
-            onClick={() => setIsCreateModalOpen(true)}
-            icon={<Plus size={18} />}
-            iconPosition="left"
-          >
-            Tạo team
-          </Button>
-          
-          <div style={{ flex: 1 }}>
-            <Input
-              placeholder="Tìm kiếm theo tên team..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              fullWidth
+    <PersonalContainer>
+      <DashboardGridAccount>
+        {renderHeader()}
+        <DashboardCol $span={2}>
+          <Card>
+            <CardHeader>
+              <IconWrapper>
+                <Users size={20} />
+              </IconWrapper>
+              <CardTitle>Danh sách team</CardTitle>
+            </CardHeader>
+
+            <Table
+              columns={teamColumns}
+              data={teams}
+              loading={isLoading}
+              error={error as Error | null}
+              emptyState={{
+                icon: <Users size={48} />,
+                message: emptyStateMessage,
+              }}
+              onRowClick={(row) => router.push(`/division/workforce/team/${row.id}`)}
+              rowKey="id"
             />
-          </div>
-        </div>
 
-        <Table
-          columns={teamColumns}
-          data={teams}
-          loading={isLoading}
-          error={error as Error | null}
-          emptyState={{
-            icon: <Users size={48} />,
-            message: emptyStateMessage,
-          }}
-          onRowClick={(row) => router.push(`/division/workforce/team/${row.id}`)}
-          rowKey="id"
-        />
-
-        {teams.length > 0 && totalPages > 1 && (
-          <Pagination
-            currentPage={page}
-            totalPages={totalPages}
-            totalItems={pagination.total}
-            itemsPerPage={ITEMS_PER_PAGE}
-            onPageChange={setPage}
-          />
-        )}
-      </ContentContainer>
+            {pagination.total_pages > 1 && (
+              <div style={{ marginTop: "16px" }}>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={pagination.total_pages}
+                  totalItems={pagination.total}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  onPageChange={setCurrentPage}
+                  showInfo={true}
+                />
+              </div>
+            )}
+          </Card>
+        </DashboardCol>
+      </DashboardGridAccount>
 
       <AddTeamModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSave={handleCreate}
         divisionId={selectedDivisionId || 0}
+        isLoading={createTeamMutation.isPending}
       />
 
       {selectedTeam && (
@@ -334,6 +413,7 @@ const TeamList: React.FC = () => {
             }}
             team={selectedTeam}
             onSave={handleUpdate}
+            isLoading={updateTeamMutation.isPending}
           />
 
           <ConfirmDeleteModal
@@ -348,7 +428,7 @@ const TeamList: React.FC = () => {
           />
         </>
       )}
-    </Container>
+    </PersonalContainer>
   );
 };
 

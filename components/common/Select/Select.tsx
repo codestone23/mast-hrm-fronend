@@ -191,7 +191,7 @@ const Select: React.FC<SelectProps> = ({
   return (
     <SelectContainer className={className} $fullWidth={fullWidth}>
       {label && (
-        <SelectLabel htmlFor={selectId} required={required}>
+        <SelectLabel htmlFor={selectId} $required={required}>
           {label}
           {required && <span className="required">*</span>}
         </SelectLabel>
@@ -202,7 +202,7 @@ const Select: React.FC<SelectProps> = ({
           ref={triggerRef}
           id={selectId}
           $size={size}
-          disabled={disabled}
+          $disabled={disabled}
           $hasError={!!error}
           $isOpen={isOpen}
           onClick={handleToggle}

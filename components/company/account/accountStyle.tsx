@@ -63,9 +63,14 @@ export const SearchInput = styled.input`
   &::placeholder {
     color: var(--text-secondary);
   }
+
+  @media (max-width: 768px) {
+    min-width: 100%;
+    width: 100%;
+  }
 `;
 
-export const CreateButton = styled.button`
+export const CreateButton = styled.button<{ $isMobile?: boolean }>`
   display: flex;
   align-items: center;
   gap: 8px;
@@ -78,10 +83,58 @@ export const CreateButton = styled.button`
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  width: ${props => props.$isMobile ? '100%' : 'auto'};
 
   &:hover {
     background-color: var(--primary-600);
   }
+`;
+
+export const SearchContainer = styled.div<{ $isMobile?: boolean }>`
+  flex: 1;
+  max-width: ${props => props.$isMobile ? '100%' : '400px'};
+  width: ${props => props.$isMobile ? '100%' : 'auto'};
+`;
+
+export const FilterRow = styled.div<{ $isMobile?: boolean }>`
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: ${props => props.$isMobile ? 'wrap' : 'nowrap'};
+`;
+
+export const FilterItem = styled.div<{ $isMobile?: boolean }>`
+  flex: 1;
+  max-width: ${props => props.$isMobile ? '100%' : '300px'};
+  width: ${props => props.$isMobile ? '100%' : 'auto'};
+`;
+
+export const FilterItemSmall = styled.div<{ $isMobile?: boolean }>`
+  flex: 1;
+  max-width: ${props => props.$isMobile ? '100%' : '200px'};
+  width: ${props => props.$isMobile ? '100%' : 'auto'};
+`;
+
+export const HeaderRow = styled.div<{ $isMobile?: boolean }>`
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: ${props => props.$isMobile ? 'wrap' : 'nowrap'};
+`;
+
+export const FilterContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+`;
+
+export const StatsRow = styled.div`
+  display: flex;
+  gap: 24px;
+  font-size: 14px;
+  color: var(--text-secondary);
 `;
 
 export const AccountTable = styled.div`
@@ -101,6 +154,13 @@ export const TableHeader = styled.div`
   font-weight: 600;
   color: var(--text-primary);
   font-size: 14px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px;
+    font-size: 12px;
+  }
 `;
 
 export const TableRow = styled.div`
@@ -117,6 +177,12 @@ export const TableRow = styled.div`
 
   &:last-child {
     border-bottom: none;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px;
   }
 `;
 

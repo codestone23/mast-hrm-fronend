@@ -66,8 +66,7 @@ export const SearchInput = styled.input`
   }
 `;
 
-export const CreateButton = styled.button`
-  width: 100%;
+export const CreateButton = styled.button<{ $isMobile?: boolean }>`
   display: flex;
   align-items: center;
   gap: 8px;
@@ -81,6 +80,7 @@ export const CreateButton = styled.button`
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: var(--shadow-sm);
+  width: ${props => props.$isMobile ? '100%' : 'auto'};
 
   &:hover {
     background-color: var(--primary-600);
@@ -91,6 +91,13 @@ export const CreateButton = styled.button`
   &:active {
     transform: translateY(0);
   }
+`;
+
+export const DivisionFilterContainer = styled.div<{ $isMobile?: boolean }>`
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: ${props => props.$isMobile ? 'wrap' : 'wrap'};
 `;
 
 export const DivisionGrid = styled.div`

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { X, Package, DollarSign, MapPin, Calendar, Tag, User } from "lucide-react";
+import { X, Package, Calendar, Tag, User } from "lucide-react";
 import Image from "next/image";
 import {
   ModalOverlay,
@@ -33,21 +33,6 @@ const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
   asset,
 }) => {
   if (!isOpen || !asset) return null;
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "available":
-        return "#10b981";
-      case "in_use":
-        return "#3b82f6";
-      case "maintenance":
-        return "#f59e0b";
-      case "disposed":
-        return "#ef4444";
-      default:
-        return "#6b7280";
-    }
-  };
 
   const getStatusText = (status: string) => {
     switch (status) {

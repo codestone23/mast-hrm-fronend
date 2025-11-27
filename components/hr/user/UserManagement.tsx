@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Eye, Edit, Trash2, User, Users, Search, Shield, MoreVertical, UserMinus } from "lucide-react";
 import { Input, Table, Pagination, Select } from "@/components/common";
+import { useMobile } from "@/hooks/useMobile";
 import { TableColumn } from "@/components/common/Table/Table";
 import {
   PersonalContainer,
@@ -22,6 +23,12 @@ import {
   ActionMenuItem,
   ActionMenuLink,
   ActionMenuDivider,
+  SearchContainer,
+  FilterRow,
+  FilterItem,
+  HeaderRow,
+  FilterContainer,
+  StatsRow,
 } from "@/components/company/account/accountStyle";
 import CreateAccountModal from "@/components/company/account/modals/CreateAccountModal";
 import EditAccountModal from "@/components/company/account/modals/EditAccountModal";
@@ -58,6 +65,7 @@ interface EditAccountData {
 const UserManagement: React.FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const isMobile = useMobile();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -520,23 +528,9 @@ const UserManagement: React.FC = () => {
             </IconWrapper>
             <CardTitle>Quản lý người dùng</CardTitle>
           </CardHeader>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "16px",
-              marginBottom: "16px",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                gap: "12px",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <div style={{ flex: 1, maxWidth: "400px" }}>
+          <FilterContainer>
+            <HeaderRow $isMobile={isMobile}>
+              <SearchContainer $isMobile={isMobile}>
                 <Input
                   placeholder="Tìm kiếm theo tên hoặc email..."
                   value={searchTerm}
@@ -544,20 +538,17 @@ const UserManagement: React.FC = () => {
                   icon={<Search size={18} />}
                   fullWidth={true}
                 />
-              </div>
-              <CreateButton onClick={() => setIsCreateModalOpen(true)}>
+              </SearchContainer>
+              <CreateButton 
+                $isMobile={isMobile}
+                onClick={() => setIsCreateModalOpen(true)}
+              >
                 <Plus size={20} />
                 Tạo người dùng mới
               </CreateButton>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                gap: "12px",
-                alignItems: "flex-end",
-              }}
-            >
-              <div style={{ flex: 1, maxWidth: "300px" }}>
+            </HeaderRow>
+            <FilterRow $isMobile={isMobile}>
+              <FilterItem $isMobile={isMobile}>
                 <Select
                   label="Lọc theo vai trò"
                   options={[
@@ -575,8 +566,8 @@ const UserManagement: React.FC = () => {
                   placeholder="Chọn vai trò"
                   fullWidth
                 />
-              </div>
-              <div style={{ flex: 1, maxWidth: "300px" }}>
+              </FilterItem>
+              <FilterItem $isMobile={isMobile}>
                 <Select
                   label="Lọc theo phòng ban"
                   options={[
@@ -594,8 +585,8 @@ const UserManagement: React.FC = () => {
                   placeholder="Chọn phòng ban"
                   fullWidth
                 />
-              </div>
-              <div style={{ flex: 1, maxWidth: "300px" }}>
+              </FilterItem>
+              <FilterItem $isMobile={isMobile}>
                 <Select
                   label="Lọc theo trạng thái"
                   options={[
@@ -611,28 +602,21 @@ const UserManagement: React.FC = () => {
                   placeholder="Chọn trạng thái"
                   fullWidth
                 />
-              </div>
-            </div>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              gap: "24px",
-              fontSize: "14px",
-              color: "var(--text-secondary)",
-            }}
-          >
-            <span>
-              Tổng số:{" "}
-              <strong style={{ color: "var(--text-primary)" }}>{pagination.total || users.length}</strong>
-            </span>
-            <span>
-              Đang hoạt động:{" "}
-              <strong style={{ color: "var(--success-600)" }}>
-                {users.filter((u) => getUserStatus(u) === "active").length}
-              </strong>
-            </span>
-          </div>
+              </FilterItem>
+            </FilterRow>
+            <StatsRow>
+              <span>
+                Tổng số:{" "}
+                <strong style={{ color: "var(--text-primary)" }}>{pagination.total || users.length}</strong>
+              </span>
+              <span>
+                Đang hoạt động:{" "}
+                <strong style={{ color: "var(--success-600)" }}>
+                  {users.filter((u) => getUserStatus(u) === "active").length}
+                </strong>
+              </span>
+            </StatsRow>
+          </FilterContainer>
         </Card>
       </DashboardCol>
     );

@@ -39,7 +39,7 @@ export const useDivisionInitialization = ({
 
     const roleNames = user?.role_assignments.map(role => role.name?.toLowerCase());
 
-    // Xử lý cho admin và super_admin
+    // Xử lý cho admin 
     if (roleNames?.includes(ROLE_NAMES.ADMIN)) {
       if (divisionsData?.data && divisionsData.data.length > 0) {
         // Lưu divisions vào redux và localStorage

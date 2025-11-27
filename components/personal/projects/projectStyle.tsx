@@ -4,6 +4,10 @@ export const ProjectsContainer = styled.div`
   padding: 2rem;
   background: var(--background-primary);
   min-height: 100vh;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 export const ProjectsHeader = styled.div`
@@ -12,6 +16,11 @@ export const ProjectsHeader = styled.div`
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
 `;
 
 export const ProjectsTitle = styled.h1`
@@ -19,6 +28,10 @@ export const ProjectsTitle = styled.h1`
   font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 0.5rem 0;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 `;
 
 export const ProjectsSubtitle = styled.p`
@@ -38,6 +51,11 @@ export const ProjectsGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 `;
 
 export const ProjectCard = styled.div`

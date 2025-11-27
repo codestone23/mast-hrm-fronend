@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Modal, Button, Select } from "@/components/common";
 import { SelectOption } from "@/components/common/Select/Select";
-import { User as UserType } from "@/types/api";
+import { User as UserType, ScopeType } from "@/types/api";
 import rolesService from "@/services/roles.service";
 import { useToast } from "@/hooks/useToast";
 import { getRoleName } from "../AccountManagement";
@@ -25,31 +25,60 @@ const UnassignRoleModal: React.FC<UnassignRoleModalProps> = ({
   const queryClient = useQueryClient();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
   const [selectedRoleId, setSelectedRoleId] = useState<string | number>("");
+  const [selectedScopeType, setSelectedScopeType] = useState<ScopeType | "">("");
+  const [selectedScopeId, setSelectedScopeId] = useState<string | number>("");
 
-  // Get user's existing roles
-  const existingRoles = user?.user_role_assignments || [];
+  // Get user's existing COMPANY scope roles only
+  const existingRoles = user?.user_role_assignments?.filter(
+    (assignment) => assignment.scope_type === ScopeType.COMPANY
+  ) || [];
 
-  const roleOptions: SelectOption[] = existingRoles.map((assignment) => ({
-    value: assignment.role.id,
-    label: getRoleName(assignment.role.name),
+  // Create unique role options (group by role id)
+  const roleMap = new Map<number, { roleId: number; roleName: string }>();
+  existingRoles.forEach((assignment) => {
+    if (!roleMap.has(assignment.role.id)) {
+      roleMap.set(assignment.role.id, {
+        roleId: assignment.role.id,
+        roleName: assignment.role.name,
+      });
+    }
+  });
+
+  const roleOptions: SelectOption[] = Array.from(roleMap.values()).map((item) => ({
+    value: item.roleId,
+    label: getRoleName(item.roleName as ROLE_NAMES),
   }));
 
   // Reset form when modal closes or user changes
   useEffect(() => {
     if (!isOpen) {
       setSelectedRoleId("");
+      setSelectedScopeType("");
+      setSelectedScopeId("");
     }
   }, [isOpen, user]);
 
   // Unassign role mutation
   const unassignRoleMutation = useMutation({
-    mutationFn: ({ userId, roleId }: { userId: number; roleId: number }) =>
-      rolesService.unassignRole(userId, roleId),
+    mutationFn: ({ 
+      userId, 
+      roleId, 
+      scopeType, 
+      scopeId 
+    }: { 
+      userId: number; 
+      roleId: number; 
+      scopeType: ScopeType;
+      scopeId: number | null;
+    }) =>
+      rolesService.unassignRole(userId, roleId, scopeType, scopeId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       showSuccessToast("Thu hồi vai trò thành công");
       onClose();
       setSelectedRoleId("");
+      setSelectedScopeType("");
+      setSelectedScopeId("");
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } } };
@@ -65,9 +94,12 @@ const UnassignRoleModal: React.FC<UnassignRoleModalProps> = ({
       return;
     }
 
+    // For COMPANY scope, scopeId is always null
     unassignRoleMutation.mutate({
       userId: Number(user.id),
       roleId: Number(selectedRoleId),
+      scopeType: ScopeType.COMPANY,
+      scopeId: null,
     });
   };
 
@@ -138,24 +170,26 @@ const UnassignRoleModal: React.FC<UnassignRoleModalProps> = ({
             />
 
             <div style={{ fontSize: "14px", color: "#6b7280" }}>
-              <div style={{ marginBottom: "4px" }}>Tất cả vai trò hiện tại:</div>
+              <div style={{ marginBottom: "4px" }}>Vai trò hiện tại (Company):</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {user?.user_role_assignments?.map((assignment, index) => (
-                  <span
-                    key={index}
-                    style={{
-                      display: "inline-block",
-                      padding: "4px 12px",
-                      borderRadius: "12px",
-                      fontSize: "12px",
-                      fontWeight: 500,
-                      backgroundColor: "#e0e7ff",
-                      color: "#6366f1",
-                    }}
-                  >
-                    {getRoleName(assignment.role.name)}
-                  </span>
-                ))}
+                {user?.user_role_assignments
+                  ?.filter((assignment) => assignment.scope_type === ScopeType.COMPANY)
+                  .map((assignment, index) => (
+                    <span
+                      key={index}
+                      style={{
+                        display: "inline-block",
+                        padding: "4px 12px",
+                        borderRadius: "12px",
+                        fontSize: "12px",
+                        fontWeight: 500,
+                        backgroundColor: "#e0e7ff",
+                        color: "#6366f1",
+                      }}
+                    >
+                      {getRoleName(assignment.role.name)}
+                    </span>
+                  ))}
               </div>
             </div>
           </>

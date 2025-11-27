@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Plus, Building2, Users } from "lucide-react";
+import { useMobile } from "@/hooks/useMobile";
 import {
     PersonalContainer,
     DashboardGrid,
@@ -26,6 +27,7 @@ import {
     EmptyState,
     EmptyIcon,
     EmptyText,
+    DivisionFilterContainer,
 } from "./divisionStyle";
 import CreateDivisionModal from "./modals/CreateDivisionModal";
 import EditDivisionModal from "./modals/EditDivisionModal";
@@ -54,6 +56,7 @@ import { DivisionStatus } from "@/constants/enums";
 
 const DivisionManagement: React.FC = () => {
     const router = useRouter();
+    const isMobile = useMobile();
     const [searchTerm, setSearchTerm] = useState("");
     const [typeFilter, setTypeFilter] = useState<string | undefined>(undefined);
     const [statusFilter, setStatusFilter] = useState<string | undefined>(
@@ -151,14 +154,7 @@ const DivisionManagement: React.FC = () => {
                         </IconWrapper>
                         <CardTitle>Tìm kiếm và quản lý</CardTitle>
                     </CardHeader>
-                    <div
-                        style={{
-                            display: "flex",
-                            gap: "16px",
-                            alignItems: "center",
-                            flexWrap: "wrap",
-                        }}
-                    >
+                    <DivisionFilterContainer $isMobile={isMobile}>
                         <DivisionFilters
                             search={searchTerm}
                             onSearchChange={setSearchTerm}
@@ -168,12 +164,13 @@ const DivisionManagement: React.FC = () => {
                             onStatusChange={setStatusFilter}
                         />
                         <CreateButton
+                            $isMobile={isMobile}
                             onClick={() => setIsCreateModalOpen(true)}
                         >
-                            <Plus size={20} />
-                            Tạo phòng ban mới
+                            <Plus size={isMobile ? 18 : 20} />
+                            {isMobile ? "Tạo mới" : "Tạo phòng ban mới"}
                         </CreateButton>
-                    </div>
+                    </DivisionFilterContainer>
                 </Card>
 
                 <StatsCard>

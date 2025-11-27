@@ -5,6 +5,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Search, FileText } from "lucide-react";
 import NewsCard from "./NewsCard";
 import { Input, Loading } from "@/components/common";
+import { useMobile } from "@/hooks/useMobile";
 import newsService from "@/services/news.service";
 import {
   NewsListContainer,
@@ -36,6 +37,7 @@ const NewsList: React.FC<NewsListProps> = ({
   onNewsClick,
 }) => {
   const router = useRouter();
+  const isMobile = useMobile();
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const sentinelRef = useRef<HTMLDivElement>(null);

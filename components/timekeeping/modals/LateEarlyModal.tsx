@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Select, DatePicker } from '@/components/common';
 import {
   ModalContent,
@@ -9,18 +9,26 @@ import {
 } from './requestModalStyles';
 import { useToast } from '@/hooks/useToast';
 import { timekeepingService } from '@/services/timekeeping.service';
+import requestsService from '@/services/requests.service';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface LateEarlyModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedDate: string;
+  requestId?: number;
+  requestType?: string;
 }
 
 const LateEarlyModal: React.FC<LateEarlyModalProps> = ({
   isOpen,
   onClose,
-  selectedDate
+  selectedDate,
+  requestId,
+  requestType
 }) => {
+  const queryClient = useQueryClient();
+  const isEdit = !!requestId && !!requestType;
   const [formData, setFormData] = useState({
     title: '',
     workDate: selectedDate,
@@ -30,14 +38,58 @@ const LateEarlyModal: React.FC<LateEarlyModalProps> = ({
     reason: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState('');
-  const { success: showSuccessToast } = useToast();
+  const { success: showSuccessToast, error: showErrorToast } = useToast();
 
   const requestTypes = [
     { value: 'LATE', label: 'Đi muộn' },
     { value: 'EARLY', label: 'Về sớm' },
     { value: 'BOTH', label: 'Cả đi muộn và về sớm' }
   ];
+
+  // Fetch request data when in edit mode
+  useEffect(() => {
+    if (isOpen && isEdit && requestId && requestType) {
+      setIsFetching(true);
+      requestsService.getRequestById(requestType, String(requestId))
+        .then((request) => {
+          // Determine request type based on late_minutes and early_minutes
+          let reqType = 'LATE';
+          if (request.late_minutes && request.late_minutes > 0 && request.early_minutes && request.early_minutes > 0) {
+            reqType = 'BOTH';
+          } else if (request.early_minutes && request.early_minutes > 0) {
+            reqType = 'EARLY';
+          }
+
+          setFormData({
+            title: request.title || '',
+            workDate: request.work_date || selectedDate,
+            requestType: reqType,
+            lateMinutes: request.late_minutes || 0,
+            earlyMinutes: request.early_minutes || 0,
+            reason: request.reason || ''
+          });
+        })
+        .catch((err) => {
+          console.error('Error fetching request:', err);
+          showErrorToast('Không thể tải thông tin đề xuất');
+        })
+        .finally(() => {
+          setIsFetching(false);
+        });
+    } else if (isOpen && !isEdit) {
+      // Reset form when creating new request
+      setFormData({
+        title: '',
+        workDate: selectedDate,
+        requestType: 'LATE',
+        lateMinutes: 0,
+        earlyMinutes: 0,
+        reason: ''
+      });
+    }
+  }, [isOpen, isEdit, requestId, requestType, selectedDate, showErrorToast]);
 
   const handleSubmit = async () => {
     if (!formData.title.trim()) {
@@ -78,8 +130,20 @@ const LateEarlyModal: React.FC<LateEarlyModalProps> = ({
         reason: formData.reason
       };
 
-      await timekeepingService.createLateEarlyRequest(payload);
-      showSuccessToast('Tạo đơn xin đi muộn/về sớm thành công!');
+      if (isEdit && requestId && requestType) {
+        await requestsService.updateRequest(requestType, String(requestId), {
+          work_date: formData.workDate,
+          title: formData.title,
+          late_minutes: formData.lateMinutes,
+          early_minutes: formData.earlyMinutes,
+          reason: formData.reason
+        });
+        showSuccessToast('Cập nhật đơn xin đi muộn/về sớm thành công!');
+        queryClient.invalidateQueries({ queryKey: ['myRequests'] });
+      } else {
+        await timekeepingService.createLateEarlyRequest(payload);
+        showSuccessToast('Tạo đơn xin đi muộn/về sớm thành công!');
+      }
       onClose();
     } catch (error) {
       console.error('Error submitting late/early request:', error);
@@ -117,7 +181,7 @@ const LateEarlyModal: React.FC<LateEarlyModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Đăng ký đi muộn/về sớm"
+      title={isEdit ? "Chỉnh sửa đơn đi muộn/về sớm" : "Đăng ký đi muộn/về sớm"}
       size="md"
       footer={
         <>
@@ -128,21 +192,24 @@ const LateEarlyModal: React.FC<LateEarlyModalProps> = ({
             variant="primary"
             onClick={handleSubmit}
             loading={isLoading}
-            disabled={isLoading || !isFormValid()}
+            disabled={isLoading || isFetching || !isFormValid()}
           >
-            {isLoading ? 'Đang xử lý...' : 'Tạo đơn'}
+            {isLoading ? 'Đang xử lý...' : isEdit ? 'Cập nhật' : 'Tạo đơn'}
           </Button>
         </>
       }
     >
       <ModalContent>
         {error && <ErrorMessage>{error}</ErrorMessage>}
+        {isFetching && <div style={{ padding: '1rem', textAlign: 'center' }}>Đang tải thông tin...</div>}
         
-        <InfoBanner>
-          Số phút còn lại có thể đăng ký: 120 phút
-        </InfoBanner>
-        
-        <FormSection>
+        {!isFetching && (
+          <>
+            <InfoBanner>
+              Số phút còn lại có thể đăng ký: 120 phút
+            </InfoBanner>
+            
+            <FormSection>
           <FormGrid>
             <Input
               label="Tiêu đề"
@@ -222,6 +289,8 @@ const LateEarlyModal: React.FC<LateEarlyModalProps> = ({
             </div>
           </FormGrid>
         </FormSection>
+        </>
+        )}
       </ModalContent>
     </Modal>
   );

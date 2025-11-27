@@ -92,3 +92,57 @@ export const ActionButton = styled.button<{ $variant: "edit" | "delete" }>`
     }
   }}
 `;
+
+export const DetailHeader = styled.div<{ $isMobile?: boolean }>`
+  padding: ${props => props.$isMobile ? '12px' : '20px'};
+  border-bottom: 1px solid var(--border-color);
+`;
+
+export const DetailHeaderContent = styled.div<{ $isMobile?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: ${props => props.$isMobile ? 'wrap' : 'nowrap'};
+  gap: ${props => props.$isMobile ? '12px' : '0'};
+`;
+
+export const DetailTitleWrapper = styled.div<{ $isMobile?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: ${props => props.$isMobile ? '8px' : '16px'};
+  flex: 1;
+  min-width: 0;
+`;
+
+export const DetailTitle = styled.h1<{ $isMobile?: boolean }>`
+  margin: 0;
+  font-size: ${props => props.$isMobile ? '18px' : '24px'};
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: ${props => props.$isMobile ? 'normal' : 'nowrap'};
+`;
+
+export const DetailContent = styled.div<{ $isMobile?: boolean }>`
+  padding: ${props => props.$isMobile ? '12px' : '20px'};
+`;
+
+export const DetailInfoGrid = styled.div<{ $isMobile?: boolean }>`
+  display: grid;
+  grid-template-columns: ${props => props.$isMobile ? '1fr' : '1fr 1fr'};
+  gap: ${props => props.$isMobile ? '12px' : '16px'};
+  margin-top: ${props => props.$isMobile ? '12px' : '16px'};
+`;
+
+export const CardHeaderActions = styled.div<{ $isMobile?: boolean }>`
+  display: flex;
+  justify-content: space-between;
+  align-items: ${props => props.$isMobile ? 'flex-start' : 'center'};
+  margin-bottom: ${props => props.$isMobile ? '12px' : '16px'};
+  flex-direction: ${props => props.$isMobile ? 'column' : 'row'};
+  gap: ${props => props.$isMobile ? '12px' : '0'};
+`;
+
+export const ResponsiveButton = styled.button<{ $isMobile?: boolean }>`
+  width: ${props => props.$isMobile ? '100%' : 'auto'};
+`;

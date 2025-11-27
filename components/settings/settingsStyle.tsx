@@ -2,8 +2,11 @@ import styled from "styled-components";
 
 export const SettingsContainer = styled.div`
   background-color: var(--background-secondary);
-  min-height: 100vh;
   padding: 1.5rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 export const SettingsHeader = styled.div`
@@ -15,6 +18,10 @@ export const SettingsTitle = styled.h1`
   font-weight: 700;
   color: #111827;
   margin-bottom: 1rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 `;
 
 export const SettingsTabs = styled.div`
@@ -66,6 +73,11 @@ export const SettingsContent = styled.div`
   padding: 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0;
+  }
 `;
 
 export const Sidebar = styled.div`
@@ -97,5 +109,9 @@ export const MainContent = styled.div`
   flex: 1;
   padding: 1.5rem;
   overflow-y: auto;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 

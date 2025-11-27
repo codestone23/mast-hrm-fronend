@@ -23,6 +23,12 @@ export const TableHeader = styled.div<{ $gridTemplateColumns?: string }>`
   color: #333;
   font-size: 15px;
   min-width: fit-content;
+
+  @media (max-width: 768px) {
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
 `;
 
 export const TableRow = styled.div<{ 
@@ -45,6 +51,11 @@ export const TableRow = styled.div<{
   &:last-child {
     border-bottom: none;
   }
+
+  @media (max-width: 768px) {
+    gap: 8px;
+    padding: 8px 12px;
+  }
 `;
 
 export const TableCell = styled.div<{ $align?: "left" | "center" | "right" }>`
@@ -57,6 +68,10 @@ export const TableCell = styled.div<{ $align?: "left" | "center" | "right" }>`
   }};
   font-size: 15px;
   color: #333;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+  }
 `;
 
 export const EmptyState = styled.div`

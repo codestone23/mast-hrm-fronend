@@ -7,17 +7,35 @@ class RolesService {
     return response.data;
   }
 
-  async assignRole(userId: number, roleId: number, scopeType: ScopeType = ScopeType.COMPANY): Promise<ApiResponse<void>> {
+  async assignRole(
+    userId: number, 
+    roleId: number, 
+    scopeType: ScopeType = ScopeType.COMPANY,
+    scopeId: number | null = null
+  ): Promise<ApiResponse<void>> {
     const response = await axiosInstance.post(`/role-assignments/assign`, { 
       user_id: userId, 
       role_id: roleId,
-      scope_type: scopeType
+      scope_type: scopeType,
+      scope_id: scopeType === ScopeType.COMPANY ? null : scopeId
     });
     return response.data;
   }
 
-  async unassignRole(userId: number, roleId: number): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.delete(`/role-assignments/revoke`, { params: { user_id: userId, role_id: roleId } });
+  async unassignRole(
+    userId: number, 
+    roleId: number, 
+    scopeType: ScopeType = ScopeType.COMPANY,
+    scopeId: number | null = null
+  ): Promise<ApiResponse<void>> {
+    const response = await axiosInstance.delete(`/role-assignments/revoke`, { 
+      data: {
+        user_id: userId, 
+        role_id: roleId,
+        scope_type: scopeType,
+        scope_id: scopeType === ScopeType.COMPANY ? null : scopeId
+      }
+    });
     return response.data; 
   }
 }

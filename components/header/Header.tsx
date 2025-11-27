@@ -17,6 +17,8 @@ import { CookieManager } from "@/utils/cookies";
 import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
 import { useRouter } from "next/navigation";
 import ROUTERS from "@/config/router";
+import { useUser } from "@/hooks/useUser";
+import { useMobile } from "@/hooks/useMobile";
 
 interface HeaderProps {
     userName?: string;
@@ -25,10 +27,13 @@ interface HeaderProps {
 const Header = (props: HeaderProps) => {
     const { userName = "Admin User" } = props;
     const router = useRouter();
+    const isMobile = useMobile();
+    const { clearUserData } = useUser();
 
     const handleLogout = () => {
         CookieManager.deleteCookie("access_token");
         CookieManager.deleteCookie("refresh_token");
+        clearUserData();
         LocalStorageUtil.removeItem(LOCAL_KEY.USER);
         LocalStorageUtil.removeItem(LOCAL_KEY.DIVISIONS);
         LocalStorageUtil.removeItem(LOCAL_KEY.SELECTED_DIVISION_ID);
@@ -36,19 +41,19 @@ const Header = (props: HeaderProps) => {
     };
 
     return (
-        <HeaderContainer>
-            <Logo>
-                <Image src={IMAGES.common.logoWhite} alt="logo" height={46} />
+        <HeaderContainer $isMobile={isMobile}>
+            <Logo $isMobile={isMobile}>
+                <Image src={IMAGES.common.logoWhite} alt="logo" height={isMobile ? 36 : 46} />
             </Logo>
-            <HeaderRight>
-                <UserInfo>
-                    <UserName>{userName}</UserName>
-                    <UserAvatar>
-                        <User size={16} />
+            <HeaderRight $isMobile={isMobile}>
+                <UserInfo $isMobile={isMobile}>
+                    {!isMobile && <UserName $isMobile={isMobile}>{userName}</UserName>}
+                    <UserAvatar $isMobile={isMobile}>
+                        <User size={isMobile ? 14 : 16} />
                     </UserAvatar>
                 </UserInfo>
-                <LogoutButton onClick={handleLogout}>
-                    <LogOut size={16} />
+                <LogoutButton $isMobile={isMobile} onClick={handleLogout}>
+                    <LogOut size={isMobile ? 14 : 16} />
                 </LogoutButton>
             </HeaderRight>
         </HeaderContainer>

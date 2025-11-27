@@ -63,7 +63,7 @@ export const useCheckIn = () => {
 
             const payload = new FormData();
             Object.entries(data).forEach(([key, value]) => {
-                if (key !== 'image') payload.append(key, value as any);
+                if (key !== 'image') payload.append(key, value as unknown as string);
             });
             payload.set('photo_url', uploadedUrl);
 

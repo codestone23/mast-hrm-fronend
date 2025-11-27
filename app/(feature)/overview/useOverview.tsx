@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchUserData } from "@/store/slices/userSlice";
@@ -24,7 +25,7 @@ export const useOverview = () => {
     }, [isInitialized, data]);
 
     return {
-        data: data,
+        data: data || user,
         isLoading,
         error,
         isInitialized,

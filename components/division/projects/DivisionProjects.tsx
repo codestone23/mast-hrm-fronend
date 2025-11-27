@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { useQuery } from "@tanstack/react-query";
+import { useMobile } from "@/hooks/useMobile";
 import { 
   Plus,
   Eye,
@@ -48,6 +49,7 @@ const statusLabels: Record<string, string> = {
 
 const DivisionProjects: React.FC = () => {
   const router = useRouter();
+  const isMobile = useMobile();
   const selectedDivisionId = useSelector((state: RootState) => state.division.selectedDivisionId);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -207,8 +209,12 @@ const DivisionProjects: React.FC = () => {
             {pagination?.total || projects.length} dự án
           </ProjectsSubtitle>
         </div>
-        <Button variant="primary" onClick={handleCreateProject}>
-          <Plus size={16} />
+        <Button 
+          variant="primary" 
+          onClick={handleCreateProject}
+          style={{ width: isMobile ? "100%" : "auto", marginTop: isMobile ? "12px" : "0" }}
+        >
+          <Plus size={isMobile ? 14 : 16} />
           Tạo dự án
         </Button>
       </ProjectsHeader>

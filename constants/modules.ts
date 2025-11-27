@@ -15,7 +15,6 @@ export const MODULE_DEFINITIONS: Omit<Module, "icon">[] = [
     color: "#3b82f6",
     path: ROUTERS.PERSONAL.BASE,
     allowedRoles: [
-      ROLE_NAMES.SUPER_ADMIN,
       ROLE_NAMES.ADMIN,
       ROLE_NAMES.HR_MANAGER,
       ROLE_NAMES.PROJECT_MANAGER,
@@ -38,7 +37,7 @@ export const MODULE_DEFINITIONS: Omit<Module, "icon">[] = [
     description: "Quản lý phòng ban và cơ cấu tổ chức",
     color: "#ef4444",
     path: ROUTERS.DIVISION.BASE,
-    allowedRoles: [ROLE_NAMES.SUPER_ADMIN, ROLE_NAMES.ADMIN, ROLE_NAMES.DIVISION_HEAD],
+    allowedRoles: [ROLE_NAMES.ADMIN, ROLE_NAMES.DIVISION_HEAD],
   },
   {
     id: "company",
@@ -46,7 +45,7 @@ export const MODULE_DEFINITIONS: Omit<Module, "icon">[] = [
     description: "Quản lý công ty và cấu hình hệ thống",
     color: "#8b5cf6",
     path: ROUTERS.COMPANY.BASE,
-    allowedRoles: [ROLE_NAMES.SUPER_ADMIN, ROLE_NAMES.ADMIN, ROLE_NAMES.HR_MANAGER],
+    allowedRoles: [ROLE_NAMES.ADMIN, ROLE_NAMES.HR_MANAGER],
   },
   {
     id: "settings",
@@ -54,7 +53,7 @@ export const MODULE_DEFINITIONS: Omit<Module, "icon">[] = [
     description: "Cài đặt hệ thống và cấu hình",
     color: "#6b7280",
     path: ROUTERS.SETTINGS.BASE,
-    allowedRoles: [ROLE_NAMES.SUPER_ADMIN, ROLE_NAMES.ADMIN],
+    allowedRoles: [ROLE_NAMES.ADMIN],
   },
 ];
 

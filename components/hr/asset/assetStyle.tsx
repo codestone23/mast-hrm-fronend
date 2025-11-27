@@ -80,7 +80,7 @@ export const SearchInput = styled.input`
   }
 `;
 
-export const CreateButton = styled.button`
+export const CreateButton = styled.button<{ $isMobile?: boolean }>`
   display: flex;
   align-items: center;
   gap: 8px;
@@ -94,12 +94,37 @@ export const CreateButton = styled.button`
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  width: ${props => props.$isMobile ? '100%' : 'auto'};
 
   &:hover {
     background: #F57C00;
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
   }
+`;
+
+export const AssetFilterContainer = styled.div<{ $isMobile?: boolean }>`
+  margin-bottom: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: ${props => props.$isMobile ? 'wrap' : 'nowrap'};
+`;
+
+export const AssetFilterRow = styled.div<{ $isMobile?: boolean }>`
+  flex: 1;
+  display: flex;
+  gap: 12px;
+  flex-wrap: ${props => props.$isMobile ? 'wrap' : 'nowrap'};
+`;
+
+export const AssetFilterItem = styled.div<{ $isMobile?: boolean }>`
+  flex: 1;
+  min-width: ${props => props.$isMobile ? '100%' : '200px'};
+`;
+
+export const AssetFilterItemFixed = styled.div<{ $isMobile?: boolean }>`
+  width: ${props => props.$isMobile ? '100%' : '200px'};
 `;
 
 export const AssetTable = styled.div`

@@ -60,11 +60,11 @@ class DivisionWorkforceService {
 
   async createTeam(data: DivisionTeamCreateRequest): Promise<void> {
     const response = await axiosInstance.post(
-      `/divisions/${data.divisionId}/teams`,
+      `/divisions/teams`,
       {
-        leader_Id: data.leaderId,
+        leader_id: data.leaderId,
         name: data.name,
-        foundingDate: data.foundingDate,
+        founding_date: data.foundingDate,
         division_id: data.divisionId,
       }
     );

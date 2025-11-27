@@ -16,8 +16,7 @@ export const useRegisterFace = () => {
             data: RegisterFaceData & { user_id: number },
         ): Promise<unknown> => {
             const faceUrl =
-                process.env.NEXT_PUBLIC_FACE_IDENTIFICATION_URL ||
-                process.env.FACE_IDENTIFICATION_URL;
+                process.env.NEXT_PUBLIC_FACE_IDENTIFICATION_URL;
 
             if (!faceUrl) {
                 throw new Error("FACE_IDENTIFICATION_URL không được cấu hình");
@@ -89,6 +88,7 @@ export const useRegisterFace = () => {
         },
         onError: (e: unknown) => {
             const err = e as AxiosError<ApiResponse<LoginResponse>>;
+            console.log(err);
             error(err.response?.data.message || 'Đăng ký khuôn mặt thất bại');
             setIsLoading(false);
         },

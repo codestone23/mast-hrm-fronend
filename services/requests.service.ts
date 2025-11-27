@@ -12,6 +12,13 @@ export interface Request {
   status: REQUEST_STATUS;
   work_date: string;
   created_at: string;
+  duration?: string;
+  remote_type?: string;
+  late_minutes?: number;
+  early_minutes?: number;
+  start_time?: string;
+  end_time?: string;
+  project_id?: number;
   user: {
     id: number;
     email: string;
@@ -43,6 +50,20 @@ export interface ApproveRejectPayload {
   rejected_reason?: string;
 }
 
+export interface UpdateRequestPayload {
+  title?: string;
+  reason?: string;
+  work_date?: string;
+  duration?: string;
+  type?: string;
+  remote_type?: string;
+  late_minutes?: number;
+  early_minutes?: number;
+  start_time?: string;
+  end_time?: string;
+  project_id?: number;
+}
+
 class RequestsService {
     async getMyRequests(params: RequestParams = {}): Promise<PaginatedResponse<Request>> {
         const response = await axiosInstance.get(`/requests/my/all`, { params });
@@ -65,6 +86,14 @@ class RequestsService {
 
     async rejectRequest(type: string, id: string, payload: ApproveRejectPayload = {}): Promise<void> {
         await axiosInstance.post(`/requests/${type}/${id}/reject`, payload);
+    }
+
+    async updateRequest(type: string, id: string, payload: UpdateRequestPayload): Promise<void> {
+        await axiosInstance.patch(`/requests/${type}/${id}`, payload);
+    }
+
+    async deleteRequest(type: string, id: string): Promise<void> {
+        await axiosInstance.delete(`/requests/${type}/${id}`);
     }
 }
 

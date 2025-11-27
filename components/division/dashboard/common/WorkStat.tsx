@@ -21,7 +21,6 @@ import {
   StatLabel,
   ArrowBtn,
   LoadingContainer,
-  LoadingText,
   EmptyDataContainer,
   EmptyDataText,
 } from "./workStatStyle";

@@ -38,14 +38,10 @@ export interface ProjectCreateRequest {
   status: 'OPEN' | 'IN_PROGRESS' | 'PENDING' | 'CLOSED';
   division_id: number;
   team_id?: number;
+  manager_id?: number;
   project_type: 'CUSTOMER' | 'IN_HOUSE' | 'START_UP' | 'INTERNAL';
-  rank: number;
   industry: 'IT' | 'FINANCE' | 'MANUFACTURING' | 'OTHER';
-  scope: string;
   description: string;
-  contract_information?: string;
-  critical: 'Low' | 'Medium' | 'High' | 'Critical';
-  note?: string;
   start_date: string;
   end_date: string;
 }

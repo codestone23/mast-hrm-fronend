@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, User, Calendar, Edit, Trash2, Star, Briefcase, Award, GraduationCap, Plus } from "lucide-react";
+import { X, User, Calendar, Edit, Trash2, Star, Briefcase, GraduationCap, Plus } from "lucide-react";
 import {
   ModalOverlay,
   ModalContainer,
@@ -41,6 +41,7 @@ import {
   InfoValue,
 } from "./modalStyle";
 import { Account } from "@/constants/types";
+import Image from "next/image";
 
 interface AccountDetailModalProps {
   isOpen: boolean;
@@ -85,7 +86,7 @@ const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
               <UserProfile>
                 <UserAvatar>
                   {account.avatar && account.avatar.includes('https') ? (
-                    <img src={account.avatar} alt={account.name} width={120} height={120} />
+                    <Image src={account.avatar} alt={account.name} width={120} height={120} />
                   ) : (
                     <User size={60} />
                   )}

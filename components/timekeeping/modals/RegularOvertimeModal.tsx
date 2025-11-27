@@ -8,18 +8,26 @@ import {
 } from './requestModalStyles';
 import { useToast } from '@/hooks/useToast';
 import { timekeepingService } from '@/services/timekeeping.service';
+import requestsService from '@/services/requests.service';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface RegularOvertimeModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedDate: string;
+  requestId?: number;
+  requestType?: string;
 }
 
 const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
   isOpen,
   onClose,
-  selectedDate
+  selectedDate,
+  requestId,
+  requestType
 }) => {
+  const queryClient = useQueryClient();
+  const isEdit = !!requestId && !!requestType;
   const [formData, setFormData] = useState({
     title: '',
     projectId: '',
@@ -29,8 +37,9 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
     reason: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState('');
-  const { success: showSuccessToast } = useToast();
+  const { success: showSuccessToast, error: showErrorToast } = useToast();
 
   const [projects, setProjects] = useState<Array<{value: string, label: string}>>([]);
 
@@ -61,6 +70,41 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
     }
   }, [isOpen]);
 
+  // Fetch request data when in edit mode
+  useEffect(() => {
+    if (isOpen && isEdit && requestId && requestType) {
+      setIsFetching(true);
+      requestsService.getRequestById(requestType, String(requestId))
+        .then((request) => {
+          setFormData({
+            title: request.title || '',
+            projectId: request.project_id ? String(request.project_id) : '',
+            workDate: request.work_date || selectedDate,
+            startTime: request.start_time || '',
+            endTime: request.end_time || '',
+            reason: request.reason || ''
+          });
+        })
+        .catch((err) => {
+          console.error('Error fetching request:', err);
+          showErrorToast('Không thể tải thông tin đề xuất');
+        })
+        .finally(() => {
+          setIsFetching(false);
+        });
+    } else if (isOpen && !isEdit) {
+      // Reset form when creating new request
+      setFormData({
+        title: '',
+        projectId: '',
+        workDate: selectedDate,
+        startTime: '',
+        endTime: '',
+        reason: ''
+      });
+    }
+  }, [isOpen, isEdit, requestId, requestType, selectedDate, showErrorToast]);
+
   const handleSubmit = async () => {
     if (!formData.title.trim()) {
       setError('Vui lòng nhập tiêu đề');
@@ -90,8 +134,21 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
         reason: formData.reason
       };
 
-      await timekeepingService.createOvertimeRequest(payload);
-      showSuccessToast('Tạo đơn xin làm thêm giờ thành công!');
+      if (isEdit && requestId && requestType) {
+        await requestsService.updateRequest(requestType, String(requestId), {
+          title: formData.title,
+          project_id: parseInt(formData.projectId),
+          work_date: formData.workDate,
+          start_time: formData.startTime,
+          end_time: formData.endTime,
+          reason: formData.reason
+        });
+        showSuccessToast('Cập nhật đơn xin làm thêm giờ thành công!');
+        queryClient.invalidateQueries({ queryKey: ['myRequests'] });
+      } else {
+        await timekeepingService.createOvertimeRequest(payload);
+        showSuccessToast('Tạo đơn xin làm thêm giờ thành công!');
+      }
       onClose();
     } catch (error) {
       console.error('Error submitting overtime request:', error);
@@ -119,7 +176,7 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Đăng ký làm thêm giờ ngày thường"
+      title={isEdit ? "Chỉnh sửa đơn làm thêm giờ" : "Đăng ký làm thêm giờ ngày thường"}
       size="md"
       footer={
         <>
@@ -130,17 +187,19 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
             variant="primary"
             onClick={handleSubmit}
             loading={isLoading}
-            disabled={isLoading || !formData.title.trim() || !formData.projectId || !formData.reason.trim()}
+            disabled={isLoading || isFetching || !formData.title.trim() || !formData.projectId || !formData.reason.trim()}
           >
-            {isLoading ? 'Đang xử lý...' : 'Tạo đơn'}
+            {isLoading ? 'Đang xử lý...' : isEdit ? 'Cập nhật' : 'Tạo đơn'}
           </Button>
         </>
       }
     >
       <ModalContent>
         {error && <ErrorMessage>{error}</ErrorMessage>}
+        {isFetching && <div style={{ padding: '1rem', textAlign: 'center' }}>Đang tải thông tin...</div>}
         
-        <FormSection>
+        {!isFetching && (
+          <FormSection>
           <FormGrid>
             <Input
               label="Tiêu đề"
@@ -208,6 +267,7 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
             </div>
           </FormGrid>
         </FormSection>
+        )}
       </ModalContent>
     </Modal>
   );

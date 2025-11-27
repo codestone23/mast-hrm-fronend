@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import {
     GridContainer,
     WelcomeSection,
@@ -18,6 +18,7 @@ import {
 } from "./moduleGridStyle";
 import { Loading } from "@/components/common";
 import { getModules } from "@/constants/modules";
+import { useMobile } from "@/hooks/useMobile";
 
 const modules = getModules();
 
@@ -30,6 +31,7 @@ interface ModuleGridProps {
 
 const ModuleGrid: React.FC<ModuleGridProps> = (props: ModuleGridProps) => {
     const { onModuleClick, userName, userRoles, isLoading } = props;
+    const isMobile = useMobile();
     const handleModuleClick = (modulePath: string) => {
         if (onModuleClick) {
             onModuleClick(modulePath);
@@ -62,42 +64,46 @@ const ModuleGrid: React.FC<ModuleGridProps> = (props: ModuleGridProps) => {
         }
     };
 
-    const filteredModules = modules.filter(
-        (module) =>
-            !module.allowedRoles || module.allowedRoles.some((role) => userRoles?.includes(role))
-    );
+    const filteredModules = useMemo(() => {
+        return modules.filter(
+            (module) =>
+                !module.allowedRoles || module.allowedRoles.some((role) => userRoles?.includes(role))
+        );
+    }, [userRoles]);
 
     return (
-        <GridContainer>
-            <WelcomeSection>
-                <WelcomeGreeting>{getGreeting()} {userName}</WelcomeGreeting>
-                <WelcomeDate>{getCurrentDate()}</WelcomeDate>
+        <GridContainer $isMobile={isMobile}>
+            <WelcomeSection $isMobile={isMobile}>
+                <WelcomeGreeting $isMobile={isMobile}>{getGreeting()} {userName}</WelcomeGreeting>
+                <WelcomeDate $isMobile={isMobile}>{getCurrentDate()}</WelcomeDate>
                 <WelcomeDivider />
             </WelcomeSection>
 
-            <SystemSection>
-                <SystemBar />
-                <SystemTitle>Hệ thống</SystemTitle>
+            <SystemSection $isMobile={isMobile}>
+                <SystemBar $isMobile={isMobile} />
+                <SystemTitle $isMobile={isMobile}>Hệ thống</SystemTitle>
             </SystemSection>
 
             {isLoading ? (
                 <Loading size="md" $center={true} />
             ) : (
-                <ModulesGrid>
+                <ModulesGrid $isMobile={isMobile}>
                     {filteredModules.map((module) => {
                         const IconComponent = module.icon;
                         return (
                             <ModuleCard
                                 key={module.id}
+                                $isMobile={isMobile}
                                 onClick={() => handleModuleClick(module.path)}
                             >
                                 <IconWrapper
-                                    style={{ backgroundColor: module.color }}
+                                    $isMobile={isMobile}
+                                    $backgroundColor={module.color}
                                 >
-                                    <IconComponent size={28} />
+                                    <IconComponent size={isMobile ? 20 : 28} />
                                 </IconWrapper>
-                                <ModuleName>{module.name}</ModuleName>
-                                <ModuleDescription>
+                                <ModuleName $isMobile={isMobile}>{module.name}</ModuleName>
+                                <ModuleDescription $isMobile={isMobile}>
                                     {module.description}
                                 </ModuleDescription>
                             </ModuleCard>

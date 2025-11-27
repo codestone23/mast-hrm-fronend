@@ -39,7 +39,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
 
   useEffect(() => {
     if (value) {
-      const [time, period] = value.split(' ');
+      const [time] = value.split(' ');
       if (time) {
         const [h, m] = time.split(':');
         if (h && m) {

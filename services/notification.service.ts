@@ -21,7 +21,7 @@ class NotificationService {
         if (search) {
             params.append('search', search);
         }
-        const response = await axiosInstance.get(`notifications?${params.toString()}`);
+        const response = await axiosInstance.get(`notifications/my?${params.toString()}`);
         return response.data;
     }
 

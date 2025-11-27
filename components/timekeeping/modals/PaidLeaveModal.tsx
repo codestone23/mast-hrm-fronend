@@ -9,19 +9,27 @@ import {
 } from './requestModalStyles';
 import { useToast } from '@/hooks/useToast';
 import { timekeepingService } from '@/services/timekeeping.service';
+import requestsService from '@/services/requests.service';
+import { useQueryClient } from '@tanstack/react-query';
 import LocalStorageUtil from '@/utils/LocalStorageUtil';
 import { User } from "@/constants/types";
 interface PaidLeaveModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedDate: string;
+  requestId?: number;
+  requestType?: string;
 }
 
 const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
   isOpen,
   onClose,
-  selectedDate
+  selectedDate,
+  requestId,
+  requestType
 }) => {
+  const queryClient = useQueryClient();
+  const isEdit = !!requestId && !!requestType;
   const [formData, setFormData] = useState({
     title: '',
     leaveType: 'PAID',
@@ -30,6 +38,7 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
     reason: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState('');
   const [annualLeaveQuota, setAnnualLeaveQuota] = useState(0);
   const [showInsufficientQuotaModal, setShowInsufficientQuotaModal] = useState(false);
@@ -55,6 +64,39 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
       }
     }
   }, [isOpen]);
+
+  // Fetch request data when in edit mode
+  useEffect(() => {
+    if (isOpen && isEdit && requestId && requestType) {
+      setIsFetching(true);
+      requestsService.getRequestById(requestType, String(requestId))
+        .then((request) => {
+          setFormData({
+            title: request.title || '',
+            leaveType: (request as any).type || 'PAID',
+            duration: request.duration || 'FULL_DAY',
+            workDate: request.work_date || selectedDate,
+            reason: request.reason || ''
+          });
+        })
+        .catch((err) => {
+          console.error('Error fetching request:', err);
+          showErrorToast('Không thể tải thông tin đề xuất');
+        })
+        .finally(() => {
+          setIsFetching(false);
+        });
+    } else if (isOpen && !isEdit) {
+      // Reset form when creating new request
+      setFormData({
+        title: '',
+        leaveType: 'PAID',
+        duration: 'FULL_DAY',
+        workDate: selectedDate,
+        reason: ''
+      });
+    }
+  }, [isOpen, isEdit, requestId, requestType, selectedDate, showErrorToast]);
 
   // Tính số giờ phép cần sử dụng
   const getRequiredLeaveHours = () => {
@@ -102,8 +144,14 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
         is_past: false
       };
 
-      await timekeepingService.createDayOffRequest(payload);
-      showSuccessToast('Tạo đơn xin nghỉ phép thành công!');
+      if (isEdit && requestId && requestType) {
+        await requestsService.updateRequest(requestType, String(requestId), payload);
+        showSuccessToast('Cập nhật đơn xin nghỉ phép thành công!');
+        queryClient.invalidateQueries({ queryKey: ['myRequests'] });
+      } else {
+        await timekeepingService.createDayOffRequest(payload);
+        showSuccessToast('Tạo đơn xin nghỉ phép thành công!');
+      }
       onClose();
     } catch (error) {
       console.error('Error submitting leave request:', error);
@@ -131,7 +179,7 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Đăng ký nghỉ phép"
+      title={isEdit ? "Chỉnh sửa đơn nghỉ phép" : "Đăng ký nghỉ phép"}
       size="md"
       footer={
         <>
@@ -142,21 +190,24 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
             variant="primary"
             onClick={handleSubmit}
             loading={isLoading}
-            disabled={isLoading || !formData.title.trim() || !formData.reason.trim()}
+            disabled={isLoading || isFetching || !formData.title.trim() || !formData.reason.trim()}
           >
-            {isLoading ? 'Đang xử lý...' : 'Tạo đơn'}
+            {isLoading ? 'Đang xử lý...' : isEdit ? 'Cập nhật' : 'Tạo đơn'}
           </Button>
         </>
       }
     >
       <ModalContent>
         {error && <ErrorMessage>{error}</ErrorMessage>}
+        {isFetching && <div style={{ padding: '1rem', textAlign: 'center' }}>Đang tải thông tin...</div>}
         
-        <InfoBanner>
-          Số giờ phép còn lại: {annualLeaveQuota} giờ
-        </InfoBanner>
-        
-        <FormSection>
+        {!isFetching && (
+          <>
+            <InfoBanner>
+              Số giờ phép còn lại: {annualLeaveQuota} giờ
+            </InfoBanner>
+            
+            <FormSection>
           <FormGrid>
             <Input
               label="Tiêu đề"
@@ -218,6 +269,8 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
             </div>
           </FormGrid>
         </FormSection>
+        </>
+        )}
       </ModalContent>
 
       {/* Modal cảnh báo không đủ giờ phép */}

@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState } from 'react';
 import { Lock, Eye, EyeOff, CheckCircle, ArrowLeft } from 'lucide-react';
 import {
@@ -44,7 +45,6 @@ interface PasswordStrength {
 }
 
 const ResetPassword: React.FC<ResetPasswordProps> = ({ 
-  token, 
   onBackToLogin, 
   onPasswordReset 
 }) => {
@@ -116,7 +116,8 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({
       setTimeout(() => {
         onPasswordReset();
       }, 2000);
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);

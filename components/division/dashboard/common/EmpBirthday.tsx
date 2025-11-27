@@ -19,7 +19,6 @@ import {
   Tag,
   Days,
   LoadingContainer,
-  LoadingText,
   EmptyDataContainer,
   EmptyDataText,
 } from "./empBirthdayStyle";

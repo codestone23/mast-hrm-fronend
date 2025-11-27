@@ -38,7 +38,7 @@ export default function Layout({
   }, [user, router]);
 
   const userRoleNames = user?.role_assignments.map(role => role?.name?.toLowerCase());
-  const isAdminOrSuperAdmin = userRoleNames?.includes(ROLE_NAMES.ADMIN);
+  const isAdmin = userRoleNames?.includes(ROLE_NAMES.ADMIN);
 
   const navItems = [
     { id: ROUTERS.DIVISION.BASE, label: "Tổng quan" },
@@ -49,7 +49,7 @@ export default function Layout({
   return (
     <PersonalPageContainer>
       <HeaderCommon activeTab={activeTab} navItems={navItems} />
-      {isAdminOrSuperAdmin && divisions.length > 0 && (
+      {isAdmin && divisions.length > 0 && (
         <SelectDivisionWrapper>
           <SelectDivision />
         </SelectDivisionWrapper>

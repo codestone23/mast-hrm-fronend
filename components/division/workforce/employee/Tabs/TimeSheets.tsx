@@ -42,7 +42,11 @@ interface ProcessedTimeSheetData {
   };
 }
 
-const TimeSheets: React.FC = () => {
+interface TimeSheetsProps {
+  employeeId?: string;
+}
+
+const TimeSheets: React.FC<TimeSheetsProps> = ({ employeeId }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const getTodayInVietnamTimezone = () => {

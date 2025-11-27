@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { Plus, Package, FileText, Edit, Trash2, Eye, UserPlus } from "lucide-react";
+import { useMobile } from "@/hooks/useMobile";
 import {
   Container,
   HeaderContainer,
@@ -16,6 +17,10 @@ import {
   UserName,
   StatusBadge,
   ActionButton,
+  AssetFilterContainer,
+  AssetFilterRow,
+  AssetFilterItem,
+  AssetFilterItemFixed,
 } from "./assetStyle";
 import { Asset } from "@/constants/types";
 import { AssetCategory, AssetStatus } from "@/constants/enums";
@@ -33,6 +38,7 @@ const ITEMS_PER_PAGE = 10;
 
 const AssetManagement: React.FC = () => {
   const queryClient = useQueryClient();
+  const isMobile = useMobile();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
   
   const [activeTab, setActiveTab] = useState<"assets" | "requests">("assets");
@@ -456,22 +462,25 @@ const AssetManagement: React.FC = () => {
       <ContentContainer>
         {activeTab === "assets" && (
           <>
-            <div style={{ marginBottom: "12px", display: "flex", gap: "12px", alignItems: "flex-end" }}>
-            <CreateButton onClick={() => setIsCreateModalOpen(true)}>
-              <Plus size={20} />
-              Thêm tài sản
-            </CreateButton>
+            <AssetFilterContainer $isMobile={isMobile}>
+              <CreateButton 
+                $isMobile={isMobile}
+                onClick={() => setIsCreateModalOpen(true)}
+              >
+                <Plus size={20} />
+                Thêm tài sản
+              </CreateButton>
               
-              <div style={{ flex: 1, display: "flex", gap: "12px" }}>
-                <div style={{ flex: 1 }}>
+              <AssetFilterRow $isMobile={isMobile}>
+                <AssetFilterItem $isMobile={isMobile}>
                   <Input
                     placeholder="Tìm kiếm theo tên..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     fullWidth
                   />
-                </div>
-                <div style={{ width: "200px" }}>
+                </AssetFilterItem>
+                <AssetFilterItemFixed $isMobile={isMobile}>
                   <Select
                     options={categoryOptions}
                     value={categoryFilter}
@@ -480,10 +489,10 @@ const AssetManagement: React.FC = () => {
                       setCurrentPage(1);
                     }}
                     placeholder="Danh mục"
-                    fullWidth={false}
+                    fullWidth={isMobile}
                   />
-                </div>
-                <div style={{ width: "200px" }}>
+                </AssetFilterItemFixed>
+                <AssetFilterItemFixed $isMobile={isMobile}>
                   <Select
                     options={statusOptions}
                     value={statusFilter}
@@ -492,11 +501,11 @@ const AssetManagement: React.FC = () => {
                       setCurrentPage(1);
                     }}
                     placeholder="Trạng thái"
-                    fullWidth={false}
+                    fullWidth={isMobile}
                   />
-                </div>
-              </div>
-          </div>
+                </AssetFilterItemFixed>
+              </AssetFilterRow>
+            </AssetFilterContainer>
           </>
         )}
 

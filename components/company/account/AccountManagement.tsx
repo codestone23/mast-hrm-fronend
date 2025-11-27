@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Eye, Edit, Trash2, User, Users, Search, Shield, MoreVertical, UserMinus } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, User, Users, Search, Shield, MoreVertical, UserMinus, ScanFace } from "lucide-react";
 import { Input, Table, Pagination, Select } from "@/components/common";
+import { useMobile } from "@/hooks/useMobile";
 import { TableColumn } from "@/components/common/Table/Table";
 import {
   PersonalContainer,
@@ -22,11 +23,18 @@ import {
   ActionMenuItem,
   ActionMenuLink,
   ActionMenuDivider,
+  SearchContainer,
+  FilterRow,
+  FilterItem,
+  HeaderRow,
+  FilterContainer,
+  StatsRow,
 } from "./accountStyle";
 import CreateAccountModal from "./modals/CreateAccountModal";
 import EditAccountModal from "./modals/EditAccountModal";
 import AssignRoleModal from "./modals/AssignRoleModal";
 import UnassignRoleModal from "./modals/UnassignRoleModal";
+import RegisterFaceModal from "./modals/RegisterFaceModal";
 import { ConfirmDeleteModal } from "@/components/common";
 import { User as UserType, UpdateUserRequest } from "@/types/api";
 import userService from "@/services/user.service";
@@ -37,6 +45,7 @@ import ROUTERS from "@/config/router";
 import rolesService from "@/services/roles.service";
 import divisionsService from "@/services/divisions.service";
 import { Role, DivisionListItem } from "@/types/api";
+import Image from "next/image";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -68,10 +77,6 @@ export const getRoleName = (roleName: ROLE_NAMES) => {
       return "Trưởng HR";
     case ROLE_NAMES.ADMIN:
       return "Quản trị viên";
-    case ROLE_NAMES.SUPER_ADMIN:
-      return "Quản trị hệ thống";
-    case ROLE_NAMES.COMPANY_OWNER:
-      return "Chủ công ty";
     default:
       return roleName;
   }
@@ -80,6 +85,7 @@ export const getRoleName = (roleName: ROLE_NAMES) => {
 const AccountManagement: React.FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const isMobile = useMobile();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -93,6 +99,7 @@ const AccountManagement: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAssignRoleModalOpen, setIsAssignRoleModalOpen] = useState(false);
   const [isUnassignRoleModalOpen, setIsUnassignRoleModalOpen] = useState(false);
+  const [isRegisterFaceModalOpen, setIsRegisterFaceModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPositions, setMenuPositions] = React.useState<Record<string, { rect: DOMRect; position: 'top' | 'bottom' }>>({});
@@ -269,6 +276,17 @@ const AccountManagement: React.FC = () => {
     setIsUnassignRoleModalOpen(true);
   };
 
+  const handleRegisterFace = (user: UserType) => {
+    setSelectedUser(user);
+    setIsRegisterFaceModalOpen(true);
+  };
+
+  const handleRegisterFaceSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["users"] });
+    setIsRegisterFaceModalOpen(false);
+    setSelectedUser(null);
+  };
+
   const getUserName = (user: UserType) => {
     if (user.user_information && Array.isArray(user.user_information) && user.user_information.length > 0) {
       const info = user.user_information[0] as { name?: string };
@@ -327,7 +345,7 @@ const AccountManagement: React.FC = () => {
               }}
             >
               {userInfo?.avatar && userInfo.avatar.includes('https') ? (
-                <img src={userInfo.avatar} alt={userName} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+                <Image src={userInfo.avatar} alt={userName} width={40} height={40} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" /> 
               ) : (
                 <User size={20} />
               )}
@@ -345,12 +363,16 @@ const AccountManagement: React.FC = () => {
       label: "Vai trò",
       render: (_, row) => {
         const roles = row.user_role_assignments || [];
-        if (roles.length === 0) {
+        // Filter only COMPANY scope roles
+        const companyRoles = roles.filter(
+          (assignment) => assignment.scope_type === "COMPANY"
+        );
+        if (companyRoles.length === 0) {
           return <span style={{ color: "#6b7280", fontSize: "14px" }}>Chưa có vai trò</span>;
         }
         return (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-            {roles.map((assignment, index) => (
+            {companyRoles.map((assignment, index) => (
               <span
                 key={index}
                 style={{
@@ -394,12 +416,36 @@ const AccountManagement: React.FC = () => {
       },
     },
     {
-      key: "department",
+      key: "user_division",
       label: "Phòng ban",
       width: "200px",
       render: (_, row) => {
-        const userInfo = getUserInfo(row);
-        return userInfo?.department || "Chưa phân công";
+        const userDivision = row.user_division as { division: { name: string } };
+        const divisionName = userDivision?.division?.name || "-";
+        return divisionName || "Chưa phân công";
+      },
+    },
+    {
+      key: "register_face",
+      label: "Đăng ký khuôn mặt",
+      width: "150px",
+      render: (_, row) => {
+        const isRegistered = row.register_face_url && row.register_face_at;
+        return (
+          <span
+            style={{
+              display: "inline-block",
+              padding: "4px 8px",
+              borderRadius: "12px",
+              fontSize: "12px",
+              fontWeight: 500,
+              backgroundColor: isRegistered ? "#10b98120" : "#ef444420",
+              color: isRegistered ? "#10b981" : "#ef4444",
+            }}
+          >
+            {isRegistered ? "Đã đăng ký" : "Chưa đăng ký"}
+          </span>
+        );
       },
     },
     {
@@ -508,6 +554,21 @@ const AccountManagement: React.FC = () => {
                       <span>Thu hồi vai trò</span>
                     </ActionMenuLink>
                   </ActionMenuItem>
+                  {(!row.register_face_url || !row.register_face_at) && (
+                    <ActionMenuItem>
+                      <ActionMenuLink
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          setOpenMenuId(null);
+                          handleRegisterFace(row);
+                        }}
+                      >
+                        <ScanFace size={16} />
+                        <span>Đăng ký khuôn mặt</span>
+                      </ActionMenuLink>
+                    </ActionMenuItem>
+                  )}
                   <ActionMenuDivider />
                   <ActionMenuItem>
                     <ActionMenuLink
@@ -543,23 +604,9 @@ const AccountManagement: React.FC = () => {
             </IconWrapper>
             <CardTitle>Quản lý tài khoản hệ thống</CardTitle>
           </CardHeader>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "16px",
-              marginBottom: "16px",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                gap: "12px",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <div style={{ flex: 1, maxWidth: "400px" }}>
+          <FilterContainer>
+            <HeaderRow $isMobile={isMobile}>
+              <SearchContainer $isMobile={isMobile}>
                 <Input
                   placeholder="Tìm kiếm theo tên hoặc email..."
                   value={searchTerm}
@@ -567,20 +614,17 @@ const AccountManagement: React.FC = () => {
                   icon={<Search size={18} />}
                   fullWidth={true}
                 />
-              </div>
-              <CreateButton onClick={() => setIsCreateModalOpen(true)}>
+              </SearchContainer>
+              <CreateButton 
+                $isMobile={isMobile}
+                onClick={() => setIsCreateModalOpen(true)}
+              >
                 <Plus size={20} />
                 Tạo tài khoản mới
               </CreateButton>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                gap: "12px",
-                alignItems: "flex-end",
-              }}
-            >
-              <div style={{ flex: 1, maxWidth: "300px" }}>
+            </HeaderRow>
+            <FilterRow $isMobile={isMobile}>
+              <FilterItem $isMobile={isMobile}>
                 <Select
                   label="Lọc theo vai trò"
                   options={[
@@ -598,8 +642,8 @@ const AccountManagement: React.FC = () => {
                   placeholder="Chọn vai trò"
                   fullWidth
                 />
-              </div>
-              <div style={{ flex: 1, maxWidth: "300px" }}>
+              </FilterItem>
+              <FilterItem $isMobile={isMobile}>
                 <Select
                   label="Lọc theo phòng ban"
                   options={[
@@ -617,8 +661,8 @@ const AccountManagement: React.FC = () => {
                   placeholder="Chọn phòng ban"
                   fullWidth
                 />
-              </div>
-              <div style={{ flex: 1, maxWidth: "300px" }}>
+              </FilterItem>
+              <FilterItem $isMobile={isMobile}>
                 <Select
                   label="Lọc theo trạng thái"
                   options={[
@@ -634,28 +678,21 @@ const AccountManagement: React.FC = () => {
                   placeholder="Chọn trạng thái"
                   fullWidth
                 />
-              </div>
-            </div>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              gap: "24px",
-              fontSize: "14px",
-              color: "var(--text-secondary)",
-            }}
-          >
-            <span>
-              Tổng số:{" "}
-              <strong style={{ color: "var(--text-primary)" }}>{pagination.total || users.length}</strong>
-            </span>
-            <span>
-              Đang hoạt động:{" "}
-              <strong style={{ color: "var(--success-600)" }}>
-                {users.filter((u) => getUserStatus(u) === "active").length}
-              </strong>
-            </span>
-          </div>
+              </FilterItem>
+            </FilterRow>
+            <StatsRow>
+              <span>
+                Tổng số:{" "}
+                <strong style={{ color: "var(--text-primary)" }}>{pagination.total || users.length}</strong>
+              </span>
+              <span>
+                Đang hoạt động:{" "}
+                <strong style={{ color: "var(--success-600)" }}>
+                  {users.filter((u) => getUserStatus(u) === "active").length}
+                </strong>
+              </span>
+            </StatsRow>
+          </FilterContainer>
         </Card>
       </DashboardCol>
     );
@@ -752,6 +789,17 @@ const AccountManagement: React.FC = () => {
           setSelectedUser(null);
         }}
         user={selectedUser}
+      />
+
+      <RegisterFaceModal
+        isOpen={isRegisterFaceModalOpen}
+        onClose={() => {
+          setIsRegisterFaceModalOpen(false);
+          setSelectedUser(null);
+        }}
+        userId={selectedUser?.id || 0}
+        userName={selectedUser ? getUserName(selectedUser) : undefined}
+        onSuccess={handleRegisterFaceSuccess}
       />
     </PersonalContainer>
   );

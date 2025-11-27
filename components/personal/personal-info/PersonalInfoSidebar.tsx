@@ -105,7 +105,7 @@ const PersonalInfoSidebar: React.FC<PersonalInfoSidebarProps> = ({
         <DetailItem>
           <DetailLabel>Người quản lý</DetailLabel>
           <DetailValue>
-            {data?.division.division_head.name !== data?.user_information?.name ? data?.division.division_head.name : 'Không có'}
+            {data?.division?.division_head?.name !== data?.user_information?.name ? data?.division?.division_head?.name : 'Không có'}
           </DetailValue>
         </DetailItem>
       </UserDetails>

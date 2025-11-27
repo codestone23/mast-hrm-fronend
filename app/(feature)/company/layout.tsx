@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { useEffect } from "react";
@@ -19,7 +20,7 @@ export default function Layout({
   const { user } = useAuthContext();
   const pathname = usePathname().split("/");
   const activeTab = pathname.slice(1, pathname.length).join("/");
-
+  
   useEffect(() => {
     if (!user) return;
 

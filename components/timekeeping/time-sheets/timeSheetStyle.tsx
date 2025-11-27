@@ -4,6 +4,10 @@ export const TimeSheetsContainer = styled.div`
   background-color: var(--background-secondary);
   min-height: 100vh;
   padding: 1rem;
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+  }
 `;
 
 export const Header = styled.div`
@@ -11,6 +15,12 @@ export const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
 `;
 
 export const TabsContainer = styled.div`
@@ -20,13 +30,19 @@ export const TabsContainer = styled.div`
   border-radius: 8px;
   padding: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
-export const Tab = styled.div<{ $active: boolean }>`
-  padding: 12px 24px;
+export const Tab = styled.div<{ $active: boolean; $isMobile?: boolean }>`
+  padding: ${props => props.$isMobile ? '8px 12px' : '12px 24px'};
   cursor: pointer;
   font-weight: 500;
-  font-size: 14px;
+  font-size: ${props => props.$isMobile ? '12px' : '14px'};
   border-radius: 6px;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -48,18 +64,20 @@ export const Tab = styled.div<{ $active: boolean }>`
   `}
 `;
 
-export const HeaderButtons = styled.div`
+export const HeaderButtons = styled.div<{ $isMobile?: boolean }>`
   display: flex;
-  gap: 12px;
+  gap: ${props => props.$isMobile ? '8px' : '12px'};
+  flex-wrap: ${props => props.$isMobile ? 'wrap' : 'nowrap'};
 `;
 
-export const CreateButton = styled.button`
+export const CreateButton = styled.button<{ $isMobile?: boolean }>`
   background: #2196F3;
   color: white;
   border: none;
   border-radius: 6px;
-  padding: 12px 20px;
+  padding: ${props => props.$isMobile ? '8px 12px' : '12px 20px'};
   font-weight: 500;
+  font-size: ${props => props.$isMobile ? '12px' : '14px'};
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -71,6 +89,15 @@ export const CreateButton = styled.button`
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
   }
+`;
+
+export const TabContentWrapper = styled.div<{ $isMobile?: boolean }>`
+  padding: ${props => props.$isMobile ? '1rem' : '1rem'};
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 `;
 
 
@@ -119,6 +146,12 @@ export const Legend = styled.div`
   gap: 8px;
   margin-bottom: 1.5rem;
   font-size: 12px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    font-size: 11px;
+    gap: 6px;
+  }
 `;
 
 export const LegendItem = styled.div`
@@ -200,6 +233,12 @@ export const DayCell = styled.div<{
     `
     border: 2px solid #FF9800;
   `}
+
+  @media (max-width: 768px) {
+    padding: 4px;
+    min-height: 60px;
+    font-size: 11px;
+  }
 `;
 
 export const DayNumber = styled.div<{
@@ -247,6 +286,10 @@ export const SidebarContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 export const SidebarCard = styled.div`
@@ -306,6 +349,11 @@ export const StatLabel = styled.div`
 export const MainContent = styled.div`
   display: flex;
   gap: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 `;
 
 export const DayHeader = styled.div`

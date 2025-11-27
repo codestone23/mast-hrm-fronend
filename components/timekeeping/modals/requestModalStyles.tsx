@@ -69,7 +69,6 @@ export const RequestTypeCount = styled.div`
 `;
 
 export const FormSection = styled.div`
-  padding: 20px;
 `;
 
 export const FormGrid = styled.div`

@@ -64,8 +64,9 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
   };
 
   useEffect(() => {
+    console.log(data);
     if (data) {
-      setSkills(data.user_skills || []);
+      setSkills(data?.user_skills || []);
       setExperiences(data.experience || []);
       setEducations(
         (data.education || []).map((edu) => ({

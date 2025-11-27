@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Select, DatePicker, TimePicker } from '@/components/common';
 import {
   ModalContent,
@@ -8,18 +8,26 @@ import {
   InfoBanner
 } from './requestModalStyles';
 import { useToast } from '@/hooks/useToast';
+import requestsService from '@/services/requests.service';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ForgotTimekeepingModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedDate: string;
+  requestId?: number;
+  requestType?: string;
 }
 
 const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
   isOpen,
   onClose,
-  selectedDate
+  selectedDate,
+  requestId,
+  requestType
 }) => {
+  const queryClient = useQueryClient();
+  const isEdit = !!requestId && !!requestType;
   const [formData, setFormData] = useState({
     title: 'Quên checkout ngày 05/05/2021',
     approver: '',
@@ -29,14 +37,50 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
     reason: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState('');
-  const { success: showSuccessToast } = useToast();
+  const { success: showSuccessToast, error: showErrorToast } = useToast();
 
   const approvers = [
     { value: 'manager1', label: 'Nguyễn Văn A - Trưởng phòng' },
     { value: 'manager2', label: 'Trần Thị B - Phó giám đốc' },
     { value: 'manager3', label: 'Lê Văn C - Giám đốc' }
   ];
+
+  // Fetch request data when in edit mode
+  useEffect(() => {
+    if (isOpen && isEdit && requestId && requestType) {
+      setIsFetching(true);
+      requestsService.getRequestById(requestType, String(requestId))
+        .then((request) => {
+          setFormData({
+            title: request.title || 'Quên checkout',
+            approver: '',
+            applicationDate: request.work_date || selectedDate,
+            checkinTime: request.start_time || '08:00',
+            checkoutTime: request.end_time || '13:30',
+            reason: request.reason || ''
+          });
+        })
+        .catch((err) => {
+          console.error('Error fetching request:', err);
+          showErrorToast('Không thể tải thông tin đề xuất');
+        })
+        .finally(() => {
+          setIsFetching(false);
+        });
+    } else if (isOpen && !isEdit) {
+      // Reset form when creating new request
+      setFormData({
+        title: 'Quên checkout ngày 05/05/2021',
+        approver: '',
+        applicationDate: selectedDate,
+        checkinTime: '08:00',
+        checkoutTime: '13:30',
+        reason: ''
+      });
+    }
+  }, [isOpen, isEdit, requestId, requestType, selectedDate, showErrorToast]);
 
   const handleSubmit = async () => {
     if (!formData.approver) {
@@ -48,10 +92,21 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
     setError('');
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      showSuccessToast('Đăng ký quên chấm công thành công!');
+      if (isEdit && requestId && requestType) {
+        await requestsService.updateRequest(requestType, String(requestId), {
+          title: formData.title,
+          work_date: formData.applicationDate,
+          start_time: formData.checkinTime,
+          end_time: formData.checkoutTime,
+          reason: formData.reason
+        });
+        showSuccessToast('Cập nhật đơn quên chấm công thành công!');
+        queryClient.invalidateQueries({ queryKey: ['myRequests'] });
+      } else {
+        // Simulate API call for create
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        showSuccessToast('Đăng ký quên chấm công thành công!');
+      }
       onClose();
     } catch (error) {
       console.error('Error submitting forgot timekeeping request:', error);
@@ -79,7 +134,7 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Đăng ký quên chấm công"
+      title={isEdit ? "Chỉnh sửa đơn quên chấm công" : "Đăng ký quên chấm công"}
       size="md"
       footer={
         <>
@@ -90,22 +145,25 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
             variant="primary"
             onClick={handleSubmit}
             loading={isLoading}
-            disabled={isLoading || !formData.approver}
+            disabled={isLoading || isFetching || !formData.approver}
           >
-            {isLoading ? 'Đang xử lý...' : 'Thêm'}
+            {isLoading ? 'Đang xử lý...' : isEdit ? 'Cập nhật' : 'Thêm'}
           </Button>
         </>
       }
     >
       <ModalContent>
         {error && <ErrorMessage>{error}</ErrorMessage>}
+        {isFetching && <div style={{ padding: '1rem', textAlign: 'center' }}>Đang tải thông tin...</div>}
         
-        <InfoBanner>
-          <div>Chọn giờ checkin checkout để sửa thông tin chấm công của bạn</div>
-          <div>Số đề xuất được thực hiện trong tháng: <span style={{ color: '#ef4444', fontWeight: 'bold' }}>3</span></div>
-        </InfoBanner>
-        
-        <FormSection>
+        {!isFetching && (
+          <>
+            <InfoBanner>
+              <div>Chọn giờ checkin checkout để sửa thông tin chấm công của bạn</div>
+              <div>Số đề xuất được thực hiện trong tháng: <span style={{ color: '#ef4444', fontWeight: 'bold' }}>3</span></div>
+            </InfoBanner>
+            
+            <FormSection>
           <FormGrid>
             <Input
               label="Tên tiêu đề"
@@ -160,6 +218,8 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
             </div>
           </FormGrid>
         </FormSection>
+        </>
+        )}
       </ModalContent>
     </Modal>
   );

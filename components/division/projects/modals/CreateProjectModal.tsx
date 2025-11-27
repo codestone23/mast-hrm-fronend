@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Modal, Button, Input, TextArea, Select, DatePicker } from "@/components/common";
 import { ProjectCreateRequest } from "@/services/project.service";
 import { useProjectMutation } from "@/hooks/useProjectMutation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-import { ProjectCritical, ProjectIndustry, ProjectStatus, ProjectType } from "@/constants/enums";
+import { ProjectIndustry, ProjectStatus, ProjectType } from "@/constants/enums";
+import userService from "@/services/user.service";
+import { User } from "@/types/api";
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -35,20 +38,6 @@ const industryOptions = [
   { value: 'OTHER', label: 'Khác' },
 ];
 
-const criticalOptions = [
-  { value: 'Low', label: 'Thấp' },
-  { value: 'Medium', label: 'Trung bình' },
-  { value: 'High', label: 'Cao' },
-  { value: 'Critical', label: 'Rất cao' },
-];
-
-const rankOptions = [
-  { value: 1, label: '1' },
-  { value: 2, label: '2' },
-  { value: 3, label: '3' },
-  { value: 4, label: '4' },
-  { value: 5, label: '5' },
-];
 
 const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   isOpen,
@@ -63,15 +52,15 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     status: 'OPEN',
     division_id: selectedDivisionId || 0,
     project_type: 'INTERNAL',
-    rank: 1,
     industry: 'IT',
-    scope: '',
     description: '',
-    critical: 'Medium',
     start_date: '',
     end_date: '',
+    manager_id: undefined,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [managerSearchTerm, setManagerSearchTerm] = useState("");
+  const [debouncedManagerSearch, setDebouncedManagerSearch] = useState("");
 
   useEffect(() => {
     if (isOpen && selectedDivisionId) {
@@ -81,6 +70,61 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       }));
     }
   }, [isOpen, selectedDivisionId]);
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedManagerSearch(managerSearchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [managerSearchTerm]);
+
+  // Fetch users for manager selection with infinite scroll
+  const {
+    data: usersData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["users", "for-manager", selectedDivisionId, debouncedManagerSearch],
+    queryFn: ({ pageParam = 1 }) =>
+      userService.getUsers(
+        pageParam, 
+        20, 
+        debouncedManagerSearch || undefined,
+        undefined,
+        undefined,
+        selectedDivisionId || undefined
+      ),
+    getNextPageParam: (lastPage) => {
+      const totalPages = lastPage.pagination?.total_pages || 0;
+      const currentPage = lastPage.pagination?.current_page || 1;
+      return currentPage < totalPages ? currentPage + 1 : undefined;
+    },
+    initialPageParam: 1,
+    enabled: isOpen && !!selectedDivisionId,
+  });
+
+  const getUserName = (user: User) => {
+    if (user.user_information && typeof user.user_information === 'object' && !Array.isArray(user.user_information) && 'name' in user.user_information) {
+      return (user.user_information as { name: string }).name;
+    }
+    return user.name || user.email;
+  };
+
+  const allUsers = useMemo(() => {
+    return usersData?.pages.flatMap((page) => page.data || []) || [];
+  }, [usersData]);
+
+  const managerOptions = useMemo(() => {
+    return [
+      { value: 0, label: "Chưa chọn quản lý" },
+      ...allUsers.map((user: User) => ({
+        value: user.id,
+        label: getUserName(user),
+      })),
+    ];
+  }, [allUsers]);
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -93,10 +137,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     }
     if (!formData.description?.trim()) {
       newErrors.description = 'Mô tả là bắt buộc';
-    }
-    if (!formData.scope?.trim()) {
-      newErrors.scope = 'Phạm vi là bắt buộc';
-    }
+    } 
     if (!formData.start_date) {
       newErrors.start_date = 'Ngày bắt đầu là bắt buộc';
     }
@@ -129,14 +170,10 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       status: formData.status!,
       division_id: formData.division_id!,
       team_id: formData.team_id,
+      manager_id: formData.manager_id,
       project_type: formData.project_type!,
-      rank: formData.rank!,
       industry: formData.industry!,
-      scope: formData.scope!,
       description: formData.description!,
-      contract_information: formData.contract_information,
-      critical: formData.critical!,
-      note: formData.note,
       start_date: formData.start_date!,
       end_date: formData.end_date!,
     };
@@ -156,15 +193,15 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       status: 'OPEN',
       division_id: selectedDivisionId || 0,
       project_type: 'INTERNAL',
-      rank: 1,
       industry: 'IT',
-      scope: '',
       description: '',
-      critical: 'Medium',
       start_date: '',
       end_date: '',
+      manager_id: undefined,
     });
     setErrors({});
+    setManagerSearchTerm("");
+    setDebouncedManagerSearch("");
     onClose();
   };
 
@@ -243,90 +280,6 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             disabled={isPending}
           />
         </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          <Select
-            label="Ngành"
-            required
-            options={industryOptions}
-            value={formData.industry || 'IT'}
-            onChange={(v) => setFormData({ ...formData, industry: v as ProjectIndustry })}
-            error={errors.industry}
-            disabled={isPending}
-          />
-          <Select
-            label="Độ ưu tiên"
-            required
-            options={criticalOptions}
-            value={formData.critical || 'Medium'}
-            onChange={(v) => setFormData({ ...formData, critical: v as ProjectCritical })}
-            error={errors.critical}
-            disabled={isPending}
-          />
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          <Select
-            label="Rank"
-            required
-            options={rankOptions}
-            value={formData.rank || 1}
-            onChange={(v) => setFormData({ ...formData, rank: Number(v) })}
-            error={errors.rank}
-            disabled={isPending}
-          />
-          <Input
-            label="Team ID (tùy chọn)"
-            type="number"
-            value={formData.team_id?.toString() || ''}
-            onChange={(e) => setFormData({ 
-              ...formData, 
-              team_id: e.target.value ? Number(e.target.value) : undefined 
-            })}
-            placeholder="Nhập Team ID"
-            disabled={isPending}
-          />
-        </div>
-
-        <TextArea
-          label="Mô tả"
-          required
-          value={formData.description || ''}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          placeholder="Nhập mô tả dự án"
-          error={errors.description}
-          disabled={isPending}
-          rows={3}
-        />
-
-        <TextArea
-          label="Phạm vi"
-          required
-          value={formData.scope || ''}
-          onChange={(e) => setFormData({ ...formData, scope: e.target.value })}
-          placeholder="Nhập phạm vi dự án"
-          error={errors.scope}
-          disabled={isPending}
-          rows={3}
-        />
-
-        <Input
-          label="Thông tin hợp đồng (tùy chọn)"
-          value={formData.contract_information || ''}
-          onChange={(e) => setFormData({ ...formData, contract_information: e.target.value })}
-          placeholder="Nhập thông tin hợp đồng"
-          disabled={isPending}
-        />
-
-        <TextArea
-          label="Ghi chú (tùy chọn)"
-          value={formData.note || ''}
-          onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-          placeholder="Nhập ghi chú"
-          disabled={isPending}
-          rows={2}
-        />
-
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           <div>
             <DatePicker
@@ -360,6 +313,63 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             />
           </div>
         </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <Select
+            label="Ngành"
+            required
+            options={industryOptions}
+            value={formData.industry || 'IT'}
+            onChange={(v) => setFormData({ ...formData, industry: v as ProjectIndustry })}
+            error={errors.industry}
+            disabled={isPending}
+          />
+          <Input
+            label="Team ID (tùy chọn)"
+            type="number"
+            value={formData.team_id?.toString() || ''}
+            onChange={(e) => setFormData({ 
+              ...formData, 
+              team_id: e.target.value ? Number(e.target.value) : undefined 
+            })}
+            placeholder="Nhập Team ID"
+            disabled={isPending}
+          />
+        </div>
+
+        <Select
+          label="Quản lý dự án"
+          options={managerOptions}
+          value={formData.manager_id || 0}
+          onChange={(v) => {
+            const managerId = Number(v);
+            setFormData({ 
+              ...formData, 
+              manager_id: managerId === 0 ? undefined : managerId
+            });
+          }}
+          placeholder="Chọn quản lý dự án"
+          searchable
+          onSearchChange={setManagerSearchTerm}
+          hasNextPage={!!hasNextPage}
+          isFetchingNextPage={!!isFetchingNextPage}
+          fetchNextPage={fetchNextPage || (() => {})}
+          loadingText="Đang tải thêm..."
+          disabled={isPending || !selectedDivisionId}
+          error={errors.manager_id}
+        />
+
+        <TextArea
+          label="Mô tả"
+          required
+          value={formData.description || ''}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          placeholder="Nhập mô tả dự án"
+          error={errors.description}
+          disabled={isPending}
+          rows={3}
+        />
+
       </div>
     </Modal>
   );

@@ -1,11 +1,11 @@
 import styled from 'styled-components';
 
-export const HeaderContainer = styled.div`
+export const HeaderContainer = styled.div<{ $isMobile?: boolean }>`
   display: flex;
   align-items: center;
-  padding: 0 1.5rem;
+  padding: ${props => props.$isMobile ? '0 0.75rem' : '0 1.5rem'};
   background-color: var(--header-background);
-  height: 60px;
+  height: ${props => props.$isMobile ? '56px' : '60px'};
   box-shadow: var(--shadow-lg);
   position: fixed;
   top: 0;
@@ -17,11 +17,11 @@ export const HeaderContainer = styled.div`
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 `;
 
-export const Logo = styled.div`
+export const Logo = styled.div<{ $isMobile?: boolean }>`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-right: 2rem;
+  margin-right: ${props => props.$isMobile ? '1rem' : '2rem'};
   transition: transform 0.2s ease;
   
   &:hover {
@@ -49,23 +49,28 @@ export const Logo = styled.div`
   }
 `;
 
-export const Navigation = styled.div`
+export const Navigation = styled.div<{ $isMobile?: boolean }>`
   display: flex;
   align-items: center;
   gap: 0;
   flex: 1;
+  -webkit-overflow-scrolling: touch;
+  ${props => props.$isMobile && `
+    display: none;
+  `}
 `;
 
-export const NavItem = styled.div<{ $active?: boolean }>`
-  padding: 1rem 1.5rem;
+export const NavItem = styled.div<{ $active?: boolean; $isMobile?: boolean }>`
+  padding: ${props => props.$isMobile ? '0.75rem 1rem' : '1rem 1.5rem'};
   color: ${props => props.$active ? 'var(--secondary-500)' : 'var(--gray-200)'};
   background-color: ${props => props.$active ? 'var(--gray-600)' : 'transparent'};
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: ${props => props.$isMobile ? '0.8rem' : '0.9rem'};
   font-weight: 500;
   transition: all 0.2s ease;
   border-bottom: 3px solid ${props => props.$active ? 'var(--secondary-500)' : 'transparent'};
   position: relative;
+  white-space: nowrap;
   
   &:hover {
     color: var(--secondary-500);
@@ -78,19 +83,23 @@ export const NavItem = styled.div<{ $active?: boolean }>`
   }
 `;
 
-export const UserSection = styled.div`
+export const UserSection = styled.div<{ $isMobile?: boolean }>`
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: ${props => props.$isMobile ? '0.5rem' : '1rem'};
   margin-left: auto;
 `;
 
-export const IconButton = styled.button`
+export const NotificationWrapper = styled.div`
+  position: relative;
+`;
+
+export const IconButton = styled.button<{ $isMobile?: boolean }>`
   background: none;
   border: none;
   color: var(--gray-200);
   cursor: pointer;
-  padding: 0.5rem;
+  padding: ${props => props.$isMobile ? '0.4rem' : '0.5rem'};
   border-radius: var(--radius-sm);
   transition: all 0.2s ease;
   display: flex;
@@ -110,9 +119,9 @@ export const IconButton = styled.button`
   }
 `;
 
-export const UserAvatar = styled.div`
-  width: 2.5rem;
-  height: 2.5rem;
+export const UserAvatar = styled.div<{ $isMobile?: boolean }>`
+  width: ${props => props.$isMobile ? '2rem' : '2.5rem'};
+  height: ${props => props.$isMobile ? '2rem' : '2.5rem'};
   border-radius: 50%;
   background: linear-gradient(135deg, #06b6d4, var(--primary-500));
   display: flex;
@@ -138,7 +147,7 @@ export const UserAvatar = styled.div`
   }
 `;
 
-export const UserDropdown = styled.div<{ $isOpen: boolean }>`
+export const UserDropdown = styled.div<{ $isOpen: boolean; $isMobile?: boolean }>`
   position: absolute;
   top: 100%;
   right: 0;
@@ -147,7 +156,7 @@ export const UserDropdown = styled.div<{ $isOpen: boolean }>`
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
   border: 1px solid var(--border);
-  min-width: 200px;
+  min-width: ${props => props.$isMobile ? '180px' : '200px'};
   z-index: 1000;
   opacity: ${props => props.$isOpen ? 1 : 0};
   visibility: ${props => props.$isOpen ? 'visible' : 'hidden'};
@@ -216,4 +225,78 @@ export const DropdownDivider = styled.div`
   height: 1px;
   background: var(--border);
   margin: 0.5rem 0;
+`;
+
+export const MobileMenuButton = styled.div<{ $isMobile?: boolean }>`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  color: var(--gray-200);
+  margin-right: 0.5rem;
+  flex: 1;
+  
+  &:hover {
+    color: var(--secondary-500);
+    background-color: var(--gray-600);
+  }
+`;
+
+export const MobileMenuOverlay = styled.div<{ $isOpen: boolean }>`
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+  opacity: ${props => props.$isOpen ? 1 : 0};
+  visibility: ${props => props.$isOpen ? 'visible' : 'hidden'};
+  transition: all 0.2s ease;
+`;
+
+export const MobileMenuDropdown = styled.div<{ $isOpen: boolean }>`
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: calc(100vh - 56px);
+  background: white;
+  z-index: 9999;
+  opacity: ${props => props.$isOpen ? 1 : 0};
+  visibility: ${props => props.$isOpen ? 'visible' : 'hidden'};
+  transform: ${props => props.$isOpen ? 'translateX(0)' : 'translateX(-100%)'};
+  transition: all 0.3s ease;
+  overflow-y: auto;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+`;
+
+export const MobileNavItem = styled.div<{ $active?: boolean }>`
+  padding: 1rem 1.5rem;
+  color: ${props => props.$active ? 'var(--primary-600)' : 'var(--text-primary)'};
+  background-color: ${props => props.$active ? 'var(--primary-50)' : 'transparent'};
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: ${props => props.$active ? '600' : '500'};
+  transition: all 0.2s ease;
+  border-left: 4px solid ${props => props.$active ? 'var(--primary-600)' : 'transparent'};
+  border-bottom: 1px solid var(--border);
+  
+  &:hover {
+    background-color: ${props => props.$active ? 'var(--primary-50)' : 'var(--background-secondary)'};
+    color: var(--primary-600);
+  }
+  
+  &:active {
+    background-color: var(--background-secondary);
+  }
+  
+  &:last-child {
+    border-bottom: none;
+  }
 `;

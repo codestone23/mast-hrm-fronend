@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { StyledButton } from './buttonStyle';
-import Loading from "../Loading/Loading";
 
 export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'type' | 'disabled' | 'className'> {
   children: React.ReactNode;

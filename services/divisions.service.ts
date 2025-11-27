@@ -68,7 +68,7 @@ class DivisionsService {
     search?: string
   ): Promise<{ data: DivisionUserAssignmentItem[]; pagination: PaginatedMeta }> { 
     const response = await axiosInstance.get(`/divisions/${divisionId}/users`, {
-      params: { page, limit, search, divisionId },
+      params: { page, limit, search, division_id: divisionId },
     });
     return response.data;
   }

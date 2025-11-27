@@ -71,9 +71,11 @@ import { NewsStatus } from "@/types/api";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale/vi";
 import { Loading } from "@/components/common";
+import { useMobile } from "@/hooks/useMobile";
 
 const Personal: React.FC = () => {
   const router = useRouter();
+  const isMobile = useMobile();
   const { user } = usePersonal();
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);

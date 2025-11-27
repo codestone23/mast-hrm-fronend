@@ -68,6 +68,7 @@ export interface CreateDivisionRequest {
   type: DivisionType;
   parent_id?: number | null;
   description?: string;
+  leader_id?: number | null;
 }
 
 export interface UpdateDivisionRequest extends CreateDivisionRequest {
@@ -155,6 +156,8 @@ export interface User {
   name: string;
   remember_token: string | null;
   updated_at: string;
+  register_face_url?: string;
+  register_face_at?: string;
   user_information: unknown[] | {
     id: number;
     user_id: number;
@@ -179,7 +182,22 @@ export interface User {
     deleted_at: string | null;
   };
   user_role_assignments?: UserRoleAssignment[];
-  user_division?: unknown[];
+  user_division?: {
+    division: {
+      id: number;
+      name: string;
+      description: string;
+      created_at: string;
+      updated_at: string;
+      deleted_at: string | null;
+      status: DivisionStatus;
+      type: DivisionTypeEnum;
+    };
+    team: {
+      id: number;
+      name: string;
+    };
+  };
   status?: string;
   organization?: {
     division: {
@@ -688,6 +706,7 @@ export interface Notification {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  read_at: string | null;
   creator?: {
     id: number;
     email: string;

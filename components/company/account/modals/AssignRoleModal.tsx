@@ -27,10 +27,10 @@ const AssignRoleModal: React.FC<AssignRoleModalProps> = ({
   const { success: showSuccessToast, error: showErrorToast } = useToast();
   const [selectedRoleId, setSelectedRoleId] = useState<string | number>("");
 
-  // Get user's existing role IDs
-  const existingRoleIds = user?.user_role_assignments?.map(
-    (assignment) => assignment.role.id
-  ) || [];
+  // Get user's existing COMPANY scope role IDs
+  const existingRoleIds = user?.user_role_assignments
+    ?.filter((assignment) => assignment.scope_type === ScopeType.COMPANY)
+    .map((assignment) => assignment.role.id) || [];
 
   // Fetch roles
   const { data: rolesData, isLoading: isLoadingRoles } = useQuery({
@@ -61,7 +61,7 @@ const AssignRoleModal: React.FC<AssignRoleModalProps> = ({
   // Assign role mutation
   const assignRoleMutation = useMutation({
     mutationFn: ({ userId, roleId }: { userId: number; roleId: number }) =>
-      rolesService.assignRole(userId, roleId, ScopeType.COMPANY),
+      rolesService.assignRole(userId, roleId, ScopeType.COMPANY, null),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       showSuccessToast("Gán vai trò thành công");
@@ -154,24 +154,26 @@ const AssignRoleModal: React.FC<AssignRoleModalProps> = ({
 
         {existingRoleIds.length > 0 && (
           <div style={{ fontSize: "14px", color: "#6b7280" }}>
-            <div style={{ marginBottom: "4px" }}>Vai trò hiện tại:</div>
+            <div style={{ marginBottom: "4px" }}>Vai trò hiện tại (Company):</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {user?.user_role_assignments?.map((assignment, index) => (
-                <span
-                  key={index}
-                  style={{
-                    display: "inline-block",
-                    padding: "4px 12px",
-                    borderRadius: "12px",
-                    fontSize: "12px",
-                    fontWeight: 500,
-                    backgroundColor: "#e0e7ff",
-                    color: "#6366f1",
-                  }}
-                >
-                  {getRoleName(assignment.role.name)}
-                </span>
-              ))}
+              {user?.user_role_assignments
+                ?.filter((assignment) => assignment.scope_type === ScopeType.COMPANY)
+                .map((assignment, index) => (
+                  <span
+                    key={index}
+                    style={{
+                      display: "inline-block",
+                      padding: "4px 12px",
+                      borderRadius: "12px",
+                      fontSize: "12px",
+                      fontWeight: 500,
+                      backgroundColor: "#e0e7ff",
+                      color: "#6366f1",
+                    }}
+                  >
+                    {getRoleName(assignment.role.name)}
+                  </span>
+                ))}
             </div>
           </div>
         )}

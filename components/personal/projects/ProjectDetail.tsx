@@ -92,10 +92,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
         return 'Trưởng HR';
       case ROLE_NAMES.ADMIN:
         return 'Quản trị viên';
-      case ROLE_NAMES.SUPER_ADMIN:
-        return 'Quản trị hệ thống';
-      case ROLE_NAMES.COMPANY_OWNER:
-        return 'Chủ công ty';
       default:
         return role;
     }

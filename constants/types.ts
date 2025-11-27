@@ -46,6 +46,30 @@ export interface User {
     technique: string;
     main_task: string;
     language_id: number;
+    education?: Array<{
+      id: number;
+      user_id: number;
+      name: string;
+      major: string;
+      start_date: string;
+      end_date: string;
+    }>;
+    experience?: Array<{
+      id: number;
+      user_id: number;
+      company: string;
+      job_title: string;
+      start_date: string;
+      end_date: string;
+    }>;
+    user_skills?: Array<{
+      id: number;
+      user_id: number;
+      skill_id: number;
+      experience: number;
+      months_experience: number;
+      is_main: boolean;
+    }>;
     position?: {
       id: number;
       name: string;
@@ -202,6 +226,30 @@ export interface UserProfile {
     technique: string;
     main_task: string;
     language_id: number;
+    education?: Array<{
+      id: number;
+      user_id: number;
+      name: string;
+      major: string;
+      start_date: string;
+      end_date: string;
+    }>;
+    experience?: Array<{
+      id: number;
+      user_id: number;
+      company: string;
+      job_title: string;
+      start_date: string;
+      end_date: string;
+    }>;
+    user_skills?: Array<{
+      id: number;
+      user_id: number;
+      skill_id: number;
+      experience: number;
+      months_experience: number;
+      is_main: boolean;
+    }>;
     position?: {
       id: number;
       name: string;

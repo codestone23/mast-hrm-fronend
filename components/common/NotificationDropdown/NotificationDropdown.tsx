@@ -106,11 +106,13 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   }, [isOpen, onClose]);
 
   const handleNotificationClick = async (notification: Notification) => {
-    // Đọc notification
-    try {
-      await readNotificationMutation.mutateAsync(notification.id);
-    } catch (error) {
-      console.error("Error reading notification:", error);
+    // Chỉ đọc notification nếu chưa đọc (read_at là null)
+    if (!notification.read_at) {
+      try {
+        await readNotificationMutation.mutateAsync(notification.id);
+      } catch (error) {
+        console.error("Error reading notification:", error);
+      }
     }
 
     onClose();
@@ -149,22 +151,47 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           </EmptyNotifications>
         ) : (
           <NotificationList>
-            {notifications.map((notification) => (
-              <NotificationItem
-                key={notification.id}
-                onClick={() => handleNotificationClick(notification)}
-              >
-                <NotificationItemTitle>
-                  {notification.title}
-                </NotificationItemTitle>
-                <NotificationItemDescription>
-                  {notification.content || notification.description}
-                </NotificationItemDescription>
-                <NotificationItemTime>
-                  {formatTime(notification.created_at)}
-                </NotificationItemTime>
-              </NotificationItem>
-            ))}
+            {notifications.map((notification) => {
+              const isUnread = !notification.read_at;
+              return (
+                <NotificationItem
+                  key={notification.id}
+                  onClick={() => handleNotificationClick(notification)}
+                  style={{
+                    backgroundColor: isUnread ? "#f0f9ff" : "white",
+                    borderLeft: isUnread ? "3px solid #3b82f6" : "3px solid transparent",
+                    fontWeight: isUnread ? 500 : 400,
+                  }}
+                >
+                  <NotificationItemTitle
+                    style={{
+                      fontWeight: isUnread ? 600 : 500,
+                      color: isUnread ? "#1e40af" : "var(--text-primary)",
+                    }}
+                  >
+                    {notification.title}
+                    {isUnread && (
+                      <span
+                        style={{
+                          display: "inline-block",
+                          width: "8px",
+                          height: "8px",
+                          borderRadius: "50%",
+                          backgroundColor: "#3b82f6",
+                          marginLeft: "8px",
+                        }}
+                      />
+                    )}
+                  </NotificationItemTitle>
+                  <NotificationItemDescription>
+                    {notification.content || notification.description}
+                  </NotificationItemDescription>
+                  <NotificationItemTime>
+                    {formatTime(notification.created_at)}
+                  </NotificationItemTime>
+                </NotificationItem>
+              );
+            })}
             <NotificationSentinel ref={sentinelRef} />
             {isFetchingNextPage && <Loading />}
           </NotificationList>

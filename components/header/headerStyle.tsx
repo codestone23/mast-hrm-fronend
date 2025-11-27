@@ -1,50 +1,60 @@
 import styled from "styled-components";
 
-export const HeaderContainer = styled.header`
+export const HeaderContainer = styled.header.withConfig({
+  shouldForwardProp: (prop) => !prop.startsWith('$'),
+})<{ $isMobile?: boolean }>`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.25rem 1.5rem;
+  padding: ${props => props.$isMobile ? '0.25rem 0.75rem' : '0.25rem 1.5rem'};
   background-color: var(--header-background);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   position: sticky;
   top: 0;
   z-index: 1000;
   box-sizing: border-box;
-  min-height: 60px;
+  min-height: ${props => props.$isMobile ? '56px' : '60px'};
 `;
 
-export const Logo = styled.div`
-  width: 100px;
-  height: 46px;
+export const Logo = styled.div.withConfig({
+  shouldForwardProp: (prop) => !prop.startsWith('$'),
+})<{ $isMobile?: boolean }>`
+  width: ${props => props.$isMobile ? '80px' : '100px'};
+  height: ${props => props.$isMobile ? '36px' : '46px'};
 `;
 
-export const HeaderRight = styled.div`
+export const HeaderRight = styled.div.withConfig({
+  shouldForwardProp: (prop) => !prop.startsWith('$'),
+})<{ $isMobile?: boolean }>`
   display: flex;
   align-items: center;
   flex-direction: row;
-  gap: 0.5rem;
+  gap: ${props => props.$isMobile ? '0.25rem' : '0.5rem'};
 `;
 
-export const LogoutButton = styled.button`
+export const LogoutButton = styled.button.withConfig({
+  shouldForwardProp: (prop) => !prop.startsWith('$'),
+})<{ $isMobile?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: transparent;
   border: none;
   cursor: pointer;
-  padding: 0.25rem 0.5rem;
+  padding: ${props => props.$isMobile ? '0.25rem' : '0.25rem 0.5rem'};
   border-radius: 12px;
   transition: all 0.2s ease;
   border: 1px solid transparent;
 `;
 
-export const UserInfo = styled.div`
+export const UserInfo = styled.div.withConfig({
+  shouldForwardProp: (prop) => !prop.startsWith('$'),
+})<{ $isMobile?: boolean }>`
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: ${props => props.$isMobile ? '0.5rem' : '0.75rem'};
   cursor: pointer;
-  padding: 0.25rem 0.5rem;
+  padding: ${props => props.$isMobile ? '0.25rem' : '0.25rem 0.5rem'};
   border-radius: 12px;
   transition: all 0.2s ease;
   border: 1px solid transparent;
@@ -56,15 +66,19 @@ export const UserInfo = styled.div`
   }
 `;
 
-export const UserName = styled.span`
-  font-size: 0.9rem;
+export const UserName = styled.span.withConfig({
+  shouldForwardProp: (prop) => !prop.startsWith('$'),
+})<{ $isMobile?: boolean }>`
+  font-size: ${props => props.$isMobile ? '0.8rem' : '0.9rem'};
   color: #fff;
   font-weight: 500;
 `;
 
-export const UserAvatar = styled.div`
-  width: 2.25rem;
-  height: 2.25rem;
+export const UserAvatar = styled.div.withConfig({
+  shouldForwardProp: (prop) => !prop.startsWith('$'),
+})<{ $isMobile?: boolean }>`
+  width: ${props => props.$isMobile ? '2rem' : '2.25rem'};
+  height: ${props => props.$isMobile ? '2rem' : '2.25rem'};
   background-color: #2563eb;
   border-radius: 50%;
   display: flex;

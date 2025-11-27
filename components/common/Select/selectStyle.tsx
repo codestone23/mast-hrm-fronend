@@ -10,22 +10,22 @@ export const SelectContainer = styled.div<{ $fullWidth?: boolean }>`
   `}
 `;
 
-export const SelectLabel = styled.label<{ required?: boolean }>`
+export const SelectLabel = styled.label<{ $required?: boolean }>`
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-primary);
   
-  .required {
+  ${({ $required }) => $required && css`
     color: var(--error-500);
     margin-left: 0.25rem;
-  }
+  `}
 `;
 
 export const SelectTrigger = styled.div.withConfig({
   shouldForwardProp: (prop) => !prop.startsWith('$'),
 })<{
   $size?: string;
-  disabled?: boolean;
+  $disabled?: boolean;
   $hasError?: boolean;
   $isOpen?: boolean;
 }>`
@@ -68,7 +68,7 @@ export const SelectTrigger = styled.div.withConfig({
     box-shadow: 0 0 0 3px ${$hasError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)'};
   `}
   
-  ${({ disabled }) => disabled && css`
+  ${({ $disabled }) => $disabled && css`
     opacity: 0.6;
     cursor: not-allowed;
     background-color: var(--gray-100);

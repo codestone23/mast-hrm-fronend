@@ -1,250 +1,170 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import {
-  Container,
-  LeftCol,
-  RightCol,
-  Card,
-  Avatar,
-  Name,
-  SmallText,
-  TabContainer,
-} from "./employeeDetailStyle";
-import { Button } from "@/components/common";
-import BasicInfo from "./Tabs/BasicInfo";
-import ContractInfo from "./Tabs/ContractInfo";
+  PersonalInfoContainer,
+  MainContent,
+  ContentTabs,
+  TabItem,
+  TabContent,
+  BackButton,
+  DetailHeader,
+  DetailHeaderContent,
+  DetailTitleWrapper,
+  DetailTitle,
+  DetailContent as DetailContentWrapper,
+} from "@/components/company/account/accountDetailStyle";
+import { useEmployeeDetail } from "./useEmployeeDetail";
+import {
+  Skill,
+  Experience,
+  Education,
+} from "@/services/profile.service";
+import BasicInfoTab from "@/components/personal/personal-info/BasicInfoTab";
+import SkillsTab from "@/components/personal/personal-info/SkillsTab";
+import PersonalInfoSidebar from "@/components/personal/personal-info/PersonalInfoSidebar";
 import TimeSheets from "./Tabs/TimeSheets";
+import { useMobile } from "@/hooks/useMobile";
 
-const Tabs = ["Thông Tin Cơ bản", "Bảng chấm công"];
+interface EmployeeDetailProps {
+  id?: string;
+}
 
-const SAMPLE_DATA = {
-  id: "1",
-  code: "NV0001",
-  name: "Trần Quang Duy",
-  email: "duy.tq@example.com",
-  phone: "0901234567",
-  birthday: "1990-03-12",
-  joinDate: "2021-05-10",
-  position: "Senior Developer",
-  level: "Senior",
-  team: "Why's Team",
-  location: "Hà Nội",
-  avatar: "https://i.pravatar.cc/160?img=12",
-  daysOff: 4,
-  projects: 15,
-  score: 430,
-  skills: ["React", "TypeScript", "Node.js"],
-};
+const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ id }) => {
+  const router = useRouter();
+  const isMobile = useMobile();
+  const [activeTab, setActiveTab] = useState("basic");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-const EmployeeDetail: React.FC<{ id?: string }> = ({ id }) => {
-  const [selectedTab, setSelectedTab] = useState(Tabs[0]);
+  const { data, isLoading, error, refetch } = useEmployeeDetail(id || "");
 
-  const [data, setData] = useState<typeof SAMPLE_DATA>(SAMPLE_DATA);
+  // Avatar states
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  // Skills state
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [educations, setEducations] = useState<Education[]>([]);
+
+  const handleBack = () => {
+    router.push("/division/workforce");
+  };
+
+  // Avatar handlers - disabled for admin view
+  const handleAvatarClick = () => {
+    // Disabled for admin
+  };
+
+  const handleAvatarChange = async () => {
+    // Disabled for admin
+  };
+
+  useEffect(() => {
+    if (data) {
+      setSkills(data?.user_skills || []);
+      setExperiences(data.experience || []);
+      setEducations(
+        (data.education || []).map((edu) => ({
+          ...edu,
+          description: (edu as { description?: string }).description || "",
+        }))
+      );
+      setAvatarUrl(data.user_information?.avatar && data.user_information.avatar.includes('https') ? data.user_information.avatar : null); 
+    }
+  }, [data]);
+
+  if (isLoading) {
+    return (
+      <PersonalInfoContainer>
+        <div style={{ padding: "40px", textAlign: "center" }}>
+          <div>Đang tải...</div>
+        </div>
+      </PersonalInfoContainer>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <PersonalInfoContainer>
+        <div style={{ padding: "40px", textAlign: "center" }}>
+          <div style={{ color: "var(--error-600)" }}>
+            {error ? "Có lỗi xảy ra khi tải thông tin nhân viên" : "Không tìm thấy nhân viên"}
+          </div>
+        </div>
+      </PersonalInfoContainer>
+    );
+  }
 
   return (
-    <Container>
-      <LeftCol>
-        <Card style={{ textAlign: "center" }}>
-          <Avatar src={data.avatar && data.avatar.includes('https') ? data.avatar : `/images/background-login.png`} alt={data.name} />
-          <Name>{data.name}</Name>
-          <SmallText style={{ marginTop: 6 }}>
-            {data.position} • {data.team}
-          </SmallText>
+    <PersonalInfoContainer>
+      <PersonalInfoSidebar
+        data={data}
+        avatarUrl={avatarUrl}
+        isUploading={false}
+        onAvatarClick={handleAvatarClick}
+        onAvatarChange={handleAvatarChange}
+        fileInputRef={fileInputRef}
+        initPersonalInfo={data as any}
+      />
 
-          {/* Contact & meta info */}
-          <div style={{ textAlign: "left", marginTop: 16, padding: "0 12px" }}>
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ color: "#6b7280", fontSize: 12 }}>Email</div>
-              <div style={{ fontSize: 14, color: "#0f172a", marginTop: 4 }}>
-                {data.email}
-              </div>
-            </div>
+      <MainContent>
+        <DetailHeader $isMobile={isMobile}>
+          <DetailHeaderContent $isMobile={isMobile}>
+            <DetailTitleWrapper $isMobile={isMobile}>
+              <BackButton onClick={handleBack}>
+                <ArrowLeft size={isMobile ? 18 : 20} />
+              </BackButton>
+              <DetailTitle $isMobile={isMobile}>
+                Chi tiết nhân viên
+              </DetailTitle>
+            </DetailTitleWrapper>
+          </DetailHeaderContent>
+        </DetailHeader>
 
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ color: "#6b7280", fontSize: 12 }}>Mã nhân viên</div>
-              <div style={{ fontSize: 14, color: "#0f172a", marginTop: 4 }}>
-                {data.code}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ color: "#6b7280", fontSize: 12 }}>
-                Người quản lý
-              </div>
-              <div style={{ fontSize: 14, color: "#0f172a", marginTop: 4 }}>
-                <a
-                  href="#"
-                  style={{ color: "#2563eb", textDecoration: "underline" }}
-                >
-                  Phi Việt Anh
-                </a>
-              </div>
-            </div>
-
-            <div style={{ marginBottom: 4 }}>
-              <div style={{ color: "#6b7280", fontSize: 12 }}>
-                Loại chấm công
-              </div>
-              <div style={{ fontSize: 14, color: "#0f172a", marginTop: 4 }}>
-                Loại thường
-              </div>
-            </div>
-          </div>
-
-          {/* Small stat tiles (blue / gray) */}
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              marginTop: 12,
-              padding: "0 12px",
-            }}
+        <ContentTabs>
+          <TabItem
+            $active={activeTab === "basic"}
+            onClick={() => setActiveTab("basic")}
           >
-            <div
-              style={{
-                flex: 1,
-                background: "#e6f0fb",
-                borderRadius: 8,
-                padding: 12,
-                textAlign: "center",
-              }}
-            >
-              <div style={{ fontSize: 20, fontWeight: 700, color: "#1e3a8a" }}>
-                {data.daysOff}
-              </div>
-              <div style={{ fontSize: 12, color: "#374151", marginTop: 6 }}>
-                Số giờ phép còn lại
-              </div>
-            </div>
+            THÔNG TIN CƠ BẢN
+          </TabItem>
+          <TabItem
+            $active={activeTab === "skills"}
+            onClick={() => setActiveTab("skills")}
+          >
+            THÔNG TIN CÔNG VIỆC
+          </TabItem>
+          <TabItem
+            $active={activeTab === "timesheet"}
+            onClick={() => setActiveTab("timesheet")}
+          >
+            BẢNG CHẤM CÔNG
+          </TabItem>
+        </ContentTabs>
 
-            <div
-              style={{
-                flex: 1,
-                background: "#eef2f7",
-                borderRadius: 8,
-                padding: 12,
-                textAlign: "center",
-              }}
-            >
-              <div style={{ fontSize: 20, fontWeight: 700, color: "#475569" }}>
-                {data.projects}
-              </div>
-              <div style={{ fontSize: 12, color: "#374151", marginTop: 6 }}>
-                Số giờ đã nghỉ
-              </div>
-            </div>
-          </div>
+        <TabContent>
+          {activeTab === "basic" && (
+            <BasicInfoTab data={data} onEdit={() => {}} />
+          )}
 
-          {/* OT big tile */}
-          <div style={{ padding: "12px", paddingTop: 16 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                background: "#ffd7a8",
-                borderRadius: 8,
-                padding: 12,
-              }}
-            >
-              <div
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 8,
-                  background: "#f59e0b",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "white",
-                  fontWeight: 700,
-                  marginRight: 12,
-                }}
-              >
-                +
-              </div>
-              <div style={{ flex: 1, textAlign: "center" }}>
-                <div
-                  style={{ fontSize: 22, fontWeight: 800, color: "#92400e" }}
-                >
-                  {data.score}
-                </div>
-                <div style={{ fontSize: 12, color: "#92400e", marginTop: 2 }}>
-                  Số giờ OT
-                </div>
-              </div>
-            </div>
-          </div>
+          {activeTab === "skills" && (
+            <SkillsTab
+              skills={skills}
+              experiences={experiences}
+              educations={educations}
+              readOnly={true}
+            />
+          )}
 
-          {/* Penalty / late box */}
-          <div style={{ padding: "12px", paddingTop: 8 }}>
-            <div
-              style={{ background: "#ffecef", borderRadius: 8, padding: 12 }}
-            >
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "30px 1fr auto",
-                  marginBottom: 10,
-                }}
-              >
-                <div style={{ textAlign: "center" }}>😞</div>
-                <div style={{ textAlign: "left", color: "#0f172a" }}>
-                  Số lần đi muộn
-                </div>
-                <div style={{ fontWeight: 700, color: "#7f1d1d" }}>4</div>
-              </div>
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "30px 1fr auto",
-                  marginBottom: 10,
-                }}
-              >
-                <div style={{ textAlign: "center" }}>⏱️</div>
-                <div style={{ textAlign: "left", color: "#0f172a" }}>
-                  Số phút đi muộn
-                </div>
-                <div style={{ fontWeight: 700, color: "#7f1d1d" }}>168</div>
-              </div>
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "30px 1fr auto",
-                  marginBottom: 10,
-                }}
-              >
-                <div style={{ textAlign: "center" }}>💸</div>
-                <div style={{ textAlign: "left", color: "#0f172a" }}>
-                  Số tiền phạt
-                </div>
-                <div style={{ fontWeight: 700, color: "#7f1d1d" }}>
-                  1.000.000
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      </LeftCol>
-
-      <RightCol>
-        <TabContainer>
-          {Tabs.map((tab) => (
-            <Button
-              key={tab}
-              variant={selectedTab === tab ? "primary" : "ghost"}
-              onClick={() => setSelectedTab(tab)}
-            >
-              {tab}
-            </Button>
-          ))}
-        </TabContainer>
-
-        {selectedTab === "Thông Tin Cơ bản" && <BasicInfo />}
-        {selectedTab === "Bảng chấm công" && <TimeSheets />}
-      </RightCol>
-    </Container>
+          {activeTab === "timesheet" && (
+            <DetailContentWrapper $isMobile={isMobile}>
+              <TimeSheets employeeId={id} />
+            </DetailContentWrapper>
+          )}
+        </TabContent>
+      </MainContent>
+    </PersonalInfoContainer>
   );
 };
 

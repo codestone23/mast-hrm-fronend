@@ -14,8 +14,6 @@ export enum ROLE_NAMES {
     PROJECT_MANAGER = "project_manager",
     HR_MANAGER = "hr_manager",
     ADMIN = "admin",
-    SUPER_ADMIN = "super_admin",
-    COMPANY_OWNER = "company_owner",
 }
 
 export enum REQUEST_TYPE {
@@ -109,4 +107,11 @@ export enum ProjectCritical {
     MEDIUM = "Medium",
     HIGH = "High",
     CRITICAL = "Critical",
+}
+
+export enum ScopeType {
+    COMPANY = "COMPANY",
+    DIVISION = "DIVISION",
+    TEAM = "TEAM",
+    PROJECT = "PROJECT",
 }

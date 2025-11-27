@@ -6,6 +6,12 @@ export const PersonalInfoContainer = styled.div`
   padding: 2rem;
   min-height: calc(100vh - 60px);
   align-items: flex-start;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
 `;
 
 export const LeftSidebar = styled.div`
@@ -17,6 +23,11 @@ export const LeftSidebar = styled.div`
   border: 1px solid var(--border);
   height: 100%;
   position: relative;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 1rem;
+  }
 `;
 
 export const UserProfile = styled.div`
@@ -171,10 +182,19 @@ export const TabItem = styled.div<{ $active: boolean }>`
   &:hover {
     color: var(--primary-600);
   }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
 `;
 
 export const TabContent = styled.div`
   padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 export const SectionHeader = styled.div`
@@ -214,6 +234,11 @@ export const InfoGrid = styled.div`
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
   margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 `;
 
 export const InfoItem = styled.div`

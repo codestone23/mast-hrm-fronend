@@ -66,8 +66,8 @@ export default function Layout({
         ],
       },
       {
-        id: ROUTERS.PERSONAL.INFO,
-        label: "Thông tin cá nhân",
+        id: ROUTERS.PERSONAL.TIMEKEEPING,
+        label: "Chấm công",
         roles: [
           ROLE_NAMES.EMPLOYEE,
           ROLE_NAMES.TEAM_LEADER,
@@ -78,13 +78,8 @@ export default function Layout({
         ],
       },
       {
-        id: ROUTERS.PERSONAL.PROJECTS,
-        label: "Dự án tham gia",
-        roles: [ROLE_NAMES.EMPLOYEE, ROLE_NAMES.TEAM_LEADER, ROLE_NAMES.DIVISION_HEAD, ROLE_NAMES.PROJECT_MANAGER]
-      },
-      {
-        id: ROUTERS.PERSONAL.TIMEKEEPING,
-        label: "Chấm công",
+        id: ROUTERS.PERSONAL.MEETING_ROOMS,
+        label: "Phòng họp",
         roles: [
           ROLE_NAMES.EMPLOYEE,
           ROLE_NAMES.TEAM_LEADER,
@@ -107,18 +102,6 @@ export default function Layout({
         ],
       },
       {
-        id: ROUTERS.PERSONAL.NEWS,
-        label: "Tin tức",
-        roles: [
-          ROLE_NAMES.EMPLOYEE,
-          ROLE_NAMES.TEAM_LEADER,
-          ROLE_NAMES.DIVISION_HEAD,
-          ROLE_NAMES.PROJECT_MANAGER,
-          ROLE_NAMES.HR_MANAGER,
-          ROLE_NAMES.ADMIN,
-        ],
-      },
-      {
         id: ROUTERS.PERSONAL.ASSETS,
         label: "Tài sản",
         roles: [
@@ -130,6 +113,35 @@ export default function Layout({
           ROLE_NAMES.ADMIN,
         ],
       },
+      {
+        id: ROUTERS.PERSONAL.PROJECTS,
+        label: "Dự án tham gia",
+        roles: [ROLE_NAMES.EMPLOYEE, ROLE_NAMES.TEAM_LEADER, ROLE_NAMES.DIVISION_HEAD, ROLE_NAMES.PROJECT_MANAGER]
+      },
+      {
+        id: ROUTERS.PERSONAL.INFO,
+        label: "Thông tin cá nhân",
+        roles: [
+          ROLE_NAMES.EMPLOYEE,
+          ROLE_NAMES.TEAM_LEADER,
+          ROLE_NAMES.DIVISION_HEAD,
+          ROLE_NAMES.PROJECT_MANAGER,
+          ROLE_NAMES.HR_MANAGER,
+          ROLE_NAMES.ADMIN,
+        ],
+      },
+      {
+        id: ROUTERS.PERSONAL.DAILY_REPORTS,
+        label: "Báo cáo",
+        roles: [
+          ROLE_NAMES.EMPLOYEE,
+          ROLE_NAMES.TEAM_LEADER,
+          ROLE_NAMES.DIVISION_HEAD,
+          ROLE_NAMES.PROJECT_MANAGER,
+          ROLE_NAMES.HR_MANAGER,
+          ROLE_NAMES.ADMIN,
+        ],
+      }
     ],
     []
   );

@@ -84,8 +84,8 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
 
   const removeMemberMutation = useMutation({
     mutationFn: (userId: number) => {
-      // Implement remove member from team API call
-      return Promise.resolve();
+      if (!id) throw new Error("Team ID is required");
+      return divisionWorkforceService.removeMemberFromTeam(Number(id), userId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["division-workforce", "members"] });
@@ -104,11 +104,26 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
     router.push("/division/workforce");
   };
 
-  const handleAddMember = (newMembers: Array<{ id: number; name: string; email: string }>) => {
-    // Implement add members to team logic
-    showSuccessToast("Thêm thành viên vào team thành công");
-    setIsAddMemberModalOpen(false);
-    refetch();
+  const addMemberMutation = useMutation({
+    mutationFn: (userIds: number[]) => {
+      if (!id) throw new Error("Team ID is required");
+      return divisionWorkforceService.addMembersToTeam(Number(id), userIds);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["division-workforce", "members"] });
+      queryClient.invalidateQueries({ queryKey: ["team-detail", id] });
+      showSuccessToast("Thêm thành viên vào team thành công");
+      setIsAddMemberModalOpen(false);
+      refetch();
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      showErrorToast(err?.response?.data?.message || "Không thể thêm thành viên");
+    },
+  });
+
+  const handleAddMember = async (userIds: number[]) => {
+    await addMemberMutation.mutateAsync(userIds);
   };
 
   const handleDeleteMember = (member: DivisionMemberData) => {
@@ -334,6 +349,8 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
         isOpen={isAddMemberModalOpen}
         onClose={() => setIsAddMemberModalOpen(false)}
         onSave={handleAddMember}
+        teamId={id ? Number(id) : undefined}
+        isLoading={addMemberMutation.isPending}
       />
 
       <ConfirmDeleteModal

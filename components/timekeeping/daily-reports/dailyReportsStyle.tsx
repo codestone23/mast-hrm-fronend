@@ -1,6 +1,7 @@
+import { REQUEST_STATUS } from "@/constants/enums";
 import styled from "styled-components";
 
-export const TimeSheetsContainer = styled.div`
+export const DailyReportsContainer = styled.div`
   background-color: var(--background-secondary);
   min-height: 100vh;
   padding: 1rem;
@@ -52,7 +53,7 @@ export const Tab = styled.div<{ $active: boolean; $isMobile?: boolean }>`
       ? `
     background: #2196F3;
     color: white;
-    box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
   `
       : `
     color: #666;
@@ -85,22 +86,21 @@ export const CreateButton = styled.button<{ $isMobile?: boolean }>`
   transition: all 0.2s ease;
   
   &:hover {
-    background: #F57C00;
+    background: #1976D2;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
   }
 `;
 
-export const TabContentWrapper = styled.div<{ $isMobile?: boolean }>`
-  padding: ${props => props.$isMobile ? '1rem' : '1rem'};
-  width: 100%;
+export const MainContent = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 `;
-
-
 
 export const CalendarContainer = styled.div`
   flex: 1;
@@ -141,16 +141,15 @@ export const MonthDisplay = styled.h2`
 `;
 
 export const Legend = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 8px;
+  display: flex;
+  gap: 16px;
   margin-bottom: 1.5rem;
   font-size: 12px;
+  flex-wrap: wrap;
 
   @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
     font-size: 11px;
-    gap: 6px;
   }
 `;
 
@@ -162,9 +161,9 @@ export const LegendItem = styled.div`
 `;
 
 export const LegendColor = styled.div<{ $color: string }>`
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
   background-color: ${(props) => props.$color};
   flex-shrink: 0;
 `;
@@ -199,25 +198,13 @@ export const CalendarGrid = styled.div`
 
 export const DayCell = styled.div<{
   $isCurrentMonth: boolean;
-  $status?: string;
+  $status?: REQUEST_STATUS;
   $isToday?: boolean;
 }>`
   background: ${(props) => {
     if (!props.$isCurrentMonth) return "#f8f8f8";
-    
-    // Request types colors
-    if (props.$status === "late-early") return "#FFF59D"; // Vàng nhạt cho đi muộn về sớm
-    if (props.$status === "leave") return "#B3E5FC"; // Xanh nhạt cho nghỉ có lương
-    if (props.$status === "holiday") return "#FFE0B2"; // Cam nhạt cho nghỉ không lương
-    if (props.$status === "remote") return "#E1BEE7"; // Tím nhạt cho làm việc từ xa
-    if (props.$status === "ot") return "#C8E6C9"; // Xanh lá nhạt cho OT
-    if (props.$status === "forgot-checkin") return "#FFCDD2"; // Đỏ nhạt cho quên chấm công
-    
-    // Regular status colors
-    if (props.$status === "work") return "#c9f8c9"; // Xanh lá cho đủ công
-    if (props.$status === "late") return "#FFE0B2"; // Cam cho đi muộn
-    if (props.$status === "absent") return "#f3a7a7"; // Đỏ cho không có công
-    
+    if (props.$status === REQUEST_STATUS.APPROVED) return "#c9f8c9"; 
+    if (props.$status === REQUEST_STATUS.PENDING) return "#FFCDD2";
     return "white";
   }};
   padding: 8px;
@@ -258,102 +245,6 @@ export const DayStatus = styled.div`
   margin-top: auto;
   font-size: 12px;
   color: #666;
-  
-  > div:first-child {
-    font-weight: 500;
-    margin-bottom: 4px;
-  }
-`;
-
-export const TimeDisplay = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  
-  span {
-    font-size: 12px;
-    color: #4CAF50;
-    
-    &::before {
-      content: '●';
-      margin-right: 4px;
-    }
-  }
-`;
-
-export const SidebarContainer = styled.div`
-  width: 280px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-
-  @media (max-width: 768px) {
-    width: 100%;
-  }
-`;
-
-export const SidebarCard = styled.div`
-  background: white;
-  border-radius: 8px;
-  padding: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f0f0f0;
-`;
-
-export const SidebarTitle = styled.div`
-  font-weight: 500;
-  color: #555;
-  margin-bottom: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-`;
-
-export const SidebarContent = styled.div`
-  text-align: center;
-`;
-
-export const StatsGrid = styled.div`
-  background: white;
-  border-radius: 8px;
-  padding: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f0f0f0;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.75rem;
-`;
-
-export const StatItem = styled.div`
-  padding: 0.75rem;
-  background: #fafafa;
-  border-radius: 6px;
-  text-align: center;
-  border: 1px solid #f0f0f0;
-`;
-
-export const StatNumber = styled.div`
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 2px;
-`;
-
-export const StatLabel = styled.div`
-  font-size: 11px;
-  color: #777;
-  line-height: 1.2;
-`;
-
-export const MainContent = styled.div`
-  display: flex;
-  gap: 1rem;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
 `;
 
 export const DayHeader = styled.div`
@@ -373,46 +264,14 @@ export const DayMenu = styled.div`
   color: #666;
 `;
 
-export const WorkSchedule = styled.div`
-  color: #2196F3;
-  font-size: 13px;
-  margin-bottom: 4px;
-`;
-
-export const WorkScheduleTime = styled.div`
-  color: #2196F3;
-  font-size: 13px;
-`;
-
-export const LeaveHours = styled.div`
-  font-size: 28px;
-  font-weight: 600;
-  color: #2196F3;
-`;
-
-export const TotalWork = styled.div`
-  font-size: 20px;
-  font-weight: 600;
+export const HoursDisplay = styled.div`
+  font-size: 12px;
   color: #4CAF50;
+  font-weight: 500;
+  margin-top: 4px;
 `;
 
-export const RequestBadge = styled.div<{ $type: string }>`
-  display: inline-block;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: white;
-  background: ${(props) => {
-    switch (props.$type) {
-      case 'late-early': return '#F57C00';
-      case 'leave': return '#0288D1';
-      case 'holiday': return '#E65100';
-      case 'remote': return '#6A1B9A';
-      case 'ot': return '#2E7D32';
-      case 'forgot-checkin': return '#C62828';
-      default: return '#757575';
-    }
-  }};
+export const TabContentWrapper = styled.div<{ $isMobile?: boolean }>`
+  padding: ${props => props.$isMobile ? '1rem' : '1rem'};
+  width: 100%;
 `;

@@ -141,10 +141,10 @@ const TimeSheets: React.FC = () => {
   const tabs = useMemo(() => {
     const baseTabs = ["BẢNG CHẤM CÔNG"];
 
-    baseTabs.splice(1, 0, "DANH SÁCH ĐỀ XUẤT CỦA TÔI");
+    baseTabs.splice(1, 0, "DANH SÁCH ĐỀ XUẤT");
 
     if (canSeeOtherRequests) {
-      baseTabs.splice(2, 0, "DANH SÁCH ĐỀ XUẤT CỦA NHÂN VIÊN");
+      baseTabs.splice(2, 0, "DANH SÁCH ĐỀ XUẤT NHÂN VIÊN");
     }
 
     return baseTabs;
@@ -625,10 +625,10 @@ const TimeSheets: React.FC = () => {
           </>
         )}
 
-        {(activeTab === "DANH SÁCH ĐỀ XUẤT CỦA TÔI" ||
-          activeTab === "DANH SÁCH ĐỀ XUẤT CỦA NHÂN VIÊN") && (
+        {(activeTab === "DANH SÁCH ĐỀ XUẤT" ||
+          activeTab === "DANH SÁCH ĐỀ XUẤT NHÂN VIÊN") && (
           <div style={{ width: "100%" }}>
-            {activeTab === "DANH SÁCH ĐỀ XUẤT CỦA TÔI" ? (
+            {activeTab === "DANH SÁCH ĐỀ XUẤT" ? (
               <MyRequestsList
                 onRequestClick={(request) => {
                   setSelectedRequest(request);

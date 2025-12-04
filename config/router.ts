@@ -14,8 +14,10 @@ const ROUTERS = {
         PROJECTS: "/me/projects",
         TIMEKEEPING: "/me/timekeeping/time-sheets",
         COMPANY: "/me/company",
-        NEWS: "/me/news",
+        NEWS_DETAIL: "/me/news",
         ASSETS: "/me/assets",
+        MEETING_ROOMS: "/me/meeting-rooms",
+        DAILY_REPORTS: "/me/daily-reports",
     },
     DIVISION: {
         BASE: "/division/dashboard",
@@ -24,6 +26,7 @@ const ROUTERS = {
         INVOICE: "/division/invoice",
         CUSTOMER: "/division/customer",
         REVENUE: "/division/revenue",
+        DAILY_REPORTS: "/division/daily-reports",
     },
     COMPANY: {
         BASE: "/company",

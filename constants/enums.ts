@@ -115,3 +115,13 @@ export enum ScopeType {
     TEAM = "TEAM",
     PROJECT = "PROJECT",
 }
+
+export enum HolidayType {
+    NATIONAL = "NATIONAL",
+    COMPANY = "COMPANY",
+}
+
+export enum HolidayStatus {
+    ACTIVE = "ACTIVE",
+    INACTIVE = "INACTIVE",
+}

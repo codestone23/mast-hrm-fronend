@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Calendar, User, ArrowLeft } from "lucide-react";
+import React, { useState } from "react";
+import { Calendar, User, ArrowLeft, Share2, Check } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import newsService from "@/services/news.service";
@@ -21,6 +21,8 @@ import {
 import { format } from "date-fns";
 import { vi } from "date-fns/locale/vi";
 import { Button, Loading } from "@/components/common";
+import { useToast } from "@/hooks/useToast";
+import ROUTERS from "@/config/router";
 
 interface NewsDetailProps {
     newsId: string | number;
@@ -28,6 +30,8 @@ interface NewsDetailProps {
 
 const NewsDetail: React.FC<NewsDetailProps> = ({ newsId }) => {
     const router = useRouter();
+    const { success: showSuccessToast } = useToast();
+    const [copied, setCopied] = useState(false);
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["news", newsId],
@@ -46,12 +50,53 @@ const NewsDetail: React.FC<NewsDetailProps> = ({ newsId }) => {
         }
     };
 
+    const handleShare = async () => {
+        try {
+            const currentUrl = window.location.href;
+            await navigator.clipboard.writeText(currentUrl);
+            setCopied(true);
+            showSuccessToast("Đã sao chép link chia sẻ!");
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            // Fallback for older browsers
+            const textArea = document.createElement("textarea");
+            textArea.value = window.location.href;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+            setCopied(true);
+            showSuccessToast("Đã sao chép link chia sẻ!");
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
+    const handleBack = () => {
+        // Check if we're in Company component context
+        if (window.location.pathname.includes("/company") || window.location.search.includes("newsId")) {
+            router.push(ROUTERS.PERSONAL.COMPANY);
+        } else {
+            router.back();
+        }
+    };
+
     return (
         <NewsDetailContainer>
-            <NewsDetailBackButton onClick={() => router.back()}>
-                <ArrowLeft size={18} />
-                Quay lại
-            </NewsDetailBackButton>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+                <NewsDetailBackButton onClick={handleBack}>
+                    <ArrowLeft size={18} />
+                    Quay lại
+                </NewsDetailBackButton>
+                {news && (
+                    <Button
+                        variant="outline"
+                        onClick={handleShare}
+                        icon={copied ? <Check size={16} /> : <Share2 size={16} />}
+                    >
+                        {copied ? "Đã sao chép" : "Chia sẻ"}
+                    </Button>
+                )}
+            </div>
             {isLoading ? (
                 <Loading />
             ) : news ? (

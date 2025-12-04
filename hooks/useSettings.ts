@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import settingsService, { Skill, Language, Level, Position, ListParams } from '@/services/settings.service';
+import timekeepingService from '@/services/timekeeping.service';
+import { Holiday, HolidayListParams, HolidayCreateRequest, HolidayUpdateRequest } from '@/types/api';
 import { useToast } from '@/hooks/useToast';
 
 // Skills
@@ -332,6 +334,76 @@ export const usePositionMutations = () => {
     createPosition: createMutation.mutate,
     updatePosition: updateMutation.mutate,
     deletePosition: deleteMutation.mutate,
+    isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
+  };
+};
+
+// Holidays
+export const useHolidays = (params?: HolidayListParams) => {
+  return useQuery({
+    queryKey: ['holidays', params],
+    queryFn: () => timekeepingService.getHolidays(params),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useHolidayDetail = (holidayId: string | number | null) => {
+  return useQuery({
+    queryKey: ['holiday', holidayId],
+    queryFn: () => timekeepingService.getHolidayById(holidayId!),
+    enabled: !!holidayId,
+  });
+};
+
+export const useHolidayMutations = () => {
+  const queryClient = useQueryClient();
+  const { success: showSuccessToast, error: showErrorToast } = useToast();
+
+  const createMutation = useMutation({
+    mutationFn: (holiday: HolidayCreateRequest) => 
+      timekeepingService.createHoliday(holiday),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['holidays'] });
+      showSuccessToast('Ngày lễ đã được tạo thành công!');
+    },
+    onError: (error: unknown) => {
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Có lỗi xảy ra khi tạo ngày lễ';
+      showErrorToast(errorMessage);
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string | number; data: HolidayUpdateRequest }) => 
+      timekeepingService.updateHoliday(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['holidays'] });
+      queryClient.invalidateQueries({ queryKey: ['holiday'] });
+      showSuccessToast('Ngày lễ đã được cập nhật thành công!');
+    },
+    onError: (error: unknown) => {
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật ngày lễ';
+      showErrorToast(errorMessage);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string | number) => timekeepingService.deleteHoliday(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['holidays'] });
+      showSuccessToast('Ngày lễ đã được xóa thành công!');
+    },
+    onError: (error: unknown) => {
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Có lỗi xảy ra khi xóa ngày lễ';
+      showErrorToast(errorMessage);
+    },
+  });
+
+  return {
+    createHoliday: createMutation.mutate,
+    updateHoliday: updateMutation.mutate,
+    deleteHoliday: deleteMutation.mutate,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,

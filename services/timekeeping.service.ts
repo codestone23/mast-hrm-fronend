@@ -7,6 +7,10 @@ import {
   RequestStatus,
   TimeSheet,
   TimeSheetRequest,
+  Holiday,
+  HolidayCreateRequest,
+  HolidayUpdateRequest,
+  HolidayListParams,
 } from '@/types/api';
 
 class TimekeepingService {
@@ -226,6 +230,31 @@ class TimekeepingService {
   // Get projects list
   async getProjects(): Promise<ApiResponse<Array<{id: number, name: string}>>> {
     const response = await axiosInstance.get('projects');
+    return response.data;
+  }
+
+  async getHolidays(params?: HolidayListParams): Promise<PaginatedResponse<Holiday>> {
+    const response = await axiosInstance.get('timesheet/holidays', { params });
+    return response.data;
+  }
+
+  async getHolidayById(holidayId: string | number): Promise<ApiResponse<Holiday>> {
+    const response = await axiosInstance.get(`timesheet/holidays/${holidayId}`);
+    return response.data;
+  }
+
+  async createHoliday(requestData: HolidayCreateRequest): Promise<ApiResponse<Holiday>> {
+    const response = await axiosInstance.post('timesheet/holidays', requestData);
+    return response.data;
+  }
+
+  async updateHoliday(holidayId: string | number, requestData: HolidayUpdateRequest): Promise<ApiResponse<Holiday>> {
+    const response = await axiosInstance.patch(`timesheet/holidays/${holidayId}`, requestData);
+    return response.data;
+  }
+
+  async deleteHoliday(holidayId: string | number): Promise<ApiResponse<void>> {
+    const response = await axiosInstance.delete(`timesheet/holidays/${holidayId}`);
     return response.data;
   }
 }

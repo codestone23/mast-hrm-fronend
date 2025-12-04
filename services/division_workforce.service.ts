@@ -77,13 +77,26 @@ class DivisionWorkforceService {
   ): Promise<void> {
     const response = await axiosInstance.patch(`/divisions/teams/${teamId}`, {
       name: data.name,
-      foundingDate: data.foundingDate,
+      founding_date: data.foundingDate,
+      leader_id: data.leaderId,
     });
     return response.data;
   }
 
   async deleteTeam(teamId: number): Promise<void> {
     const response = await axiosInstance.delete(`/divisions/teams/${teamId}`);
+    return response.data;
+  }
+
+  async addMembersToTeam(teamId: number, userIds: number[]): Promise<void> {
+    const response = await axiosInstance.post(`/divisions/teams/${teamId}/members`, {
+      user_ids: userIds,
+    });
+    return response.data;
+  }
+
+  async removeMemberFromTeam(teamId: number, userId: number): Promise<void> {
+    const response = await axiosInstance.delete(`/divisions/teams/${teamId}/members/${userId}`);
     return response.data;
   }
 }

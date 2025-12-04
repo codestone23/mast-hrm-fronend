@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Settings2, Users, GraduationCap, Briefcase, Languages, Brain } from "lucide-react";
+import { Settings2, Users, GraduationCap, Briefcase, Languages, Brain, Calendar } from "lucide-react";
 import { useMobile } from "@/hooks/useMobile";
 import {
   SettingsContainer,
@@ -18,6 +18,8 @@ import SkillManagement from "./SkillManagement";
 import LanguageManagement from "./LanguageManagement";
 import LevelManagement from "./LevelManagement";
 import PositionManagement from "./PositionManagement";
+import RoomManagement from "./RoomManagement";
+import HolidayManagement from "./HolidayManagement";
 
 interface MasterDataItem {
   id: string;
@@ -30,6 +32,7 @@ const masterDataItems: MasterDataItem[] = [
   { id: "position", name: "Vị trí (Position)", icon: <Briefcase size={20} /> },
   { id: "language", name: "Ngôn ngữ (Language)", icon: <Languages size={20} /> },
   { id: "skill", name: "Kỹ năng (Skill)", icon: <Brain size={20} /> },
+  { id: "holiday", name: "Ngày lễ (Holiday)", icon: <Calendar size={20} /> },
 ];
 
 const Settings: React.FC = () => {
@@ -94,13 +97,14 @@ const Settings: React.FC = () => {
               {activeItem === "position" && <PositionManagement />}
               {activeItem === "language" && <LanguageManagement />}
               {activeItem === "skill" && <SkillManagement />}
+              {activeItem === "holiday" && <HolidayManagement />}
             </MainContent>
           </>
         )}
         
         {activeTab === "system" && (
           <MainContent>
-            <div>System Settings - Coming soon</div>
+            <RoomManagement />
           </MainContent>
         )}
       </SettingsContent>

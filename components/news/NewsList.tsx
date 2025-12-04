@@ -90,7 +90,7 @@ const NewsList: React.FC<NewsListProps> = ({
     if (onNewsClick) {
       onNewsClick(news);
     } else {
-      router.push(`${ROUTERS.PERSONAL.NEWS}/${news.id}`);
+      router.push(`${ROUTERS.PERSONAL.COMPANY}?newsId=${news.id}`);
     }
   };
 

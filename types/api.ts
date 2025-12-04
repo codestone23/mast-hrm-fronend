@@ -746,3 +746,154 @@ export interface NotificationListParams {
   limit?: number;
   search?: string;
 }
+
+// Meeting Room types
+export interface MeetingRoom {
+  id: number;
+  name: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface Meeting {
+  id: number;
+  room_id: number;
+  title: string;
+  description: string;
+  start_time: string;
+  end_time: string;
+  organizer_id: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  room?: MeetingRoom;
+}
+
+export interface MeetingParams {
+  page?: number;
+  limit?: number;
+  room_id?: number;
+  from_date?: string;
+  to_date?: string;
+  is_active?: boolean;
+}
+
+export interface CreateRoomPayload {
+  name: string;
+  is_active: boolean;
+}
+
+export interface UpdateRoomPayload {
+  name?: string;
+  is_active?: boolean;
+}
+
+export interface CreateMeetingPayload {
+  room_id: number;
+  title: string;
+  description: string;
+  booking_date: string;
+  start_hour: string;
+  end_hour: string;
+}
+
+export interface UpdateMeetingPayload {
+  room_id?: number;
+  title?: string;
+  description?: string;
+  booking_date?: string;
+  start_hour?: string;
+  end_hour?: string;
+}
+
+// Daily Report types
+export enum DailyReportStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
+
+export interface DailyReport {
+  id: number;
+  user_id: number;
+  project_id: number;
+  title: string;
+  work_date: string;
+  actual_time: number;
+  status: DailyReportStatus;
+  approved_by: number | null;
+  reviewed_at: string | null;
+  description: string;
+  reject_reason: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DailyReportCreateRequest {
+  project_id: number;
+  work_date: string;
+  actual_time: number;
+  title: string;
+  description: string;
+}
+
+export interface DailyReportUpdateRequest {
+  project_id: number;
+  work_date: string;
+  actual_time: number;
+  title: string;
+  description: string;
+}
+
+export interface DailyReportListParams {
+  page?: number;
+  limit?: number;
+  start_date?: string;
+  end_date?: string;
+  user_id?: number;
+  project_id?: number;
+  status?: DailyReportStatus;
+}
+
+// Holiday types
+import { HolidayType, HolidayStatus } from "@/constants/enums";
+
+export interface Holiday {
+  id: number;
+  name: string;
+  type: HolidayType;
+  status: HolidayStatus;
+  start_date: string;
+  end_date: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HolidayCreateRequest {
+  name: string;
+  type: HolidayType;
+  status: HolidayStatus;
+  start_date: string;
+  end_date: string;
+  description?: string;
+}
+
+export interface HolidayUpdateRequest {
+  name: string;
+  type: HolidayType;
+  status: HolidayStatus;
+  start_date: string;
+  end_date: string;
+  description?: string;
+}
+
+export interface HolidayListParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  type?: HolidayType;
+  status?: HolidayStatus;
+}

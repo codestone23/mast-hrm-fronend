@@ -120,7 +120,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     // Nếu có news_id, chuyển đến trang chi tiết tin tức
     const newsId = notification.news_id || notification.id_new;
     if (newsId) {
-      router.push(`${ROUTERS.PERSONAL.NEWS}/${newsId}`);
+      router.push(`${ROUTERS.PERSONAL.COMPANY}?newsId=${newsId}`);
     }
   };
 

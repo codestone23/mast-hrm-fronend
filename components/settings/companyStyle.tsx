@@ -2,7 +2,6 @@ import styled from "styled-components";
 
 export const CompanyContainer = styled.div`
   background-color: var(--background-secondary);
-  min-height: 100vh;
   padding: 1rem;
 `;
 

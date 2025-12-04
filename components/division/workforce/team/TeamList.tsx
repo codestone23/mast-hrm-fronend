@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Input, Pagination, Table, TableColumn, Button, ConfirmDeleteModal } from "@/components/common";
 import { Users, Edit, Trash2, Plus, Eye, Search } from "lucide-react";
 import Image from "next/image";
@@ -47,35 +47,71 @@ const TeamList: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
-      setCurrentPage(1);
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["division-workforce", "teams", selectedDivisionId, debouncedSearch, currentPage, ITEMS_PER_PAGE],
-    queryFn: () =>
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    error,
+  } = useInfiniteQuery({
+    queryKey: ["division-workforce", "teams", selectedDivisionId, debouncedSearch],
+    queryFn: ({ pageParam = 1 }) =>
       divisionWorkforceService.getTeams(
         selectedDivisionId!,
         debouncedSearch,
-        currentPage,
+        pageParam as number,
         ITEMS_PER_PAGE,
       ),
     enabled: !!selectedDivisionId,
+    getNextPageParam: (lastPage) => {
+      const totalPages = lastPage.pagination?.total_pages || 0;
+      const currentPage = lastPage.pagination?.current_page || 1;
+      return currentPage < totalPages ? currentPage + 1 : undefined;
+    },
+    initialPageParam: 1,
   });
 
-  const teams = data?.data || [];
-  const pagination = data?.pagination || {
-    total: 0,
-    current_page: 1,
-    total_pages: 1,
-    limit: ITEMS_PER_PAGE,
-  };
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!sentinelRef.current || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const teams = useMemo(
+    () => data?.pages.flatMap((page) => page.data || []) || [],
+    [data]
+  );
+
+  const pagination = useMemo(() => {
+    const lastPage = data?.pages[data.pages.length - 1];
+    return lastPage?.pagination || {
+      total: 0,
+      current_page: 1,
+      total_pages: 1,
+      limit: ITEMS_PER_PAGE,
+    };
+  }, [data]);
 
   const createTeamMutation = useMutation({
     mutationFn: (formData: DivisionTeamCreateRequest) =>
@@ -84,7 +120,6 @@ const TeamList: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["division-workforce", "teams"] });
       showSuccessToast("Tạo team thành công");
       setIsCreateModalOpen(false);
-      setCurrentPage(1);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } } };
@@ -260,42 +295,39 @@ const TeamList: React.FC = () => {
       render: (_, row) => (
         <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
           <Button
-            size="sm"
             variant="ghost"
+            size="sm"
+            icon={<Eye size={16} />}
             onClick={(e) => {
               e.stopPropagation();
               handleViewDetail(row);
             }}
-            icon={<Eye size={16} />}
-            title="Xem chi tiết"
           >
-            <span style={{ width: 0, height: 0, overflow: "hidden" }}>Xem</span>
+            <span style={{ display: "none" }}>Xem</span>
           </Button>
           <Button
+            variant="ghost"
             size="sm"
-            variant="outline"
+            icon={<Edit size={16} />}
             onClick={(e) => {
               e.stopPropagation();
               handleEdit(row);
             }}
-            icon={<Edit size={16} />}
-            title="Sửa"
             disabled={updateTeamMutation.isPending}
           >
-            <span style={{ width: 0, height: 0, overflow: "hidden" }}>Sửa</span>
+            <span style={{ display: "none" }}>Sửa</span>
           </Button>
           <Button
+            variant="ghost"
             size="sm"
-            variant="outline"
+            icon={<Trash2 size={16} />}
             onClick={(e) => {
               e.stopPropagation();
               handleDeleteClick(row);
             }}
-            icon={<Trash2 size={16} />}
-            title="Xóa"
             disabled={deleteTeamMutation.isPending}
           >
-            <span style={{ width: 0, height: 0, overflow: "hidden" }}>Xóa</span>
+            <span style={{ display: "none" }}>Xóa</span>
           </Button>
         </div>
       ),
@@ -379,14 +411,24 @@ const TeamList: React.FC = () => {
               rowKey="id"
             />
 
-            {pagination.total_pages > 1 && (
+            {isFetchingNextPage && (
+              <div style={{ padding: "16px", textAlign: "center", color: "#6b7280" }}>
+                Đang tải thêm...
+              </div>
+            )}
+
+            <div ref={sentinelRef} style={{ height: "1px" }} />
+
+            {pagination.total_pages > 1 && !isFetchingNextPage && (
               <div style={{ marginTop: "16px" }}>
                 <Pagination
-                  currentPage={currentPage}
+                  currentPage={pagination.current_page}
                   totalPages={pagination.total_pages}
                   totalItems={pagination.total}
                   itemsPerPage={ITEMS_PER_PAGE}
-                  onPageChange={setCurrentPage}
+                  onPageChange={() => {
+                    // For infinite query, we use scroll-based loading
+                  }}
                   showInfo={true}
                 />
               </div>

@@ -3,7 +3,7 @@ import styled from "styled-components";
 // NewsList styles
 export const NewsListContainer = styled.div`
   width: 100%;
-  padding: 1.5rem;
+  padding: 0 0.5rem;
 
   @media (max-width: 768px) {
     padding: 1rem;
@@ -119,9 +119,8 @@ export const NewsCardAuthor = styled(NewsCardMetaItem)`
 // NewsDetail styles
 export const NewsDetailContainer = styled.div`
   width: 100%;
-  max-width: calc(100% - 100px);
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 0 0.5rem;
 
   @media (max-width: 768px) {
     max-width: 100%;

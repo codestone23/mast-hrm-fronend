@@ -327,7 +327,7 @@ const EmployeeList: React.FC = () => {
     {
       key: "name",
       label: "Thông tin",
-      width: "300px",
+      width: "200px",
       render: (_, row) => (
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div
@@ -359,7 +359,7 @@ const EmployeeList: React.FC = () => {
     {
       key: "birthday",
       label: "Ngày sinh",
-      width: "120px",
+      width: "100px",
       render: (value) => fmtDate(value as string),
     },
     {
@@ -392,7 +392,7 @@ const EmployeeList: React.FC = () => {
     {
       key: "role",
       label: "Vai trò",
-      width: "200px",
+      width: "160px",
       render: (_, row) => {
         const roles = getMemberRoles(row);
         if (roles.length === 0) {

@@ -37,7 +37,12 @@ export const MODULE_DEFINITIONS: Omit<Module, "icon">[] = [
     description: "Quản lý phòng ban và cơ cấu tổ chức",
     color: "#ef4444",
     path: ROUTERS.DIVISION.BASE,
-    allowedRoles: [ROLE_NAMES.ADMIN, ROLE_NAMES.DIVISION_HEAD],
+    allowedRoles: [
+      ROLE_NAMES.ADMIN,
+      ROLE_NAMES.DIVISION_HEAD,
+      ROLE_NAMES.PROJECT_MANAGER,
+      ROLE_NAMES.TEAM_LEADER,
+    ],
   },
   {
     id: "company",

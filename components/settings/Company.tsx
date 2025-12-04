@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Search,
   Users,
@@ -42,8 +43,12 @@ import {
   FilterItemContent,
 } from "./companyStyle";
 import userService from "@/services/user.service";
-import { User as UserType } from "@/types/api";
+import { User as UserType, News } from "@/types/api";
 import { Loading, Input } from "@/components/common";
+import NewsList from "@/components/news/NewsList";
+import NewsDetail from "@/components/news/NewsDetail";
+import { NewsStatus } from "@/types/api";
+import ROUTERS from "@/config/router";
 
 interface Employee {
   id: number;
@@ -86,7 +91,17 @@ interface UserWithDetails {
 }
 
 const Company: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("DANH SÁCH NHÂN VIÊN CÔNG TY");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const newsId = searchParams.get("newsId");
+  const tabParam = searchParams.get("tab");
+  
+  const [activeTab, setActiveTab] = useState(() => {
+    if (newsId || tabParam === "news") {
+      return "TIN TỨC";
+    }
+    return "DANH SÁCH NHÂN VIÊN CÔNG TY";
+  });
   const [selectedDivision, setSelectedDivision] = useState("Tất cả");
   const [searchTerm, setSearchTerm] = useState("");
   // Debounced search term for API calls
@@ -94,13 +109,23 @@ const Company: React.FC = () => {
   // Track số lượng hiển thị cho mỗi division
   const [displayCounts, setDisplayCounts] = useState<Record<string, number>>({});
 
+  // Sync activeTab with newsId or tab param from URL
+  useEffect(() => {
+    if (newsId || tabParam === "news") {
+      setActiveTab("TIN TỨC");
+    }
+  }, [newsId, tabParam]);
+
+  const handleNewsClick = (news: News) => {
+    router.push(`${ROUTERS.PERSONAL.COMPANY}?newsId=${news.id}`);
+  };
+
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-    error,
   } = useInfiniteQuery({
     queryKey: ['company-users', debouncedSearch],
     queryFn: ({ pageParam = 1 }) => userService.getUsers(pageParam, 100, debouncedSearch || undefined),
@@ -208,7 +233,7 @@ const Company: React.FC = () => {
     };
   }, [data, selectedDivision]);
 
-  const tabs = ["DANH SÁCH NHÂN VIÊN CÔNG TY"];
+  const tabs = ["DANH SÁCH NHÂN VIÊN CÔNG TY", "TIN TỨC"];
 
   return (
     <CompanyContainer>
@@ -226,84 +251,86 @@ const Company: React.FC = () => {
         </TabsContainer>
       </Header>
 
+        {activeTab === "DANH SÁCH NHÂN VIÊN CÔNG TY" ? (
+          <>
       <MainContent>
-        <EmployeeSection>
-          <SectionTitle>
-            <Users size={20} />
-            Danh sách nhân viên
-          </SectionTitle>
-          {isLoading && employees.length === 0 ? (
-            <Loading text="Đang tải..." $center={true} />
-          ) : Object.keys(groupedEmployees).length === 0 ? (
-            <EmptyStateMessage>
-              Không có nhân viên nào
-            </EmptyStateMessage>
-          ) : (
-            Object.entries(groupedEmployees)
-              .sort((a, b) => {
-                if (a[0] === "Còn lại") return 1;
-                if (b[0] === "Còn lại") return -1;
-                return a[0].localeCompare(b[0]);
-              })
-              .map(([divisionName, divisionEmployees]) => {
-                const displayCount = displayCounts[divisionName] || 10;
-                const visibleEmployees = divisionEmployees.slice(0, displayCount);
-                const hasMore = divisionEmployees.length > displayCount;
-                
-                const handleShowMore = () => {
-                  setDisplayCounts((prev) => ({
-                    ...prev,
-                    [divisionName]: (prev[divisionName] || 10) + 10,
-                  }));
-                };
+            <EmployeeSection>
+              <SectionTitle>
+                <Users size={20} />
+                Danh sách nhân viên
+              </SectionTitle>
+              {isLoading && employees.length === 0 ? (
+                <Loading text="Đang tải..." $center={true} />
+              ) : Object.keys(groupedEmployees).length === 0 ? (
+                <EmptyStateMessage>
+                  Không có nhân viên nào
+                </EmptyStateMessage>
+              ) : (
+                Object.entries(groupedEmployees)
+                  .sort((a, b) => {
+                    if (a[0] === "Còn lại") return 1;
+                    if (b[0] === "Còn lại") return -1;
+                    return a[0].localeCompare(b[0]);
+                  })
+                  .map(([divisionName, divisionEmployees]) => {
+                    const displayCount = displayCounts[divisionName] || 10;
+                    const visibleEmployees = divisionEmployees.slice(0, displayCount);
+                    const hasMore = divisionEmployees.length > displayCount;
+                    
+                    const handleShowMore = () => {
+                      setDisplayCounts((prev) => ({
+                        ...prev,
+                        [divisionName]: (prev[divisionName] || 10) + 10,
+                      }));
+                    };
 
-                return (
-              <DivisionSection key={divisionName}>
-                <DivisionHeader>
-                  <Users size={18} />
-                  {divisionName} ({divisionEmployees.length} nhân viên)
-                </DivisionHeader>
-                <DivisionEmployeeGrid>
-                      {visibleEmployees.map((employee, index) => (
-                        <EmployeeCard key={`${employee.name}-${index}-${employee.id}`}>
-                      <EmployeeAvatar>
-                            {(employee.avatar && employee.avatar.includes("https://")) ? (
-                              <AvatarImageWrapper>
-                                <Image
-                                  src={employee.avatar}
-                                  alt={employee.name}
-                                  width={48}
-                                  height={48}
-                                />
-                              </AvatarImageWrapper>
-                            ) : (
-                        <User size={24} />
-                            )}
-                      </EmployeeAvatar>
-                      <EmployeeInfo>
-                        <EmployeeName>{employee.name}</EmployeeName>
-                        <EmployeeEmail>{employee.email}</EmployeeEmail>
-                        <EmployeePosition>
-                          {employee.id} - {employee.position}
-                        </EmployeePosition>
-                      </EmployeeInfo>
-                    </EmployeeCard>
-                  ))}
-                </DivisionEmployeeGrid>
-                    {hasMore && (
-                      <ShowMoreContainer>
-                        <ShowMoreButton onClick={handleShowMore}>
-                          Xem thêm ({divisionEmployees.length - displayCount} nhân viên)
-                        </ShowMoreButton>
-                      </ShowMoreContainer>
-                    )}
-              </DivisionSection>
-                );
-              })
-          )}
-        </EmployeeSection>
+                    return (
+                  <DivisionSection key={divisionName}>
+                    <DivisionHeader>
+                      <Users size={18} />
+                      {divisionName} ({divisionEmployees.length} nhân viên)
+                    </DivisionHeader>
+                    <DivisionEmployeeGrid>
+                          {visibleEmployees.map((employee, index) => (
+                            <EmployeeCard key={`${employee.name}-${index}-${employee.id}`}>
+                          <EmployeeAvatar>
+                                {(employee.avatar && employee.avatar.includes("https://")) ? (
+                                  <AvatarImageWrapper>
+                                    <Image
+                                      src={employee.avatar}
+                                      alt={employee.name}
+                                      width={48}
+                                      height={48}
+                                    />
+                                  </AvatarImageWrapper>
+                                ) : (
+                            <User size={24} />
+                                )}
+                          </EmployeeAvatar>
+                          <EmployeeInfo>
+                            <EmployeeName>{employee.name}</EmployeeName>
+                            <EmployeeEmail>{employee.email}</EmployeeEmail>
+                            <EmployeePosition>
+                              {employee.id} - {employee.position}
+                            </EmployeePosition>
+                          </EmployeeInfo>
+                        </EmployeeCard>
+                      ))}
+                    </DivisionEmployeeGrid>
+                        {hasMore && (
+                          <ShowMoreContainer>
+                            <ShowMoreButton onClick={handleShowMore}>
+                              Xem thêm ({divisionEmployees.length - displayCount} nhân viên)
+                            </ShowMoreButton>
+                          </ShowMoreContainer>
+                        )}
+                  </DivisionSection>
+                    );
+                  })
+              )}
+            </EmployeeSection>
 
-        <Sidebar>
+            <Sidebar>
           <SidebarTitle>
             <Users size={20} />
             Tổng số nhân viên: {employees.length}
@@ -350,7 +377,19 @@ const Company: React.FC = () => {
             </FilterList>
           </SidebarCard>
         </Sidebar>
-      </MainContent>
+        </MainContent>
+          </>
+        ) : activeTab === "TIN TỨC" ? (
+          newsId ? (
+            <NewsDetail newsId={newsId} />
+          ) : (
+            <NewsList 
+              status={NewsStatus.APPROVED} 
+              showFilters={true}
+              onNewsClick={handleNewsClick}
+            />
+          )
+        ) : null}
     </CompanyContainer>
   );
 };

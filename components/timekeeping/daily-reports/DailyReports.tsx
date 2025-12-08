@@ -37,7 +37,7 @@ import { REQUEST_STATUS } from "@/constants/enums";
 const DailyReports: React.FC = () => {
   const isMobile = useMobile();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [activeTab, setActiveTab] = useState("BẢNG DAILY-REPORT");
+  const [activeTab, setActiveTab] = useState("Bảng báo cáo hằng ngày");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
 
@@ -55,7 +55,7 @@ const DailyReports: React.FC = () => {
     });
   }, [currentDate, setPayload]);
 
-  const tabs = ["BẢNG DAILY-REPORT", "Danh sách báo cáo của tôi"];
+  const tabs = ["Bảng báo cáo hằng ngày", "Danh sách báo cáo của tôi"];
 
   const weekDays = [
     "Thứ 2",
@@ -212,7 +212,7 @@ const DailyReports: React.FC = () => {
       </Header>
 
       <MainContent>
-        {activeTab === "BẢNG DAILY-REPORT" && (
+        {activeTab === "Bảng báo cáo hằng ngày" && (
           <CalendarContainer>
             <MonthNavigation>
               <MonthButton onClick={() => navigateMonth("prev")}>
@@ -250,8 +250,6 @@ const DailyReports: React.FC = () => {
 
                 let status: REQUEST_STATUS | undefined = undefined;
                 let totalHours = 0;
-
-                console.log(dayData, day.fullDate, todayString);
 
                 if (dayData) {
                   totalHours = dayData.totalHours;

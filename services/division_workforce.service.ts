@@ -6,6 +6,7 @@ import {
   DivisionTeamDetailData,
   DivisionTeamCreateRequest,
   DivisionTeamUpdateRequest,
+  ApiResponse,
 } from "@/types/api";
 
 class DivisionWorkforceService {
@@ -42,7 +43,7 @@ class DivisionWorkforceService {
     page?: number,
     limit?: number,
   ): Promise<PaginatedResponse<DivisionTeamData>> {
-    const response = await axiosInstance.get(`/divisions/teams`, {
+    const response = await axiosInstance.get(`/teams`, {
       params: {
         division_id: divisionId,
         search,
@@ -53,14 +54,14 @@ class DivisionWorkforceService {
     return response.data;
   }
 
-  async getTeamDetail(teamId: number): Promise<DivisionTeamDetailData> {
-    const response = await axiosInstance.get(`/divisions/teams/${teamId}`);
+  async getTeamDetail(teamId: number): Promise<ApiResponse<DivisionTeamDetailData>> {
+    const response = await axiosInstance.get(`/teams/${teamId}`);
     return response.data;
   }
 
   async createTeam(data: DivisionTeamCreateRequest): Promise<void> {
     const response = await axiosInstance.post(
-      `/divisions/teams`,
+      `/teams`,
       {
         leader_id: data.leaderId,
         name: data.name,
@@ -75,7 +76,7 @@ class DivisionWorkforceService {
     teamId: number,
     data: DivisionTeamUpdateRequest
   ): Promise<void> {
-    const response = await axiosInstance.patch(`/divisions/teams/${teamId}`, {
+    const response = await axiosInstance.patch(`/teams/${teamId}`, {
       name: data.name,
       founding_date: data.foundingDate,
       leader_id: data.leaderId,
@@ -84,19 +85,24 @@ class DivisionWorkforceService {
   }
 
   async deleteTeam(teamId: number): Promise<void> {
-    const response = await axiosInstance.delete(`/divisions/teams/${teamId}`);
+    const response = await axiosInstance.delete(`/teams/${teamId}`);
+    return response.data;
+  }
+
+  async getTeamMembers(teamId: number): Promise<PaginatedResponse<DivisionMemberData>> {
+    const response = await axiosInstance.get(`/teams/${teamId}/members`);
     return response.data;
   }
 
   async addMembersToTeam(teamId: number, userIds: number[]): Promise<void> {
-    const response = await axiosInstance.post(`/divisions/teams/${teamId}/members`, {
+    const response = await axiosInstance.post(`/teams/${teamId}/members`, {
       user_ids: userIds,
     });
     return response.data;
   }
 
   async removeMemberFromTeam(teamId: number, userId: number): Promise<void> {
-    const response = await axiosInstance.delete(`/divisions/teams/${teamId}/members/${userId}`);
+    const response = await axiosInstance.delete(`/teams/${teamId}/members/${userId}`);
     return response.data;
   }
 }

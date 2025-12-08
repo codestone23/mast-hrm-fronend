@@ -38,7 +38,6 @@ const PersonalInfoSidebar: React.FC<PersonalInfoSidebarProps> = ({
   fileInputRef,
   initPersonalInfo,
 }) => {
-  console.log(data);
   return (
     <LeftSidebar>
       <UserProfile>

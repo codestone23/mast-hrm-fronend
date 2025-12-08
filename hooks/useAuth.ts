@@ -30,7 +30,6 @@ export const useAuth = () => {
 
       if (authService.isAuthenticated()) {
         try {
-          console.log('fetching user from API');
           const fullUserData = await authService.getCurrentUser();
           if (fullUserData) {
             const userProfile = convertUserToUserProfile(fullUserData);

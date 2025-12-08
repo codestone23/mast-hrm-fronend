@@ -29,23 +29,16 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
   const queryClient = useQueryClient();
   const isEdit = !!requestId && !!requestType;
   const [formData, setFormData] = useState({
-    title: 'Quên checkout ngày 05/05/2021',
-    approver: '',
+    title: '',
     applicationDate: selectedDate,
     checkinTime: '08:00',
-    checkoutTime: '13:30',
+    checkoutTime: '17:30',
     reason: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState('');
   const { success: showSuccessToast, error: showErrorToast } = useToast();
-
-  const approvers = [
-    { value: 'manager1', label: 'Nguyễn Văn A - Trưởng phòng' },
-    { value: 'manager2', label: 'Trần Thị B - Phó giám đốc' },
-    { value: 'manager3', label: 'Lê Văn C - Giám đốc' }
-  ];
 
   // Fetch request data when in edit mode
   useEffect(() => {
@@ -54,11 +47,10 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
       requestsService.getRequestById(requestType, String(requestId))
         .then((request) => {
           setFormData({
-            title: request.title || 'Quên checkout',
-            approver: '',
+            title: request.title || '',
             applicationDate: request.work_date || selectedDate,
             checkinTime: request.start_time || '08:00',
-            checkoutTime: request.end_time || '13:30',
+            checkoutTime: request.end_time || '17:30',
             reason: request.reason || ''
           });
         })
@@ -72,22 +64,16 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
     } else if (isOpen && !isEdit) {
       // Reset form when creating new request
       setFormData({
-        title: 'Quên checkout ngày 05/05/2021',
-        approver: '',
+        title: '',
         applicationDate: selectedDate,
         checkinTime: '08:00',
-        checkoutTime: '13:30',
+        checkoutTime: '17:30',
         reason: ''
       });
     }
   }, [isOpen, isEdit, requestId, requestType, selectedDate, showErrorToast]);
 
   const handleSubmit = async () => {
-    if (!formData.approver) {
-      setError('Vui lòng chọn người phê duyệt');
-      return;
-    }
-
     setIsLoading(true);
     setError('');
 
@@ -135,7 +121,7 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
       isOpen={isOpen}
       onClose={handleClose}
       title={isEdit ? "Chỉnh sửa đơn quên chấm công" : "Đăng ký quên chấm công"}
-      size="md"
+      size="lg"
       footer={
         <>
           <Button variant="ghost" onClick={handleClose} disabled={isLoading}>
@@ -145,7 +131,7 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
             variant="primary"
             onClick={handleSubmit}
             loading={isLoading}
-            disabled={isLoading || isFetching || !formData.approver}
+            disabled={isLoading || isFetching || !formData.reason}
           >
             {isLoading ? 'Đang xử lý...' : isEdit ? 'Cập nhật' : 'Thêm'}
           </Button>
@@ -168,17 +154,8 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
             <Input
               label="Tên tiêu đề"
               value={formData.title}
+              placeholder="Nhập tên tiêu đề"
               onChange={(e) => handleInputChange('title', e.target.value)}
-              required
-              disabled={isLoading}
-            />
-            
-            <Select
-              label="Chọn người phê duyệt"
-              value={formData.approver}
-              onChange={(value: string | number) => handleInputChange('approver', value.toString())}
-              options={approvers}
-              placeholder="Chọn người phê duyệt"
               required
               disabled={isLoading}
             />
@@ -213,6 +190,7 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
                 value={formData.reason}
                 onChange={(e) => handleInputChange('reason', e.target.value)}
                 placeholder="Nhập lý do quên chấm công..."
+                required
                 disabled={isLoading}
               />
             </div>

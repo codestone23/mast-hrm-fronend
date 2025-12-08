@@ -20,7 +20,6 @@ interface MeetingDetailProps {
   currentUserId?: number;
   onEdit?: () => void;
   onDelete?: () => void;
-  isDeleting?: boolean;
 }
 
 const MeetingDetail: React.FC<MeetingDetailProps> = ({
@@ -28,7 +27,6 @@ const MeetingDetail: React.FC<MeetingDetailProps> = ({
   currentUserId,
   onEdit,
   onDelete,
-  isDeleting = false,
 }) => {
   const isMyMeeting = currentUserId && meeting.organizer_id === currentUserId;
   const startDate = new Date(meeting.start_time);
@@ -108,7 +106,6 @@ const MeetingDetail: React.FC<MeetingDetailProps> = ({
             <Button
               variant="danger"
               onClick={onDelete}
-              loading={isDeleting}
             >
               Xóa
             </Button>

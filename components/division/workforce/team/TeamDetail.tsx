@@ -1,15 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus } from "lucide-react";
-import { Button, Table, TableColumn, ConfirmDeleteModal, Pagination } from "@/components/common";
+import { Button, Table, TableColumn, ConfirmDeleteModal, Pagination, Input } from "@/components/common";
+import { Search } from "lucide-react";
 import AddMemberModal from "./modals/AddMemberModal";
 import { useTeamDetail } from "./useTeamDetail";
-import { useDivisionMembers } from "@/hooks/useDivisionWorkforce";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
-import { DivisionMemberData } from "@/types/api";
 import {
   PersonalInfoContainer,
   MainContent,
@@ -41,19 +38,25 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const isMobile = useMobile();
-  const selectedDivisionId = useSelector(
-    (state: RootState) => state.division.selectedDivisionId
-  );
   const { success: showSuccessToast, error: showErrorToast } = useToast();
 
   const { data: teamData, isLoading: isLoadingTeam, error: teamError, refetch } = useTeamDetail(id || null);
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<DivisionMemberData | null>(null);
+  const [selectedMember, setSelectedMember] = useState<{
+    user_id: number;
+    name: string;
+    email: string;
+    code: string;
+    avatar: string | null;
+    position?: { id: number; name: string };
+    level?: { id: number; name: string; coefficient: number };
+    role?: { id: number; name: string };
+  } | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -63,23 +66,30 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Fetch members of this team
-  const { data: membersData, isLoading: isLoadingMembers } = useDivisionMembers(
-    selectedDivisionId,
-    currentPage,
-    10,
-    debouncedSearch,
-    {
-      teamId: id ? Number(id) : undefined,
-    }
-  );
+  // Use members from teamData if available
+  const allMembers = useMemo(() => teamData?.members || [], [teamData?.members]);
+  const filteredMembers = useMemo(() => {
+    if (!debouncedSearch) return allMembers;
+    const search = debouncedSearch.toLowerCase();
+    return allMembers.filter((member: typeof allMembers[0]) =>
+      member.name?.toLowerCase().includes(search) ||
+      member.code?.toLowerCase().includes(search) ||
+      member.email?.toLowerCase().includes(search)
+    );
+  }, [allMembers, debouncedSearch]);
 
-  const members = membersData?.data || [];
-  const pagination = membersData?.pagination || {
-    total: 0,
-    current_page: 1,
-    total_pages: 1,
-    limit: 10,
+  const ITEMS_PER_PAGE = 10;
+  const paginatedMembers = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    return filteredMembers.slice(start, end);
+  }, [filteredMembers, currentPage]);
+
+  const pagination = {
+    total: filteredMembers.length,
+    current_page: currentPage,
+    total_pages: Math.ceil(filteredMembers.length / ITEMS_PER_PAGE),
+    limit: ITEMS_PER_PAGE,
   };
 
   const removeMemberMutation = useMutation({
@@ -126,7 +136,7 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
     await addMemberMutation.mutateAsync(userIds);
   };
 
-  const handleDeleteMember = (member: DivisionMemberData) => {
+  const handleDeleteMember = (member: typeof allMembers[0]) => {
     setSelectedMember(member);
     setIsDeleteModalOpen(true);
   };
@@ -137,13 +147,9 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
     }
   };
 
-  const formatSkills = (skills: string | null | undefined) => {
-    if (!skills) return "-";
-    const skillsList = skills.split(/[,;|]/).map(s => s.trim()).filter(s => s.length > 0);
-    return skillsList.slice(0, 3).join(", ") + (skillsList.length > 3 ? ` +${skillsList.length - 3}` : "");
-  };
+  type TeamMember = typeof allMembers[0];
 
-  const columns: TableColumn<DivisionMemberData>[] = [
+  const columns: TableColumn<TeamMember>[] = [
     {
       key: "code",
       label: "Mã",
@@ -185,14 +191,19 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
       key: "position",
       label: "Vị trí",
       width: "150px",
+      render: (_, row) => (
+        <span style={{ fontSize: "14px", color: "#6b7280" }}>
+          {row.position?.name || "-"}
+        </span>
+      ),
     },
     {
-      key: "skills",
-      label: "Kỹ năng",
-      width: "200px",
-      render: (value) => (
+      key: "role",
+      label: "Vai trò",
+      width: "150px",
+      render: (_, row) => (
         <span style={{ fontSize: "14px", color: "#6b7280" }}>
-          {formatSkills(value as string | null | undefined)}
+          {row.role?.name || "-"}
         </span>
       ),
     },
@@ -200,14 +211,19 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
       key: "level",
       label: "Level",
       width: "100px",
+      render: (_, row) => (
+        <span style={{ fontSize: "14px", color: "#6b7280" }}>
+          {row.level?.name || "-"}
+        </span>
+      ),
     },
     {
       key: "coefficient",
       label: "Hệ số",
       width: "100px",
       align: "center",
-      render: (value) => (
-        <span style={{ fontWeight: 500 }}>{value as number || "-"}</span>
+      render: (_, row) => (
+        <span style={{ fontWeight: 500 }}>{row.level?.coefficient || "-"}</span>
       ),
     },
     {
@@ -263,7 +279,7 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
                 <ArrowLeft size={isMobile ? 18 : 20} />
               </BackButton>
               <DetailTitle $isMobile={isMobile}>
-                {isMobile ? teamData.name : `Chi tiết team: ${teamData.name}`}
+                {isMobile ? teamData?.name || "" : `Chi tiết team: ${teamData?.name || ""}`}
               </DetailTitle>
             </DetailTitleWrapper>
           </DetailHeaderContent>
@@ -280,20 +296,24 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
             <DetailInfoGrid $isMobile={isMobile}>
               <div>
                 <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Tên team</div>
-                <div style={{ fontSize: "14px", fontWeight: 500 }}>{teamData.name}</div>
+                <div style={{ fontSize: "14px", fontWeight: 500 }}>{teamData?.name}</div>
               </div>
               <div>
-                <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Người quản lý</div>
-                <div style={{ fontSize: "14px", fontWeight: 500 }}>{teamData.manager.name}</div>
+                <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Phòng ban</div>
+                <div style={{ fontSize: "14px", fontWeight: 500 }}>{teamData?.division?.name || "-"}</div>
               </div>
               <div>
                 <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Số lượng thành viên</div>
-                <div style={{ fontSize: "14px", fontWeight: 500 }}>{teamData.member_count}</div>
+                <div style={{ fontSize: "14px", fontWeight: 500 }}>{teamData?.member_count || 0}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Số lượng dự án</div>
+                <div style={{ fontSize: "14px", fontWeight: 500 }}>{teamData?.project_count || 0}</div>
               </div>
               <div>
                 <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Ngày thành lập</div>
                 <div style={{ fontSize: "14px", fontWeight: 500 }}>
-                  {teamData.founding_date ? new Date(teamData.founding_date).toLocaleDateString("vi-VN") : "-"}
+                  {teamData?.founding_date ? new Date(teamData.founding_date).toLocaleDateString("vi-VN") : "-"}
                 </div>
               </div>
             </DetailInfoGrid>
@@ -316,11 +336,20 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
                 Thêm nhân sự
               </Button>
             </CardHeaderActions>
+            <div style={{ padding: "16px", paddingTop: 0 }}>
+              <Input
+                placeholder="Tìm kiếm thành viên..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                icon={<Search size={18} />}
+                fullWidth
+              />
+            </div>
 
             <Table
               columns={columns}
-              data={members}
-              loading={isLoadingMembers}
+              data={paginatedMembers}
+              loading={isLoadingTeam}
               error={null}
               emptyState={{
                 icon: <Plus size={48} />,

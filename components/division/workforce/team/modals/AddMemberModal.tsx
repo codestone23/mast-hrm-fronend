@@ -157,7 +157,6 @@ const AddMemberModal: React.FC<Props> = ({ isOpen, onClose, onSave, teamId, isLo
                 onChange={(e) => setSearchTerm(e.target.value)}
                 icon={<Search size={18} />}
                 fullWidth
-                style={{ marginBottom: "12px" }}
               />
               <div style={{ 
                 maxHeight: "400px", 

@@ -88,7 +88,6 @@ export const useRegisterFace = () => {
         },
         onError: (e: unknown) => {
             const err = e as AxiosError<ApiResponse<LoginResponse>>;
-            console.log(err);
             error(err.response?.data.message || 'Đăng ký khuôn mặt thất bại');
             setIsLoading(false);
         },

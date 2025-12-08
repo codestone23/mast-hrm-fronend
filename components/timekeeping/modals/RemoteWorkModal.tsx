@@ -186,17 +186,6 @@ const RemoteWorkModal: React.FC<RemoteWorkModalProps> = ({
               disabled={isLoading}
             />
             
-            {/* Comment lại phần người phê duyệt vì API chưa có */}
-            {/* <Select
-              label="Chọn người phê duyệt"
-              value={formData.approver}
-              onChange={(value: string | number) => handleInputChange('approver', value.toString())}
-              options={approvers}
-              placeholder="Chọn người phê duyệt"
-              required
-              disabled={isLoading}
-            /> */}
-            
             <div style={{ gridColumn: '1 / -1' }}>
               <Input
                 label="Lý do"

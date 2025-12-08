@@ -20,7 +20,7 @@ import MeetingDetail from "../MeetingDetail/MeetingDetail";
 import Modal from "@/components/common/Modal/Modal";
 import Button from "@/components/common/Button/Button";
 import Select from "@/components/common/Select/Select";
-import { Loading } from "@/components/common";
+import { Loading, ConfirmDeleteModal } from "@/components/common";
 import {
     MeetingRoomsContainer,
     MeetingRoomsHeader,
@@ -56,6 +56,7 @@ const MeetingRooms: React.FC = () => {
         undefined
     );
     const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
+    const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
 
     const currentUserId = user?.id;
 
@@ -154,6 +155,10 @@ const MeetingRooms: React.FC = () => {
             queryClient.invalidateQueries({ queryKey: ["meetings"] });
             queryClient.invalidateQueries({ queryKey: ["my-meetings"] });
             showSuccessToast("Xóa lịch đặt phòng thành công!");
+            setIsDeleteConfirmModalOpen(false);
+            setIsDetailModalOpen(false);
+            setIsBookingModalOpen(false);
+            setSelectedMeeting(null);
         },
         onError: (error: any) => {
             const errorMessage =
@@ -197,14 +202,14 @@ const MeetingRooms: React.FC = () => {
     };
 
     const handleDelete = () => {
-        if (
-            selectedMeeting &&
-            window.confirm("Bạn có chắc chắn muốn xóa lịch đặt phòng này?")
-        ) {
+        if (selectedMeeting) {
+            setIsDeleteConfirmModalOpen(true);
+        }
+    };
+
+    const handleConfirmDelete = () => {
+        if (selectedMeeting) {
             deleteMutation.mutate(selectedMeeting.id.toString());
-            setIsDetailModalOpen(false);
-            setIsBookingModalOpen(false);
-            setSelectedMeeting(null);
         }
     };
 
@@ -219,6 +224,8 @@ const MeetingRooms: React.FC = () => {
               end: format(new Date(selectedMeeting.end_time), "HH:mm"),
           }
         : undefined;
+
+    console.log(meetings);
 
     return (
         <MeetingRoomsContainer>
@@ -358,7 +365,6 @@ const MeetingRooms: React.FC = () => {
                         currentUserId={currentUserId}
                         onEdit={handleEditClick}
                         onDelete={handleDelete}
-                        isDeleting={deleteMutation.isPending}
                     />
                 )}
             </Modal>
@@ -402,6 +408,16 @@ const MeetingRooms: React.FC = () => {
                     />
                 )}
             </Modal>
+
+            {/* Modal xác nhận xóa */}
+            <ConfirmDeleteModal
+                isOpen={isDeleteConfirmModalOpen}
+                onClose={() => setIsDeleteConfirmModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                isLoading={deleteMutation.isPending}
+                title="Xác nhận xóa lịch đặt phòng"
+                message={`Bạn có chắc chắn muốn xóa lịch đặt phòng "${selectedMeeting?.title}" không?`}
+            />
         </MeetingRoomsContainer>
     );
 };

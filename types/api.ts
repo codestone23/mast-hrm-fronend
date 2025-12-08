@@ -614,23 +614,42 @@ export interface DivisionTeamDetailData {
   id: number,
   name: string,
   division_id: number,
-  manager: {
-    id: number,
-    name: string,
-    email: string,
-    avatar: string
-  },
-  member_count: number,
-  resource_by_level: {
-    [level: string]: number
-  },
-  active_projects: {
+  founding_date: string | null,
+  created_at: string,
+  updated_at: string,
+  deleted_at: string | null,
+  division: {
     id: number,
     name: string
-  }[],
-  founding_date: string,
-  created_at: string,
-  updated_at: string
+  },
+  member_count: number,
+  project_count: number,
+  members: Array<{
+    assignment_id: number,
+    user_id: number,
+    email: string,
+    name: string,
+    code: string,
+    avatar: string | null,
+    position: {
+      id: number,
+      name: string
+    },
+    level: {
+      id: number,
+      name: string,
+      coefficient: number
+    },
+    role: {
+      id: number,
+      name: string
+    },
+    joined_at: string
+  }>,
+  projects: Array<{
+    id: number,
+    name: string
+  }>
 }
 
 export interface DivisionTeamCreateRequest {
@@ -855,6 +874,8 @@ export interface DailyReportListParams {
   user_id?: number;
   project_id?: number;
   status?: DailyReportStatus;
+  users_without_division?: boolean;
+  division_head_only?: boolean;
 }
 
 // Holiday types

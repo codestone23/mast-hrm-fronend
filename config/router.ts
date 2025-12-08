@@ -38,6 +38,7 @@ const ROUTERS = {
         ASSETS: "/hr/assets",
         USERS: "/hr/users",
         NEWS: "/hr/news",
+        DAILY_REPORTS: "/hr/daily-reports",
     },
     SETTINGS: {
         BASE: "/settings/dashboard",

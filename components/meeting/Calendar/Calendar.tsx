@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks, subWeeks, isPast, isBefore, startOfDay } from "date-fns";
+import { format, startOfWeek, isSameDay, addWeeks, subWeeks, isBefore, startOfDay } from "date-fns";
 import { vi } from "date-fns/locale/vi";
 import { Meeting } from "@/types/api";
 import {
@@ -82,13 +82,12 @@ const Calendar: React.FC<CalendarProps> = ({
     return isBefore(meetingStart, now);
   };
 
-  // Lấy tất cả meetings cho một ngày (chỉ lấy meetings chưa bắt đầu)
+  // Lấy tất cả meetings cho một ngày (bao gồm cả meetings trong quá khứ)
   const getMeetingsForDay = (day: Date): Meeting[] => {
-    const now = new Date();
     return meetings.filter((meeting) => {
       const meetingStart = new Date(meeting.start_time);
-      // Chỉ lấy meetings của ngày này và chưa bắt đầu (start_time >= now)
-      return isSameDay(meetingStart, day) && !isBefore(meetingStart, now);
+      // Lấy tất cả meetings của ngày này
+      return isSameDay(meetingStart, day);
     });
   };
 
@@ -130,6 +129,10 @@ const Calendar: React.FC<CalendarProps> = ({
 
   const handleMeetingClick = (meeting: Meeting, e: React.MouseEvent) => {
     e.stopPropagation();
+    // Không cho phép click vào meetings trong quá khứ
+    if (isMeetingInPast(meeting)) {
+      return;
+    }
     const isMyMeeting = currentUserId && meeting.organizer_id === currentUserId;
     if (isMyMeeting) {
       onEventClick?.(meeting);
@@ -207,8 +210,9 @@ const Calendar: React.FC<CalendarProps> = ({
                     const meeting = dayMeetings.find((m) => doesMeetingStartInSlot(m, day, timeSlot));
                     const isPastSlot = isTimeSlotInPast(day, timeSlot);
                     
-                    // Chỉ hiển thị meeting nếu nó không trong quá khứ
-                    const shouldShowMeeting = meeting && !isMeetingInPast(meeting) && getMeetingPosition(meeting, day, timeSlot);
+                    // Hiển thị tất cả meetings (bao gồm cả trong quá khứ)
+                    const shouldShowMeeting = meeting && getMeetingPosition(meeting, day, timeSlot);
+                    const meetingInPast = meeting && isMeetingInPast(meeting);
 
                     return (
                       <HourSlot
@@ -219,7 +223,7 @@ const Calendar: React.FC<CalendarProps> = ({
                         {shouldShowMeeting && meeting && (
                           <MeetingBlock
                             $isMyMeeting={currentUserId ? meeting.organizer_id === currentUserId : false}
-                            $isClickable={currentUserId ? meeting.organizer_id === currentUserId : false}
+                            $isClickable={currentUserId ? meeting.organizer_id === currentUserId && !meetingInPast : false}
                             style={getMeetingPosition(meeting, day, timeSlot)!}
                             onClick={(e) => handleMeetingClick(meeting, e)}
                             title={`${meeting.title} - ${meeting.room?.name || ""} (${format(new Date(meeting.start_time), "HH:mm")} - ${format(new Date(meeting.end_time), "HH:mm")})`}

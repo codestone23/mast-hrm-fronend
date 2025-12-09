@@ -208,20 +208,18 @@ const EmployeeList: React.FC = () => {
 
   // Helper to get roles for a member (filter DIVISION and PROJECT, group duplicates)
   const getMemberRoles = (member: DivisionMemberData) => {
-    const user = usersMap.get(member.user_id);
-    if (!user?.user_role_assignments) return [];
+    if (!member?.user_role_assignments) return [];
     
-    const divisionProjectRoles = user.user_role_assignments.filter(
+    const divisionProjectRoles = member.user_role_assignments.filter(
       (assignment) => 
         assignment.scope_type === ScopeType.DIVISION || 
         assignment.scope_type === ScopeType.PROJECT ||
         assignment.scope_type === ScopeType.TEAM
     );
 
-    // Group by role name (show only unique roles)
     const roleMap = new Map<string, typeof divisionProjectRoles[0]>();
     divisionProjectRoles.forEach((assignment) => {
-      const key = assignment.role.name;
+      const key = assignment.role_name || "";
       if (!roleMap.has(key)) {
         roleMap.set(key, assignment);
       }
@@ -385,12 +383,7 @@ const EmployeeList: React.FC = () => {
       render: (value) => <SkillsDisplay skills={value as string | null | undefined} />,
     },
     {
-      key: "level",
-      label: "Level",
-      width: "100px",
-    },
-    {
-      key: "role",
+      key: "user_role_assignments",
       label: "Vai trò",
       width: "160px",
       render: (_, row) => {
@@ -413,7 +406,7 @@ const EmployeeList: React.FC = () => {
                   color: "#6366f1",
                 }}
               >
-                {getRoleName(assignment.role.name)}
+                {getRoleName(assignment.role_name)}
               </span>
             ))}
           </div>

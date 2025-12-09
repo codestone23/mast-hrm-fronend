@@ -94,7 +94,7 @@ const CreateDivisionModal: React.FC<CreateDivisionModalProps> = ({ isOpen, onClo
 
   const footer = (
     <>
-      <button type="button" onClick={onClose} style={{ padding: '10px 16px', border: '1px solid var(--border)', borderRadius: 8, background: 'white' }}>Hủy</button>
+      <button type="button" onClick={onClose} style={{ padding: '10px 16px', border: '1px solid var(--border)', borderRadius: 8 }}>Hủy</button>
       <button onClick={() => { if (validate()) { onSave(form); } }} style={{ padding: '10px 16px', border: 'none', borderRadius: 8, background: 'var(--primary-500)', color: 'white' }}>Tạo phòng ban</button>
     </>
   );

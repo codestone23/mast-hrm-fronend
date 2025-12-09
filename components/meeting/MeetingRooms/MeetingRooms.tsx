@@ -8,19 +8,18 @@ import { vi } from "date-fns/locale/vi";
 import meetingService from "@/services/meeting.service";
 import {
     Meeting,
-    MeetingRoom,
     CreateMeetingPayload,
     UpdateMeetingPayload,
 } from "@/types/api";
 import { useToast } from "@/hooks/useToast";
 import { useAuthContext } from "@/contexts/AuthContext";
 import Calendar from "../Calendar/Calendar";
-import MeetingBooking from "../MeetingBooking/MeetingBooking";
 import MeetingDetail from "../MeetingDetail/MeetingDetail";
-import Modal from "@/components/common/Modal/Modal";
+import MeetingBookingModal from "../modals/MeetingBookingModal";
 import Button from "@/components/common/Button/Button";
 import Select from "@/components/common/Select/Select";
 import { Loading, ConfirmDeleteModal } from "@/components/common";
+import Modal from "@/components/common/Modal/Modal";
 import {
     MeetingRoomsContainer,
     MeetingRoomsHeader,
@@ -61,7 +60,7 @@ const MeetingRooms: React.FC = () => {
     const currentUserId = user?.id;
 
     // Fetch rooms
-    const { data: roomsData, isLoading: isLoadingRooms } = useQuery({
+    const { data: roomsData } = useQuery({
         queryKey: ["meeting-rooms", { is_active: true }],
         queryFn: () => meetingService.getRooms({ is_active: true }),
     });
@@ -168,6 +167,12 @@ const MeetingRooms: React.FC = () => {
     });
 
     const handleDateSelect = (date: Date) => {
+        // Kiểm tra nếu là thứ 7 (6) hoặc chủ nhật (0)
+        const dayOfWeek = date.getDay();
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+            showErrorToast("Không thể đặt phòng vào thứ 7 và chủ nhật");
+            return;
+        }
         setSelectedDate(date);
         setIsBookingModalOpen(true);
         setIsEditMode(false);
@@ -370,7 +375,7 @@ const MeetingRooms: React.FC = () => {
             </Modal>
 
             {/* Modal đặt phòng/chỉnh sửa */}
-            <Modal
+            <MeetingBookingModal
                 isOpen={isBookingModalOpen}
                 onClose={() => {
                     setIsBookingModalOpen(false);
@@ -379,35 +384,20 @@ const MeetingRooms: React.FC = () => {
                     setIsEditMode(false);
                     setSelectedDate(undefined);
                 }}
-                title={
-                    isEditMode && selectedMeeting
-                        ? "Cập nhật lịch đặt phòng"
-                        : "Đặt phòng họp"
+                selectedDate={selectedDate}
+                selectedTimeSlot={selectedTimeSlot}
+                selectedMeeting={selectedMeeting}
+                onSubmit={handleBookingSubmit}
+                onCancel={() => {
+                    setIsBookingModalOpen(false);
+                    setSelectedMeeting(null);
+                    setIsEditMode(false);
+                }}
+                isLoading={
+                    createMutation.isPending || updateMutation.isPending
                 }
-                size="lg"
-            >
-                {isLoadingRooms ? (
-                    <Loading />
-                ) : (
-                    <MeetingBooking
-                        rooms={rooms}
-                        selectedDate={selectedDate}
-                        selectedTimeSlot={selectedTimeSlot}
-                        selectedMeeting={selectedMeeting}
-                        onSubmit={handleBookingSubmit}
-                        onCancel={() => {
-                            setIsBookingModalOpen(false);
-                            setSelectedMeeting(null);
-                            setIsEditMode(false);
-                        }}
-                        isLoading={
-                            createMutation.isPending || updateMutation.isPending
-                        }
-                        isEditMode={isEditMode && selectedMeeting ? true : false}
-                        isReadOnly={false}
-                    />
-                )}
-            </Modal>
+                isEditMode={isEditMode && selectedMeeting ? true : false}
+            />
 
             {/* Modal xác nhận xóa */}
             <ConfirmDeleteModal

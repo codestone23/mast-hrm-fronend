@@ -44,6 +44,7 @@ export default function Layout({
     { id: ROUTERS.DIVISION.BASE, label: "Tổng quan" },
     { id: ROUTERS.DIVISION.WORKFORCE, label: "Quản lý nhân sự" },
     { id: ROUTERS.DIVISION.PROJECTS, label: "Quản lý dự án" },
+    { id: ROUTERS.DIVISION.TIMEKEEPING, label: "Chấm công" },
     { id: ROUTERS.DIVISION.DAILY_REPORTS, label: "Báo cáo" },
   ];
 

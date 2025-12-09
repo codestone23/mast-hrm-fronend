@@ -27,6 +27,7 @@ const ROUTERS = {
         CUSTOMER: "/division/customer",
         REVENUE: "/division/revenue",
         DAILY_REPORTS: "/division/daily-reports",
+        TIMEKEEPING: "/division/timekeeping",
     },
     COMPANY: {
         BASE: "/company",

@@ -29,6 +29,9 @@ export type { BreadcrumbProps, BreadcrumbItemData } from './Breadcrumb/Breadcrum
 export { default as ConfirmDeleteModal } from './ConfirmDeleteModal/ConfirmDeleteModal';
 export type { ConfirmDeleteModalProps } from './ConfirmDeleteModal/ConfirmDeleteModal';
 
+export { default as ConfirmApproveModal } from './ConfirmApproveModal/ConfirmApproveModal';
+export type { ConfirmApproveModalProps } from './ConfirmApproveModal/ConfirmApproveModal';
+
 export { default as Pagination } from './Pagination/Pagination';
 export type { PaginationProps } from './Pagination/Pagination';
 

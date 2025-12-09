@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { useParams } from "next/navigation";
 import { Users, Building2, Plus, Trash2 } from "lucide-react";
 import {
     Card,
@@ -15,6 +14,7 @@ import Input from "@/components/common/Input/Input";
 import Pagination from "@/components/common/Pagination/Pagination";
 import AddMemberModal from "@/components/company/division/modals/AddMemberModal";
 import { ConfirmDeleteModal, Loading } from "@/components/common";
+import { useAuthContext } from "@/contexts/AuthContext";
 import {
     useAddMemberToDivision,
     useDivisionDetail,
@@ -41,6 +41,7 @@ import { DivisionStatus } from "@/constants/enums";
 const DivisionDetailPage: React.FC<{ divisionId: number }> = ({
     divisionId,
 }) => {
+    const { user } = useAuthContext();
     const { data: division } = useDivisionDetail(divisionId);
     const [search, setSearch] = useState("");
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -178,16 +179,18 @@ const DivisionDetailPage: React.FC<{ divisionId: number }> = ({
                                             </MemberEmail>
                                         </MemberTexts>
                                     </MemberInfo>
-                                    <DangerButton
-                                        onClick={() =>
-                                            handleAskRemove(
-                                                m.userId,
-                                                m.user.user_information?.name
-                                            )
-                                        }
-                                    >
-                                        <Trash2 size={16} /> Xóa
-                                    </DangerButton>
+                                    {m.user_id !== user?.id && (
+                                        <DangerButton
+                                            onClick={() =>
+                                                handleAskRemove(
+                                                    m.userId,
+                                                    m.user.user_information?.name
+                                                )
+                                            }
+                                        >
+                                            <Trash2 size={16} /> Xóa
+                                        </DangerButton>
+                                    )}
                                 </MemberItem>
                             ))}
                             {members.length === 0 && (

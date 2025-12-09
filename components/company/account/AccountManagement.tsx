@@ -31,7 +31,6 @@ import {
   StatsRow,
 } from "./accountStyle";
 import CreateAccountModal from "./modals/CreateAccountModal";
-import EditAccountModal from "./modals/EditAccountModal";
 import AssignRoleModal from "./modals/AssignRoleModal";
 import UnassignRoleModal from "./modals/UnassignRoleModal";
 import RegisterFaceModal from "./modals/RegisterFaceModal";
@@ -53,14 +52,6 @@ interface CreateAccountData {
   name: string;
   email: string;
   password: string;
-}
-
-interface EditAccountData {
-  name: string;
-  email: string;
-  phone?: string;
-  department?: string;
-  position?: string;
 }
 
 export const getRoleName = (roleName: ROLE_NAMES) => {
@@ -95,7 +86,6 @@ const AccountManagement: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined);
   const [selectedDivisionId, setSelectedDivisionId] = useState<number | undefined>(undefined);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAssignRoleModalOpen, setIsAssignRoleModalOpen] = useState(false);
   const [isUnassignRoleModalOpen, setIsUnassignRoleModalOpen] = useState(false);
@@ -195,21 +185,6 @@ const AccountManagement: React.FC = () => {
     },
   });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ userId, data }: { userId: string; data: UpdateUserRequest }) =>
-      userService.updateUser(userId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      showSuccessToast("Cập nhật tài khoản thành công");
-      setIsEditModalOpen(false);
-      setSelectedUser(null);
-    },
-    onError: (error: unknown) => {
-      const err = error as { response?: { data?: { message?: string } } };
-      showErrorToast(err?.response?.data?.message || "Có lỗi xảy ra khi cập nhật tài khoản");
-    },
-  });
-
   const deleteMutation = useMutation({
     mutationFn: (userId: string) => userService.deleteUser(userId),
     onSuccess: () => {
@@ -230,22 +205,6 @@ const AccountManagement: React.FC = () => {
     createMutation.mutate(accountData);
   };
 
-  const handleEditAccount = (user: UserType, accountData: EditAccountData) => {
-    const nameParts = accountData.name.trim().split(" ");
-    const firstName = nameParts[0] || "";
-    const lastName = nameParts.slice(1).join(" ") || "";
-
-    const updateData: UpdateUserRequest = {
-      firstName,
-      lastName,
-      phone: accountData.phone,
-      department: accountData.department,
-      position: accountData.position,
-    };
-
-    updateMutation.mutate({ userId: String(user.id), data: updateData });
-  };
-
   const handleDeleteAccount = () => {
     if (selectedUser) {
       deleteMutation.mutate(String(selectedUser.id));
@@ -254,11 +213,6 @@ const AccountManagement: React.FC = () => {
 
   const handleViewDetail = (user: UserType) => {
     router.push(`${ROUTERS.COMPANY.ACCOUNTS}/${user.id}`); 
-  };
-
-  const handleEdit = (user: UserType) => {
-    setSelectedUser(user);
-    setIsEditModalOpen(true);
   };
 
   const handleDelete = (user: UserType) => {
@@ -521,19 +475,6 @@ const AccountManagement: React.FC = () => {
                         e.stopPropagation();
                         e.preventDefault();
                         setOpenMenuId(null);
-                        handleEdit(row);
-                      }}
-                    >
-                      <Edit size={16} />
-                      <span>Chỉnh sửa</span>
-                    </ActionMenuLink>
-                  </ActionMenuItem>
-                  <ActionMenuItem>
-                    <ActionMenuLink
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setOpenMenuId(null);
                         handleAssignRole(row);
                       }}
                     >
@@ -745,21 +686,6 @@ const AccountManagement: React.FC = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onSave={handleCreateAccount}
         isLoading={createMutation.isPending}
-      />
-
-      <EditAccountModal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setSelectedUser(null);
-        }}
-        user={selectedUser}
-        onSave={(accountData) => {
-          if (selectedUser) {
-            handleEditAccount(selectedUser, accountData);
-          }
-        }}
-        isLoading={updateMutation.isPending}
       />
 
       <ConfirmDeleteModal

@@ -124,8 +124,8 @@ const LevelManagement: React.FC = () => {
       width: "2fr",
     },
     {
-      key: "level",
-      label: "Cấp độ",
+      key: "coefficient",
+      label: "Hệ số",
       width: "1fr",
       align: "center",
     },

@@ -130,6 +130,10 @@ const SkillManagement: React.FC = () => {
     setSelectedSkill(null);
   };
 
+  const getPositionName = (positionId: number) => {
+    return positionsData?.data.find((pos) => pos.id === positionId)?.name || "";
+  };
+
   const columns: TableColumn<Skill>[] = [
     {
       key: "name",
@@ -137,17 +141,10 @@ const SkillManagement: React.FC = () => {
       width: "2fr",
     },
     {
-      key: "position",
+      key: "skill",
       label: "Vị trí",
       width: "2fr",
-      render: (value, row) => row.position?.name || "-",
-    },
-    {
-      key: "_count",
-      label: "Số người dùng",
-      width: "1fr",
-      align: "center",
-      render: (value, row) => row._count?.user_skills || 0,
+      render: (value, row) => getPositionName(row?.skill?.position_id || 0) || "-",
     },
     {
       key: "actions",

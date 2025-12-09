@@ -60,7 +60,7 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
     const [filters, setFilters] = useState({
         page: 1,
         limit: 10,
-        status: "",
+        status: REQUEST_STATUS.PENDING,
         start_date: undefined,
         end_date: undefined,
     });
@@ -96,7 +96,7 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
         setFilters((prev) => ({
             ...prev,
             page: 1,
-            status: "",
+            status: REQUEST_STATUS.PENDING,
             start_date: undefined,
             end_date: undefined,
         }));
@@ -278,9 +278,9 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                         ) : (
                             <>
                                 <RequestList>
-                                    {requests.map((request) => (
+                                    {requests.map((request, index) => (
                                         <RequestItem
-                                            key={request.id}
+                                            key={`${request.id}-${index}`}
                                             $status={request.status as REQUEST_STATUS}
                                             onClick={() =>
                                                 onRequestClick?.(request)

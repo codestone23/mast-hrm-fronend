@@ -168,7 +168,7 @@ const UnassignEmployeeRoleModal: React.FC<UnassignEmployeeRoleModalProps> = ({
             />
 
             <div style={{ fontSize: "14px", color: "#6b7280" }}>
-              <div style={{ marginBottom: "4px" }}>Tất cả vai trò hiện tại (Division/Project/Team):</div>
+              <div style={{ marginBottom: "4px" }}>Tất cả vai trò hiện tại (Phòng ban/Dự án/Đội nhóm):</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {existingAssignments.map((assignment, index) => {
                   const scopeInfo = assignment.scope_id 
@@ -196,7 +196,7 @@ const UnassignEmployeeRoleModal: React.FC<UnassignEmployeeRoleModalProps> = ({
           </>
         ) : (
           <div style={{ fontSize: "14px", color: "#ef4444", padding: "12px", backgroundColor: "#fef2f2", borderRadius: "8px" }}>
-            Nhân viên này chưa có vai trò nào (Division/Project/Team) để thu hồi.
+            Nhân viên này chưa có vai trò nào (Phòng ban/Dự án/Đội nhóm) để thu hồi.
           </div>
         )}
       </div>

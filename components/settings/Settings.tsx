@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Settings2, Users, GraduationCap, Briefcase, Languages, Brain, Calendar } from "lucide-react";
+import { Settings2, Users, GraduationCap, Briefcase, Languages, Brain, Calendar, FolderKanban } from "lucide-react";
 import { useMobile } from "@/hooks/useMobile";
 import {
   SettingsContainer,
@@ -20,6 +20,7 @@ import LevelManagement from "./LevelManagement";
 import PositionManagement from "./PositionManagement";
 import RoomManagement from "./RoomManagement";
 import HolidayManagement from "./HolidayManagement";
+import ProjectManagement from "./ProjectManagement";
 
 interface MasterDataItem {
   id: string;
@@ -33,6 +34,7 @@ const masterDataItems: MasterDataItem[] = [
   { id: "language", name: "Ngôn ngữ (Language)", icon: <Languages size={20} /> },
   { id: "skill", name: "Kỹ năng (Skill)", icon: <Brain size={20} /> },
   { id: "holiday", name: "Ngày lễ (Holiday)", icon: <Calendar size={20} /> },
+  { id: "project", name: "Dự án (Project)", icon: <FolderKanban size={20} /> },
 ];
 
 const Settings: React.FC = () => {
@@ -98,6 +100,7 @@ const Settings: React.FC = () => {
               {activeItem === "language" && <LanguageManagement />}
               {activeItem === "skill" && <SkillManagement />}
               {activeItem === "holiday" && <HolidayManagement />}
+              {activeItem === "project" && <ProjectManagement />}
             </MainContent>
           </>
         )}

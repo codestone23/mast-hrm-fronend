@@ -275,10 +275,10 @@ const MyRequestsList: React.FC<MyRequestsListProps> = ({ onRequestClick, onEditR
                     ) : (
                         <>
                             <RequestList>
-                                {requests.map((request) => (
+                                {requests.map((request, index) => (
                                     <RequestItem
                                         $status={request.status}
-                                        key={request.id}
+                                        key={`${request.id}-${index}`}
                                         onClick={() =>
                                             onRequestClick?.(request)
                                         }

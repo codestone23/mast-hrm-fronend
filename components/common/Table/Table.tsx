@@ -14,7 +14,7 @@ import Loading from "../Loading/Loading";
 
 export interface TableColumn<T = unknown> {
   key: string;
-  label: string;
+  label: string | React.ReactNode;
   render?: (value: unknown, row: T, index: number) => React.ReactNode;
   align?: "left" | "center" | "right";
   width?: string;

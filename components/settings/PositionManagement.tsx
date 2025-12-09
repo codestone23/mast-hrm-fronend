@@ -130,12 +130,6 @@ const PositionManagement: React.FC = () => {
       width: "2fr",
     },
     {
-      key: "level",
-      label: "Cấp độ",
-      width: "1.5fr",
-      render: (value, row) => row.level?.name || "-",
-    },
-    {
       key: "_count",
       label: "Số người dùng",
       width: "1fr",

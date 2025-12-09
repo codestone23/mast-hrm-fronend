@@ -213,7 +213,7 @@ const CreateAssetRequestModal: React.FC<CreateAssetRequestModalProps> = ({
 
             <form onSubmit={handleSubmit(onSubmit)}>
               <FormRow>
-                <FormGroup>
+                {/* <FormGroup>
                   <FormLabel>
                     Loại yêu cầu <span style={{ color: "#ef4444" }}>*</span>
                   </FormLabel>
@@ -235,7 +235,7 @@ const CreateAssetRequestModal: React.FC<CreateAssetRequestModalProps> = ({
                     type="hidden"
                     {...register("request_type", { required: "Vui lòng chọn loại yêu cầu" })}
                   />
-                </FormGroup>
+                </FormGroup> */}
 
                 <FormGroup>
                   <FormLabel>

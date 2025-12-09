@@ -11,6 +11,7 @@ export interface Skill {
   skill?: {
     id: number;
     name: string;
+    position_id: number;
   };
   position?: {
     id: number;
@@ -135,12 +136,12 @@ class SettingsService {
         return response.data;
     }
 
-    async createLanguage(language: { name: string; code: string; description?: string }): Promise<{ data: Language }> {
+    async createLanguage(language: { name: string }): Promise<{ data: Language }> {
         const response = await axiosInstance.post('/user-profile/languages', language);
         return response.data;
     }
 
-    async updateLanguage(languageId: string | number, language: { name: string; code: string; description?: string }): Promise<{ data: Language }> {
+    async updateLanguage(languageId: string | number, language: { name: string }): Promise<{ data: Language }> {
         const response = await axiosInstance.patch(`/user-profile/languages/${languageId}`, language);
         return response.data;
     }

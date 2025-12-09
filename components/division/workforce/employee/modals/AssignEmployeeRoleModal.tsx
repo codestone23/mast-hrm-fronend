@@ -303,7 +303,7 @@ const AssignEmployeeRoleModal: React.FC<AssignEmployeeRoleModalProps> = ({
 
         {existingAssignments.length > 0 && (
           <div style={{ fontSize: "14px", color: "#6b7280" }}>
-            <div style={{ marginBottom: "4px" }}>Vai trò hiện tại (Division/Project/Team):</div>
+            <div style={{ marginBottom: "4px" }}>Vai trò hiện tại (Phòng ban/Dự án/Đội nhóm):</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
               {existingAssignments.map((assignment, index) => (
                 <span

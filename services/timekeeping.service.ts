@@ -227,6 +227,17 @@ class TimekeepingService {
     return response.data;
   }
 
+  async createForgotTimekeepingRequest(requestData: { 
+    work_date: string;
+    checkin_time: string;
+    checkout_time: string;
+    title: string;
+    reason: string;
+  }): Promise<ApiResponse<unknown>> {
+    const response = await axiosInstance.post('requests/forgot-checkin', requestData);
+    return response.data;
+  }
+
   // Get projects list
   async getProjects(): Promise<ApiResponse<Array<{id: number, name: string}>>> {
     const response = await axiosInstance.get('projects');
@@ -234,7 +245,12 @@ class TimekeepingService {
   }
 
   async getHolidays(params?: HolidayListParams): Promise<PaginatedResponse<Holiday>> {
-    const response = await axiosInstance.get('timesheet/holidays', { params });
+    const response = await axiosInstance.get('timesheet/holidays', { 
+      params: {
+        ...params,
+        sort_order: 'desc'
+      }
+     });
     return response.data;
   }
 

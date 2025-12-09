@@ -23,7 +23,7 @@ import {
   AssetFilterItemFixed,
 } from "./assetStyle";
 import { Asset } from "@/constants/types";
-import { AssetCategory, AssetStatus } from "@/constants/enums";
+import { AssetCategory, AssetStatus, REQUEST_STATUS } from "@/constants/enums";
 import CreateAssetModal from "./modals/CreateAssetModal";
 import EditAssetModal from "./modals/EditAssetModal";
 import AssetDetailModal from "./modals/AssetDetailModal";
@@ -31,8 +31,9 @@ import ConfirmDeleteModal from "./modals/ConfirmDeleteModal";
 import AssignAssetModal from "./modals/AssignAssetModal";
 import ListAssetRequests from "./ListAssetRequests";
 import assetsService, { GetAssetsParams } from "@/services/assets.service";
-import { Select, Input, Table, TableColumn, Loading, Pagination } from "@/components/common";
+import { Select, Input, Table, TableColumn, Loading, Pagination, ConfirmApproveModal } from "@/components/common";
 import { useToast } from "@/hooks/useToast";
+import RejectModal from "@/components/timekeeping/modals/RejectModal";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -48,6 +49,14 @@ const AssetManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [currentRequestPage, setCurrentRequestPage] = useState(1);
   
+  // Request filters
+  const [searchRequestTerm, setSearchRequestTerm] = useState("");
+  const [categoryRequestFilter, setCategoryRequestFilter] = useState<string>("");
+  const [statusRequestFilter, setStatusRequestFilter] = useState<string>("");
+  
+  // Debounce search for requests
+  const [debouncedRequestSearch, setDebouncedRequestSearch] = useState("");
+  
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -55,6 +64,11 @@ const AssetManagement: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  
+  // Request modal states
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | number | null>(null);
 
   // Debounce search
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -66,6 +80,15 @@ const AssetManagement: React.FC = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  // Debounce search for requests
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedRequestSearch(searchRequestTerm);
+      setCurrentRequestPage(1);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchRequestTerm]);
 
   const assetsParams: GetAssetsParams = useMemo(() => ({
     page: currentPage,
@@ -108,6 +131,17 @@ const AssetManagement: React.FC = () => {
     })),
   ];
 
+  // Request status options
+  const requestStatusOptions = [
+    { value: "", label: "Tất cả trạng thái" },
+    { value: REQUEST_STATUS.PENDING, label: "Chờ duyệt" },
+    { value: REQUEST_STATUS.APPROVED, label: "Đã duyệt" },
+    { value: REQUEST_STATUS.REJECTED, label: "Từ chối" },
+    { value: "FULFILLED", label: "Đã thực hiện" },
+    { value: "RETURNED", label: "Đã trả" },
+    { value: "CANCELLED", label: "Đã hủy" },
+  ];
+
   function getStatusLabel(status: string): string {
     const statusMap: Record<string, string> = {
       [AssetStatus.AVAILABLE]: "Có sẵn",
@@ -141,10 +175,19 @@ const AssetManagement: React.FC = () => {
     return getStatusLabel(status);
   };
 
+  // Request params
+  const requestParams = useMemo(() => ({
+    page: currentRequestPage,
+    limit: ITEMS_PER_PAGE,
+    ...(debouncedRequestSearch && { search: debouncedRequestSearch }),
+    ...(categoryRequestFilter && { category: categoryRequestFilter }),
+    ...(statusRequestFilter && { status: statusRequestFilter }),
+  }), [currentRequestPage, debouncedRequestSearch, categoryRequestFilter, statusRequestFilter]);
+
   // Fetch requests
   const { data: requestsData, isLoading: isLoadingRequests } = useQuery({
-    queryKey: ['asset-requests', currentRequestPage],
-    queryFn: () => assetsService.getRequestHr(),
+    queryKey: ['asset-requests', requestParams],
+    queryFn: () => assetsService.getRequestHr(requestParams),
   });
 
   const requests = requestsData?.data || [];
@@ -271,34 +314,56 @@ const AssetManagement: React.FC = () => {
   };
 
   const approveRequestMutation = useMutation({
-    mutationFn: ({ requestId, data }: { requestId: number | string; data: { action: "APPROVED" | "REJECTED"; asset_id?: number | string; rejection_reason?: string; notes?: string } }) =>
+    mutationFn: ({ requestId, data }: { requestId: number | string; data: { status: "APPROVED" | "REJECTED"; asset_id?: number | string; rejection_reason?: string; notes?: string } }) =>
       assetsService.approveRequest(requestId, data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['asset-requests'] });
-      showSuccessToast("Duyệt yêu cầu thành công");
+      if (variables.data.status === "APPROVED") {
+        showSuccessToast("Duyệt yêu cầu thành công");
+      } else {
+        showSuccessToast("Từ chối yêu cầu thành công");
+      }
+      setIsApproveModalOpen(false);
+      setIsRejectModalOpen(false);
+      setSelectedRequestId(null);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } } };
-      showErrorToast(err?.response?.data?.message || "Có lỗi xảy ra khi duyệt yêu cầu");
+      showErrorToast(err?.response?.data?.message || "Có lỗi xảy ra khi xử lý yêu cầu");
     },
   });
 
   const handleApproveRequest = (requestId: string | number) => {
-    approveRequestMutation.mutate({
-      requestId,
-      data: {
-        action: "APPROVED",
-      },
-    });
+    setSelectedRequestId(requestId);
+    setIsApproveModalOpen(true);
   };
 
   const handleRejectRequest = (requestId: string | number) => {
-    approveRequestMutation.mutate({
-      requestId,
-      data: {
-        action: "REJECTED",
-      },
-    });
+    setSelectedRequestId(requestId);
+    setIsRejectModalOpen(true);
+  };
+
+  const handleConfirmApprove = () => {
+    if (selectedRequestId) {
+      approveRequestMutation.mutate({
+        requestId: selectedRequestId,
+        data: {
+          status: "APPROVED",
+        },
+      });
+    }
+  };
+
+  const handleConfirmReject = (reason: string) => {
+    if (selectedRequestId) {
+      approveRequestMutation.mutate({
+        requestId: selectedRequestId,
+        data: {
+          status: "REJECTED",
+          rejection_reason: reason,
+        },
+      });
+    }
   };
 
   // Reset page when tab changes
@@ -309,6 +374,9 @@ const AssetManagement: React.FC = () => {
     setSearchTerm("");
     setCategoryFilter("");
     setStatusFilter("");
+    setSearchRequestTerm("");
+    setCategoryRequestFilter("");
+    setStatusRequestFilter("");
   };
 
   // Helper to get user from asset
@@ -535,6 +603,43 @@ const AssetManagement: React.FC = () => {
           </>
         ) : (
           <>
+            <AssetFilterContainer $isMobile={isMobile}>
+              <AssetFilterRow $isMobile={isMobile}>
+                <AssetFilterItem $isMobile={isMobile}>
+                  <Input
+                    placeholder="Tìm kiếm theo tên..."
+                    value={searchRequestTerm}
+                    onChange={(e) => setSearchRequestTerm(e.target.value)}
+                    fullWidth
+                  />
+                </AssetFilterItem>
+                <AssetFilterItemFixed $isMobile={isMobile}>
+                  <Select
+                    options={categoryOptions}
+                    value={categoryRequestFilter}
+                    onChange={(value) => {
+                      setCategoryRequestFilter(String(value));
+                      setCurrentRequestPage(1);
+                    }}
+                    placeholder="Lọc theo danh mục"
+                    fullWidth={isMobile}
+                  />
+                </AssetFilterItemFixed>
+                <AssetFilterItemFixed $isMobile={isMobile}>
+                  <Select
+                    options={requestStatusOptions}
+                    value={statusRequestFilter}
+                    onChange={(value) => {
+                      setStatusRequestFilter(String(value));
+                      setCurrentRequestPage(1);
+                    }}
+                    placeholder="Lọc theo trạng thái"
+                    fullWidth={isMobile}
+                  />
+                </AssetFilterItemFixed>
+              </AssetFilterRow>
+            </AssetFilterContainer>
+            
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               <div style={{ padding: "1rem", background: "white", borderRadius: "12px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
                 <h3 style={{ margin: "0 0 0.25rem 0", fontSize: "1.4rem", fontWeight: 700, color: "#111827" }}>
@@ -618,6 +723,31 @@ const AssetManagement: React.FC = () => {
         }}
         asset={selectedAsset}
         onAssign={handleAssignAsset}
+      />
+
+      {/* Approve/Reject Modals */}
+      <ConfirmApproveModal
+        isOpen={isApproveModalOpen}
+        onClose={() => {
+          setIsApproveModalOpen(false);
+          setSelectedRequestId(null);
+        }}
+        onConfirm={handleConfirmApprove}
+        title="Xác nhận duyệt yêu cầu"
+        message="Bạn có chắc chắn muốn duyệt yêu cầu tài sản này không?"
+        isLoading={approveRequestMutation.isPending}
+      />
+
+      <RejectModal
+        isOpen={isRejectModalOpen}
+        onClose={() => {
+          setIsRejectModalOpen(false);
+          setSelectedRequestId(null);
+        }}
+        onConfirm={handleConfirmReject}
+        title="Từ chối yêu cầu tài sản"
+        subtitle="Vui lòng nhập lý do từ chối yêu cầu này"
+        isLoading={approveRequestMutation.isPending}
       />
     </Container>
   );

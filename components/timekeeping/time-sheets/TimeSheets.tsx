@@ -4,10 +4,8 @@ import {
   REQUEST_STATUS,
   REQUEST_TYPE,
   REQUEST_TYPE_LABEL,
-  ROLE_NAMES,
 } from "@/constants/enums";
 import { Request } from "@/services/requests.service";
-import { useAppSelector } from "@/store/hooks";
 import {
   Calendar,
   ChevronLeft,
@@ -16,8 +14,8 @@ import {
   ScanFace,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useMobile } from "@/hooks/useMobile";
-import AdminRequestsList from "../AdminRequestsList";
 import FaceIdentify from "../face-identify/FaceIdentify";
 import CreateRequestModal from "../modals/CreateRequestModal";
 import ForgotTimekeepingModal from "../modals/ForgotTimekeepingModal";
@@ -91,6 +89,7 @@ interface ProcessedTimeSheetData {
 
 const TimeSheets: React.FC = () => {
   const isMobile = useMobile();
+  const searchParams = useSearchParams();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState("BẢNG CHẤM CÔNG");
   const [isCreateRequestModalOpen, setIsCreateRequestModalOpen] =
@@ -98,16 +97,6 @@ const TimeSheets: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
 
-  const userData = useAppSelector((state) => state.user.data);
-  const userRoles = userData?.role_assignments?.map((role) => role?.name);
-
-  const canSeeOtherRequests = useMemo(() => {
-    if (!userRoles) return false;
-    return userRoles.some((role) => [
-      ROLE_NAMES.TEAM_LEADER,
-      ROLE_NAMES.DIVISION_HEAD
-    ].includes(role as ROLE_NAMES));
-  }, [userRoles]);
 
   const [requestModalState, setRequestModalState] = useState<RequestModalState>(
     {
@@ -143,12 +132,16 @@ const TimeSheets: React.FC = () => {
 
     baseTabs.splice(1, 0, "DANH SÁCH ĐỀ XUẤT");
 
-    if (canSeeOtherRequests) {
-      baseTabs.splice(2, 0, "DANH SÁCH ĐỀ XUẤT NHÂN VIÊN");
-    }
-
     return baseTabs;
-  }, [canSeeOtherRequests]);
+  }, []);
+
+  // Read tab from URL and set active tab
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "requests" && tabs.includes("DANH SÁCH ĐỀ XUẤT")) {
+      setActiveTab("DANH SÁCH ĐỀ XUẤT");
+    }
+  }, [searchParams, tabs]);
 
   const weekDays = [
     "Thứ 2",
@@ -625,43 +618,33 @@ const TimeSheets: React.FC = () => {
           </>
         )}
 
-        {(activeTab === "DANH SÁCH ĐỀ XUẤT" ||
-          activeTab === "DANH SÁCH ĐỀ XUẤT NHÂN VIÊN") && (
+        {activeTab === "DANH SÁCH ĐỀ XUẤT" && (
           <div style={{ width: "100%" }}>
-            {activeTab === "DANH SÁCH ĐỀ XUẤT" ? (
-              <MyRequestsList
-                onRequestClick={(request) => {
-                  setSelectedRequest(request);
-                  setIsDetailModalOpen(true);
-                }}
-                onEditRequest={(request) => {
-                  setEditRequest(request);
-                  const endpointType = getRequestTypeEndpoint(request.request_type as REQUEST_TYPE);
-                  const modalTypeMap: Record<string, RequestModalType> = {
-                    'remote-work': RequestModalType.REMOTE_WORK,
-                    'day-off': RequestModalType.PAID_LEAVE,
-                    'overtime': RequestModalType.REGULAR_OVERTIME,
-                    'late-early': RequestModalType.LATE_EARLY,
-                    'forgot-checkin': RequestModalType.FORGOT_TIMEKEEPING,
-                  };
-                  const modalType = modalTypeMap[endpointType];
-                  if (modalType) {
-                    setRequestModalState({
-                      isRequestTypeModalOpen: false,
-                      activeModal: modalType,
-                      selectedDate: request.work_date || "",
-                    });
-                  }
-                }}
-              />
-            ) : (
-              <AdminRequestsList
-                onRequestClick={(request) => {
-                  setSelectedRequest(request);
-                  setIsDetailModalOpen(true);
-                }}
-              />
-            )}
+            <MyRequestsList
+              onRequestClick={(request) => {
+                setSelectedRequest(request);
+                setIsDetailModalOpen(true);
+              }}
+              onEditRequest={(request) => {
+                setEditRequest(request);
+                const endpointType = getRequestTypeEndpoint(request.request_type as REQUEST_TYPE);
+                const modalTypeMap: Record<string, RequestModalType> = {
+                  'remote-work': RequestModalType.REMOTE_WORK,
+                  'day-off': RequestModalType.PAID_LEAVE,
+                  'overtime': RequestModalType.REGULAR_OVERTIME,
+                  'late-early': RequestModalType.LATE_EARLY,
+                  'forgot-checkin': RequestModalType.FORGOT_TIMEKEEPING,
+                };
+                const modalType = modalTypeMap[endpointType];
+                if (modalType) {
+                  setRequestModalState({
+                    isRequestTypeModalOpen: false,
+                    activeModal: modalType,
+                    selectedDate: request.work_date || "",
+                  });
+                }
+              }}
+            />
           </div>
         )}
 

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Eye, Edit, Trash2, User, Users, Search, Shield, MoreVertical, UserMinus } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, User, Users, Search, MoreVertical } from "lucide-react";
 import { Input, Table, Pagination, Select } from "@/components/common";
 import { useMobile } from "@/hooks/useMobile";
 import { TableColumn } from "@/components/common/Table/Table";
@@ -32,10 +32,8 @@ import {
 } from "@/components/company/account/accountStyle";
 import CreateAccountModal from "@/components/company/account/modals/CreateAccountModal";
 import EditAccountModal from "@/components/company/account/modals/EditAccountModal";
-import AssignRoleModal from "@/components/company/account/modals/AssignRoleModal";
-import UnassignRoleModal from "@/components/company/account/modals/UnassignRoleModal";
 import { ConfirmDeleteModal } from "@/components/common";
-import { User as UserType, UpdateUserRequest } from "@/types/api";
+import { User as UserType, ScopeType } from "@/types/api";
 import userService from "@/services/user.service";
 import { useToast } from "@/hooks/useToast";
 import { useRouter } from "next/navigation";
@@ -54,14 +52,6 @@ interface CreateAccountData {
   password: string;
 }
 
-interface EditAccountData {
-  name: string;
-  email: string;
-  phone?: string;
-  department?: string;
-  position?: string;
-}
-
 const UserManagement: React.FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -77,8 +67,6 @@ const UserManagement: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isAssignRoleModalOpen, setIsAssignRoleModalOpen] = useState(false);
-  const [isUnassignRoleModalOpen, setIsUnassignRoleModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPositions, setMenuPositions] = React.useState<Record<string, { rect: DOMRect; position: 'top' | 'bottom' }>>({});
@@ -174,21 +162,6 @@ const UserManagement: React.FC = () => {
     },
   });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ userId, data }: { userId: string; data: UpdateUserRequest }) =>
-      userService.updateUser(userId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      showSuccessToast("Cập nhật người dùng thành công");
-      setIsEditModalOpen(false);
-      setSelectedUser(null);
-    },
-    onError: (error: unknown) => {
-      const err = error as { response?: { data?: { message?: string } } };
-      showErrorToast(err?.response?.data?.message || "Có lỗi xảy ra khi cập nhật người dùng");
-    },
-  });
-
   const deleteMutation = useMutation({
     mutationFn: (userId: string) => userService.deleteUser(userId),
     onSuccess: () => {
@@ -208,21 +181,6 @@ const UserManagement: React.FC = () => {
     createMutation.mutate(accountData);
   };
 
-  const handleEditAccount = (user: UserType, accountData: EditAccountData) => {
-    const nameParts = accountData.name.trim().split(" ");
-    const firstName = nameParts[0] || "";
-    const lastName = nameParts.slice(1).join(" ") || "";
-
-    const updateData: UpdateUserRequest = {
-      firstName,
-      lastName,
-      phone: accountData.phone,
-      department: accountData.department,
-      position: accountData.position,
-    };
-
-    updateMutation.mutate({ userId: String(user.id), data: updateData });
-  };
 
   const handleDeleteAccount = () => {
     if (selectedUser) {
@@ -242,16 +200,6 @@ const UserManagement: React.FC = () => {
   const handleDelete = (user: UserType) => {
     setSelectedUser(user);
     setIsDeleteModalOpen(true);
-  };
-
-  const handleAssignRole = (user: UserType) => {
-    setSelectedUser(user);
-    setIsAssignRoleModalOpen(true);
-  };
-
-  const handleUnassignRole = (user: UserType) => {
-    setSelectedUser(user);
-    setIsUnassignRoleModalOpen(true);
   };
 
   const getUserName = (user: UserType) => {
@@ -329,15 +277,35 @@ const UserManagement: React.FC = () => {
       key: "role",
       label: "Vai trò",
       render: (_, row) => {
-        const roles = row.user_role_assignments || [];
-        if (roles.length === 0) {
+        const allAssignments = row.user_role_assignments || [];
+        
+        // Lọc chỉ lấy assignments có scope_type là COMPANY hoặc DIVISION
+        const filteredAssignments = allAssignments.filter(
+          (assignment) =>
+            assignment.scope_type === ScopeType.COMPANY ||
+            assignment.scope_type === ScopeType.DIVISION
+        );
+
+        if (filteredAssignments.length === 0) {
           return <span style={{ color: "#6b7280", fontSize: "14px" }}>Chưa có vai trò</span>;
         }
+
+        // Loại bỏ trùng lặp dựa trên role.id
+        const uniqueRoles = new Map();
+        filteredAssignments.forEach((assignment) => {
+          const roleId = assignment.role.id;
+          if (!uniqueRoles.has(roleId)) {
+            uniqueRoles.set(roleId, assignment.role);
+          }
+        });
+
+        const uniqueRolesArray = Array.from(uniqueRoles.values());
+
         return (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-            {roles.map((assignment, index) => (
+            {uniqueRolesArray.map((role) => (
               <span
-                key={index}
+                key={role.id}
                 style={{
                   display: "inline-block",
                   padding: "4px 10px",
@@ -348,7 +316,7 @@ const UserManagement: React.FC = () => {
                   color: "#6366f1",
                 }}
               >
-                {getRoleName(assignment.role.name)}
+                {getRoleName(role.name)}
               </span>
             ))}
           </div>
@@ -379,12 +347,12 @@ const UserManagement: React.FC = () => {
       },
     },
     {
-      key: "department",
+      key: "user_division",
       label: "Phòng ban",
       width: "200px",
       render: (_, row) => {
-        const userInfo = getUserInfo(row);
-        return userInfo?.department || "Chưa phân công";
+        const userInfo = row.user_division?.division?.name || "-";
+        return userInfo;
       },
     },
     {
@@ -465,32 +433,6 @@ const UserManagement: React.FC = () => {
                     >
                       <Edit size={16} />
                       <span>Chỉnh sửa</span>
-                    </ActionMenuLink>
-                  </ActionMenuItem>
-                  <ActionMenuItem>
-                    <ActionMenuLink
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setOpenMenuId(null);
-                        handleAssignRole(row);
-                      }}
-                    >
-                      <Shield size={16} />
-                      <span>Gán vai trò</span>
-                    </ActionMenuLink>
-                  </ActionMenuItem>
-                  <ActionMenuItem>
-                    <ActionMenuLink
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setOpenMenuId(null);
-                        handleUnassignRole(row);
-                      }}
-                    >
-                      <UserMinus size={16} />
-                      <span>Thu hồi vai trò</span>
                     </ActionMenuLink>
                   </ActionMenuItem>
                   <ActionMenuDivider />
@@ -678,12 +620,9 @@ const UserManagement: React.FC = () => {
           setSelectedUser(null);
         }}
         user={selectedUser}
-        onSave={(accountData) => {
-          if (selectedUser) {
-            handleEditAccount(selectedUser, accountData);
-          }
+        onSave={() => {
+          // Mutation đã được xử lý trong modal
         }}
-        isLoading={updateMutation.isPending}
       />
 
       <ConfirmDeleteModal
@@ -695,24 +634,6 @@ const UserManagement: React.FC = () => {
         onConfirm={handleDeleteAccount}
         title="Xóa người dùng"
         message={`Bạn có chắc chắn muốn xóa người dùng "${selectedUser ? getUserName(selectedUser) : ""}"?`}
-      />
-
-      <AssignRoleModal
-        isOpen={isAssignRoleModalOpen}
-        onClose={() => {
-          setIsAssignRoleModalOpen(false);
-          setSelectedUser(null);
-        }}
-        user={selectedUser}
-      />
-
-      <UnassignRoleModal
-        isOpen={isUnassignRoleModalOpen}
-        onClose={() => {
-          setIsUnassignRoleModalOpen(false);
-          setSelectedUser(null);
-        }}
-        user={selectedUser}
       />
     </PersonalContainer>
   );

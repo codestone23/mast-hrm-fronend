@@ -76,8 +76,22 @@ class AssetsService {
         return response.data;
     }
 
-    async getRequestHr(): Promise<PaginatedResponse<AssetRequest>> {
-        const response = await axiosInstance.get('/assets/requests');
+    async getRequestHr(params?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        category?: string;
+        status?: string;
+    }): Promise<PaginatedResponse<AssetRequest>> {
+        const response = await axiosInstance.get('/assets/requests', {
+            params: {
+                page: params?.page || 1,
+                limit: params?.limit || 10,
+                ...(params?.search && { search: params.search }),
+                ...(params?.category && { category: params.category }),
+                ...(params?.status && { status: params.status }),
+            },
+        });
         return response.data;
     }
 
@@ -92,12 +106,12 @@ class AssetsService {
     }
 
     async approveRequest(requestId: number | string, data: {
-        action: "APPROVED" | "REJECTED";
+        status: "APPROVED" | "REJECTED";
         asset_id?: number | string;
         rejection_reason?: string;
         notes?: string;
     }): Promise<ApiResponse<void>> {
-        const response = await axiosInstance.post(`/assets/requests/${requestId}/approve`, data);
+        const response = await axiosInstance.post(`/assets/requests/${requestId}/review`, data);
         return response.data;
     }
 

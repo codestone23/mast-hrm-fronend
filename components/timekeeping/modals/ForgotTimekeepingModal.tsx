@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Input, Button, Select, DatePicker, TimePicker } from '@/components/common';
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { Modal, Input, Button, DatePicker, TimePicker, Loading } from '@/components/common';
 import {
   ModalContent,
   FormSection,
   FormGrid,
-  ErrorMessage,
   InfoBanner
 } from './requestModalStyles';
 import { useToast } from '@/hooks/useToast';
-import requestsService from '@/services/requests.service';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRequestDetail, useUpdateRequest } from '@/hooks/useRequests';
+import { UpdateRequestPayload } from '@/services/requests.service';
+import { timekeepingService } from '@/services/timekeeping.service';
+import { format } from 'date-fns';
 
 interface ForgotTimekeepingModalProps {
   isOpen: boolean;
@@ -17,6 +20,14 @@ interface ForgotTimekeepingModalProps {
   selectedDate: string;
   requestId?: number;
   requestType?: string;
+}
+
+interface ForgotTimekeepingFormData {
+  title: string;
+  applicationDate: Date | null;
+  checkinTime: string;
+  checkoutTime: string;
+  reason: string;
 }
 
 const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
@@ -28,93 +39,135 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
 }) => {
   const queryClient = useQueryClient();
   const isEdit = !!requestId && !!requestType;
-  const [formData, setFormData] = useState({
-    title: '',
-    applicationDate: selectedDate,
-    checkinTime: '08:00',
-    checkoutTime: '17:30',
-    reason: ''
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(false);
-  const [error, setError] = useState('');
   const { success: showSuccessToast, error: showErrorToast } = useToast();
 
-  // Fetch request data when in edit mode
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+    reset,
+  } = useForm<ForgotTimekeepingFormData>({
+    defaultValues: {
+      title: '',
+      applicationDate: selectedDate ? new Date(selectedDate) : null,
+      checkinTime: '08:00',
+      checkoutTime: '17:30',
+      reason: ''
+    },
+  });
+
+  // Fetch request data when in edit mode using useQuery
+  const shouldFetchRequest = isOpen && isEdit && !!requestId && !!requestType;
+  const { data: requestData, isLoading: isLoadingRequest } = useRequestDetail(
+    requestType || '',
+    String(requestId || ''),
+    { enabled: shouldFetchRequest }
+  );
+
+  // Create forgot timekeeping request mutation
+  const createForgotTimekeepingMutation = useMutation({
+    mutationFn: (payload: {
+      work_date: string;
+      checkin_time: string;
+      checkout_time: string;
+      title: string;
+      reason: string;
+    }) => timekeepingService.createForgotTimekeepingRequest(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['myRequestsStats'] });
+      queryClient.invalidateQueries({ queryKey: ['time-sheets'] });
+      showSuccessToast('Đăng ký quên chấm công thành công!');
+      handleClose();
+    },
+    onError: (error: unknown) => {
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+      showErrorToast(errorMessage);
+    },
+  });
+
+  // Update request mutation
+  const updateRequestMutation = useUpdateRequest();
+
+  // Update form data when request data is loaded or when modal opens
   useEffect(() => {
-    if (isOpen && isEdit && requestId && requestType) {
-      setIsFetching(true);
-      requestsService.getRequestById(requestType, String(requestId))
-        .then((request) => {
-          setFormData({
-            title: request.title || '',
-            applicationDate: request.work_date || selectedDate,
-            checkinTime: request.start_time || '08:00',
-            checkoutTime: request.end_time || '17:30',
-            reason: request.reason || ''
-          });
-        })
-        .catch((err) => {
-          console.error('Error fetching request:', err);
-          showErrorToast('Không thể tải thông tin đề xuất');
-        })
-        .finally(() => {
-          setIsFetching(false);
+    if (isOpen) {
+      if (isEdit && requestData) {
+        reset({
+          title: requestData.title || '',
+          applicationDate: requestData.work_date ? new Date(requestData.work_date) : new Date(selectedDate),
+          checkinTime: requestData.start_time || '08:00',
+          checkoutTime: requestData.end_time || '17:30',
+          reason: requestData.reason || ''
         });
-    } else if (isOpen && !isEdit) {
-      // Reset form when creating new request
-      setFormData({
-        title: '',
-        applicationDate: selectedDate,
-        checkinTime: '08:00',
-        checkoutTime: '17:30',
-        reason: ''
-      });
-    }
-  }, [isOpen, isEdit, requestId, requestType, selectedDate, showErrorToast]);
-
-  const handleSubmit = async () => {
-    setIsLoading(true);
-    setError('');
-
-    try {
-      if (isEdit && requestId && requestType) {
-        await requestsService.updateRequest(requestType, String(requestId), {
-          title: formData.title,
-          work_date: formData.applicationDate,
-          start_time: formData.checkinTime,
-          end_time: formData.checkoutTime,
-          reason: formData.reason
+      } else if (!isEdit) {
+        reset({
+          title: '',
+          applicationDate: selectedDate ? new Date(selectedDate) : null,
+          checkinTime: '08:00',
+          checkoutTime: '17:30',
+          reason: ''
         });
-        showSuccessToast('Cập nhật đơn quên chấm công thành công!');
-        queryClient.invalidateQueries({ queryKey: ['myRequests'] });
-      } else {
-        // Simulate API call for create
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        showSuccessToast('Đăng ký quên chấm công thành công!');
       }
-      onClose();
-    } catch (error) {
-      console.error('Error submitting forgot timekeeping request:', error);
-      setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
-    } finally {
-      setIsLoading(false);
+    }
+  }, [isOpen, isEdit, requestData, selectedDate, reset]);
+
+  const onSubmit = (data: ForgotTimekeepingFormData) => {
+    if (!data.applicationDate) {
+      showErrorToast('Vui lòng chọn ngày áp dụng');
+      return;
+    }
+
+    if (isEdit && requestId && requestType) {
+      const updatePayload: UpdateRequestPayload = {
+        title: data.title,
+        work_date: format(data.applicationDate, 'yyyy-MM-dd'),
+        start_time: data.checkinTime,
+        end_time: data.checkoutTime,
+        reason: data.reason
+      };
+      
+      updateRequestMutation.mutate(
+        { type: requestType, id: String(requestId), payload: updatePayload },
+        {
+          onSuccess: () => {
+            showSuccessToast('Cập nhật đơn quên chấm công thành công!');
+            handleClose();
+          },
+          onError: (error: unknown) => {
+            const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+            showErrorToast(errorMessage);
+          },
+        }
+      );
+    } else {
+      const payload = {
+        work_date: format(data.applicationDate, 'yyyy-MM-dd'),
+        checkin_time: data.checkinTime,
+        checkout_time: data.checkoutTime,
+        title: data.title,
+        reason: data.reason
+      };
+      createForgotTimekeepingMutation.mutate(payload);
     }
   };
 
   const handleClose = () => {
-    setError('');
-    setIsLoading(false);
+    reset({
+      title: '',
+      applicationDate: selectedDate ? new Date(selectedDate) : null,
+      checkinTime: '08:00',
+      checkoutTime: '17:30',
+      reason: ''
+    });
     onClose();
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setError('');
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
+  const applicationDate = watch('applicationDate');
+  const isLoading = createForgotTimekeepingMutation.isPending || updateRequestMutation.isPending;
+  const isFetching = isLoadingRequest;
 
   return (
     <Modal
@@ -129,9 +182,9 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
           </Button>
           <Button
             variant="primary"
-            onClick={handleSubmit}
+            onClick={handleSubmit(onSubmit)}
             loading={isLoading}
-            disabled={isLoading || isFetching || !formData.reason}
+            disabled={isLoading || isFetching}
           >
             {isLoading ? 'Đang xử lý...' : isEdit ? 'Cập nhật' : 'Thêm'}
           </Button>
@@ -139,8 +192,11 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
       }
     >
       <ModalContent>
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-        {isFetching && <div style={{ padding: '1rem', textAlign: 'center' }}>Đang tải thông tin...</div>}
+        {isFetching && (
+          <div style={{ padding: '1rem', textAlign: 'center' }}>
+            <Loading />
+          </div>
+        )}
         
         {!isFetching && (
           <>
@@ -150,53 +206,57 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
             </InfoBanner>
             
             <FormSection>
-          <FormGrid>
-            <Input
-              label="Tên tiêu đề"
-              value={formData.title}
-              placeholder="Nhập tên tiêu đề"
-              onChange={(e) => handleInputChange('title', e.target.value)}
-              required
-              disabled={isLoading}
-            />
-            
-            <DatePicker
-              label="Ngày áp dụng"
-              value={formData.applicationDate}
-              onChange={(value) => handleInputChange('applicationDate', value ? value.toISOString().split('T')[0] : '')}
-              required
-              disabled={isLoading}
-            />
-            
-            <TimePicker
-              label="Thời gian checkin"
-              value={formData.checkinTime}
-              onChange={(value) => handleInputChange('checkinTime', value)}
-              required
-              disabled={isLoading}
-            />
-            
-            <TimePicker
-              label="Thời gian checkout"
-              value={formData.checkoutTime}
-              onChange={(value) => handleInputChange('checkoutTime', value)}
-              required
-              disabled={isLoading}
-            />
-            
-            <div style={{ gridColumn: '1 / -1' }}>
-              <Input
-                label="Lý do"
-                value={formData.reason}
-                onChange={(e) => handleInputChange('reason', e.target.value)}
-                placeholder="Nhập lý do quên chấm công..."
-                required
-                disabled={isLoading}
-              />
-            </div>
-          </FormGrid>
-        </FormSection>
-        </>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <FormGrid>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <Input
+                      label="Tên tiêu đề"
+                      {...register('title')}
+                      placeholder="Nhập tên tiêu đề"
+                      disabled={isLoading}
+                      error={errors.title?.message}
+                    />
+                  </div>
+                  
+                  <DatePicker
+                    label="Ngày áp dụng"
+                    value={applicationDate}
+                    onChange={(value) => setValue('applicationDate', value)}
+                    required
+                    disabled={isLoading}
+                    error={errors.applicationDate?.message}
+                  />
+                  
+                  <TimePicker
+                    label="Thời gian checkin"
+                    value={watch('checkinTime')}
+                    onChange={(value) => setValue('checkinTime', value)}
+                    required
+                    disabled={isLoading}
+                  />
+                  
+                  <TimePicker
+                    label="Thời gian checkout"
+                    value={watch('checkoutTime')}
+                    onChange={(value) => setValue('checkoutTime', value)}
+                    required
+                    disabled={isLoading}
+                  />
+                  
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <Input
+                      label="Lý do"
+                      {...register('reason', { required: 'Vui lòng nhập lý do' })}
+                      placeholder="Nhập lý do quên chấm công..."
+                      required
+                      disabled={isLoading}
+                      error={errors.reason?.message}
+                    />
+                  </div>
+                </FormGrid>
+              </form>
+            </FormSection>
+          </>
         )}
       </ModalContent>
     </Modal>

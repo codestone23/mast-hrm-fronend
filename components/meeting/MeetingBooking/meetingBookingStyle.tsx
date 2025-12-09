@@ -6,10 +6,19 @@ export const BookingForm = styled.form`
   gap: 1.5rem;
 `;
 
-export const FormRow = styled.div`
+export const FormRow = styled.div<{ $inline?: boolean }>`
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  flex-direction: ${({ $inline }) => ($inline ? "row" : "column")};
+  gap: ${({ $inline }) => ($inline ? "1rem" : "0.5rem")};
+  align-items: ${({ $inline }) => ($inline ? "flex-start" : "stretch")};
+  
+  ${({ $inline }) =>
+    $inline &&
+    `
+    & > * {
+      flex: 1;
+    }
+  `}
 `;
 
 export const TimeSlotContainer = styled.div`

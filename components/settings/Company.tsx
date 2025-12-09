@@ -67,7 +67,7 @@ interface UserWithDetails {
   id: number;
   name: string;
   email: string;
-  user_division?: Array<{
+  user_division?: {
     division?: {
       id: number;
       name: string;
@@ -78,7 +78,7 @@ interface UserWithDetails {
       status?: string;
       type?: string;
     };
-  }>;
+  };
   position?: {
     id: number;
     name: string;
@@ -166,8 +166,8 @@ const Company: React.FC = () => {
       
       // Get division name - user_division is an array
       const userDivision = userWithDetails.user_division;
-      const divisionName = userDivision && userDivision.length > 0 
-        ? userDivision[0]?.division?.name 
+      const divisionName = userDivision
+        ? userDivision?.division?.name 
         : null;
       
       // Get position name

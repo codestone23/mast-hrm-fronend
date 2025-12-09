@@ -208,7 +208,7 @@ export const RequestList = styled.div`
 export const RequestItem = styled.div<{
     $status?: REQUEST_STATUS;
 }>`
-  padding: 1.5rem;
+  padding: 1rem;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   background: white;
@@ -217,8 +217,9 @@ export const RequestItem = styled.div<{
   overflow: hidden;
   display: flex;
   justify-content: space-between;
+  flex-direction: column;
   align-items: flex-start;
-  gap: 1.5rem;
+  gap: 0.2rem;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   
   &:hover {
@@ -265,6 +266,7 @@ export const RequestContent = styled.div`
 export const RequestHeader = styled.div`
   display: flex;
   justify-content: space-between;
+  width: 100%;
   align-items: flex-start;
   gap: 1rem;
   flex: 1;
@@ -371,7 +373,7 @@ export const RequestMetaItem = styled.div`
   }
 `;
 
-export const RequestReason = styled.p`
+export const RequestReason = styled.div`
   color: #6b7280;
   font-size: 0.875rem;
   line-height: 1.6;
@@ -712,6 +714,7 @@ export const ApproveButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  max-height: 40px;
   padding: 0.625rem 1.25rem;
   min-width: 110px;
   border: none;
@@ -758,6 +761,7 @@ export const RejectButton = styled.button`
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
   min-width: 110px;
+  max-height: 40px;
   border: none;
   border-radius: 8px;
   background: #ef4444;

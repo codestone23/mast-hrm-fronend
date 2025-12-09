@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Input, Button, Select, DatePicker, TimePicker } from '@/components/common';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Modal, Input, Button, Select, DatePicker, TimePicker, Loading } from '@/components/common';
 import {
   ModalContent,
   FormSection,
@@ -8,8 +8,9 @@ import {
 } from './requestModalStyles';
 import { useToast } from '@/hooks/useToast';
 import { timekeepingService } from '@/services/timekeeping.service';
-import requestsService from '@/services/requests.service';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRequestDetail, useUpdateRequest } from '@/hooks/useRequests';
+import { UpdateRequestPayload } from '@/services/requests.service';
 
 interface RegularOvertimeModalProps {
   isOpen: boolean;
@@ -17,6 +18,15 @@ interface RegularOvertimeModalProps {
   selectedDate: string;
   requestId?: number;
   requestType?: string;
+}
+
+interface OvertimeFormData {
+  title: string;
+  projectId: string;
+  workDate: string;
+  startTime: string;
+  endTime: string;
+  reason: string;
 }
 
 const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
@@ -28,7 +38,7 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
 }) => {
   const queryClient = useQueryClient();
   const isEdit = !!requestId && !!requestType;
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<OvertimeFormData>({
     title: '',
     projectId: '',
     workDate: selectedDate,
@@ -36,96 +46,124 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
     endTime: '',
     reason: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState('');
   const { success: showSuccessToast, error: showErrorToast } = useToast();
 
-  const [projects, setProjects] = useState<Array<{value: string, label: string}>>([]);
+  // Fetch projects using useQuery
+  const { data: projectsResponse, isLoading: isLoadingProjects } = useQuery({
+    queryKey: ['projects', 'timekeeping'],
+    queryFn: () => timekeepingService.getProjects(),
+    enabled: isOpen,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
+  const projectOptions = useMemo(() => {
+    if (!projectsResponse?.data) return [];
+    return projectsResponse.data.map(project => ({
+      value: project.id.toString(),
+      label: project.name
+    }));
+  }, [projectsResponse]);
+
+  // Fetch request data when in edit mode using useQuery
+  const shouldFetchRequest = isOpen && isEdit && !!requestId && !!requestType;
+  const { data: requestData, isLoading: isLoadingRequest } = useRequestDetail(
+    requestType || '',
+    String(requestId || ''),
+    { enabled: shouldFetchRequest }
+  );
+
+  // Create overtime request mutation
+  const createOvertimeMutation = useMutation({
+    mutationFn: (payload: {
+      title: string;
+      project_id: number;
+      work_date: string;
+      start_time: string;
+      end_time: string;
+      reason: string;
+    }) => timekeepingService.createOvertimeRequest(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['myRequestsStats'] });
+      queryClient.invalidateQueries({ queryKey: ['time-sheets'] });
+      showSuccessToast('Tạo đơn xin làm thêm giờ thành công!');
+      handleClose();
+    },
+    onError: (error: unknown) => {
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+      setError(errorMessage);
+      showErrorToast(errorMessage);
+    },
+  });
+
+  // Update request mutation
+  const updateRequestMutation = useUpdateRequest();
+
+  // Update form data when request data is loaded or when modal opens
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const response = await timekeepingService.getProjects();
-        const projectOptions = response.data.map(project => ({
-          value: project.id.toString(),
-          label: project.name
-        }));
-        setProjects(projectOptions);
-      } catch (error) {
-        console.error('Error fetching projects:', error);
-        // Fallback to hardcoded projects if API fails
-        setProjects([
-          { value: '1', label: 'Dự án ACME' },
-          { value: '2', label: 'Dự án HRM' },
-          { value: '3', label: 'Dự án CRM' },
-          { value: '4', label: 'Dự án ERP' },
-          { value: '5', label: 'Dự án Mobile App' }
-        ]);
-      }
-    };
-
     if (isOpen) {
-      fetchProjects();
-    }
-  }, [isOpen]);
-
-  // Fetch request data when in edit mode
-  useEffect(() => {
-    if (isOpen && isEdit && requestId && requestType) {
-      setIsFetching(true);
-      requestsService.getRequestById(requestType, String(requestId))
-        .then((request) => {
-          setFormData({
-            title: request.title || '',
-            projectId: request.project_id ? String(request.project_id) : '',
-            workDate: request.work_date || selectedDate,
-            startTime: request.start_time || '',
-            endTime: request.end_time || '',
-            reason: request.reason || ''
-          });
-        })
-        .catch((err) => {
-          console.error('Error fetching request:', err);
-          showErrorToast('Không thể tải thông tin đề xuất');
-        })
-        .finally(() => {
-          setIsFetching(false);
+      if (isEdit && requestData) {
+        setFormData({
+          title: requestData.title || '',
+          projectId: requestData.project_id ? String(requestData.project_id) : '',
+          workDate: requestData.work_date || selectedDate,
+          startTime: requestData.start_time || '',
+          endTime: requestData.end_time || '',
+          reason: requestData.reason || ''
         });
-    } else if (isOpen && !isEdit) {
-      // Reset form when creating new request
-      setFormData({
-        title: '',
-        projectId: '',
-        workDate: selectedDate,
-        startTime: '',
-        endTime: '',
-        reason: ''
-      });
+      } else if (!isEdit) {
+        // Reset form when creating new request
+        setFormData({
+          title: '',
+          projectId: '',
+          workDate: selectedDate,
+          startTime: '',
+          endTime: '',
+          reason: ''
+        });
+      }
+      setError('');
     }
-  }, [isOpen, isEdit, requestId, requestType, selectedDate, showErrorToast]);
+  }, [isOpen, isEdit, requestData, selectedDate]);
 
-  const handleSubmit = async () => {
+  const validateForm = (): boolean => {
     if (!formData.title.trim()) {
       setError('Vui lòng nhập tiêu đề');
-      return;
+      return false;
     }
 
     if (!formData.projectId) {
       setError('Vui lòng chọn dự án');
-      return;
+      return false;
     }
 
     if (!formData.reason.trim()) {
       setError('Vui lòng nhập lý do');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = () => {
+    if (!validateForm()) {
       return;
     }
 
-    setIsLoading(true);
     setError('');
 
-    try {
-      const payload = {
+    const payload = {
+      title: formData.title,
+      project_id: parseInt(formData.projectId),
+      work_date: formData.workDate,
+      start_time: formData.startTime,
+      end_time: formData.endTime,
+      reason: formData.reason
+    };
+
+    if (isEdit && requestId && requestType) {
+      const updatePayload: UpdateRequestPayload = {
         title: formData.title,
         project_id: parseInt(formData.projectId),
         work_date: formData.workDate,
@@ -133,38 +171,39 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
         end_time: formData.endTime,
         reason: formData.reason
       };
-
-      if (isEdit && requestId && requestType) {
-        await requestsService.updateRequest(requestType, String(requestId), {
-          title: formData.title,
-          project_id: parseInt(formData.projectId),
-          work_date: formData.workDate,
-          start_time: formData.startTime,
-          end_time: formData.endTime,
-          reason: formData.reason
-        });
-        showSuccessToast('Cập nhật đơn xin làm thêm giờ thành công!');
-        queryClient.invalidateQueries({ queryKey: ['myRequests'] });
-      } else {
-        await timekeepingService.createOvertimeRequest(payload);
-        showSuccessToast('Tạo đơn xin làm thêm giờ thành công!');
-      }
-      onClose();
-    } catch (error) {
-      console.error('Error submitting overtime request:', error);
-      setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
-    } finally {
-      setIsLoading(false);
+      
+      updateRequestMutation.mutate(
+        { type: requestType, id: String(requestId), payload: updatePayload },
+        {
+          onSuccess: () => {
+            showSuccessToast('Cập nhật đơn xin làm thêm giờ thành công!');
+            handleClose();
+          },
+          onError: (error: unknown) => {
+            const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+            setError(errorMessage);
+          },
+        }
+      );
+    } else {
+      createOvertimeMutation.mutate(payload);
     }
   };
 
   const handleClose = () => {
     setError('');
-    setIsLoading(false);
+    setFormData({
+      title: '',
+      projectId: '',
+      workDate: selectedDate,
+      startTime: '',
+      endTime: '',
+      reason: ''
+    });
     onClose();
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof OvertimeFormData, value: string) => {
     setError('');
     setFormData(prev => ({
       ...prev,
@@ -172,12 +211,15 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
     }));
   };
 
+  const isLoading = createOvertimeMutation.isPending || updateRequestMutation.isPending;
+  const isFetching = isLoadingRequest || isLoadingProjects;
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
       title={isEdit ? "Chỉnh sửa đơn làm thêm giờ" : "Đăng ký làm thêm giờ ngày thường"}
-      size="md"
+      size="lg"
       footer={
         <>
           <Button variant="ghost" onClick={handleClose} disabled={isLoading}>
@@ -196,66 +238,72 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
     >
       <ModalContent>
         {error && <ErrorMessage>{error}</ErrorMessage>}
-        {isFetching && <div style={{ padding: '1rem', textAlign: 'center' }}>Đang tải thông tin...</div>}
+        {isFetching && (
+          <div style={{ padding: '1rem', textAlign: 'center' }}>
+            <Loading />
+          </div>
+        )}
         
         {!isFetching && (
           <FormSection>
-          <FormGrid>
-            <Input
-              label="Tiêu đề"
-              value={formData.title}
-              onChange={(e) => handleInputChange('title', e.target.value)}
-              placeholder="Nhập tiêu đề đơn xin làm thêm giờ"
-              required
-              disabled={isLoading}
-            />
-            
-            <Select
-              label="Dự án"
-              value={formData.projectId}
-              onChange={(value: string | number) => handleInputChange('projectId', value.toString())}
-              options={projects}
-              placeholder="Chọn dự án"
-              required
-              disabled={isLoading}
-            />
-            
-            <DatePicker
-              label="Ngày làm thêm giờ"
-              value={formData.workDate}
-              onChange={(value) => handleInputChange('workDate', value ? value.toISOString().split('T')[0] : '')}
-              required
-              disabled={isLoading}
-            />
-            
-            <TimePicker
-              label="Thời gian bắt đầu"
-              value={formData.startTime}
-              onChange={(value) => handleInputChange('startTime', value)}
-              required
-              disabled={isLoading}
-            />
-            
-            <TimePicker
-              label="Thời gian kết thúc"
-              value={formData.endTime}
-              onChange={(value) => handleInputChange('endTime', value)}
-              required
-              disabled={isLoading}
-            />
-            
-            <div style={{ gridColumn: '1 / -1' }}>
-              <Input
-                label="Lý do"
-                value={formData.reason}
-                onChange={(e) => handleInputChange('reason', e.target.value)}
-                placeholder="Nhập lý do làm thêm giờ..."
+            <FormGrid>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <Input
+                  label="Tiêu đề"
+                  value={formData.title}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  placeholder="Nhập tiêu đề đơn xin làm thêm giờ"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+              
+              <Select
+                label="Dự án"
+                value={formData.projectId}
+                onChange={(value: string | number) => handleInputChange('projectId', value.toString())}
+                options={projectOptions}
+                placeholder="Chọn dự án"
                 required
                 disabled={isLoading}
               />
-            </div>
-          </FormGrid>
-        </FormSection>
+              
+              <DatePicker
+                label="Ngày làm thêm giờ"
+                value={formData.workDate ? new Date(formData.workDate) : null}
+                onChange={(value) => handleInputChange('workDate', value ? value.toISOString().split('T')[0] : '')}
+                required
+                disabled={isLoading}
+              />
+              
+              <TimePicker
+                label="Thời gian bắt đầu"
+                value={formData.startTime}
+                onChange={(value) => handleInputChange('startTime', value)}
+                required
+                disabled={isLoading}
+              />
+              
+              <TimePicker
+                label="Thời gian kết thúc"
+                value={formData.endTime}
+                onChange={(value) => handleInputChange('endTime', value)}
+                required
+                disabled={isLoading}
+              />
+              
+              <div style={{ gridColumn: '1 / -1' }}>
+                <Input
+                  label="Lý do"
+                  value={formData.reason}
+                  onChange={(e) => handleInputChange('reason', e.target.value)}
+                  placeholder="Nhập lý do làm thêm giờ..."
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+            </FormGrid>
+          </FormSection>
         )}
       </ModalContent>
     </Modal>

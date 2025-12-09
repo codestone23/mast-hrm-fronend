@@ -124,6 +124,17 @@ export const StyledInput = styled.input<{
     opacity: 0.6;
     cursor: not-allowed;
   }
+
+  /* Ẩn spinner cho input type number */
+  &[type="number"] {
+    -moz-appearance: textfield;
+    
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
 `;
 
 export const InputIcon = styled.div<{ $position: 'left' | 'right' }>`

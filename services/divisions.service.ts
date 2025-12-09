@@ -50,8 +50,8 @@ class DivisionsService {
 
   async addMemberToDivision(userId: number, divisionId: number): Promise<void> {
     await axiosInstance.post(`/divisions/user-assignments`, {
-      userId,
-      divisionId,
+      user_id: userId,
+      division_id: divisionId,
     });
   }
 

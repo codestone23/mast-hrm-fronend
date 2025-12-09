@@ -89,9 +89,22 @@ export const ModalCloseButton = styled.button`
 `;
 
 export const ModalBody = styled.div`
-  padding: 24px;
-  overflow-y: auto;
+  padding: 1.5rem;
   flex: 1;
+  overflow-y: auto;
+  max-height: 80%;
+  &::-webkit-scrollbar {
+    display: block;
+    width: 10px;
+  }
+  &::-webkit-scrollbar-track {
+    width: 10px;
+    border-radius: 50px;
+  }
+  &::-webkit-scrollbar-thumb {
+    width: 10px;
+    border-radius: 50px;
+  }
 `;
 
 export const ModalFooter = styled.div`

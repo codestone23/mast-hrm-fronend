@@ -79,6 +79,7 @@ export type DivisionDetail = DivisionListItem;
 
 export interface DivisionUserAssignmentItem {
   id: number;
+  user_id: number;
   name: string;
   email: string;
   userId: number;
@@ -260,6 +261,7 @@ export interface UserRoleAssignment {
     id: number;
     name: ROLE_NAMES;
   };
+  role_name: ROLE_NAMES;
   scope_id: number | null;
   scope_type: ScopeType;
 }
@@ -586,7 +588,8 @@ export interface DivisionMemberData {
   skills: string,
   level: string,
   level_id: number,
-  coefficient: number
+  coefficient: number,
+  user_role_assignments: UserRoleAssignment[]
 }
 
 export interface DivisionTeamData {
@@ -848,6 +851,14 @@ export interface DailyReport {
   reject_reason: string | null;
   created_at: string;
   updated_at: string;
+  user: {
+    user_information: {
+      name: string;
+    };
+  };
+  project: {
+    name: string;
+  };
 }
 
 export interface DailyReportCreateRequest {
@@ -874,6 +885,7 @@ export interface DailyReportListParams {
   user_id?: number;
   project_id?: number;
   status?: DailyReportStatus;
+  division_id?: number;
   users_without_division?: boolean;
   division_head_only?: boolean;
 }
@@ -917,4 +929,46 @@ export interface HolidayListParams {
   search?: string;
   type?: HolidayType;
   status?: HolidayStatus;
+}
+
+// Attendance Statistics types
+export interface AttendanceStatistics {
+  overview: {
+    total_records: number;
+    on_time_rate: string;
+    late_rate: string;
+    early_leave_rate: string;
+    remote_rate: string;
+    total_penalties: number;
+  };
+  daily_stats: Array<{
+    period: string;
+    total_records: number;
+    total_work_hours: number;
+    average_work_hours: number;
+    total_late_count: number;
+    total_early_count: number;
+    attendance_rate: number;
+  }>;
+  violation_stats: Array<{
+    user_id: number;
+    total_violations: number;
+    late_count: number;
+    early_leave_count: number;
+    total_penalties: number;
+    total_late_minutes: number;
+    total_early_minutes: number;
+  }>;
+  leave_stats: {
+    total_leave_days: number;
+    paid_leave: number;
+    unpaid_leave: number;
+    annual_leave: number;
+    sick_leave: number;
+    personal_leave: number;
+  };
+  period: {
+    start_date: string;
+    end_date: string;
+  };
 }

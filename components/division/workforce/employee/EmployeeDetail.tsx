@@ -74,28 +74,6 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ id }) => {
     }
   }, [data]);
 
-  if (isLoading) {
-    return (
-      <PersonalInfoContainer>
-        <div style={{ padding: "40px", textAlign: "center" }}>
-          <div>Đang tải...</div>
-        </div>
-      </PersonalInfoContainer>
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <PersonalInfoContainer>
-        <div style={{ padding: "40px", textAlign: "center" }}>
-          <div style={{ color: "var(--error-600)" }}>
-            {error ? "Có lỗi xảy ra khi tải thông tin nhân viên" : "Không tìm thấy nhân viên"}
-          </div>
-        </div>
-      </PersonalInfoContainer>
-    );
-  }
-
   return (
     <PersonalInfoContainer>
       <PersonalInfoSidebar

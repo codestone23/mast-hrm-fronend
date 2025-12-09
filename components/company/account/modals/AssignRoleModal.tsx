@@ -41,8 +41,18 @@ const AssignRoleModal: React.FC<AssignRoleModalProps> = ({
 
   const roles = rolesData || [];
 
+  // Filter only COMPANY scope roles (HR_MANAGER, EMPLOYEE, ADMIN)
+  const companyScopeRoles = roles.filter((role: Role) => {
+    const roleName = role.name as ROLE_NAMES;
+    return (
+      roleName === ROLE_NAMES.HR_MANAGER ||
+      roleName === ROLE_NAMES.EMPLOYEE ||
+      roleName === ROLE_NAMES.ADMIN
+    );
+  });
+
   // Filter out roles that user already has
-  const availableRoles = roles.filter(
+  const availableRoles = companyScopeRoles.filter(
     (role: Role) => !existingRoleIds.includes(role.id)
   );
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Modal, Button, Select } from "@/components/common";
 import {
   ModalContent,
@@ -28,6 +28,7 @@ const SkillModal: React.FC<SkillModalProps> = ({
   onSave,
 }) => {
   const [formData, setFormData] = useState({
+    position_id: "",
     skill_id: "",
     experience: "",
     months_experience: "",
@@ -36,14 +37,15 @@ const SkillModal: React.FC<SkillModalProps> = ({
   const [error, setError] = useState("");
   const { success: showSuccessToast } = useToast();
 
+  // Fetch positions
   const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-    isFetchingNextPage,
-    isLoading,
-    error: queryError,
+    data: positionsData,
+    fetchNextPage: fetchNextPositionPage,
+    hasNextPage: hasNextPositionPage,
+    isFetching: isFetchingPositions,
+    isFetchingNextPage: isFetchingNextPositionPage,
+    isLoading: isLoadingPositions,
+    error: positionsError,
   } = useInfiniteQuery<PositionsResponse, Error>({
     queryKey: ['positions'],
     queryFn: async ({ pageParam = 1 }) => {
@@ -60,13 +62,30 @@ const SkillModal: React.FC<SkillModalProps> = ({
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const availableSkills = data?.pages.flatMap(page => page.data) || [];
+  const availablePositions = positionsData?.pages.flatMap(page => page.data) || [];
+
+  // Fetch skills by position ID
+  const {
+    data: skillsData,
+    isLoading: isLoadingSkills,
+    error: skillsError,
+  } = useQuery<Skill[], Error>({
+    queryKey: ['skills-by-position', formData.position_id],
+    queryFn: () => profileService.getSkillByPositionId(formData.position_id),
+    enabled: !!formData.position_id && isOpen,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  console.log(skillsData);
+
+  const availableSkills = skillsData || [];
 
   useEffect(() => {
     if (isOpen) {
       resetState();
       if (mode === "edit" && initialData) {
         setFormData({
+          position_id: "",
           skill_id: initialData.skill_id.toString(),
           experience: initialData.experience.toString(),
           months_experience: initialData.months_experience.toString(),
@@ -74,6 +93,7 @@ const SkillModal: React.FC<SkillModalProps> = ({
         });
       } else {
         setFormData({
+          position_id: "",
           skill_id: "",
           experience: "",
           months_experience: "",
@@ -83,6 +103,16 @@ const SkillModal: React.FC<SkillModalProps> = ({
     }
   }, [isOpen, mode, initialData]);
 
+  // Reset skill_id when position changes
+  useEffect(() => {
+    if (formData.position_id) {
+      setFormData((prev) => ({
+        ...prev,
+        skill_id: "",
+      }));
+    }
+  }, [formData.position_id]);
+
   const resetState = () => {
     setError("");
   };
@@ -90,6 +120,10 @@ const SkillModal: React.FC<SkillModalProps> = ({
 
 
   const handleSubmit = async () => {
+    if (!formData.position_id) {
+      setError("Vui lòng chọn vị trí");
+      return;
+    }
     if (!formData.skill_id) {
       setError("Vui lòng chọn kỹ năng");
       return;
@@ -143,7 +177,7 @@ const SkillModal: React.FC<SkillModalProps> = ({
   };
 
   const isSubmitDisabled =
-    isFetching || !formData.skill_id || !formData.experience;
+    isFetchingPositions || isLoadingSkills || !formData.position_id || !formData.skill_id || !formData.experience;
 
   // Generate options for years (0-30)
   const yearOptions = Array.from({ length: 31 }, (_, i) => ({
@@ -165,13 +199,13 @@ const SkillModal: React.FC<SkillModalProps> = ({
       size="lg"
       footer={
         <>
-          <Button variant="ghost" onClick={handleClose} disabled={isFetching}>
+          <Button variant="ghost" onClick={handleClose} disabled={isFetchingPositions || isLoadingSkills}>
             Hủy
           </Button>
           <Button
             variant="primary"
             onClick={handleSubmit}
-            loading={isFetching}
+            loading={isFetchingPositions || isLoadingSkills}
             disabled={isSubmitDisabled}
           >
             {mode === "add" ? "Thêm" : "Cập nhật"}
@@ -180,11 +214,34 @@ const SkillModal: React.FC<SkillModalProps> = ({
       }
     >
       <ModalContent>
-        {(error || queryError) && <ErrorMessage>{error || "Không thể tải danh sách kỹ năng"}</ErrorMessage>}
+        {(error || positionsError || skillsError) && (
+          <ErrorMessage>
+            {error || positionsError?.message || skillsError?.message || "Không thể tải dữ liệu"}
+          </ErrorMessage>
+        )}
 
         <FormSection>
           <h4>Thông tin kỹ năng</h4>
           <FormGrid>
+            <Select
+              label="Vị trí"
+              value={formData.position_id}
+              onChange={(value: string | number) => {
+                handleInputChange("position_id", value.toString())
+              }}
+              options={availablePositions.map((position) => ({
+                value: position.id.toString(),
+                label: position.name,
+              }))}
+              required
+              disabled={isLoadingPositions}
+              placeholder="Chọn vị trí..."
+              hasNextPage={hasNextPositionPage}
+              isFetchingNextPage={isFetchingNextPositionPage}
+              fetchNextPage={fetchNextPositionPage}
+              loadingText="Đang tải thêm vị trí..."
+            />
+
             <Select
               label="Kỹ năng"
               value={formData.skill_id}
@@ -192,16 +249,12 @@ const SkillModal: React.FC<SkillModalProps> = ({
                 handleInputChange("skill_id", value.toString())
               }}
               options={availableSkills.map((skill) => ({
-                value: skill.id.toString(),
-                label: skill.name,
-              }))}
+                value: skill.id?.toString() || "",
+                label: skill?.name || "",
+              })).filter(option => option.value && option.label)}
               required
-              disabled={isLoading}
-              placeholder="Chọn kỹ năng..."
-              hasNextPage={hasNextPage}
-              isFetchingNextPage={isFetchingNextPage}
-              fetchNextPage={fetchNextPage}
-              loadingText="Đang tải thêm kỹ năng..."
+              disabled={isLoadingSkills || !formData.position_id}
+              placeholder={formData.position_id ? "Chọn kỹ năng..." : "Vui lòng chọn vị trí trước"}
             />
 
             <Select
@@ -212,7 +265,7 @@ const SkillModal: React.FC<SkillModalProps> = ({
               }}
               options={yearOptions}
               required
-              disabled={isLoading}
+              disabled={isLoadingPositions || isLoadingSkills}
               placeholder="Chọn số năm kinh nghiệm"
             />
 
@@ -224,7 +277,7 @@ const SkillModal: React.FC<SkillModalProps> = ({
               }}
               options={monthOptions}
               required
-              disabled={isLoading}
+              disabled={isLoadingPositions || isLoadingSkills}
               placeholder="Chọn số tháng kinh nghiệm"
             />
 
@@ -241,7 +294,7 @@ const SkillModal: React.FC<SkillModalProps> = ({
                 id="is_main"
                 checked={formData.is_main}
                 onChange={(e) => handleInputChange("is_main", e.target.checked)}
-                disabled={isLoading}
+                disabled={isLoadingPositions || isLoadingSkills}
               />
               <label
                 htmlFor="is_main"

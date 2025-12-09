@@ -64,9 +64,26 @@ export interface UpdateRequestPayload {
   project_id?: number;
 }
 
+export interface RequestStats {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+}
+
 class RequestsService {
     async getMyRequests(params: RequestParams = {}): Promise<PaginatedResponse<Request>> {
-        const response = await axiosInstance.get(`/requests/my/all`, { params });
+        const response = await axiosInstance.get(`/requests/my/all`, { 
+          params: {
+            ...params,
+            sort_order: 'desc',
+          },
+         });
+        return response.data;
+    }
+
+    async getMyRequestsStats(): Promise<RequestStats> {
+        const response = await axiosInstance.get(`/requests/my/stats`);
         return response.data;
     }
 

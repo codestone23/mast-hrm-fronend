@@ -5,6 +5,7 @@ import {
   DailyReportUpdateRequest,
   DailyReportListParams,
   PaginatedResponse,
+  AttendanceStatistics,
 } from "@/types/api";
 
 class ReportService {
@@ -29,7 +30,7 @@ class ReportService {
   }
 
   async updateReport(reportId: string | number, report: DailyReportUpdateRequest): Promise<DailyReport> {
-    const response = await axiosInstance.put(`/daily-reports/${reportId}`, report);
+    const response = await axiosInstance.patch(`/daily-reports/${reportId}`, report);
     return response.data;
   }
 
@@ -58,13 +59,23 @@ class ReportService {
     return response.data;
   }
 
-  async approveReportsByIds(reportIds: number[]): Promise<void> {
-    const response = await axiosInstance.post(`/daily-reports/approve-by-ids`, { report_ids: reportIds });
+  async approveReportsByIds(reportIds: number[], action: 'approve' | 'reject', reject_reason?: string): Promise<void> {
+    const response = await axiosInstance.post(`/daily-reports/approve-batch`, { report_ids: reportIds, action, reject_reason });
     return response.data;
   }
 
-  async rejectReportsByIds(reportIds: number[], reject_reason: string): Promise<void> {
-    const response = await axiosInstance.post(`/daily-reports/reject-by-ids`, { report_ids: reportIds, reject_reason });
+  async reportsAttendanceDashboard(params?: {
+    start_date?: string;
+    end_date?: string;
+    division_id?: number;
+  }): Promise<AttendanceStatistics> {
+    const response = await axiosInstance.get(`/reports/attendance-dashboard`, {
+      params: {
+        ...(params?.start_date && { start_date: params.start_date }),
+        ...(params?.end_date && { end_date: params.end_date }),
+        ...(params?.division_id && { division_id: params.division_id }),
+      },
+    });
     return response.data;
   }
 }

@@ -88,9 +88,7 @@ const LanguageManagement: React.FC = () => {
   const handleSubmitCreate = () => {
     if (!validateForm()) return;
     createLanguage({
-      name: formData.name.trim(),
-      code: formData.code.trim(),
-      description: formData.description.trim() || undefined,
+      name: formData.name.trim()
     });
     setIsCreateModalOpen(false);
     setFormData({ name: "", code: "", description: "" });
@@ -102,8 +100,6 @@ const LanguageManagement: React.FC = () => {
       id: selectedLanguage.id,
       data: {
         name: formData.name.trim(),
-        code: formData.code.trim(),
-        description: formData.description.trim() || undefined,
       },
     });
     setIsEditModalOpen(false);
@@ -122,11 +118,6 @@ const LanguageManagement: React.FC = () => {
       key: "name",
       label: "Tên ngôn ngữ",
       width: "2fr",
-    },
-    {
-      key: "code",
-      label: "Mã",
-      width: "1fr",
     },
     {
       key: "_count",
@@ -245,24 +236,6 @@ const LanguageManagement: React.FC = () => {
             placeholder="Nhập tên ngôn ngữ"
             error={errors.name}
             required
-            fullWidth
-          />
-          <Input
-            label="Mã ngôn ngữ"
-            value={formData.code}
-            onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-            placeholder="Nhập mã ngôn ngữ (ví dụ: en, vi)"
-            error={errors.code}
-            required
-            fullWidth
-          />
-          <Input
-            label="Mô tả"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Nhập mô tả (tùy chọn)"
-            multiline
-            rows={3}
             fullWidth
           />
         </div>

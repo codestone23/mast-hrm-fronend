@@ -62,6 +62,12 @@ const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
 
           <ModalBody>
             <DetailField>
+              <DetailLabel>Tên tài sản:</DetailLabel>
+              <DetailValue style={{ fontWeight: 600, fontSize: "16px" }}>
+                {asset.name}
+              </DetailValue>
+            </DetailField>
+            <DetailField>
               <IconWrapper>
                 <Package size={20} />
               </IconWrapper>
@@ -69,12 +75,6 @@ const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
               <DetailValue>{asset.asset_code || asset.code || "Không có"}</DetailValue> 
             </DetailField>
 
-            <DetailField>
-              <DetailLabel>Tên tài sản:</DetailLabel>
-              <DetailValue style={{ fontWeight: 600, fontSize: "16px" }}>
-                {asset.name}
-              </DetailValue>
-            </DetailField>
 
             {asset.description && (
               <DetailField>

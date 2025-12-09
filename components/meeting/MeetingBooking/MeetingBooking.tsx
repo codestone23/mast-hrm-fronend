@@ -2,9 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Calendar, Clock } from "lucide-react";
 import { format } from "date-fns";
-import { vi } from "date-fns/locale/vi";
 import Button from "@/components/common/Button/Button";
 import Input from "@/components/common/Input/Input";
 import TextArea from "@/components/common/TextArea/TextArea";
@@ -80,6 +78,7 @@ const MeetingBooking: React.FC<MeetingBookingProps> = ({
       start_hour: "",
       end_hour: "",
     },
+    mode: "onChange",
   });
 
   const bookingDate = watch("booking_date");
@@ -138,6 +137,16 @@ const MeetingBooking: React.FC<MeetingBookingProps> = ({
     if (!selectedStartHour || !selectedEndHour) {
       return;
     }
+    
+    // Kiểm tra lại ngày đặt không phải thứ 7 hoặc chủ nhật
+    if (data.booking_date) {
+      const bookingDate = new Date(data.booking_date);
+      const dayOfWeek = bookingDate.getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        return;
+      }
+    }
+    
     onSubmit({
       ...data,
       start_hour: selectedStartHour,
@@ -160,7 +169,7 @@ const MeetingBooking: React.FC<MeetingBookingProps> = ({
 
   return (
     <BookingForm onSubmit={handleSubmit(onSubmitForm)}>
-      <FormRow>
+      <FormRow $inline>
         <Select
           label="Phòng họp"
           options={roomOptions}
@@ -170,21 +179,28 @@ const MeetingBooking: React.FC<MeetingBookingProps> = ({
           disabled={isReadOnly}
           error={errors.room_id?.message}
         />
-      </FormRow>
-
-      <FormRow>
         <DatePicker
           label="Ngày đặt"
           value={bookingDate ? new Date(bookingDate) : null}
           onChange={(date) => {
             if (date) {
-              setValue("booking_date", format(date, "yyyy-MM-dd"));
+              const dayOfWeek = date.getDay();
+              if (dayOfWeek === 0 || dayOfWeek === 6) {
+                setValue("booking_date", "", { shouldValidate: true });
+                return;
+              }
+              setValue("booking_date", format(date, "yyyy-MM-dd"), { shouldValidate: true });
             }
           }}
           minDate={minDate}
           required
           disabled={isReadOnly}
           error={errors.booking_date?.message}
+          shouldDisableDate={(date) => {
+            // Disable thứ 7 (6) và chủ nhật (0)
+            const dayOfWeek = date.getDay();
+            return dayOfWeek === 0 || dayOfWeek === 6;
+          }}
         />
       </FormRow>
 
@@ -209,7 +225,7 @@ const MeetingBooking: React.FC<MeetingBookingProps> = ({
         />
       </FormRow>
 
-      <FormRow>
+      <FormRow $inline>
         <Select
           label="Giờ bắt đầu"
           options={timeSlots.map((slot) => ({ value: slot, label: slot }))}
@@ -219,9 +235,6 @@ const MeetingBooking: React.FC<MeetingBookingProps> = ({
           required
           disabled={isReadOnly}
         />
-      </FormRow>
-
-      <FormRow>
         <Select
           label="Giờ kết thúc"
           options={availableEndSlots.map((slot) => ({ value: slot, label: slot }))}

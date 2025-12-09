@@ -26,6 +26,7 @@ export interface Skill {
   skill_id: number;
   experience: number;
   months_experience: number;
+  name?: string;
   is_main: boolean;
   skill?: {
     id: number;
@@ -126,27 +127,27 @@ class ProfileService {
   } 
 
   async addSkills(data: Skill): Promise<Skill> {
-    const response = await axiosInstance.post('user-profile/skills', data);
+    const response = await axiosInstance.post('user-profile/user-skills', data);
     return response.data;
   }
 
   async updateSkills(data: Skill): Promise<Skill> {
-    const response = await axiosInstance.patch('user-profile/skills', data);
+    const response = await axiosInstance.patch('user-profile/user-skills', data);
     return response.data;
   }
 
   async deleteSkills(id: string): Promise<void> {
-    const response = await axiosInstance.delete('user-profile/skills/' + id);
+    const response = await axiosInstance.delete('user-profile/user-skills/' + id);
     return response.data;
   }
 
   async updateSkillsById(id: string, data: Skill): Promise<Skill> {
-    const response = await axiosInstance.patch('user-profile/skills/' + id, data);
+    const response = await axiosInstance.patch('user-profile/user-skills/' + id, data);
     return response.data;
   }
 
   async getSkillByPositionId(positionId: string): Promise<Skill[]> { 
-    const response = await axiosInstance.get('user-profile/skills/position/' + positionId);
+    const response = await axiosInstance.get('user-profile/user-skills/position/' + positionId);
     return response.data;
   }
   

@@ -1,23 +1,24 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Modal, Button, Input } from "@/components/common";
-import { User as UserType } from "@/types/api";
+import { User as UserType, UpdateUserRequest } from "@/types/api";
+import userService from "@/services/user.service";
+import { useToast } from "@/hooks/useToast";
 
-interface EditAccountData {
+interface EditAccountFormData {
   name: string;
   email: string;
-  phone?: string;
-  department?: string;
-  position?: string;
+  phone: string;
 }
 
 interface EditAccountModalProps {
   isOpen: boolean;
   onClose: () => void;
   user: UserType | null;
-  onSave: (accountData: EditAccountData) => void;
-  isLoading?: boolean;
+  onSave?: () => void; 
 }
 
 const EditAccountModal: React.FC<EditAccountModalProps> = ({
@@ -25,63 +26,84 @@ const EditAccountModal: React.FC<EditAccountModalProps> = ({
   onClose,
   user,
   onSave,
-  isLoading = false,
 }) => {
-  const [formData, setFormData] = useState<EditAccountData>({
-    name: "",
-    email: "",
-    phone: "",
-    department: "",
-    position: "",
+  const queryClient = useQueryClient();
+  const { success: showSuccessToast, error: showErrorToast } = useToast();
+
+  const defaultValues: EditAccountFormData = useMemo(
+    () => ({
+      name: "",
+      email: "",
+      phone: "",
+    }),
+    []
+  );
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<EditAccountFormData>({
+    defaultValues: defaultValues,
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof EditAccountData, string>>>({});
+  const updateMutation = useMutation({
+    mutationFn: ({ userId, data }: { userId: string; data: UpdateUserRequest }) =>
+      userService.updateUser(userId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      showSuccessToast("Cập nhật tài khoản thành công");
+      if (onSave) {
+        onSave();
+      }
+      handleClose();
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      showErrorToast(err?.response?.data?.message || "Có lỗi xảy ra khi cập nhật tài khoản");
+    },
+  });
 
   useEffect(() => {
-    if (user && isOpen) {
-      const userInfo = user.user_information && Array.isArray(user.user_information) && user.user_information.length > 0
-        ? user.user_information[0] as { name?: string; phone?: string; department?: string; position?: string }
-        : null;
-      
-      setFormData({
+    if (isOpen && user) {
+      const userInfo =
+        user.user_information &&
+        Array.isArray(user.user_information) &&
+        user.user_information.length > 0
+          ? (user.user_information[0] as {
+              name?: string;
+              phone?: string;
+            })
+          : null;
+
+      reset({
         name: userInfo?.name || user.name || "",
         email: user.email || "",
         phone: userInfo?.phone || "",
-        department: userInfo?.department || "",
-        position: userInfo?.position || "",
       });
-      setErrors({});
     }
-  }, [user, isOpen]);
+  }, [isOpen, user, reset]);
 
-  const validate = (): boolean => {
-    const newErrors: Partial<Record<keyof EditAccountData, string>> = {};
+  const onSubmit = (data: EditAccountFormData) => {
+    if (!user) return;
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Tên là bắt buộc";
-    }
+    // Tách name thành firstName và lastName
+    const nameParts = data.name.trim().split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
 
-    if (!formData.email.trim()) {
-      newErrors.email = "Email là bắt buộc";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email không hợp lệ";
-    }
+    const updateData: UpdateUserRequest = {
+      firstName,
+      lastName,
+      phone: data.phone || undefined,
+    };
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    updateMutation.mutate({ userId: String(user.id), data: updateData });
   };
 
-  const handleSubmit = () => {
-    if (validate()) {
-      onSave(formData);
-    }
-  };
-
-  const handleChange = (field: keyof EditAccountData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
+  const handleClose = () => {
+    onClose();
   };
 
   if (!user) return null;
@@ -89,7 +111,7 @@ const EditAccountModal: React.FC<EditAccountModalProps> = ({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       title="Chỉnh sửa tài khoản"
       size="lg"
       closable
@@ -98,71 +120,61 @@ const EditAccountModal: React.FC<EditAccountModalProps> = ({
           <Button
             type="button"
             variant="ghost"
-            onClick={onClose}
-            disabled={isLoading}
+            onClick={handleClose}
+            disabled={isSubmitting || updateMutation.isPending}
           >
             Hủy
           </Button>
           <Button
             type="button"
             variant="primary"
-            onClick={handleSubmit}
-            loading={isLoading}
-            disabled={isLoading}
+            onClick={handleSubmit(onSubmit)}
+            loading={isSubmitting || updateMutation.isPending}
+            disabled={isSubmitting || updateMutation.isPending}
           >
             Cập nhật
           </Button>
         </>
       }
     >
-      <div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-          <Input
-            label="Tên đầy đủ"
-            value={formData.name}
-            onChange={(e) => handleChange("name", e.target.value)}
-            placeholder="Nhập tên đầy đủ"
-            error={errors.name}
-            required
-            fullWidth
-          />
+      <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+        <Input
+          label="Tên đầy đủ"
+          {...register("name", {
+            required: "Tên là bắt buộc",
+          })}
+          placeholder="Nhập tên đầy đủ"
+          error={errors.name?.message}
+          required
+          fullWidth
+          disabled={isSubmitting || updateMutation.isPending}
+        />
 
-          <Input
-            label="Email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => handleChange("email", e.target.value)}
-            placeholder="Nhập email"
-            error={errors.email}
-            required
-            fullWidth
-          />
+        <Input
+          label="Email"
+          type="email"
+          {...register("email", {
+            required: "Email là bắt buộc",
+            pattern: {
+              value: /\S+@\S+\.\S+/,
+              message: "Email không hợp lệ",
+            },
+          })}
+          placeholder="Nhập email"
+          error={errors.email?.message}
+          required
+          fullWidth
+          disabled={true}
+        />
 
-          <Input
-            label="Số điện thoại"
-            type="tel"
-            value={formData.phone || ""}
-            onChange={(e) => handleChange("phone", e.target.value)}
-            placeholder="Nhập số điện thoại"
-            fullWidth
-          />
-
-          <Input
-            label="Phòng ban"
-            value={formData.department || ""}
-            onChange={(e) => handleChange("department", e.target.value)}
-            placeholder="Nhập phòng ban"
-            fullWidth
-          />
-
-          <Input
-            label="Vị trí"
-            value={formData.position || ""}
-            onChange={(e) => handleChange("position", e.target.value)}
-            placeholder="Nhập vị trí"
-            fullWidth
-          />
-        </div>
+        <Input
+          label="Số điện thoại"
+          type="tel"
+          {...register("phone")}
+          placeholder="Nhập số điện thoại"
+          fullWidth
+          disabled={isSubmitting || updateMutation.isPending}
+        />
       </div>
     </Modal>
   );

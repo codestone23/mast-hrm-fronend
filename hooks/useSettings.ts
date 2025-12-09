@@ -124,7 +124,7 @@ export const useLanguageMutations = () => {
   const { success: showSuccessToast, error: showErrorToast } = useToast();
 
   const createMutation = useMutation({
-    mutationFn: (language: { name: string; code: string; description?: string }) => 
+    mutationFn: (language: { name: string }) => 
       settingsService.createLanguage(language),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['languages'] });
@@ -137,7 +137,7 @@ export const useLanguageMutations = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string | number; data: { name: string; code: string; description?: string } }) => 
+    mutationFn: ({ id, data }: { id: string | number; data: { name: string } }) => 
       settingsService.updateLanguage(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['languages'] });

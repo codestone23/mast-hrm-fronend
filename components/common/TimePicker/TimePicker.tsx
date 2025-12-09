@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Clock } from 'lucide-react';
 import {
   TimePickerContainer,
@@ -35,6 +36,8 @@ const TimePicker: React.FC<TimePickerProps> = ({
   const [hours, setHours] = useState('08');
   const [minutes, setMinutes] = useState('00');
   const [amPm, setAmPm] = useState('AM');
+  const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
+  const inputRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,16 +62,41 @@ const TimePicker: React.FC<TimePickerProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current && 
+        !dropdownRef.current.contains(event.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+    if (isOpen) {
+      // Update position when dropdown opens
+      if (inputRef.current) {
+        setTriggerRect(inputRef.current.getBoundingClientRect());
+      }
+      
+      document.addEventListener('mousedown', handleClickOutside);
+      
+      // Update position on scroll or resize
+      const updatePosition = () => {
+        if (inputRef.current) {
+          setTriggerRect(inputRef.current.getBoundingClientRect());
+        }
+      };
+      
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+      
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+      };
+    }
+  }, [isOpen]);
 
   const handleTimeChange = (newHours: string, newMinutes: string, newAmPm: string) => {
     setHours(newHours);
@@ -85,6 +113,9 @@ const TimePicker: React.FC<TimePickerProps> = ({
 
   const handleInputClick = () => {
     if (!disabled) {
+      if (!isOpen && inputRef.current) {
+        setTriggerRect(inputRef.current.getBoundingClientRect());
+      }
       setIsOpen(!isOpen);
     }
   };
@@ -115,6 +146,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
         </TimePickerLabel>
       )}
       <TimePickerInput
+        ref={inputRef}
         onClick={handleInputClick}
         disabled={disabled}
         $hasError={!!error}
@@ -132,8 +164,8 @@ const TimePicker: React.FC<TimePickerProps> = ({
         </div>
       )}
 
-      {isOpen && (
-        <TimePickerDropdown ref={dropdownRef}>
+      {isOpen && typeof window !== 'undefined' && triggerRect && createPortal(
+        <TimePickerDropdown ref={dropdownRef} $triggerRect={triggerRect}>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px', textAlign: 'center' }}>
@@ -191,7 +223,8 @@ const TimePicker: React.FC<TimePickerProps> = ({
               </div>
             </div>
           </div>
-        </TimePickerDropdown>
+        </TimePickerDropdown>,
+        document.body
       )}
     </TimePickerContainer>
   );

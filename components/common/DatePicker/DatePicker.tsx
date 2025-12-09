@@ -39,6 +39,7 @@ export interface DatePickerProps {
   className?: string;
   id?: string;
   allowInput?: boolean;
+  shouldDisableDate?: (date: Date) => boolean;
 }
 
 const DatePicker: React.FC<DatePickerProps> = ({
@@ -58,7 +59,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
   maxDate,
   className,
   id,
-  allowInput = false
+  allowInput = false,
+  shouldDisableDate
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(
@@ -129,6 +131,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const isDateDisabled = (date: Date): boolean => {
     if (minDate && date < minDate) return true;
     if (maxDate && date > maxDate) return true;
+    if (shouldDisableDate && shouldDisableDate(date)) return true;
     return false;
   };
 

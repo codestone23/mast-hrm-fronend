@@ -96,12 +96,11 @@ const ListAssetRequests: React.FC<ListAssetRequestsProps> = ({
             <RequestHeader>
               <div style={{ flex: 1 }}>
                 <RequestTitle>{request.asset?.name || request.description || "Yêu cầu tài sản"}</RequestTitle>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
+                <div style={{ display: "flex", alignItems: "center", marginTop: "8px" }}>
                   <div
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "8px",
                       fontSize: "14px",
                       color: "#6b7280",
                     }}
@@ -122,9 +121,6 @@ const ListAssetRequests: React.FC<ListAssetRequestsProps> = ({
 
             <RequestMeta>
               <RequestMetaItem>
-                <span>ID: {request.id}</span>
-              </RequestMetaItem>
-              <RequestMetaItem>
                 <span>
                   Ngày yêu cầu:{" "}
                   {request.created_at
@@ -138,28 +134,34 @@ const ListAssetRequests: React.FC<ListAssetRequestsProps> = ({
                 </RequestMetaItem>
               )}
             </RequestMeta>
+            <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", gap: "8px", width: "100%", marginTop: "8px" }}>
+              <RequestReason>
+                {request.description && (
+                  <div style={{ marginBottom: "8px" }}>
+                    <strong>Mô tả:</strong> {request.description}
+                  </div>
+                )}
+                {request.justification && (
+                  <div>
+                    <strong>Lý do:</strong> {request.justification || request.reason}
+                  </div>
+                )}
+              </RequestReason>
 
-            <RequestReason>
-              <div style={{ marginBottom: "8px" }}>
-                <strong>Mô tả:</strong> {request.description}
-              </div>
-              <div>
-                <strong>Lý do:</strong> {request.justification || request.reason}
-              </div>
-            </RequestReason>
+              {request.status === REQUEST_STATUS.PENDING && onApprove && onReject && (
+                <RequestActions>
+                  <ApproveButton onClick={(e) => handleApprove(request.id, e)}>
+                    <CheckCircle size={16} />
+                    Duyệt
+                  </ApproveButton>
+                  <RejectButton onClick={(e) => handleReject(request.id, e)}>
+                    <XCircle size={16} />
+                    Từ chối
+                  </RejectButton>
+                </RequestActions>
+              )}
+            </div>
 
-            {request.status === REQUEST_STATUS.PENDING && onApprove && onReject && (
-              <RequestActions>
-                <ApproveButton onClick={(e) => handleApprove(request.id, e)}>
-                  <CheckCircle size={16} />
-                  Duyệt
-                </ApproveButton>
-                <RejectButton onClick={(e) => handleReject(request.id, e)}>
-                  <XCircle size={16} />
-                  Từ chối
-                </RejectButton>
-              </RequestActions>
-            )}
           </RequestItem>
         );
       })}

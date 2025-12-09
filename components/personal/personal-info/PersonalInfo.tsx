@@ -300,11 +300,12 @@ const PersonalInfo = () => {
     };
 
     useEffect(() => {
+        console.log(data);
         if (data) {
-            setSkills(data.user_skills || []);
-            setExperiences(data.experience || []);
+            setSkills(data.user_skills ?? data.user_information?.user_skills ?? []);
+            setExperiences(data.experience ?? data.user_information?.experience ?? []);
             setEducations(
-                (data.education || []).map((edu) => ({
+                (data.education ?? data.user_information?.education ?? []).map((edu) => ({
                     ...edu,
                     description:
                         (edu as { description?: string }).description || "",

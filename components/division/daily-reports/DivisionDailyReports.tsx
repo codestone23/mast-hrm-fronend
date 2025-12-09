@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -62,8 +62,9 @@ const DivisionDailyReports: React.FC = () => {
       user_id: userId,
       project_id: projectId,
       status: status,
+      division_id: selectedDivisionId || undefined,
     }),
-    [currentPage, userId, projectId, status]
+    [currentPage, userId, projectId, status, selectedDivisionId]
   );
 
   const { data, isLoading, error } = useQuery({
@@ -155,7 +156,7 @@ const DivisionDailyReports: React.FC = () => {
   });
 
   const approveAllMutation = useMutation({
-    mutationFn: (reportIds: number[]) => reportService.approveReportsByIds(reportIds),
+    mutationFn: (reportIds: number[]) => reportService.approveReportsByIds(reportIds, 'approve'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["daily-reports"] });
       showSuccessToast("Duyệt tất cả báo cáo thành công");
@@ -169,7 +170,7 @@ const DivisionDailyReports: React.FC = () => {
 
   const rejectAllMutation = useMutation({
     mutationFn: ({ reportIds, reason }: { reportIds: number[]; reason: string }) =>
-      reportService.rejectReportsByIds(reportIds, reason),
+      reportService.approveReportsByIds(reportIds, 'reject', reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["daily-reports"] });
       showSuccessToast("Từ chối tất cả báo cáo thành công");
@@ -231,13 +232,20 @@ const DivisionDailyReports: React.FC = () => {
     });
   };
 
-  const toggleSelectAll = () => {
-    if (selectedReportIds.size === reports.length) {
+  const toggleSelectAll = useCallback(() => {
+    const pendingReports = reports.filter((r) => r.status === DailyReportStatus.PENDING);
+    const pendingReportIds = new Set(pendingReports.map((r) => r.id));
+    
+    // Check if all pending reports are selected
+    const allPendingSelected = pendingReportIds.size > 0 && 
+      Array.from(pendingReportIds).every((id) => selectedReportIds.has(id));
+    
+    if (allPendingSelected) {
       setSelectedReportIds(new Set());
     } else {
-      setSelectedReportIds(new Set(reports.map((r) => r.id)));
+      setSelectedReportIds(pendingReportIds);
     }
-  };
+  }, [reports, selectedReportIds]);
 
   const formatDate = (dateString: string) => {
     try {
@@ -281,22 +289,34 @@ const DivisionDailyReports: React.FC = () => {
         label: (
           <input
             type="checkbox"
-            checked={selectedReportIds.size === reports.length && reports.length > 0}
+            checked={
+              (() => {
+                const pendingReports = reports.filter((r) => r.status === DailyReportStatus.PENDING);
+                const pendingReportIds = new Set(pendingReports.map((r) => r.id));
+                return pendingReportIds.size > 0 && 
+                  Array.from(pendingReportIds).every((id) => selectedReportIds.has(id));
+              })()
+            }
             onChange={toggleSelectAll}
             style={{ cursor: "pointer" }}
           />
         ),
         width: "50px",
         align: "center",
-        render: (_, row) => (
-          <input
-            type="checkbox"
-            checked={selectedReportIds.has(row.id)}
-            onChange={() => toggleSelectReport(row.id)}
-            onClick={(e) => e.stopPropagation()}
-            style={{ cursor: "pointer" }}
-          />
-        ),
+        render: (_, row) => {
+          if (row.status !== DailyReportStatus.PENDING) {
+            return null; // Không hiển thị checkbox cho report không phải PENDING
+          }
+          return (
+            <input
+              type="checkbox"
+              checked={selectedReportIds.has(row.id)}
+              onChange={() => toggleSelectReport(row.id)}
+              onClick={(e) => e.stopPropagation()}
+              style={{ cursor: "pointer" }}
+            />
+          );
+        },
       },
       {
         key: "work_date",
@@ -305,12 +325,12 @@ const DivisionDailyReports: React.FC = () => {
         render: (_, row) => formatDate(row.work_date),
       },
       {
-        key: "user_id",
+        key: "user",
         label: "Người tạo",
         width: "150px",
         render: (_, row) => (
           <span style={{ fontSize: "14px", color: "#6b7280" }}>
-            User #{row.user_id}
+            {row.user.user_information.name}
           </span>
         ),
       },
@@ -323,12 +343,12 @@ const DivisionDailyReports: React.FC = () => {
         ),
       },
       {
-        key: "project_id",
+        key: "project",
         label: "Dự án",
         width: "150px",
         render: (_, row) => (
           <span style={{ fontSize: "14px", color: "#6b7280" }}>
-            Dự án #{row.project_id}
+            {row.project.name}
           </span>
         ),
       },
@@ -387,7 +407,7 @@ const DivisionDailyReports: React.FC = () => {
         ),
       },
     ],
-    [selectedReportIds, reports.length, approveMutation.isPending, rejectMutation.isPending]
+    [selectedReportIds, reports, approveMutation.isPending, rejectMutation.isPending, toggleSelectAll, handleApprove]
   );
 
   const emptyMessage = useMemo(() => {

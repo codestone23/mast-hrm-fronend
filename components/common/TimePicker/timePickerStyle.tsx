@@ -13,7 +13,9 @@ export const TimePickerLabel = styled.label`
   font-size: 14px;
 `;
 
-export const TimePickerInput = styled.div<{
+export const TimePickerInput = styled.div.withConfig({
+  shouldForwardProp: (prop) => !prop.startsWith('$'),
+})<{
   disabled?: boolean;
   $hasError?: boolean;
   $isOpen?: boolean;
@@ -55,17 +57,18 @@ export const TimePickerIcon = styled.div`
   pointer-events: none;
 `;
 
-export const TimePickerDropdown = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
+export const TimePickerDropdown = styled.div.withConfig({
+  shouldForwardProp: (prop) => !prop.startsWith('$'),
+})<{ $triggerRect?: DOMRect }>`
+  position: fixed;
+  top: ${({ $triggerRect }) => $triggerRect ? `${$triggerRect.bottom + 4}px` : 'auto'};
+  left: ${({ $triggerRect }) => $triggerRect ? `${$triggerRect.left}px` : 'auto'};
+  width: ${({ $triggerRect }) => $triggerRect ? `${$triggerRect.width}px` : 'auto'};
   background: white;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  z-index: 50;
-  margin-top: 4px;
+  z-index: 1002;
   padding: 12px;
   min-width: 200px;
 `;

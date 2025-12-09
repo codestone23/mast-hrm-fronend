@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import requestsService, { Request, RequestParams, ApproveRejectPayload } from '@/services/requests.service';
+import requestsService, { Request, RequestParams, ApproveRejectPayload, UpdateRequestPayload } from '@/services/requests.service';
 import { useToast } from '@/hooks/useToast';
 
 export const useMyRequests = (params: RequestParams = {}) => {
@@ -18,11 +18,15 @@ export const useAdminRequests = (params: RequestParams = {}) => {
   });
 };
 
-export const useRequestDetail = (type: string, id: string) => {
+export const useRequestDetail = (
+  type: string,
+  id: string,
+  options?: { enabled?: boolean }
+) => {
   return useQuery({
     queryKey: ['requestDetail', type, id],
     queryFn: () => requestsService.getRequestById(type, id),
-    enabled: !!type && !!id,
+    enabled: options?.enabled !== undefined ? options.enabled : (!!type && !!id),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
@@ -75,6 +79,26 @@ export const useRejectRequest = () => {
         title: 'Có lỗi xảy ra khi từ chối request',
         message: 'Có lỗi xảy ra khi từ chối request',
       });
+    },
+  });
+};
+
+export const useUpdateRequest = () => {
+  const queryClient = useQueryClient();
+  const { success: showSuccessToast, error: showErrorToast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ type, id, payload }: { type: string; id: string; payload: UpdateRequestPayload }) =>
+      requestsService.updateRequest(type, id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['adminRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['requestDetail'] });
+      showSuccessToast('Cập nhật đề xuất thành công!');
+    },
+    onError: (error: unknown) => {
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật đề xuất';
+      showErrorToast(errorMessage);
     },
   });
 };

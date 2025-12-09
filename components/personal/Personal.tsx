@@ -69,6 +69,7 @@ import { usePersonal } from "./usePersonal";
 import { usePersonalAttendanceStats as usePersonalAttendanceStats } from "../../hooks/useAttendanceStats";
 import newsService from "@/services/news.service";
 import meetingService from "@/services/meeting.service";
+import requestsService from "@/services/requests.service";
 import { NewsStatus } from "@/types/api";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale/vi";
@@ -113,6 +114,12 @@ const Personal: React.FC = () => {
 				from_date: today.toISOString().split("T")[0],
 				to_date: tomorrow.toISOString().split("T")[0],
 			}),
+	});
+
+	// Fetch my requests stats
+	const { data: requestsStats, isLoading: isLoadingRequestsStats } = useQuery({
+		queryKey: ["my-requests-stats"],
+		queryFn: () => requestsService.getMyRequestsStats(),
 	});
 
 	const currentMonth = new Date().toLocaleDateString("vi-VN", {
@@ -227,6 +234,10 @@ const Personal: React.FC = () => {
 
 	const handleMeetingClick = () => {
 		router.push(ROUTERS.PERSONAL.MEETING_ROOMS);
+	};
+
+	const handleRequestsClick = () => {
+		router.push(`${ROUTERS.PERSONAL.TIMEKEEPING}?tab=requests`);
 	};
 
 	const getJoinDate = () => {
@@ -462,21 +473,33 @@ const Personal: React.FC = () => {
 										<FileText size={20} />
 									</IconWrapper>
 									<CardTitle>Yêu cầu của tôi</CardTitle>
-									<CardLink>Xem chi tiết</CardLink>
+									<CardLink onClick={handleRequestsClick}>Xem chi tiết</CardLink>
 								</StatsHeader>
 								<StatsGrid>
 									<div className="stat-item">
-										<div className="number">12</div>
+										<div className="number">
+											{isLoadingRequestsStats
+												? "..."
+												: requestsStats?.total || 0}
+										</div>
 										<div className="label">
 											Tổng yêu cầu
 										</div>
 									</div>
 									<div className="stat-item">
-										<div className="number">2</div>
+										<div className="number">
+											{isLoadingRequestsStats
+												? "..."
+												: requestsStats?.pending || 0}
+										</div>
 										<div className="label">Đang xử lý</div>
 									</div>
 									<div className="stat-item">
-										<div className="number">10</div>
+										<div className="number">
+											{isLoadingRequestsStats
+												? "..."
+												: (requestsStats?.approved || 0) + (requestsStats?.rejected || 0)}
+										</div>
 										<div className="label">Đã xử lý</div>
 									</div>
 								</StatsGrid>

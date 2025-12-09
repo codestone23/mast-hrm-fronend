@@ -125,3 +125,14 @@ export enum HolidayStatus {
     ACTIVE = "ACTIVE",
     INACTIVE = "INACTIVE",
 }
+
+export enum DurationType {
+    FULL_DAY = "FULL_DAY",
+    MORNING = "MORNING",
+    AFTERNOON = "AFTERNOON",
+}
+
+export enum ProjectAccessType {
+    COMPANY = "COMPANY",
+    RESTRICTED = "RESTRICTED",
+}

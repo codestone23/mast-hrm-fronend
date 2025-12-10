@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Bell, Edit, Trash2, Search } from "lucide-react";
-import { Button, Input, Table, Loading, Modal } from "@/components/common";
+import { Button, Input, Table } from "@/components/common";
 import { TableColumn } from "@/components/common/Table/Table";
 import Pagination from "@/components/common/Pagination/Pagination";
 import notificationService from "@/services/notification.service";
@@ -302,6 +302,7 @@ export default function NotificationsPage() {
         onConfirm={handleConfirmDelete}
         title="Xóa thông báo"
         message={`Bạn có chắc chắn muốn xóa thông báo "${selectedNotification?.title}"?`}
+        isLoading={deleteMutation.isPending}
       />
     </Container>
   );

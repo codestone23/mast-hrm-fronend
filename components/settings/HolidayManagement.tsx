@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Plus, Edit, Trash2, Eye, Calendar } from "lucide-react";
 import { useHolidays, useHolidayDetail, useHolidayMutations } from "@/hooks/useSettings";
 import { Holiday } from "@/types/api";
@@ -47,7 +47,7 @@ const HolidayManagement: React.FC = () => {
   });
 
   const { data: detailData } = useHolidayDetail(selectedHoliday?.id || null);
-  const { createHoliday, updateHoliday, deleteHoliday, isCreating, isUpdating } = useHolidayMutations();
+  const { createHoliday, updateHoliday, deleteHoliday, isCreating, isUpdating, isDeleting } = useHolidayMutations();
 
   const holidays = data?.data || [];
   const pagination = data?.pagination || { total: 0, current_page: 1, total_pages: 1 };
@@ -546,6 +546,7 @@ const HolidayManagement: React.FC = () => {
         onConfirm={handleConfirmDelete}
         title="Xác nhận xóa ngày lễ"
         message={`Bạn có chắc chắn muốn xóa ngày lễ "${selectedHoliday?.name}" không?`}
+        isLoading={isDeleting}
       />
     </div>
   );

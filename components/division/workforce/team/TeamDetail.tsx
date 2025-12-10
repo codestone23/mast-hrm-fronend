@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus } from "lucide-react";
-import { Button, Table, TableColumn, ConfirmDeleteModal, Pagination, Input } from "@/components/common";
+import { Button, Table, TableColumn, ConfirmDeleteModal, Pagination, Input, Loading } from "@/components/common";
 import { Search } from "lucide-react";
 import AddMemberModal from "./modals/AddMemberModal";
 import { useTeamDetail } from "./useTeamDetail";
@@ -115,9 +115,9 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
   };
 
   const addMemberMutation = useMutation({
-    mutationFn: (userIds: number[]) => {
+    mutationFn: (payload: { user_id: number; description?: string }) => {
       if (!id) throw new Error("Team ID is required");
-      return divisionWorkforceService.addMembersToTeam(Number(id), userIds);
+      return divisionWorkforceService.addMembersToTeam(Number(id), payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["division-workforce", "members"] });
@@ -132,8 +132,8 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
     },
   });
 
-  const handleAddMember = async (userIds: number[]) => {
-    await addMemberMutation.mutateAsync(userIds);
+  const handleAddMember = async (payload: { user_id: number; description?: string }) => {
+    await addMemberMutation.mutateAsync(payload);
   };
 
   const handleDeleteMember = (member: typeof allMembers[0]) => {
@@ -247,26 +247,10 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
     },
   ];
 
-  if (isLoadingTeam) {
+  if(isLoadingTeam) {
     return (
-      <PersonalInfoContainer>
-        <div style={{ padding: "40px", textAlign: "center" }}>
-          <div>Đang tải...</div>
-        </div>
-      </PersonalInfoContainer>
-    );
-  }
-
-  if (teamError || !teamData) {
-    return (
-      <PersonalInfoContainer>
-        <div style={{ padding: "40px", textAlign: "center" }}>
-          <div style={{ color: "var(--error-600)" }}>
-            {teamError ? "Có lỗi xảy ra khi tải thông tin team" : "Không tìm thấy team"}
-          </div>
-        </div>
-      </PersonalInfoContainer>
-    );
+      <Loading />
+    )
   }
 
   return (
@@ -391,6 +375,7 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
         onConfirm={handleConfirmDelete}
         title="Xóa thành viên khỏi team"
         message={`Bạn có chắc chắn muốn xóa "${selectedMember?.name || ""}" khỏi team?`}
+        isLoading={removeMemberMutation.isPending}
       />
     </PersonalInfoContainer>
   );

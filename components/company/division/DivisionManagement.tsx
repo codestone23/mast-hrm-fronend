@@ -82,7 +82,7 @@ const DivisionManagement: React.FC = () => {
     const total = response?.pagination.total ?? 0;
     const totalPages = response?.pagination.total_pages ?? 1;
 
-    const { success: showSuccessToast, error: showErrorToast } = useToast();
+    const { error: showErrorToast } = useToast();
 
     const handleDeleteError = (error: string) => {
         showErrorToast(error || "Có lỗi xảy ra khi xóa phòng ban");
@@ -367,6 +367,7 @@ const DivisionManagement: React.FC = () => {
                 onConfirm={handleDeleteDivision}
                 title="Xóa phòng ban"
                 message={`Bạn có chắc chắn muốn xóa phòng ban "${selectedDivision?.name}"? Hành động này không thể hoàn tác.`}
+                isLoading={deleteMutation.isPending}
             />
         </PersonalContainer>
     );

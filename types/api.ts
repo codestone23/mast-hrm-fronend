@@ -232,12 +232,8 @@ export enum UserRole {
 }
 
 export interface UpdateUserRequest {
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  avatar?: string;
-  department?: string;
-  position?: string;
+  name?: string;
+  email?: string;
 }
 
 // Role types

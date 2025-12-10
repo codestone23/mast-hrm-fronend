@@ -32,7 +32,7 @@ import {
   BulkApproveButton,
   BulkRejectButton,
 } from './modals/modalStyles';
-import { REQUEST_STATUS } from '@/constants/enums';
+import { REQUEST_STATUS, REQUEST_TYPE } from '@/constants/enums';
 
 export interface RequestData {
   id: string;
@@ -103,11 +103,11 @@ const ListRequest: React.FC<ListRequestProps> = ({
 
   const getTypeLabel = (type: string) => {
     const typeMap: { [key: string]: string } = {
-      'day_off': 'Nghỉ phép',
-      'overtime': 'Làm thêm giờ',
-      'remote_work': 'Làm việc từ xa',
-      'forgot_checkin': 'Quên chấm công',
-      'late_early': 'Đi muộn/Về sớm',
+      [REQUEST_TYPE.DAY_OFF]: 'Nghỉ phép',
+      [REQUEST_TYPE.OVERTIME]: 'Làm thêm giờ',
+      [REQUEST_TYPE.REMOTE_WORK]: 'Làm việc từ xa',
+      [REQUEST_TYPE.FORGOT_CHECKIN]: 'Quên chấm công',
+      [REQUEST_TYPE.LATE_EARLY]: 'Đi muộn/Về sớm',
     };
     return typeMap[type] || type;
   };

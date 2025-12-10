@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Input, Table, TableColumn, Button, Select, Pagination } from "@/components/common";
 import { FileText, Check, X, CheckCheck, Search } from "lucide-react";
@@ -67,7 +67,7 @@ const HRDailyReports: React.FC = () => {
     queryFn: () => reportService.getReports(params),
   });
 
-  const reports = data?.data || [];
+  const reports = useMemo(() => data?.data || [], [data?.data]);
   const pagination = data?.pagination || {
     total: 0,
     current_page: 1,
@@ -81,7 +81,7 @@ const HRDailyReports: React.FC = () => {
     queryFn: () => projectService.getProjectsAdmin(1),
   });
 
-  const projects = projectsData?.data || [];
+  const projects = useMemo(() => projectsData?.data || [], [projectsData?.data]);
   const projectOptions = useMemo(
     () => [
       { value: "", label: "Tất cả dự án" },
@@ -103,11 +103,11 @@ const HRDailyReports: React.FC = () => {
     },
   });
 
-  const users = usersData?.data || [];
+  const users = useMemo(() => usersData?.data || [], [usersData?.data]);
   const userOptions = useMemo(
     () => [
       { value: "", label: "Tất cả người tạo" },
-      ...users.map((user: any) => ({
+      ...users.map((user: { user_id?: number; id?: number; code?: string; name?: string }) => ({
         value: String(user.user_id || user.id),
         label: `${user.code || ""} - ${user.name}`.trim(),
       })),
@@ -150,7 +150,7 @@ const HRDailyReports: React.FC = () => {
   });
 
   const approveAllMutation = useMutation({
-    mutationFn: (reportIds: number[]) => reportService.approveReportsByIds(reportIds),
+    mutationFn: (reportIds: number[]) => reportService.approveReportsByIds(reportIds, 'approve'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["daily-reports"] });
       showSuccessToast("Duyệt tất cả báo cáo thành công");
@@ -164,7 +164,7 @@ const HRDailyReports: React.FC = () => {
 
   const rejectAllMutation = useMutation({
     mutationFn: ({ reportIds, reason }: { reportIds: number[]; reason: string }) =>
-      reportService.rejectReportsByIds(reportIds, reason),
+      reportService.approveReportsByIds(reportIds, 'reject', reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["daily-reports"] });
       showSuccessToast("Từ chối tất cả báo cáo thành công");
@@ -177,9 +177,9 @@ const HRDailyReports: React.FC = () => {
     },
   });
 
-  const handleApprove = (reportId: number) => {
+  const handleApprove = useCallback((reportId: number) => {
     approveMutation.mutate(reportId);
-  };
+  }, [approveMutation]);
 
   const handleReject = (reportId: number) => {
     setSelectedReportIds(new Set([reportId]));
@@ -226,13 +226,19 @@ const HRDailyReports: React.FC = () => {
     });
   };
 
-  const toggleSelectAll = () => {
-    if (selectedReportIds.size === reports.length) {
+  const toggleSelectAll = useCallback(() => {
+    const pendingReports = reports.filter((r) => r.status === DailyReportStatus.PENDING);
+    const pendingReportIds = new Set(pendingReports.map((r) => r.id));
+    
+    const allPendingSelected = pendingReportIds.size > 0 && 
+      Array.from(pendingReportIds).every((id) => selectedReportIds.has(id));
+    
+    if (allPendingSelected) {
       setSelectedReportIds(new Set());
     } else {
-      setSelectedReportIds(new Set(reports.map((r) => r.id)));
+      setSelectedReportIds(pendingReportIds);
     }
-  };
+  }, [reports, selectedReportIds]);
 
   const formatDate = (dateString: string) => {
     try {
@@ -276,22 +282,34 @@ const HRDailyReports: React.FC = () => {
         label: (
           <input
             type="checkbox"
-            checked={selectedReportIds.size === reports.length && reports.length > 0}
+            checked={
+              (() => {
+                const pendingReports = reports.filter((r) => r.status === DailyReportStatus.PENDING);
+                const pendingReportIds = new Set(pendingReports.map((r) => r.id));
+                return pendingReportIds.size > 0 && 
+                  Array.from(pendingReportIds).every((id) => selectedReportIds.has(id));
+              })()
+            }
             onChange={toggleSelectAll}
             style={{ cursor: "pointer" }}
           />
         ),
         width: "50px",
         align: "center",
-        render: (_, row) => (
-          <input
-            type="checkbox"
-            checked={selectedReportIds.has(row.id)}
-            onChange={() => toggleSelectReport(row.id)}
-            onClick={(e) => e.stopPropagation()}
-            style={{ cursor: "pointer" }}
-          />
-        ),
+        render: (_, row) => {
+          if (row.status !== DailyReportStatus.PENDING) {
+            return null; // Only show checkbox for PENDING reports
+          }
+          return (
+            <input
+              type="checkbox"
+              checked={selectedReportIds.has(row.id)}
+              onChange={() => toggleSelectReport(row.id)}
+              onClick={(e) => e.stopPropagation()}
+              style={{ cursor: "pointer" }}
+            />
+          );
+        },
       },
       {
         key: "work_date",
@@ -300,12 +318,12 @@ const HRDailyReports: React.FC = () => {
         render: (_, row) => formatDate(row.work_date),
       },
       {
-        key: "user_id",
+        key: "user",
         label: "Người tạo",
         width: "150px",
         render: (_, row) => (
           <span style={{ fontSize: "14px", color: "#6b7280" }}>
-            User #{row.user_id}
+            {row.user.user_information.name}
           </span>
         ),
       },
@@ -318,12 +336,12 @@ const HRDailyReports: React.FC = () => {
         ),
       },
       {
-        key: "project_id",
+        key: "project",
         label: "Dự án",
         width: "150px",
         render: (_, row) => (
           <span style={{ fontSize: "14px", color: "#6b7280" }}>
-            Dự án #{row.project_id}
+            {row.project.name}
           </span>
         ),
       },
@@ -382,7 +400,7 @@ const HRDailyReports: React.FC = () => {
         ),
       },
     ],
-    [selectedReportIds, reports.length, approveMutation.isPending, rejectMutation.isPending]
+    [selectedReportIds, reports, approveMutation.isPending, rejectMutation.isPending, toggleSelectAll, handleApprove]
   );
 
   const emptyMessage = useMemo(() => {

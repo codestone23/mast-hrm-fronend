@@ -467,6 +467,7 @@ const TeamList: React.FC = () => {
             onConfirm={handleConfirmDelete}
             title="Xóa team"
             message={`Bạn có chắc chắn muốn xóa team "${selectedTeam.name}"?`}
+            isLoading={deleteTeamMutation.isPending}
           />
         </>
       )}

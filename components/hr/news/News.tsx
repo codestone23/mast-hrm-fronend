@@ -252,6 +252,7 @@ export default function HRNewsPage() {
             onConfirm={handleConfirmDelete}
             title="Xóa tin tức"
             message={`Bạn có chắc chắn muốn xóa tin tức "${selectedNews.title}"?`}
+            isLoading={deleteMutation.isPending}
           />
 
           <NewsDetailModal

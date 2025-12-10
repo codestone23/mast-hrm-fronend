@@ -160,19 +160,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ userId }) => {
           data?.user_information
             ? {
                 name: data?.user_information?.name || "",
-                birthDate: data.user_information.birthday
-                  ? new Date(
-                      data.user_information.birthday
-                    ).toLocaleDateString("vi-VN")
-                  : "",
-                nationality: data.user_information.nationality || "",
-                gender: data.user_information.gender || "",
-                phone: data.user_information.phone || "",
-                maritalStatus: data.user_information.marital || "",
-                temporaryAddress: data.user_information.temp_address || "",
-                permanentAddress: data.user_information.address || "",
-                personalEmail: data.user_information.personal_email || "",
-                expertise: data.user_information.expertise || "",
+                email: data?.email || "",
               }
             : undefined
         }

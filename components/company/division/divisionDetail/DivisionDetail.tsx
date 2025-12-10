@@ -228,6 +228,7 @@ const DivisionDetailPage: React.FC<{ divisionId: number }> = ({
                 message={`Bạn có chắc chắn muốn xóa ${
                     pendingRemove?.name || "người dùng"
                 } khỏi phòng ban?`}
+                isLoading={removeMutation.isPending}
             />
         </PageContainer>
     );

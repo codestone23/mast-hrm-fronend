@@ -34,7 +34,7 @@ const PositionManagement: React.FC = () => {
 
   const { data: levelsData } = useLevels({ limit: 100 });
   const { data: detailData } = usePositionDetail(selectedPosition?.id || null);
-  const { createPosition, updatePosition, deletePosition, isCreating, isUpdating } = usePositionMutations();
+  const { createPosition, updatePosition, deletePosition, isCreating, isUpdating, isDeleting } = usePositionMutations();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -359,6 +359,7 @@ const PositionManagement: React.FC = () => {
         onConfirm={handleConfirmDelete}
         title="Xác nhận xóa vị trí"
         message={`Bạn có chắc chắn muốn xóa vị trí "${selectedPosition?.name}" không?`}
+        isLoading={isDeleting}
       />
     </div>
   );

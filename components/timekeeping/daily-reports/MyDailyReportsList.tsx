@@ -3,8 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Table, TableColumn, Button, ConfirmDeleteModal, Pagination } from "@/components/common";
-import { FileText, Edit, Trash2, Eye } from "lucide-react";
-import { useMobile } from "@/hooks/useMobile";
+import { FileText, Edit, Trash2 } from "lucide-react";
 import reportService from "@/services/report.service";
 import { DailyReport, DailyReportStatus } from "@/types/api";
 import { useToast } from "@/hooks/useToast";
@@ -13,7 +12,6 @@ import CreateDailyReportModal from "./modals/CreateDailyReportModal";
 const ITEMS_PER_PAGE = 10;
 
 const MyDailyReportsList: React.FC = () => {
-  const isMobile = useMobile();
   const queryClient = useQueryClient();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
 
@@ -121,12 +119,12 @@ const MyDailyReportsList: React.FC = () => {
         ),
       },
       {
-        key: "project_id",
+        key: "project",
         label: "Dự án",
         width: "150px",
         render: (_, row) => (
           <span style={{ fontSize: "14px", color: "#6b7280" }}>
-            Dự án #{row.project_id}
+            {row.project.name}
           </span>
         ),
       },
@@ -242,6 +240,7 @@ const MyDailyReportsList: React.FC = () => {
             onConfirm={handleConfirmDelete}
             title="Xóa báo cáo"
             message={`Bạn có chắc chắn muốn xóa báo cáo "${selectedReport.title}"?`}
+            isLoading={deleteMutation.isPending}
           />
         </>
       )}

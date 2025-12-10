@@ -50,8 +50,9 @@ const RoomManagement: React.FC = () => {
       setIsCreateModalOpen(false);
       setFormData({ name: "", is_active: true });
     },
-    onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message || "Có lỗi xảy ra khi tạo phòng họp";
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      const errorMessage = err?.response?.data?.message || "Có lỗi xảy ra khi tạo phòng họp";
       showErrorToast(errorMessage);
     },
   });
@@ -66,8 +67,9 @@ const RoomManagement: React.FC = () => {
       setIsEditModalOpen(false);
       setSelectedRoom(null);
     },
-    onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message || "Có lỗi xảy ra khi cập nhật";
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      const errorMessage = err?.response?.data?.message || "Có lỗi xảy ra khi cập nhật";
       showErrorToast(errorMessage);
     },
   });
@@ -80,8 +82,9 @@ const RoomManagement: React.FC = () => {
       setIsDeleteModalOpen(false);
       setSelectedRoom(null);
     },
-    onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message || "Có lỗi xảy ra khi xóa";
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      const errorMessage = err?.response?.data?.message || "Có lỗi xảy ra khi xóa";
       showErrorToast(errorMessage);
     },
   });
@@ -392,6 +395,7 @@ const RoomManagement: React.FC = () => {
         onConfirm={handleConfirmDelete}
         title="Xác nhận xóa phòng họp"
         message={`Bạn có chắc chắn muốn xóa phòng họp "${selectedRoom?.name}" không?`}
+        isLoading={deleteMutation.isPending}
       />
     </div>
   );

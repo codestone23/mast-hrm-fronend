@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { Phone, User } from "lucide-react";
+import { Mail, User } from "lucide-react";
 import { Modal, Input, Button } from "@/components/common";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import userService from "@/services/user.service";
@@ -25,15 +25,7 @@ interface EditAccountInfoModalProps {
 
 interface PersonalInfoData {
   name: string;
-  birthDate: string; 
-  nationality: string;
-  gender: string;
-  phone: string;
-  maritalStatus: string;
-  temporaryAddress: string;
-  permanentAddress: string;
-  personalEmail: string;
-  expertise: string;
+  email: string;
 }
 
 const EditAccountInfoModal: React.FC<EditAccountInfoModalProps> = ({
@@ -46,18 +38,12 @@ const EditAccountInfoModal: React.FC<EditAccountInfoModalProps> = ({
   const defaultValues: PersonalInfoData = useMemo(
     () => ({
       name: "",
-      birthDate: "",
-      nationality: "",
-      gender: "",
-      phone: "",
-      maritalStatus: "",
-      temporaryAddress: "",
-      permanentAddress: "",
-      personalEmail: "",
-      expertise: "",
+      email: "",
     }),
     []
   );
+
+  console.log(initialData);
 
   const {
     register,
@@ -102,17 +88,9 @@ const EditAccountInfoModal: React.FC<EditAccountInfoModalProps> = ({
     setError("");
 
     try {
-      // Convert form data to UpdateUserRequest format
-      const nameParts = data.name.trim().split(" ");
-      const firstName = nameParts[0] || "";
-      const lastName = nameParts.slice(1).join(" ") || "";
-
       const apiData: UpdateUserRequest = {
-        firstName,
-        lastName,
-        phone: data.phone,
-        // Note: UpdateUserRequest only supports firstName, lastName, phone, avatar, department, position
-        // Other fields like nationality, gender, etc. might need to be handled differently
+        name: data.name,
+        email: data.email,
       };
 
       await updateUserMutation.mutateAsync(apiData);
@@ -163,22 +141,24 @@ const EditAccountInfoModal: React.FC<EditAccountInfoModalProps> = ({
               required
               disabled={isSubmitting || updateUserMutation.isPending}
               error={errors.name?.message}
+              placeholder="Nhập tên"
             />
 
             <Input
-              label="Số điện thoại"
-              type="tel"
-              {...register("phone", {
-                required: "Vui lòng nhập số điện thoại",
+              label="Email"
+              type="email"
+              {...register("email", {
+                required: "Vui lòng nhập email",
                 pattern: {
-                  value: /^[0-9]{10,11}$/,
-                  message: "Số điện thoại không hợp lệ",
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Email không hợp lệ",
                 },
               })}
-              icon={<Phone size={16} />}
+              icon={<Mail size={16} />}
               required
               disabled={isSubmitting || updateUserMutation.isPending}
-              error={errors.phone?.message}
+              error={errors.email?.message}
+              placeholder="Nhập email"
             />
           </FormGrid>
         </FormSection>

@@ -713,6 +713,7 @@ const AssetManagement: React.FC = () => {
         title="Xóa tài sản"
         message="Bạn có chắc chắn muốn xóa tài sản này?"
         assetName={selectedAsset?.name}
+        isLoading={deleteMutation.isPending}
       />
 
       <AssignAssetModal

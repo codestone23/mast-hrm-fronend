@@ -9,7 +9,7 @@ import {
     CheckCircle,
     XCircle,
 } from "lucide-react";
-import { Select, DatePicker, Pagination, Loading } from "@/components/common";
+import { Select, DatePicker, Pagination, Loading, ConfirmApproveModal } from "@/components/common";
 import {
     useAdminRequests,
     useApproveRequest,
@@ -22,7 +22,6 @@ import {
     RequestHeader,
     RequestTitle,
     RequestStatus,
-    RequestMeta,
     RequestMetaItem,
     ListRequestContainer,
     ListRequestHeader,
@@ -65,6 +64,14 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
         end_date: undefined,
     });
 
+    const [approveModal, setApproveModal] = useState<{
+        isOpen: boolean;
+        request: Request | null;
+    }>({
+        isOpen: false,
+        request: null,
+    });
+
     const [rejectModal, setRejectModal] = useState<{
         isOpen: boolean;
         request: Request | null;
@@ -72,6 +79,8 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
         isOpen: false,
         request: null,
     });
+
+    const [processingRequestId, setProcessingRequestId] = useState<number | null>(null);
 
     const { data, isLoading } = useAdminRequests(filters);
     const approveMutation = useApproveRequest();
@@ -104,10 +113,7 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
 
     const handleApprove = (request: Request, e: React.MouseEvent) => {
         e.stopPropagation();
-        approveMutation.mutate({
-            type: request.type,
-            id: request.id.toString(),
-        });
+        setApproveModal({ isOpen: true, request });
     };
 
     const handleReject = (request: Request, e: React.MouseEvent) => {
@@ -115,14 +121,52 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
         setRejectModal({ isOpen: true, request });
     };
 
+    const handleConfirmApprove = () => {
+        if (approveModal.request) {
+            setProcessingRequestId(approveModal.request.id);
+            approveMutation.mutate({
+                type: getTypeEndpoint(approveModal.request.type),
+                id: approveModal.request.id.toString(),
+            }, {
+                onSuccess: () => {
+                    setApproveModal({ isOpen: false, request: null });
+                    setProcessingRequestId(null);
+                },
+                onError: () => {
+                    setProcessingRequestId(null);
+                },
+            });
+        }
+    };
+
     const handleConfirmReject = (reason: string) => {
         if (rejectModal.request) {
+            setProcessingRequestId(rejectModal.request.id);
             rejectMutation.mutate({
                 type: rejectModal.request.type,
                 id: rejectModal.request.id.toString(),
                 payload: { rejected_reason: reason },
+            }, {
+                onSuccess: () => {
+                    setRejectModal({ isOpen: false, request: null });
+                    setProcessingRequestId(null);
+                },
+                onError: () => {
+                    setProcessingRequestId(null);
+                },
             });
         }
+    };
+
+    const getTypeEndpoint = (type: string) => {
+        const typeMap: Record<string, string> = {
+            'remote_work': "remote-work",
+            'day_off': "day-off",
+            'overtime': "overtime",
+            'late_early': "late-early",
+            'forgot_checkin': "forgot-checkin",
+        };
+        return typeMap[type] || type.toLowerCase();
     };
 
     const getTypeLabel = (type: REQUEST_TYPE) => {
@@ -168,11 +212,6 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleDateString("vi-VN");
-    };
-
-    const formatDateTime = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleString("vi-VN");
     };
 
     const requests = data?.data || [];
@@ -295,12 +334,6 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                                                             request.type as REQUEST_TYPE
                                                         )}
                                                     </RequestTitle>
-                                                    <RequestNote>
-                                                        Tiêu đề: {request.title}
-                                                    </RequestNote>
-                                                    <RequestDescription>
-                                                        Lý do: {request.reason}
-                                                    </RequestDescription>
                                                     <RequestMetaItem>
                                                         <User size={14} /> Người
                                                         gửi:
@@ -312,19 +345,17 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                                                             }
                                                         </span>
                                                     </RequestMetaItem>
+                                                    <RequestNote>
+                                                        Tiêu đề: {request.title}
+                                                    </RequestNote>
+                                                    <RequestDescription>
+                                                        Lý do: {request.reason}
+                                                    </RequestDescription>
                                                     <RequestMetaItem>
                                                         <Calendar size={14} />
                                                         <span>
                                                             {formatDate(
                                                                 request.work_date
-                                                            )}
-                                                        </span>
-                                                    </RequestMetaItem>
-                                                    <RequestMetaItem>
-                                                        <span>
-                                                            THời gian tạo:{" "}
-                                                            {formatDateTime(
-                                                                request.created_at
                                                             )}
                                                         </span>
                                                     </RequestMetaItem>
@@ -339,44 +370,44 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                                                             request.status
                                                         )}
                                                     </RequestStatus>
+                                                    {request.status ===
+                                                        REQUEST_STATUS.PENDING && (
+                                                        <RequestActions>
+                                                            <ApproveButton
+                                                                onClick={(e) =>
+                                                                    handleApprove(
+                                                                        request,
+                                                                        e
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    processingRequestId === request.id && approveMutation.isPending
+                                                                }
+                                                            >
+                                                                <CheckCircle
+                                                                    size={16}
+                                                                />
+                                                                Duyệt
+                                                            </ApproveButton>
+                                                            <RejectButton
+                                                                onClick={(e) =>
+                                                                    handleReject(
+                                                                        request,
+                                                                        e
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    processingRequestId === request.id && rejectMutation.isPending
+                                                                }
+                                                            >
+                                                                <XCircle size={16} />
+                                                                Từ chối
+                                                            </RejectButton>
+                                                        </RequestActions>
+                                                    )}
                                                 </RequestRight>
                                             </RequestHeader>
 
-                                            {request.status ===
-                                                REQUEST_STATUS.PENDING && (
-                                                <RequestActions>
-                                                    <ApproveButton
-                                                        onClick={(e) =>
-                                                            handleApprove(
-                                                                request,
-                                                                e
-                                                            )
-                                                        }
-                                                        disabled={
-                                                            approveMutation.isPending
-                                                        }
-                                                    >
-                                                        <CheckCircle
-                                                            size={16}
-                                                        />
-                                                        Duyệt
-                                                    </ApproveButton>
-                                                    <RejectButton
-                                                        onClick={(e) =>
-                                                            handleReject(
-                                                                request,
-                                                                e
-                                                            )
-                                                        }
-                                                        disabled={
-                                                            rejectMutation.isPending
-                                                        }
-                                                    >
-                                                        <XCircle size={16} />
-                                                        Từ chối
-                                                    </RejectButton>
-                                                </RequestActions>
-                                            )}
                                         </RequestItem>
                                     ))}
                                 </RequestList>
@@ -399,13 +430,34 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                 )}
             </ListRequestContainer>
 
+            <ConfirmApproveModal
+                isOpen={approveModal.isOpen}
+                onClose={() => {
+                    if (!approveMutation.isPending) {
+                        setApproveModal({ isOpen: false, request: null });
+                    }
+                }}
+                onConfirm={handleConfirmApprove}
+                title="Xác nhận duyệt đề xuất"
+                message={`Bạn có chắc chắn muốn duyệt đề xuất "${
+                    approveModal.request?.title || ""
+                }" của ${
+                    approveModal.request?.user?.user_information?.name || ""
+                }?`}
+                isLoading={approveMutation.isPending && processingRequestId === approveModal.request?.id}
+            />
+
             <RejectModal
                 isOpen={rejectModal.isOpen}
-                onClose={() => setRejectModal({ isOpen: false, request: null })}
+                onClose={() => {
+                    if (!rejectMutation.isPending) {
+                        setRejectModal({ isOpen: false, request: null });
+                    }
+                }}
                 onConfirm={handleConfirmReject}
-                isLoading={rejectMutation.isPending}
+                isLoading={rejectMutation.isPending && processingRequestId === rejectModal.request?.id}
                 error={
-                    rejectMutation.isError
+                    rejectMutation.isError && processingRequestId === rejectModal.request?.id
                         ? "Có lỗi xảy ra khi từ chối đề xuất"
                         : undefined
                 }

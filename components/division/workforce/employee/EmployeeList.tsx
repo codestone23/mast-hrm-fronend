@@ -379,7 +379,7 @@ const EmployeeList: React.FC = () => {
     {
       key: "skills",
       label: "Kỹ năng",
-      width: "200px",
+      minWidth: "150px",
       render: (value) => <SkillsDisplay skills={value as string | null | undefined} />,
     },
     {
@@ -717,6 +717,7 @@ const EmployeeList: React.FC = () => {
         onConfirm={handleConfirmDelete}
         title="Xóa nhân viên"
         message={`Bạn có chắc chắn muốn xóa nhân viên "${selectedUser ? getUserName(selectedUser) : ""}"?`}
+        isLoading={deleteMutation.isPending}
       />
     </PersonalContainer>
   );

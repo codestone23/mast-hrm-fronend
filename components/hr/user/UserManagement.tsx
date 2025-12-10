@@ -634,6 +634,7 @@ const UserManagement: React.FC = () => {
         onConfirm={handleDeleteAccount}
         title="Xóa người dùng"
         message={`Bạn có chắc chắn muốn xóa người dùng "${selectedUser ? getUserName(selectedUser) : ""}"?`}
+        isLoading={deleteMutation.isPending}
       />
     </PersonalContainer>
   );

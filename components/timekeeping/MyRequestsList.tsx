@@ -419,6 +419,7 @@ const MyRequestsList: React.FC<MyRequestsListProps> = ({ onRequestClick, onEditR
                 onConfirm={handleDeleteRequest}
                 title="Xóa đề xuất"
                 message="Bạn có chắc chắn muốn xóa đề xuất này? Hành động này không thể hoàn tác."
+                isLoading={isDeleting}
             />
         </ListRequestContainer>
     );

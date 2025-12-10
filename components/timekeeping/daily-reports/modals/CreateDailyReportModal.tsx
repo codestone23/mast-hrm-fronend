@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { X } from "lucide-react";
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Modal, Input, Button, Select, DatePicker, TextArea } from "@/components/common";
+import { Input, Select, DatePicker, TextArea } from "@/components/common";
 import {
   ModalOverlay,
   ModalContainer,
@@ -70,7 +70,7 @@ const CreateDailyReportModal: React.FC<CreateDailyReportModalProps> = ({
     enabled: isOpen && !!formData.work_date && !isEdit,
   });
 
-  const existingReports = existingReportsData?.data || [];
+  const existingReports = useMemo(() => existingReportsData?.data || [], [existingReportsData?.data]);
   const totalHoursForDay = useMemo(() => {
     if (isEdit) {
       // When editing, exclude current report from total
@@ -258,87 +258,89 @@ const CreateDailyReportModal: React.FC<CreateDailyReportModalProps> = ({
           </ModalHeader>
 
           <ModalBody>
-            <FormGroup>
-              <FormLabel>
-                Dự án <span style={{ color: "#ef4444" }}>*</span>
-              </FormLabel>
-              <Select
-                options={projectOptions}
-                value={formData.project_id ? String(formData.project_id) : ""}
-                onChange={(value) => {
-                  setFormData({ ...formData, project_id: value ? Number(value) : 0 });
-                  if (errors.project_id) {
-                    setErrors({ ...errors, project_id: "" });
-                  }
-                }}
-                placeholder="Chọn dự án"
-                fullWidth
-                searchable={true}
-                onSearchChange={setProjectSearchTerm}
-                hasNextPage={hasNextPage}
-                isFetchingNextPage={isFetchingNextPage}
-                fetchNextPage={fetchNextPage}
-                loadingText="Đang tải thêm dự án..."
-                disabled={createMutation.isPending || updateMutation.isPending}
-              />
-              {errors.project_id && (
-                <span style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>
-                  {errors.project_id}
-                </span>
-              )}
-            </FormGroup>
-
-            <FormGroup>
-              <DatePicker
-                label="Ngày làm việc"
-                value={parseDateFromAPI(formData.work_date)}
-                onChange={(date) => {
-                  setFormData({
-                    ...formData,
-                    work_date: date ? formatDateForAPI(date) : "",
-                  });
-                  if (errors.work_date) {
-                    setErrors({ ...errors, work_date: "" });
-                  }
-                }}
-                placeholder="Chọn ngày"
-                disabled={createMutation.isPending || updateMutation.isPending}
-              />
-              {errors.work_date && (
-                <span style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>
-                  {errors.work_date}
-                </span>
-              )}
-            </FormGroup>
-
-            <FormGroup>
-              <FormLabel>
-                Số giờ làm việc <span style={{ color: "#ef4444" }}>*</span>
-                {!isEdit && maxAvailableHours < 8 && (
-                  <span style={{ color: "#6b7280", fontSize: "12px", marginLeft: "8px" }}>
-                    (Còn lại: {maxAvailableHours.toFixed(1)} giờ)
+            <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 0.8fr", gap: "1rem" }}>
+              <FormGroup>
+                <FormLabel>
+                  Dự án <span style={{ color: "#ef4444" }}>*</span>
+                </FormLabel>
+                <Select
+                  options={projectOptions}
+                  value={formData.project_id ? String(formData.project_id) : ""}
+                  onChange={(value) => {
+                    setFormData({ ...formData, project_id: value ? Number(value) : 0 });
+                    if (errors.project_id) {
+                      setErrors({ ...errors, project_id: "" });
+                    }
+                  }}
+                  placeholder="Chọn dự án"
+                  fullWidth
+                  searchable={true}
+                  onSearchChange={setProjectSearchTerm}
+                  hasNextPage={hasNextPage}
+                  isFetchingNextPage={isFetchingNextPage}
+                  fetchNextPage={fetchNextPage}
+                  loadingText="Đang tải thêm dự án..."
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                />
+                {errors.project_id && (
+                  <span style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>
+                    {errors.project_id}
                   </span>
                 )}
-              </FormLabel>
-              <Select
-                options={availableTimeOptions}
-                value={String(formData.actual_time)}
-                onChange={(value) => {
-                  setFormData({ ...formData, actual_time: value ? parseFloat(value) : 0 });
-                  if (errors.actual_time) {
-                    setErrors({ ...errors, actual_time: "" });
-                  }
-                }}
-                placeholder="Chọn số giờ"
-                fullWidth
-                disabled={createMutation.isPending || updateMutation.isPending}
-              />
-              {errors.actual_time && (
-                <span style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>
-                  {errors.actual_time}
-                </span>
-              )}
-            </FormGroup>
+              </FormGroup>
+
+              <FormGroup>
+                <DatePicker
+                  label="Ngày làm việc"
+                  value={parseDateFromAPI(formData.work_date)}
+                  onChange={(date) => {
+                    setFormData({
+                      ...formData,
+                      work_date: date ? formatDateForAPI(date) : "",
+                    });
+                    if (errors.work_date) {
+                      setErrors({ ...errors, work_date: "" });
+                    }
+                  }}
+                  placeholder="Chọn ngày"
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                />
+                {errors.work_date && (
+                  <span style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>
+                    {errors.work_date}
+                  </span>
+                )}
+              </FormGroup>
+
+              <FormGroup>
+                <FormLabel>
+                  Số giờ <span style={{ color: "#ef4444" }}>*</span>
+                  {!isEdit && maxAvailableHours < 8 && (
+                    <span style={{ color: "#6b7280", fontSize: "11px", marginLeft: "4px", display: "block" }}>
+                      (Còn: {maxAvailableHours.toFixed(1)}h)
+                    </span>
+                  )}
+                </FormLabel>
+                <Select
+                  options={availableTimeOptions}
+                  value={String(formData.actual_time)}
+                  onChange={(value) => {
+                    setFormData({ ...formData, actual_time: value ? parseFloat(String(value)) : 0 });
+                    if (errors.actual_time) {
+                      setErrors({ ...errors, actual_time: "" });
+                    }
+                  }}
+                  placeholder="Chọn giờ"
+                  fullWidth
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                />
+                {errors.actual_time && (
+                  <span style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>
+                    {errors.actual_time}
+                  </span>
+                )}
+              </FormGroup>
+            </div>
 
             <FormGroup>
               <FormLabel>

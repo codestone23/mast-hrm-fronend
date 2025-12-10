@@ -118,26 +118,28 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
     >
       <div>
         <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-          <Input
-            label="Tên đầy đủ"
-            value={formData.name}
-            onChange={(e) => handleChange("name", e.target.value)}
-            placeholder="Nhập tên đầy đủ"
-            error={errors.name}
-            required
-            fullWidth
-          />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
+            <Input
+              label="Tên đầy đủ"
+              value={formData.name}
+              onChange={(e) => handleChange("name", e.target.value)}
+              placeholder="Nhập tên đầy đủ"
+              error={errors.name}
+              required
+              fullWidth
+            />
 
-          <Input
-            label="Email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => handleChange("email", e.target.value)}
-            placeholder="Nhập email"
-            error={errors.email}
-            required
-            fullWidth
-          />
+            <Input
+              label="Email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleChange("email", e.target.value)}
+              placeholder="Nhập email"
+              error={errors.email}
+              required
+              fullWidth
+            />
+          </div>
 
           <Input
             label="Mật khẩu"

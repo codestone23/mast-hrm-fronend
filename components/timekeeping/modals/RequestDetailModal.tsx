@@ -63,11 +63,11 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
 
   const getTypeLabel = (type: string) => {
     const typeMap: { [key: string]: string } = {
-      'remote_work': 'Làm việc từ xa',
-      'day_off': 'Nghỉ phép',
-      'overtime': 'Làm thêm giờ',
-      'late_early': 'Đi muộn/Về sớm',
-      'forgot_checkin': 'Quên chấm công',
+      [REQUEST_TYPE.REMOTE_WORK]: 'Làm việc từ xa',
+      [REQUEST_TYPE.DAY_OFF]: 'Nghỉ phép',
+      [REQUEST_TYPE.OVERTIME]: 'Làm thêm giờ',
+      [REQUEST_TYPE.LATE_EARLY]: 'Đi muộn/Về sớm',
+      [REQUEST_TYPE.FORGOT_CHECKIN]: 'Quên chấm công',
     };
     return typeMap[type] || type;
   };

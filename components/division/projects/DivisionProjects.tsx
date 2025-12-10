@@ -58,7 +58,7 @@ const DivisionProjects: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
-  const { deleteProject } = useProjectMutation();
+  const { deleteProject, isDeleting } = useProjectMutation();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -301,6 +301,7 @@ const DivisionProjects: React.FC = () => {
         onConfirm={confirmDelete}
         title="Xóa dự án"
         message={`Bạn có chắc chắn muốn xóa dự án "${projectToDelete?.name}"?`}
+        isLoading={isDeleting}
       />
     </ProjectsContainer>
   );

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Eye, Edit, Trash2, User, Users, Search, Shield, MoreVertical, UserMinus, ScanFace } from "lucide-react";
+import { Plus, Eye, Trash2, User, Users, Search, Shield, MoreVertical, UserMinus, ScanFace } from "lucide-react";
 import { Input, Table, Pagination, Select } from "@/components/common";
 import { useMobile } from "@/hooks/useMobile";
 import { TableColumn } from "@/components/common/Table/Table";
@@ -35,7 +35,7 @@ import AssignRoleModal from "./modals/AssignRoleModal";
 import UnassignRoleModal from "./modals/UnassignRoleModal";
 import RegisterFaceModal from "./modals/RegisterFaceModal";
 import { ConfirmDeleteModal } from "@/components/common";
-import { User as UserType, UpdateUserRequest } from "@/types/api";
+import { User as UserType } from "@/types/api";
 import userService from "@/services/user.service";
 import { useToast } from "@/hooks/useToast";
 import { useRouter } from "next/navigation";
@@ -697,6 +697,7 @@ const AccountManagement: React.FC = () => {
         onConfirm={handleDeleteAccount}
         title="Xóa tài khoản"
         message={`Bạn có chắc chắn muốn xóa tài khoản "${selectedUser ? getUserName(selectedUser) : ""}"?`}
+        isLoading={deleteMutation.isPending}
       />
 
       <AssignRoleModal

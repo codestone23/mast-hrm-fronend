@@ -32,7 +32,7 @@ const LevelManagement: React.FC = () => {
   });
 
   const { data: detailData } = useLevelDetail(selectedLevel?.id || null);
-  const { createLevel, updateLevel, deleteLevel, isCreating, isUpdating } = useLevelMutations();
+  const { createLevel, updateLevel, deleteLevel, isCreating, isUpdating, isDeleting } = useLevelMutations();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -350,6 +350,7 @@ const LevelManagement: React.FC = () => {
         onConfirm={handleConfirmDelete}
         title="Xác nhận xóa cấp độ"
         message={`Bạn có chắc chắn muốn xóa cấp độ "${selectedLevel?.name}" không?`}
+        isLoading={isDeleting}
       />
     </div>
   );

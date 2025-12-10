@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { X, Search } from "lucide-react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Button, Input } from "@/components/common";
+import { Input, TextArea } from "@/components/common";
 import {
   ModalOverlay,
   ModalContainer,
@@ -27,7 +27,7 @@ import Image from "next/image";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (memberIds: number[]) => Promise<void>;
+  onSave: (payload: { user_id: number; description?: string }) => Promise<void>;
   teamId?: number;
   isLoading?: boolean;
 }
@@ -36,14 +36,16 @@ const AddMemberModal: React.FC<Props> = ({ isOpen, onClose, onSave, teamId, isLo
   const selectedDivisionId = useSelector(
     (state: RootState) => state.division.selectedDivisionId
   );
-  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [description, setDescription] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isOpen) {
-      setSelected(new Set());
+      setSelectedUserId(null);
+      setDescription("");
       setSearchTerm("");
       setDebouncedSearch("");
     }
@@ -111,24 +113,20 @@ const AddMemberModal: React.FC<Props> = ({ isOpen, onClose, onSave, teamId, isLo
   }, [members, teamId]);
 
   const toggleMember = (userId: number) => {
-    setSelected((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(userId)) {
-        newSet.delete(userId);
-      } else {
-        newSet.add(userId);
-      }
-      return newSet;
-    });
+    setSelectedUserId((prev) => (prev === userId ? null : userId));
   };
 
   const handleSave = async () => {
-    if (selected.size === 0) {
+    if (!selectedUserId) {
       return;
     }
     try {
-      await onSave(Array.from(selected));
-      setSelected(new Set());
+      await onSave({
+        user_id: selectedUserId,
+        description: description.trim() || undefined,
+      });
+      setSelectedUserId(null);
+      setDescription("");
       onClose();
     } catch {
       // Error handling is done in parent component
@@ -159,7 +157,7 @@ const AddMemberModal: React.FC<Props> = ({ isOpen, onClose, onSave, teamId, isLo
                 fullWidth
               />
               <div style={{ 
-                maxHeight: "400px", 
+                maxHeight: "300px", 
                 overflowY: "auto", 
                 border: "1px solid #e5e7eb", 
                 borderRadius: "8px",
@@ -172,7 +170,7 @@ const AddMemberModal: React.FC<Props> = ({ isOpen, onClose, onSave, teamId, isLo
                 ) : (
                   <>
                     {availableMembers.map((member: DivisionMemberData) => {
-                      const isSelected = selected.has(member.user_id);
+                      const isSelected = selectedUserId === member.user_id;
                       return (
                         <div
                           key={member.user_id}
@@ -201,7 +199,8 @@ const AddMemberModal: React.FC<Props> = ({ isOpen, onClose, onSave, teamId, isLo
                           }}
                         >
                           <input
-                            type="checkbox"
+                            type="radio"
+                            name="selectedMember"
                             checked={isSelected}
                             onChange={() => toggleMember(member.user_id)}
                             onClick={(e) => e.stopPropagation()}
@@ -246,14 +245,28 @@ const AddMemberModal: React.FC<Props> = ({ isOpen, onClose, onSave, teamId, isLo
                 )}
               </div>
             </FormGroup>
+
+            {selectedUserId && (
+              <FormGroup>
+                <FormLabel>Mô tả (tùy chọn)</FormLabel>
+                <TextArea
+                  placeholder="Nhập mô tả cho nhân sự này trong team..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  fullWidth
+                  disabled={isLoading}
+                />
+              </FormGroup>
+            )}
           </ModalBody>
 
           <ModalFooter>
             <CancelButton type="button" onClick={onClose} disabled={isLoading}>
               Hủy
             </CancelButton>
-            <SaveButton type="button" onClick={handleSave} disabled={isLoading || selected.size === 0}>
-              {isLoading ? "Đang thêm..." : `Thêm nhân sự (${selected.size})`}
+            <SaveButton type="button" onClick={handleSave} disabled={isLoading || !selectedUserId}>
+              {isLoading ? "Đang thêm..." : "Thêm nhân sự"}
             </SaveButton>
           </ModalFooter>
         </ModalContent>

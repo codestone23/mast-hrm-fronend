@@ -288,7 +288,7 @@ export const RequestTitle = styled.h4`
 export const RequestLeft = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex: 1;
   min-width: 0;
 `;
@@ -296,7 +296,8 @@ export const RequestLeft = styled.div`
 export const RequestRight = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  height: 100%;
+  justify-content: space-between;
   align-items: flex-end;
   gap: 0.75rem;
   flex-shrink: 0;

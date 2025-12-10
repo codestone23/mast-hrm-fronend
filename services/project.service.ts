@@ -1,4 +1,4 @@
-import { ROLE_NAMES } from "@/constants/enums";
+import { ROLE_NAMES, ProjectAccessType } from "@/constants/enums";
 import axiosInstance from "@/lib/axios";
 
 export interface ProjectMember {
@@ -120,7 +120,8 @@ class ProjectService {
   async getMyProjects(
     page: number = 1, 
     search?: string, 
-    division_id?: number
+    division_id?: number,
+    project_access_type: string = ProjectAccessType.RESTRICTED
   ): Promise<ProjectResponse> {
     const params = new URLSearchParams();
     params.append('page', page.toString());
@@ -129,6 +130,9 @@ class ProjectService {
     }
     if (division_id) {
       params.append('division_id', division_id.toString());
+    }
+    if (project_access_type) {
+      params.append('project_access_type', project_access_type);
     }
     const response = await axiosInstance.get(`/projects/my?${params.toString()}`);
     return response.data;

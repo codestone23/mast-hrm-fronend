@@ -1,5 +1,23 @@
 import styled from "styled-components";
 
+export const RichTextEditorWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+`;
+
+export const RichTextEditorLabel = styled.label<{ required?: boolean }>`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  
+  .required {
+    color: var(--error-500);
+    margin-left: 0.25rem;
+  }
+`;
+
 export const RichTextEditorContainer = styled.div<{
   $hasError?: boolean;
   $disabled?: boolean;
@@ -19,6 +37,12 @@ export const RichTextEditorContainer = styled.div<{
       ${({ $hasError }) =>
         $hasError ? "var(--error-100)" : "var(--primary-100)"};
   }
+`;
+
+export const RichTextEditorErrorMessage = styled.div`
+  font-size: 0.75rem;
+  color: var(--error-500);
+  margin-top: 0.25rem;
 `;
 
 export const RichTextToolbar = styled.div`

@@ -77,6 +77,7 @@ const DivisionDetailPage: React.FC<{ divisionId: number }> = ({
 
     const handleConfirmRemove = async () => {
         if (!pendingRemove) return;
+        console.log(pendingRemove);
         await removeMutation.mutateAsync({
             userId: pendingRemove.userId,
             divisionId,
@@ -183,7 +184,7 @@ const DivisionDetailPage: React.FC<{ divisionId: number }> = ({
                                         <DangerButton
                                             onClick={() =>
                                                 handleAskRemove(
-                                                    m.userId,
+                                                    m.user_id,
                                                     m.user.user_information?.name
                                                 )
                                             }

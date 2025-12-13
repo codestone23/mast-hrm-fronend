@@ -364,3 +364,74 @@ export const StatsCardLabel = styled.div`
   font-size: 0.75rem;
   color: var(--text-secondary);
 `;
+
+export const FilterContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+`;
+
+export const ToggleContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: white;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+`;
+
+export const ToggleLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  user-select: none;
+`;
+
+export const ToggleSwitch = styled.div<{ $checked: boolean }>`
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: ${({ $checked }) => $checked ? 'var(--primary-500)' : 'var(--gray-300)'};
+  border-radius: 12px;
+  transition: background 0.2s ease;
+  cursor: pointer;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: ${({ $checked }) => $checked ? '22px' : '2px'};
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: left 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+`;
+
+export const ManagerBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--primary-50);
+  color: var(--primary-700);
+  border: 1px solid var(--primary-200);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 0.5rem;
+`;
+
+export const ProjectCardManaged = styled(ProjectCard)`
+  border-left: 4px solid var(--primary-500);
+  background: linear-gradient(to right, var(--primary-50) 0%, white 4%);
+`;

@@ -17,6 +17,7 @@ export interface ConfirmApproveModalProps {
   title?: string;
   message?: string;
   isLoading?: boolean;
+  confirmText?: string;
 }
 
 const ConfirmApproveModal: React.FC<ConfirmApproveModalProps> = ({
@@ -26,14 +27,23 @@ const ConfirmApproveModal: React.FC<ConfirmApproveModalProps> = ({
   title = "Xác nhận duyệt",
   message = "Bạn có chắc chắn muốn duyệt yêu cầu này không?",
   isLoading,
+  confirmText = "Xác nhận duyệt",
 }) => {
+  const handleClose = () => {
+    if (!isLoading) {
+      onClose();
+    }
+  };
+
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       title={title}
       size="sm"
-      closable
+      closable={!isLoading}
+      closeOnOverlayClick={!isLoading}
+      closeOnEscape={!isLoading}
     >
       <ConfirmContainer>
         <div style={{ textAlign: "center", padding: "1rem 0" }}>
@@ -48,7 +58,7 @@ const ConfirmApproveModal: React.FC<ConfirmApproveModalProps> = ({
 
         <ActionsRow>
           <Spacer />
-          <Button variant="ghost" size="md" onClick={onClose} disabled={isLoading}>
+          <Button variant="ghost" size="md" onClick={handleClose} disabled={isLoading}>
             Hủy
           </Button>
           <Button
@@ -56,8 +66,9 @@ const ConfirmApproveModal: React.FC<ConfirmApproveModalProps> = ({
             size="md"
             onClick={onConfirm}
             loading={isLoading}
+            disabled={isLoading}
           >
-            Xác nhận duyệt
+            {confirmText}
           </Button>
         </ActionsRow>
       </ConfirmContainer>

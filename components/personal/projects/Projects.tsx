@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -8,9 +8,10 @@ import {
   Users,
   Briefcase,
   Building,
-  Search
+  Search,
+  Crown
 } from 'lucide-react';
-import { Breadcrumb, BreadcrumbItemData, Input, Loading } from '@/components/common';
+import { Breadcrumb, BreadcrumbItemData, Input, Loading, Pagination } from '@/components/common';
 import {
   ProjectsContainer,
   ProjectsHeader,
@@ -28,17 +29,35 @@ import {
   EmptyState,
   EmptyStateIcon,
   EmptyStateTitle,
-  EmptyStateDescription
+  EmptyStateDescription,
+  FilterContainer,
+  ToggleContainer,
+  ToggleLabel,
+  ToggleSwitch,
+  ManagerBadge,
+  ProjectCardManaged
 } from './projectStyle';
 import projectService, { Project } from '@/services/project.service';
 import ROUTERS from "@/config/router";
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import { ROLE_NAMES, ProjectAccessType } from '@/constants/enums';
 
 const Projects: React.FC = () => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showManagedOnly, setShowManagedOnly] = useState(false);
   const selectedDivisionId = useSelector((state: RootState) => state.division.selectedDivisionId);
+  const userData = useSelector((state: RootState) => state.user.data);
+
+  // Kiểm tra xem user có role project_manager không
+  const isProjectManager = useMemo(() => {
+    if (!userData?.role_assignments) return false;
+    return userData.role_assignments.some(
+      (role) => role.name?.toLowerCase() === ROLE_NAMES.PROJECT_MANAGER.toLowerCase()
+    );
+  }, [userData]);
 
   const breadcrumbItems: BreadcrumbItemData[] = [
     {
@@ -47,51 +66,113 @@ const Projects: React.FC = () => {
     }
   ];
 
-  // Fetch projects data
-  const { data: projectsResponse, isLoading, error } = useQuery({
-    queryKey: ['my-projects', searchTerm, selectedDivisionId],
-    queryFn: () => projectService.getMyProjects(1, searchTerm || undefined),
+  // Fetch my projects data (luôn fetch nếu không phải filter managed only)
+  const { data: myProjectsResponse, isLoading: isLoadingMyProjects } = useQuery({
+    queryKey: ['my-projects', currentPage, searchTerm, selectedDivisionId],
+    queryFn: () => projectService.getMyProjects(
+      currentPage, 
+      searchTerm || undefined, 
+      selectedDivisionId || undefined,
+      ProjectAccessType.RESTRICTED
+    ),
+    enabled: !showManagedOnly,
   });
 
-  const projects = projectsResponse?.data || [];
+  // Fetch managed projects data (fetch khi là project_manager và cần merge hoặc filter)
+  const { data: managedProjectsResponse, isLoading: isLoadingManagedProjects } = useQuery({
+    queryKey: ['managed-projects', currentPage, searchTerm],
+    queryFn: () => projectService.getProjectsManager(
+      currentPage, 
+      searchTerm || undefined,
+      ProjectAccessType.RESTRICTED
+    ),
+    enabled: isProjectManager,
+  });
+
+  const isLoading = isLoadingMyProjects || isLoadingManagedProjects;
+
+  // Lấy danh sách ID của các dự án được quản lý để đánh dấu
+  const managedProjectIds = useMemo(() => {
+    if (!isProjectManager || !managedProjectsResponse?.data) return new Set<number>();
+    return new Set(managedProjectsResponse.data.map((p: Project) => p.id));
+  }, [isProjectManager, managedProjectsResponse]);
+
+  // Xác định dữ liệu và pagination dựa trên filter
+  const projectsResponse = useMemo(() => {
+    return showManagedOnly ? managedProjectsResponse : myProjectsResponse;
+  }, [showManagedOnly, managedProjectsResponse, myProjectsResponse]);
+
+  const projects = useMemo(() => {
+    return projectsResponse?.data || [];
+  }, [projectsResponse]);
+
+  // Pagination: dùng từ managed khi filter, từ my khi không filter
+  const pagination = useMemo(() => {
+    if (showManagedOnly) {
+      return managedProjectsResponse?.pagination;
+    }
+    return myProjectsResponse?.pagination;
+  }, [showManagedOnly, managedProjectsResponse?.pagination, myProjectsResponse?.pagination]);
+
+  // Merge projects nếu không filter (hiển thị tất cả)
+  const allProjects = useMemo(() => {
+    if (showManagedOnly) return projects;
+    
+    if (!isProjectManager || !managedProjectsResponse?.data) {
+      return projects;
+    }
+
+    // Merge và loại bỏ duplicate
+    const projectMap = new Map<number, Project>();
+    
+    // Thêm my projects
+    projects.forEach((project: Project) => {
+      projectMap.set(project.id, project);
+    });
+
+    // Thêm managed projects
+    managedProjectsResponse.data.forEach((project: Project) => {
+      projectMap.set(project.id, project);
+    });
+
+    return Array.from(projectMap.values());
+  }, [projects, managedProjectsResponse, showManagedOnly, isProjectManager]);
+
+  const displayProjects = showManagedOnly ? projects : allProjects;
 
   const handleViewDetail = (projectId: number) => {
     router.push(`${ROUTERS.PERSONAL.PROJECTS}/${projectId}`);
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleToggleChange = (checked: boolean) => {
+    setShowManagedOnly(checked);
+    setCurrentPage(1); // Reset về trang 1 khi đổi filter
+  };
+
   const renderNoProjects = () => {
     return (
-      <ProjectsContainer>
-        <Breadcrumb items={breadcrumbItems} />
-        <ProjectsHeader>
-          <div>
-            <ProjectsTitle>Dự án của tôi</ProjectsTitle>
-            <ProjectsSubtitle>Chưa có dự án nào</ProjectsSubtitle>
-          </div>
-        </ProjectsHeader>
-        
-        <div style={{ marginBottom: '1.5rem' }}>
-          <Input
-            placeholder="Tìm kiếm theo tên dự án..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            icon={<Search size={16} />}
-            iconPosition="left"
-          />
-        </div>
-        
-        <EmptyState>
-          <EmptyStateIcon>
-            <Briefcase size={32} />
-          </EmptyStateIcon>
-          <EmptyStateTitle>Chưa có dự án nào</EmptyStateTitle>
-          <EmptyStateDescription>
-            Bạn chưa tham gia dự án nào.
-          </EmptyStateDescription>
-        </EmptyState>
-      </ProjectsContainer>
+      <EmptyState>
+        <EmptyStateIcon>
+          <Briefcase size={32} />
+        </EmptyStateIcon>
+        <EmptyStateTitle>Chưa có dự án nào</EmptyStateTitle>
+        <EmptyStateDescription>
+          {showManagedOnly 
+            ? 'Bạn chưa quản lý dự án nào.' 
+            : 'Bạn chưa tham gia dự án nào.'}
+        </EmptyStateDescription>
+      </EmptyState>
     );
-  }
+  };
+
+  const isManagedProject = (projectId: number) => {
+    return managedProjectIds.has(projectId);
+  };
 
   return (
     <ProjectsContainer>
@@ -100,32 +181,68 @@ const Projects: React.FC = () => {
       <ProjectsHeader>
         <div>
           <ProjectsTitle>Dự án của tôi</ProjectsTitle>
-          <ProjectsSubtitle>{projects.length} dự án</ProjectsSubtitle>
+          <ProjectsSubtitle>
+            {pagination?.total 
+              ? `${pagination.total} dự án` 
+              : `${displayProjects.length} dự án`}
+          </ProjectsSubtitle>
         </div>
       </ProjectsHeader>
 
-      <div style={{ marginBottom: '1.5rem' }}>
-        <Input
-          placeholder="Tìm kiếm theo tên dự án..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          icon={<Search size={16} />}
-          iconPosition="left"
-        />
-      </div>
+      <FilterContainer>
+        <div style={{ flex: 1 }}>
+          <Input
+            placeholder="Tìm kiếm theo tên dự án..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1); // Reset về trang 1 khi search
+            }}
+            icon={<Search size={16} />}
+            iconPosition="left"
+          />
+        </div>
+        
+        {isProjectManager && (
+          <ToggleContainer>
+            <ToggleLabel htmlFor="managed-toggle">
+              <span>Chỉ hiển thị dự án tôi quản lý</span>
+              <ToggleSwitch
+                $checked={showManagedOnly}
+                onClick={() => handleToggleChange(!showManagedOnly)}
+                id="managed-toggle"
+              />
+            </ToggleLabel>
+          </ToggleContainer>
+        )}
+      </FilterContainer>
 
-        {isLoading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%' }}>
-            <Loading />
-          </div>
-        ) : (
+      {isLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px', width: '100%' }}>
+          <Loading />
+        </div>
+      ) : (
+        <>
           <ProjectsGrid>
-            {projects.length === 0 ? renderNoProjects() : (
-              <>
-                {projects.map((project) => (
-                  <ProjectCard key={project.id}>
+            {displayProjects.length === 0 ? (
+              renderNoProjects()
+            ) : (
+              displayProjects.map((project) => {
+                const isManaged = isManagedProject(project.id);
+                const CardComponent = isManaged ? ProjectCardManaged : ProjectCard;
+                
+                return (
+                  <CardComponent key={project.id}>
                     <ProjectInfo>
-                      <ProjectName>{project.name}</ProjectName>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <ProjectName>{project.name}</ProjectName>
+                        {isManaged && (
+                          <ManagerBadge>
+                            <Crown size={12} />
+                            <span>Quản lý</span>
+                          </ManagerBadge>
+                        )}
+                      </div>
                       <ProjectDescription>{project.description || project.scope}</ProjectDescription>
                       
                       <ProjectMeta>
@@ -148,12 +265,25 @@ const Projects: React.FC = () => {
                         Xem chi tiết
                       </ProjectActionButton>
                     </ProjectActions>
-                  </ProjectCard>
-                ))}
-              </>
+                  </CardComponent>
+                );
+              })
             )}
           </ProjectsGrid>
-        )}
+
+          {pagination && pagination.total_pages > 1 && (
+            <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
+              <Pagination
+                currentPage={pagination.current_page}
+                totalPages={pagination.total_pages}
+                totalItems={pagination.total}
+                itemsPerPage={pagination.per_page}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
+        </>
+      )}
     </ProjectsContainer>
   );
 };

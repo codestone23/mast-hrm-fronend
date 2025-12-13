@@ -43,6 +43,28 @@ const CreateNewsModal: React.FC<CreateNewsModalProps> = ({
     }
   };
 
+  const isContentEmpty = (htmlContent: string): boolean => {
+    if (!htmlContent) return true;
+    
+    // Remove HTML tags using regex
+    const textWithoutTags = htmlContent.replace(/<[^>]*>/g, "");
+    
+    // Replace HTML entities (like &nbsp;, &amp;, etc.) with spaces
+    const textWithoutEntities = textWithoutTags
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&[a-z]+;/gi, " "); // Replace any other HTML entities
+    
+    // Remove all whitespace characters (spaces, tabs, newlines, etc.)
+    const trimmedContent = textWithoutEntities.replace(/\s+/g, "").trim();
+    
+    return trimmedContent.length === 0;
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -50,7 +72,7 @@ const CreateNewsModal: React.FC<CreateNewsModalProps> = ({
       newErrors.title = "Tiêu đề là bắt buộc";
     }
 
-    if (!formData.content.trim()) {
+    if (isContentEmpty(formData.content)) {
       newErrors.content = "Nội dung là bắt buộc";
     }
 
@@ -101,10 +123,12 @@ const CreateNewsModal: React.FC<CreateNewsModalProps> = ({
             />
 
             <RichTextEditor
+              label="Nội dung"
               value={formData.content}
               onChange={(value) => handleInputChange("content", value)}
               placeholder="Nhập nội dung tin tức..."
               error={errors.content}
+              required
             />
           </ModalBody>
 

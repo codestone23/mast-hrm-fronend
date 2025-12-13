@@ -11,7 +11,7 @@ import {
   TabContent,
 } from "./timekeepingStyle";
 
-const Tabs = ["Thống kê chấm công", "DANH SÁCH ĐỀ XUẤT NHÂN VIÊN"];
+const Tabs = ["DANH SÁCH ĐỀ XUẤT NHÂN VIÊN"];
 
 const Timekeeping: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>(Tabs[0]);
@@ -33,7 +33,7 @@ const Timekeeping: React.FC = () => {
       </Header>
 
       <TabContent>
-        {activeTab === "Thống kê chấm công" && <AttendanceStatistics />}
+        {/* {activeTab === "Thống kê chấm công" && <AttendanceStatistics />} */}
         {activeTab === "DANH SÁCH ĐỀ XUẤT NHÂN VIÊN" && <AdminRequestsList />}
       </TabContent>
     </TimekeepingContainer>

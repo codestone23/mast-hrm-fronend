@@ -127,20 +127,23 @@ export const DivisionIcon = styled.div`
   width: 56px;
   height: 56px;
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, var(--primary-100), var(--primary-50));
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--primary-600);
   margin-bottom: 20px;
   box-shadow: var(--shadow-sm);
-`;
+  `;
 
 export const DivisionInfo = styled.div`
   flex: 1;
-`;
+  `;
 
 export const DivisionName = styled.h3`
+  width:fit-content;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 20px;
   font-weight: 700;
   color: var(--text-primary);

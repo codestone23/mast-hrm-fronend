@@ -142,6 +142,23 @@ class ProjectService {
     const response = await axiosInstance.get(`/projects/${projectId}/members`);
     return response.data;
   }
+
+  async getProjectsManager(
+    page: number = 1,
+    search?: string,
+    project_access_type: string = ProjectAccessType.RESTRICTED
+  ): Promise<ProjectResponse> {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    if (search) {
+      params.append('search', search);
+    }
+    if (project_access_type) {
+      params.append('project_access_type', project_access_type);
+    }
+    const response = await axiosInstance.get(`/projects/managed?${params.toString()}`);
+    return response.data;
+  }
 }
 
 const projectService = new ProjectService();

@@ -7,6 +7,9 @@ import {
   UpdateDivisionRequest,
   DivisionUserAssignmentItem,
   PaginatedMeta,
+  CreateRotationMemberRequest,
+  RotationMember,
+  RotationMemberListParams,
 } from "@/types/api";
 
 class DivisionsService {
@@ -81,6 +84,32 @@ class DivisionsService {
     const response = await axiosInstance.get(`/divisions/unassigned-users`, {
       params: { page, limit, search },
     });
+    return response.data;
+  }
+
+  async createRotationMember(payload: CreateRotationMemberRequest): Promise<void> {
+    await axiosInstance.post(`/divisions/rotation-members`, payload);
+  }
+
+  async getRotationMembers(params: RotationMemberListParams): Promise<{
+    data: RotationMember[];
+    pagination: PaginatedMeta;
+  }> {
+    const response = await axiosInstance.get(`/divisions/rotation-members`, {
+      params: {
+        division_id: params.division_id,
+        page: params.page ?? 1,
+        limit: params.limit ?? 10,
+        type: params.type,
+        date_from: params.date_from,
+        date_to: params.date_to,
+      },
+    });
+    return response.data;
+  }
+
+  async getRotationMemberById(id: number): Promise<RotationMember> {
+    const response = await axiosInstance.get(`/divisions/rotation-members/${id}`);
     return response.data;
   }
 }

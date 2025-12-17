@@ -968,3 +968,54 @@ export interface AttendanceStatistics {
     end_date: string;
   };
 }
+
+// Rotation Member types
+export const RotationType = {
+  PERMANENT: 'PERMANENT',
+  TEMPORARY: 'TEMPORARY',
+} as const;
+
+export type RotationTypeValue = typeof RotationType[keyof typeof RotationType];
+
+export interface CreateRotationMemberRequest {
+  user_id: number;
+  division_id: number;
+  type: RotationTypeValue;
+  date_rotation: string;
+}
+
+export interface RotationMemberListParams {
+  division_id: number;
+  page?: number;
+  limit?: number;
+  type?: RotationTypeValue;
+  date_from?: string;
+  date_to?: string;
+}
+
+export interface RotationMember {
+  id: number;
+  from_id: number;
+  to_id: number;
+  user_id: number;
+  type: RotationTypeValue;
+  date_rotation: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  user: {
+    id: number;
+    email: string;
+    user_information: {
+      name: string;
+    };
+  };
+  to_division: {
+    id: number;
+    name: string;
+  };
+  from_division: {
+    id: number;
+    name: string;
+  };
+}

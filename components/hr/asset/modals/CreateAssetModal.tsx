@@ -1,227 +1,218 @@
 "use client";
 
-import React, { useState } from "react";
-import { X } from "lucide-react";
-import {
-  ModalOverlay,
-  ModalContainer,
-  ModalHeader,
-  ModalTitle,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  FormRow,
-  CancelButton,
-  SaveButton,
-} from "./modalStyle";
+import React from "react";
+import { useForm, Controller } from "react-hook-form";
+import { Modal, Button, Input, Select, TextArea } from "@/components/common";
 import { Asset } from "@/constants/types";
-import { Input, Select, TextArea } from "@/components/common";
+import { FormRow } from "./modalStyle";
 
 interface CreateAssetModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (assetData: Omit<Asset, "id">) => void;
+  isLoading?: boolean;
 }
 
-interface SelectOption {
-  value: string;
-  label: string;
+interface FormData {
+  asset_code: string;
+  name: string;
+  description: string;
+  status: string;
+  category: string;
+  purchase_price: string;
+  model: string;
 }
+
+const statusOptions = [
+  { value: "AVAILABLE", label: "Trống" },
+  { value: "ASSIGNED", label: "Đang sử dụng" },
+  { value: "MAINTENANCE", label: "Bảo trì" },
+  { value: "RETIRED", label: "Thanh lý" },
+];
+
+const categoryOptions = [
+  { value: "LAPTOP", label: "Laptop" },
+  { value: "DESKTOP", label: "Desktop" },
+  { value: "MONITOR", label: "Monitor" },
+  { value: "KEYBOARD", label: "Keyboard" },
+  { value: "MOUSE", label: "Mouse" },
+  { value: "HEADPHONE", label: "Headphone" },
+  { value: "PHONE", label: "Phone" },
+];
 
 const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  isLoading = false,
 }) => {
-  const [formData, setFormData] = useState({
-    asset_code: "",
-    name: "",
-    description: "",
-    status: "available" as const,
-    category: "",
-    purchase_price: "",
-    model: "",
-  });
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const statusOptions: SelectOption[] = [
-    { value: "AVAILABLE", label: "Trống" },
-    { value: "ASSIGNED", label: "Đang sử dụng" },
-    { value: "MAINTENANCE", label: "Bảo trì" },
-    { value: "RETIRED", label: "Thanh lý" },
-  ];
-
-  const categoryOptions: SelectOption[] = [
-    { value: "LAPTOP", label: "Laptop" },
-    { value: "DESKTOP", label: "Desktop" },
-    { value: "MONITOR", label: "Monitor" },
-    { value: "KEYBOARD", label: "Keyboard" },
-    { value: "MOUSE", label: "Mouse" },
-    { value: "HEADPHONE", label: "Headphone" },
-    { value: "PHONE", label: "Phone" },
-  ];
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.asset_code.trim()) {
-      newErrors.asset_code = "Mã tài sản là bắt buộc";
-    }
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Tên tài sản là bắt buộc";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (validateForm()) {
-      onSave({
-        asset_code: formData.asset_code,
-        // keep legacy code for backward compatibility
-        name: formData.name,
-        description: formData.description,
-        status: formData.status,
-        category: formData.category,
-        purchase_price: formData.purchase_price ? formData.purchase_price : "",
-        model: formData.model,
-      } as Omit<Asset, "id">);
-      
-      setFormData({
-        asset_code: "",
-        name: "",
-        description: "",
-        status: "available",
-        category: "",
-        purchase_price: "",
-        model: "",
-      });
-      setErrors({});
-    }
-  };
-
-  const handleClose = () => {
-    setFormData({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {
       asset_code: "",
       name: "",
       description: "",
-      status: "available",
+      status: "AVAILABLE",
       category: "",
       purchase_price: "",
       model: "",
-    });
-    setErrors({});
+    },
+  });
+
+  const handleClose = () => {
+    reset();
     onClose();
   };
 
-  if (!isOpen) return null;
+  const onSubmit = (data: FormData) => {
+    onSave({
+      asset_code: data.asset_code,
+      name: data.name,
+      description: data.description,
+      status: data.status as "available",
+      category: data.category,
+      purchase_price: data.purchase_price || "",
+      model: data.model,
+    } as Omit<Asset, "id">);
+    reset();
+  };
 
   return (
-    <ModalOverlay onClick={handleClose}>
-      <ModalContainer size="md" onClick={(e) => e.stopPropagation()}>
-        <ModalHeader>
-          <ModalTitle>Tạo tài sản mới</ModalTitle>
-          <ModalCloseButton onClick={handleClose}>
-            <X size={20} />
-          </ModalCloseButton>
-        </ModalHeader>
-
-        <form onSubmit={handleSubmit}>
-          <ModalBody>
-            <FormRow>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Tạo tài sản mới"
+      size="md"
+      footer={
+        <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+          <Button variant="secondary" onClick={handleClose} disabled={isLoading}>
+            Hủy
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSubmit(onSubmit)}
+            disabled={isLoading}
+          >
+            {isLoading ? "Đang tạo..." : "Tạo tài sản"}
+          </Button>
+        </div>
+      }
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <FormRow>
+          <Controller
+            name="asset_code"
+            control={control}
+            rules={{ required: "Mã tài sản là bắt buộc" }}
+            render={({ field }) => (
               <Input
                 label="Mã tài sản"
-                value={formData.asset_code}
-                onChange={(e) => handleInputChange("asset_code", e.target.value)}
+                {...field}
                 placeholder="Nhập mã tài sản"
-                error={errors.asset_code}
+                error={errors.asset_code?.message}
                 required
                 fullWidth
               />
+            )}
+          />
 
+          <Controller
+            name="name"
+            control={control}
+            rules={{ required: "Tên tài sản là bắt buộc" }}
+            render={({ field }) => (
               <Input
                 label="Tên tài sản"
-                value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
+                {...field}
                 placeholder="Nhập tên tài sản"
-                error={errors.name}
+                error={errors.name?.message}
                 required
                 fullWidth
               />
-            </FormRow>
+            )}
+          />
+        </FormRow>
 
+        <Controller
+          name="description"
+          control={control}
+          render={({ field }) => (
             <TextArea
               label="Mô tả"
-              value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
+              {...field}
               placeholder="Nhập mô tả tài sản"
               rows={3}
               fullWidth
             />
+          )}
+        />
 
-            <FormRow>
+        <FormRow>
+          <Controller
+            name="purchase_price"
+            control={control}
+            render={({ field }) => (
               <Input
                 label="Giá (VNĐ)"
                 type="number"
-                value={formData.purchase_price}
-                onChange={(e) => handleInputChange("purchase_price", e.target.value)}
+                {...field}
                 placeholder="Nhập giá"
                 fullWidth
               />
+            )}
+          />
 
+          <Controller
+            name="status"
+            control={control}
+            render={({ field }) => (
               <Select
                 label="Trạng thái"
                 options={statusOptions}
-                value={formData.status}
-                onChange={(value) => handleInputChange("status", String(value))}
+                value={field.value}
+                onChange={field.onChange}
                 fullWidth
               />
-            </FormRow>
+            )}
+          />
+        </FormRow>
 
-            <FormRow>
+        <FormRow>
+          <Controller
+            name="category"
+            control={control}
+            render={({ field }) => (
               <Select
                 label="Danh mục"
                 options={categoryOptions}
-                value={formData.category}
-                onChange={(value) => handleInputChange("category", String(value))}
+                value={field.value}
+                onChange={field.onChange}
+                placeholder="Chọn danh mục"
                 fullWidth
               />
+            )}
+          />
 
+          <Controller
+            name="model"
+            control={control}
+            render={({ field }) => (
               <Input
                 label="Model"
-                value={formData.model}
-                onChange={(e) => handleInputChange("model", e.target.value)}
+                {...field}
                 placeholder="Nhập Model"
                 fullWidth
               />
-            </FormRow>
-          </ModalBody>
-
-          <ModalFooter>
-            <CancelButton type="button" onClick={handleClose}>
-              Hủy
-            </CancelButton>
-            <SaveButton type="submit">
-              Tạo tài sản
-            </SaveButton>
-          </ModalFooter>
-        </form>
-      </ModalContainer>
-    </ModalOverlay>
+            )}
+          />
+        </FormRow>
+      </div>
+    </Modal>
   );
 };
 
 export default CreateAssetModal;
-

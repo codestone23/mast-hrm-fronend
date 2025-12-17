@@ -141,6 +141,11 @@ export default function Layout({
           ROLE_NAMES.HR_MANAGER,
           ROLE_NAMES.ADMIN,
         ],
+      },
+      {
+        id: ROUTERS.PERSONAL.MY_TEAMS,
+        label: "Đội nhóm",
+        roles: [ROLE_NAMES.TEAM_LEADER],
       }
     ],
     []

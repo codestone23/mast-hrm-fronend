@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
-import { Plus, Package, FileText, Edit, Trash2, Eye, UserPlus } from "lucide-react";
+import { Plus, Package, FileText, Edit, Trash2, Eye, UserPlus, UserMinus } from "lucide-react";
 import { useMobile } from "@/hooks/useMobile";
 import {
   Container,
@@ -63,6 +63,7 @@ const AssetManagement: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [isUnassignModalOpen, setIsUnassignModalOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   
   // Request modal states
@@ -261,6 +262,22 @@ const AssetManagement: React.FC = () => {
     },
   });
 
+  const unassignMutation = useMutation({
+    mutationFn: ({ assetId, notes }: { assetId: number | string; notes?: string }) =>
+      assetsService.unassignAsset(assetId, notes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      queryClient.invalidateQueries({ queryKey: ['assetStatistics'] });
+      showSuccessToast("Thu hồi tài sản thành công");
+      setIsUnassignModalOpen(false);
+      setSelectedAsset(null);
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      showErrorToast(err?.response?.data?.message || "Có lỗi xảy ra khi thu hồi tài sản");
+    },
+  });
+
   // Handlers
   const handleCreateAsset = (assetData: Omit<Asset, "id">) => {
     createMutation.mutate(assetData);
@@ -311,6 +328,17 @@ const AssetManagement: React.FC = () => {
   const handleAssignClick = (asset: Asset) => {
     setSelectedAsset(asset);
     setIsAssignModalOpen(true);
+  };
+
+  const handleUnassignClick = (asset: Asset) => {
+    setSelectedAsset(asset);
+    setIsUnassignModalOpen(true);
+  };
+
+  const handleConfirmUnassign = (reason: string) => {
+    if (selectedAsset?.id) {
+      unassignMutation.mutate({ assetId: selectedAsset.id, notes: reason });
+    }
   };
 
   const approveRequestMutation = useMutation({
@@ -473,36 +501,48 @@ const AssetManagement: React.FC = () => {
     {
       key: "actions",
       label: "Hành động",
-      width: "150px",
+      width: "180px",
       align: "center",
-      render: (_, row) => (
-        <div style={{ display: "flex", gap: "8px" }}>
-          <ActionButton $variant="view" onClick={(e) => {
-            e.stopPropagation();
-            handleViewAsset(row);
-          }}>
-            <Eye size={16} />
-          </ActionButton>
-          <ActionButton $variant="edit" onClick={(e) => {
-            e.stopPropagation();
-            handleEditClick(row);
-          }}>
-            <Edit size={16} />
-          </ActionButton>
-          <ActionButton $variant="edit" onClick={(e) => {
-            e.stopPropagation();
-            handleAssignClick(row);
-          }} title="Gán tài sản">
-            <UserPlus size={16} />
-          </ActionButton>
-          <ActionButton $variant="delete" onClick={(e) => {
-            e.stopPropagation();
-            handleDeleteClick(row);
-          }}>
-            <Trash2 size={16} />
-          </ActionButton>
-        </div>
-      ),
+      render: (_, row) => {
+        const isAssigned = row.status === AssetStatus.ASSIGNED;
+        return (
+          <div style={{ display: "flex", gap: "8px" }}>
+            <ActionButton $variant="view" onClick={(e) => {
+              e.stopPropagation();
+              handleViewAsset(row);
+            }}>
+              <Eye size={16} />
+            </ActionButton>
+            <ActionButton $variant="edit" onClick={(e) => {
+              e.stopPropagation();
+              handleEditClick(row);
+            }}>
+              <Edit size={16} />
+            </ActionButton>
+            {isAssigned ? (
+              <ActionButton $variant="delete" onClick={(e) => {
+                e.stopPropagation();
+                handleUnassignClick(row);
+              }} title="Thu hồi tài sản">
+                <UserMinus size={16} />
+              </ActionButton>
+            ) : (
+              <ActionButton $variant="edit" onClick={(e) => {
+                e.stopPropagation();
+                handleAssignClick(row);
+              }} title="Gán tài sản">
+                <UserPlus size={16} />
+              </ActionButton>
+            )}
+            <ActionButton $variant="delete" onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteClick(row);
+            }}>
+              <Trash2 size={16} />
+            </ActionButton>
+          </div>
+        );
+      },
     },
   ];
 
@@ -713,7 +753,7 @@ const AssetManagement: React.FC = () => {
         title="Xóa tài sản"
         message="Bạn có chắc chắn muốn xóa tài sản này?"
         assetName={selectedAsset?.name}
-        isLoading={deleteMutation.isPending}
+        isLoading={deleteMutation.isPending || unassignMutation.isPending}
       />
 
       <AssignAssetModal
@@ -749,6 +789,18 @@ const AssetManagement: React.FC = () => {
         title="Từ chối yêu cầu tài sản"
         subtitle="Vui lòng nhập lý do từ chối yêu cầu này"
         isLoading={approveRequestMutation.isPending}
+      />
+
+      <RejectModal
+        isOpen={isUnassignModalOpen}
+        onClose={() => {
+          setIsUnassignModalOpen(false);
+          setSelectedAsset(null);
+        }}
+        onConfirm={handleConfirmUnassign}
+        title="Thu hồi tài sản"
+        subtitle={`Vui lòng nhập lý do thu hồi tài sản "${selectedAsset?.name || ''}"`}
+        isLoading={unassignMutation.isPending}
       />
     </Container>
   );

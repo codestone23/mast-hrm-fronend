@@ -18,6 +18,7 @@ const ROUTERS = {
         ASSETS: "/me/assets",
         MEETING_ROOMS: "/me/meeting-rooms",
         DAILY_REPORTS: "/me/daily-reports",
+        MY_TEAMS: "/me/my-teams",
     },
     DIVISION: {
         BASE: "/division/dashboard",

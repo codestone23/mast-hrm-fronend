@@ -14,8 +14,8 @@ import {
   CancelButton,
   DeleteButton,
   ConfirmContainer,
-  Message,
 } from "./modalStyle";
+import { Loading } from "@/components/common";
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean;
@@ -24,6 +24,7 @@ interface ConfirmDeleteModalProps {
   title?: string;
   message?: string;
   assetName?: string;
+  isLoading?: boolean;
 }
 
 const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
@@ -33,6 +34,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
   title = "Xác nhận xóa",
   message,
   assetName,
+  isLoading,
 }) => {
   if (!isOpen) return null;
 
@@ -79,7 +81,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
               Hủy
             </CancelButton>
             <DeleteButton onClick={onConfirm}>
-              Xóa
+              {isLoading ? <Loading /> : "Xóa"}
             </DeleteButton>
           </ModalFooter>
         </ModalContent>

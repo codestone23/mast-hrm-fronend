@@ -1019,3 +1019,83 @@ export interface RotationMember {
     name: string;
   };
 }
+
+// Monthly Work Summary types
+export interface LeaveSession {
+  date: string;
+  duration: string;
+  type: string;
+  status: string;
+  reason: string;
+}
+
+export interface MonthlyWorkSummaryItem {
+  user_id: number;
+  user_name: string;
+  user_email: string;
+  user_code: string;
+  division_name: string;
+  team_name: string;
+  position_name: string;
+  total_work_days: number;
+  expected_work_days: number;
+  total_work_hours: number;
+  total_leave_days: number;
+  paid_leave_days: number;
+  unpaid_leave_days: number;
+  sick_leave_days: number;
+  other_leave_days: number;
+  leave_sessions: LeaveSession[];
+  late_count: number;
+  early_leave_count: number;
+  total_late_minutes: number;
+  total_early_minutes: number;
+  remote_work_days: number;
+  overtime_hours: number;
+  overtime_days: number;
+  absent_days: number;
+  attendance_rate: number;
+  on_time_rate: number;
+  total_working_sessions: number;
+  deducted_sessions: number;
+  final_working_sessions: number;
+  is_complete: boolean;
+  locked_at: string | null;
+}
+
+export interface MonthlyWorkSummaryResponse {
+  data: MonthlyWorkSummaryItem[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    total_pages: number;
+  };
+  period: {
+    month: string;
+    year: number;
+    total_work_days: number;
+    total_holidays: number;
+  };
+  summary: {
+    total_employees: number;
+    average_work_days: number;
+    average_attendance_rate: number;
+  };
+}
+
+export interface DailyWorkSummary {
+  user_id: number;
+  user_name: string;
+  daily_records: Array<{
+    date: string;
+    check_in: string | null;
+    check_out: string | null;
+    work_hours: number;
+    status: string;
+    is_late: boolean;
+    is_early_leave: boolean;
+    late_minutes: number;
+    early_minutes: number;
+  }>;
+}

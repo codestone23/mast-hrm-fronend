@@ -7,6 +7,8 @@ import {
   DivisionTeamCreateRequest,
   DivisionTeamUpdateRequest,
   ApiResponse,
+  Project,
+  User,
 } from "@/types/api";
 
 class DivisionWorkforceService {
@@ -101,6 +103,34 @@ class DivisionWorkforceService {
 
   async removeMemberFromTeam(teamId: number, userId: number): Promise<void> {
     const response = await axiosInstance.delete(`/teams/${teamId}/members/${userId}`);
+    return response.data;
+  }
+
+  async getMyTeams(): Promise<ApiResponse<DivisionTeamData[]>> {
+    const response = await axiosInstance.get(`/teams/my`);
+    return response.data;
+  }
+  async getProjectByTeamId(teamId: number): Promise<ApiResponse<Project[]>> {
+    const response = await axiosInstance.get(`/teams/${teamId}/projects`);
+    return response.data;
+  }
+
+  async deleteMemberFromTeam(teamId: number, userId: number): Promise<void> {
+    const response = await axiosInstance.delete(`/teams/${teamId}/members/${userId}`);
+    return response.data;
+  }
+
+  async addMemberToTeam(teamId: number, userId: number, roleId?: number, description?: string): Promise<void> {
+    const response = await axiosInstance.post(`/teams/${teamId}/members`, {
+      user_id: userId,
+      ...(roleId && { role_id: roleId }),
+      ...(description && { description }),
+    });
+    return response.data;
+  }
+
+  async getListUserAvailableToAddToTeam(teamId: number): Promise<ApiResponse<User[]>> {
+    const response = await axiosInstance.get(`/teams/${teamId}/available-members`);
     return response.data;
   }
 }

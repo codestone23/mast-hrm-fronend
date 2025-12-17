@@ -115,8 +115,10 @@ class AssetsService {
         return response.data;
     }
 
-    async unassignAsset(assetId: number | string): Promise<ApiResponse<void>> {
-        const response = await axiosInstance.post(`/assets/${assetId}/unassign`);
+    async unassignAsset(assetId: number | string, notes?: string): Promise<ApiResponse<void>> {
+        const response = await axiosInstance.post(`/assets/${assetId}/unassign`, {
+            ...(notes && { notes }),
+        });
         return response.data;
     }
 }

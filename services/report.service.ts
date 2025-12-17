@@ -6,6 +6,8 @@ import {
   DailyReportListParams,
   PaginatedResponse,
   AttendanceStatistics,
+  MonthlyWorkSummaryResponse,
+  DailyWorkSummary,
 } from "@/types/api";
 
 class ReportService {
@@ -76,6 +78,41 @@ class ReportService {
         ...(params?.division_id && { division_id: params.division_id }),
       },
     });
+    return response.data;
+  }
+
+  async getMonthlyWorkSummary(params: {
+    month: string;
+    division_id?: number;
+    team_id?: number;
+    search?: string;
+    page?: number;
+    limit?: number;
+    sort_order?: 'asc' | 'desc';
+  }): Promise<MonthlyWorkSummaryResponse> {
+    const response = await axiosInstance.get(`/reports/monthly-work-summary`, { params });
+    return response.data;
+  }
+
+  async exportMonthlyWorkSummary(params: {
+    month: string;
+    division_id?: number;
+    team_id?: number;
+    search?: string;
+    sort_order?: 'asc' | 'desc';
+  }): Promise<Blob> {
+    const response = await axiosInstance.get(`/reports/monthly-work-summary/export`, {
+      params,
+      responseType: 'blob',
+    });
+    return response.data;
+  }
+
+  async getDailyWorkSummary(params: {
+    user_id: number;
+    month: string;
+  }): Promise<DailyWorkSummary> {
+    const response = await axiosInstance.get(`/reports/monthly-work-summary/${params.user_id}`, { params });
     return response.data;
   }
 }

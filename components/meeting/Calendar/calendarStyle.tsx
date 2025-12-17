@@ -55,7 +55,6 @@ export const WeeklyGrid = styled.div`
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   overflow: hidden;
-  min-width: 900px;
   width: 100%;
   max-height: calc(100vh - 300px);
   overflow-y: auto;
@@ -84,21 +83,36 @@ export const TimeColumn = styled.div`
   display: flex;
   flex-direction: column;
   background: var(--card-background);
-  position: sticky;
-  left: 0;
+  // position: sticky;
+  // left: 0;
   z-index: 10;
   box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
 `;
 
-export const TimeSlot = styled.div<{ $isHeader?: boolean }>`
-  height: ${({ $isHeader }) => ($isHeader ? "60px" : "40px")};
+export const TimeHeader = styled.div`
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: ${({ $isHeader }) => ($isHeader ? "0.875rem" : "0.75rem")};
-  font-weight: ${({ $isHeader }) => ($isHeader ? "600" : "400")};
-  color: ${({ $isHeader }) => ($isHeader ? "var(--text-primary)" : "var(--text-secondary)")};
-  background: ${({ $isHeader }) => ($isHeader ? "var(--gray-100)" : "var(--card-background)")};
+  background: var(--gray-100);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+`;
+
+export const TimeSlot = styled.div`
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  background: var(--card-background);
   border-bottom: 1px solid var(--border);
   padding: 0 0.5rem;
   text-align: center;
@@ -163,7 +177,7 @@ export const DayContent = styled.div`
 `;
 
 export const HourSlot = styled.div<{ $isPast?: boolean }>`
-  height: 40px;
+  height: 80px;
   border-bottom: 1px solid var(--border);
   position: relative;
   cursor: ${({ $isPast }) => ($isPast ? "not-allowed" : "pointer")};

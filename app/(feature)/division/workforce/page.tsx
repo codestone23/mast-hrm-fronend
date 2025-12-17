@@ -1,9 +1,9 @@
 import React from 'react'
-import Employee from '../../../../components/division/workforce/Workforce'
+import Workforce from '../../../../components/division/workforce/Workforce'
 
 const EmployeePage = () => {
   return (
-    <Employee />
+    <Workforce />
   )
 }
 

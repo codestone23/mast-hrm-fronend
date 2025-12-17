@@ -102,7 +102,7 @@ const RoomManagement: React.FC = () => {
   const totalPages = pagination.total_pages || Math.ceil(pagination.total / ITEMS_PER_PAGE);
 
   const filteredRooms = rooms.filter((room) =>
-    room.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+    room.name.toLowerCase().includes(debouncedSearch.toLowerCase().trim())
   );
 
   const handleCreate = () => {

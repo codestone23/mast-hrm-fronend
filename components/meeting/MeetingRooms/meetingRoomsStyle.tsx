@@ -172,3 +172,18 @@ export const EmptyState = styled.div`
     margin: 0;
   }
 `;
+
+export const NoRooms = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  color: var(--text-secondary);
+`;
+export const NoRoomsMessage = styled.div`
+  font-size: 1rem;
+  text-align: center;
+  padding: 1rem 1rem;
+  font-weight: 500;
+`;

@@ -106,22 +106,13 @@ const WorkStat: React.FC = () => {
             <CardHeader>Nhân viên nghỉ phép</CardHeader>
             <CardBody>
               <StatBlock>
-                <StatGroup
-                  style={{ display: "flex", gap: 8, alignItems: "center" }}
-                >
+                <StatGroup>
                   <StatNumber $green={true}>
                     {workDataInfo?.leave_requests?.paid_leave_count}
                   </StatNumber>
                   <StatLabel>Có phép</StatLabel>
                 </StatGroup>
-                <StatGroup
-                  style={{
-                    display: "flex",
-                    gap: 8,
-                    alignItems: "center",
-                    marginTop: 8,
-                  }}
-                >
+                <StatGroup>
                   <StatNumber $green={true}>
                     {workDataInfo?.leave_requests?.unpaid_leave_count}
                   </StatNumber>

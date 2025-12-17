@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Settings2, Users, GraduationCap, Briefcase, Languages, Brain, Calendar, FolderKanban } from "lucide-react";
+import { Settings2, Users, GraduationCap, Briefcase, Languages, Brain, Calendar, FolderKanban, Building } from "lucide-react";
 import { useMobile } from "@/hooks/useMobile";
 import {
   SettingsContainer,
   SettingsHeader,
   SettingsTitle,
-  SettingsTabs,
-  Tab,
   SettingsContent,
   Sidebar,
   SidebarItem,
@@ -22,39 +20,25 @@ import RoomManagement from "./RoomManagement";
 import HolidayManagement from "./HolidayManagement";
 import ProjectManagement from "./ProjectManagement";
 
-interface MasterDataItem {
+interface DataItem {
   id: string;
   name: string;
   icon: React.ReactNode;
 }
 
-const masterDataItems: MasterDataItem[] = [
-  { id: "level", name: "Cấp độ (Level)", icon: <GraduationCap size={20} /> },
-  { id: "position", name: "Vị trí (Position)", icon: <Briefcase size={20} /> },
-  { id: "language", name: "Ngôn ngữ (Language)", icon: <Languages size={20} /> },
-  { id: "skill", name: "Kỹ năng (Skill)", icon: <Brain size={20} /> },
-  { id: "holiday", name: "Ngày lễ (Holiday)", icon: <Calendar size={20} /> },
-  { id: "project", name: "Dự án (Project)", icon: <FolderKanban size={20} /> },
+const masterDataItems: DataItem[] = [
+  { id: "level", name: "Trình độ", icon: <GraduationCap size={20} /> },
+  { id: "position", name: "Vị trí", icon: <Briefcase size={20} /> },
+  { id: "language", name: "Ngôn ngữ", icon: <Languages size={20} /> },
+  { id: "skill", name: "Kỹ năng", icon: <Brain size={20} /> },
+  { id: "project", name: "Dự án", icon: <FolderKanban size={20} /> },
+  { id: "holiday", name: "Ngày lễ", icon: <Calendar size={20} /> },
+  { id: "room", name: "Phòng họp", icon: <Building size={20} /> },
 ];
 
 const Settings: React.FC = () => {
   const isMobile = useMobile();
-  const [activeTab, setActiveTab] = useState<string>("master-data");
   const [activeItem, setActiveItem] = useState<string>("level");
-
-  const tabs = [
-    { id: "master-data", label: "Dữ liệu chính", icon: <Settings2 size={20} /> },
-    { id: "system", label: "Hệ thống", icon: <Users size={20} /> },
-  ];
-
-  const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId);
-    if (tabId !== "master-data") {
-      setActiveItem("");
-    } else {
-      setActiveItem("level");
-    }
-  };
 
   const handleItemChange = (itemId: string) => {
     setActiveItem(itemId);
@@ -64,52 +48,31 @@ const Settings: React.FC = () => {
     <SettingsContainer>
       <SettingsHeader>
         <SettingsTitle>Cài đặt hệ thống</SettingsTitle>
-        <SettingsTabs>
-          {tabs.map((tab) => (
-            <Tab
-              key={tab.id}
-              $active={activeTab === tab.id}
-              onClick={() => handleTabChange(tab.id)}
-            >
-              {tab.icon}
-              {tab.label}
-            </Tab>
-          ))}
-        </SettingsTabs>
       </SettingsHeader>
 
       <SettingsContent>
-        {activeTab === "master-data" && (
-          <>
-            <Sidebar>
-              {masterDataItems.map((item) => (
-                <SidebarItem
-                  key={item.id}
-                  $active={activeItem === item.id}
-                  onClick={() => handleItemChange(item.id)}
-                >
-                  {item.icon}
-                  <span>{item.name}</span>
-                </SidebarItem>
-              ))}
-            </Sidebar>
-            <MainContent>
-              {/* Content will be rendered based on activeItem */}
-              {activeItem === "level" && <LevelManagement />}
-              {activeItem === "position" && <PositionManagement />}
-              {activeItem === "language" && <LanguageManagement />}
-              {activeItem === "skill" && <SkillManagement />}
-              {activeItem === "holiday" && <HolidayManagement />}
-              {activeItem === "project" && <ProjectManagement />}
-            </MainContent>
-          </>
-        )}
-        
-        {activeTab === "system" && (
-          <MainContent>
-            <RoomManagement />
-          </MainContent>
-        )}
+        <Sidebar>
+          {masterDataItems.map((item) => (
+            <SidebarItem
+              key={item.id}
+              $active={activeItem === item.id}
+              onClick={() => handleItemChange(item.id)}
+            >
+              {item.icon}
+              <span>{item.name}</span>
+            </SidebarItem>
+          ))}
+        </Sidebar>
+        <MainContent>
+          {/* Content will be rendered based on activeItem */}
+          {activeItem === "level" && <LevelManagement />}
+          {activeItem === "position" && <PositionManagement />}
+          {activeItem === "language" && <LanguageManagement />}
+          {activeItem === "skill" && <SkillManagement />}
+          {activeItem === "project" && <ProjectManagement />}
+          {activeItem === "holiday" && <HolidayManagement />}
+          {activeItem === "room" && <RoomManagement />}
+        </MainContent>
       </SettingsContent>
     </SettingsContainer>
   );

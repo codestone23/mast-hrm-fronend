@@ -1,14 +1,23 @@
 "use client";
 import React, { useState } from "react";
-import { Container, Header, TabsContainer, Tab, Placeholder } from "./workforceStyle";
+import { Container, Header, TabsContainer, Tab } from "./workforceStyle";
 import { Button } from "@/components/common";
 import EmployeeList from "./employee/EmployeeList";
 import TeamList from "./team/TeamList";
 
-const Tabs = ["Danh sách nhân sự", "Quản lý đội nhóm"];
+interface TabItem {
+  id: string;
+  name: string;
+  component?: React.ReactNode;
+}
 
-const Employee: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>(Tabs[0]);
+const Tabs: TabItem[] = [
+  { id: "employee", name: "Danh sách nhân sự", component: <EmployeeList /> },
+  { id: "team", name: "Quản lí đội nhóm", component: <TeamList /> },
+];
+
+const Workforce: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<string>(Tabs[0].id);
 
   return (
     <Container>
@@ -16,17 +25,17 @@ const Employee: React.FC = () => {
         <TabsContainer>
           {Tabs.map((tab) => (
             <Tab
-              key={tab}
-              $active={activeTab === tab}
-              onClick={() => setActiveTab(tab)}
+              key={tab.id}
+              $active={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
             >
-              {tab}
+              {tab.name}
             </Tab>
           ))}
         </TabsContainer>
 
         <div>
-          {activeTab === "Danh sách nhân sự" && (
+          {activeTab === "employee" && (
             <Button variant="warning" size="md">
               Luân chuyển
             </Button>
@@ -34,20 +43,9 @@ const Employee: React.FC = () => {
         </div>
       </Header>
 
-      {activeTab === "Danh sách nhân sự" ? (
-        <EmployeeList />
-      ) : activeTab === "Quản lý đội nhóm" ? (    
-        <TeamList />
-      ) : (
-        <Placeholder>
-          <h3>{activeTab}</h3>
-          <p>
-            Chức năng này đang được xây dựng. Hiện thời hiển thị placeholder.
-          </p>
-        </Placeholder>
-      )}
+      {Tabs.find((tab) => tab.id === activeTab)?.component}
     </Container>
   );
 };
 
-export default Employee;
+export default Workforce;

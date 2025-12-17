@@ -12,6 +12,7 @@ import {
   CalendarTitle,
   WeeklyGrid,
   TimeColumn,
+  TimeHeader,
   TimeSlot,
   DayColumn,
   DayHeader,
@@ -51,14 +52,10 @@ const Calendar: React.FC<CalendarProps> = ({
     return days;
   }, [weekStart]);
 
-  // Tạo các khung giờ từ 8h đến 18h, mỗi 30 phút
   const timeSlots = useMemo(() => {
     const slots: string[] = [];
-    for (let hour = 8; hour <= 18; hour++) {
+    for (let hour = 8; hour <= 17; hour++) {
       slots.push(`${hour.toString().padStart(2, "0")}:00`);
-      if (hour < 18) {
-        slots.push(`${hour.toString().padStart(2, "0")}:30`);
-      }
     }
     return slots;
   }, []);
@@ -151,12 +148,12 @@ const Calendar: React.FC<CalendarProps> = ({
       return null;
     }
 
-    const duration = (meetingEnd.getTime() - meetingStart.getTime()) / (1000 * 60); // duration in minutes
-    const height = (duration / 30) * 40; // mỗi slot là 30 phút = 100%
+    const duration = (meetingEnd.getTime() - meetingStart.getTime()) / (1000 * 60 * 60);
+    const height = duration * 80;
 
     return {
       top: 0,
-      height: Math.max(height, 40), // tối thiểu 1 slot
+      height: Math.max(height, 40),
     };
   };
 
@@ -185,7 +182,7 @@ const Calendar: React.FC<CalendarProps> = ({
 
       <WeeklyGrid>
         <TimeColumn>
-          <TimeSlot $isHeader>Giờ</TimeSlot>
+          <TimeHeader>Giờ</TimeHeader>
           {timeSlots.map((slot) => (
             <TimeSlot key={slot}>{slot}</TimeSlot>
           ))}
@@ -232,7 +229,7 @@ const Calendar: React.FC<CalendarProps> = ({
                               {format(new Date(meeting.start_time), "HH:mm")} - {format(new Date(meeting.end_time), "HH:mm")}
                             </div>
                             <div className="meeting-title">{meeting.title}</div>
-                            <div className="meeting-room">{meeting.room?.name || ""}</div>
+                            {/* <div className="meeting-room">{meeting.room?.name || ""}</div> */}
                           </MeetingBlock>
                         )}
                       </HourSlot>

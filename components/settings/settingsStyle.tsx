@@ -69,11 +69,11 @@ export const SettingsContent = styled.div`
   display: flex;
   gap: 1.5rem;
   background: white;
-  border-radius: 12px;
+  border-radius: 0px 8px 8px 0px;
   padding: 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   overflow: hidden;
-
+    
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 0;
@@ -84,7 +84,6 @@ export const Sidebar = styled.div`
   width: 280px;
   border-right: 1px solid #e5e7eb;
   background: #f9fafb;
-  padding: 1rem 0;
 `;
 
 export const SidebarItem = styled.div<{ $active: boolean }>`

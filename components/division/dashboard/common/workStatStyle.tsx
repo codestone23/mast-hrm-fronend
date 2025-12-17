@@ -101,10 +101,9 @@ export const StatBlock = styled.div`
 `;
 
 export const StatGroup = styled.div`
-  display: grid;
-  grid-template-columns: 8% 1fr;
+  display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 10px;
 `;
 
 export const StatNumber = styled.div<{ $green?: boolean }>`

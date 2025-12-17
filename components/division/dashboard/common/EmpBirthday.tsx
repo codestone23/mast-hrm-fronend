@@ -77,7 +77,7 @@ const EmployeeBirthday: React.FC = () => {
               : "Không thể tải dữ liệu"}
           </EmptyDataText>
         </EmptyDataContainer>
-      ) : employeeData && employeeData?.employees ? (
+      ) : employeeData && employeeData?.employees && employeeData?.employees.length ? (
         <List>
           {employeeData.employees.map((emp) => (
             <ListItem key={emp.user_id}>

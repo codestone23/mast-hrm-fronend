@@ -110,8 +110,8 @@ const Statistic: React.FC = () => {
             margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-            <YAxis />
+            <XAxis dataKey="month" tick={{ fontSize: 12 }} label={{ value: "Tháng", position: "insideBottomRight", offset: -5 }} />
+            <YAxis tick={{ fontSize: 12 }} label={{ value: "Số giờ", angle: -90, position: "insideLeft", offset: 10 }} />
             <Tooltip />
             <Legend />
             <Bar dataKey="late_hours" fill="#8b8b8b" name="Đi muộn" />

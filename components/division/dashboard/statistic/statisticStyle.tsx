@@ -73,37 +73,27 @@ export const CardsRow = styled.div`
 
 export const Card = styled.div`
   flex: 1;
-  padding: 20px;
+  padding: 15px;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 100px;
   background: white;
   border: 1px solid rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-  }
 `;
 
 export const CardTitle = styled.div`
-  font-size: 13px;
+  font-size: 16px;
   color: #64748b;
-  margin-bottom: 10px;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 `;
 
 export const CardValue = styled.div`
-  font-size: 28px;
+  font-size: 18px;
   font-weight: 700;
   color: #1e293b;
-  line-height: 1.2;
 `;
 
 export const ChartContainer = styled.div`

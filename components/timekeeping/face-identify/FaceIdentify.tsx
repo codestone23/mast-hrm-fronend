@@ -316,11 +316,11 @@ const FaceIdentify: React.FC = () => {
                         <>
                             <CaptureButton onClick={handleCheckIn} style={{ background: "#efab44ff" }} aria-label="Chụp lại">
                                 <Trash2 size={14} />
-                                Check In
+                                Chấm công vào
                             </CaptureButton>
                             <CaptureButton onClick={handleCheckOut} style={{ background: "#efab44ff" }} aria-label="Chụp lại">
                                 <Trash2 size={14} />
-                                Check Out
+                                Chấm công ra
                             </CaptureButton>
                         </>
                     ) : (<>Đang xử lý...</>)}

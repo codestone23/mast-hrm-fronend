@@ -90,7 +90,6 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
       title: string;
       type: 'PAID' | 'UNPAID';
       reason: string;
-      is_past: boolean;
     }) => timekeepingService.createDayOffRequest(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myRequests'] });
@@ -165,7 +164,6 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
       title: data.title,
       type: data.leaveType,
       reason: data.reason,
-      is_past: false
     };
 
     if (isEdit && requestId && requestType) {

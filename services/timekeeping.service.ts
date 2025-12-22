@@ -183,7 +183,6 @@ class TimekeepingService {
     title: string;
     type: 'PAID' | 'UNPAID';
     reason: string;
-    is_past: boolean;
   }): Promise<ApiResponse<unknown>> {
     const response = await axiosInstance.post('requests/day-off', requestData);
     return response.data;

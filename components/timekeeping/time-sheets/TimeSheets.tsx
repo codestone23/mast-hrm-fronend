@@ -110,7 +110,6 @@ interface TimeSheetRequest {
     id: number;
     duration: string;
     type: string;
-    is_past: boolean;
     created_at: string;
     updated_at: string;
     request_id: number;

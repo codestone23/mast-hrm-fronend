@@ -64,6 +64,13 @@ export const NotificationDropdownPanel = styled.div<{ $isOpen: boolean }>`
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 768px) {
+    width: calc(100vw - 2rem);
+    max-width: 380px;
+    right: -1rem;
+    max-height: calc(100vh - 120px);
+  }
 `;
 
 export const NotificationHeader = styled.div`
@@ -71,6 +78,10 @@ export const NotificationHeader = styled.div`
   border-bottom: 1px solid var(--border);
   background: var(--background-secondary);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+  }
 `;
 
 export const NotificationTitle = styled.h3`
@@ -78,6 +89,10 @@ export const NotificationTitle = styled.h3`
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 0.875rem;
+  }
 `;
 
 export const NotificationList = styled.div`
@@ -116,6 +131,10 @@ export const NotificationItem = styled.div`
   &:last-child {
     border-bottom: none;
   }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+  }
 `;
 
 export const NotificationItemTitle = styled.h4`
@@ -123,6 +142,11 @@ export const NotificationItemTitle = styled.h4`
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 0.5rem 0;
+
+  @media (max-width: 768px) {
+    font-size: 0.8125rem;
+    word-break: break-word;
+  }
 `;
 
 export const NotificationItemDescription = styled.p`
@@ -135,6 +159,10 @@ export const NotificationItemDescription = styled.p`
 export const NotificationItemTime = styled.span`
   font-size: 0.75rem;
   color: var(--text-muted);
+
+  @media (max-width: 768px) {
+    font-size: 0.6875rem;
+  }
 `;
 
 export const EmptyNotifications = styled.div`

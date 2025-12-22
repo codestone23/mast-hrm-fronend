@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Users, Plus, Trash2, FolderOpen, UserPlus } from "lucide-react";
 import Image from "next/image";
+import { useMobile } from "@/hooks/useMobile";
 import divisionWorkforceService from "@/services/division_workforce.service";
 import { DivisionTeamData, DivisionMemberData } from "@/types/api";
 import { useToast } from "@/hooks/useToast";
@@ -42,6 +43,7 @@ import {
   EmptyState,
   EmptyIcon,
   EmptyText,
+  TeamsTitle,
 } from "./myTeamsStyle";
 import AddMemberModal from "./modals/AddMemberModal";
 import TeamProjectsModal from "./modals/TeamProjectsModal";
@@ -62,6 +64,7 @@ interface TeamMember {
 const MyTeams: React.FC = () => {
   const queryClient = useQueryClient();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
+  const isMobile = useMobile();
 
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"members" | "projects">("members");
@@ -159,9 +162,9 @@ const MyTeams: React.FC = () => {
   if (hasMultipleTeams && !selectedTeamId) {
     return (
       <Container>
-        <h2 style={{ marginBottom: "24px", color: "#111827" }}>
+        <TeamsTitle>
           Đội nhóm của tôi ({teams.length})
-        </h2>
+        </TeamsTitle>
         <TeamsGrid>
           {teams.map((team) => {
             const resourceLevels = formatResourceByLevel(team.resource_by_level);
@@ -169,7 +172,7 @@ const MyTeams: React.FC = () => {
               <TeamCard key={team.id} onClick={() => handleTeamClick(team.id)}>
                 <TeamHeader>
                   <TeamName>{team.name}</TeamName>
-                  <TeamDivision>{team.division?.name}</TeamDivision>
+                  <TeamDivision>{(team as any).division?.name || ""}</TeamDivision>
                 </TeamHeader>
 
                 <TeamStats>
@@ -178,7 +181,11 @@ const MyTeams: React.FC = () => {
                     <StatLabel>Thành viên</StatLabel>
                   </StatItem>
                   <StatItem>
-                    <StatValue>{team.active_projects?.length || 0}</StatValue>
+                    <StatValue>
+                      {Array.isArray((team as any).active_projects) 
+                        ? (team as any).active_projects.length 
+                        : 0}
+                    </StatValue>
                     <StatLabel>Dự án</StatLabel>
                   </StatItem>
                   <StatItem>
@@ -199,14 +206,14 @@ const MyTeams: React.FC = () => {
                   </div>
                 )}
 
-                {team.active_projects && team.active_projects.length > 0 && (
+                {Array.isArray((team as any).active_projects) && (team as any).active_projects.length > 0 && (
                   <ProjectsList>
                     <ProjectsTitle>Dự án đang hoạt động</ProjectsTitle>
-                    {team.active_projects.slice(0, 3).map((project: { id: number; name: string }) => (
+                    {(team as any).active_projects.slice(0, 3).map((project: { id: number; name: string }) => (
                       <ProjectTag key={project.id}>{project.name}</ProjectTag>
                     ))}
-                    {team.active_projects.length > 3 && (
-                      <ProjectTag>+{team.active_projects.length - 3}</ProjectTag>
+                    {(team as any).active_projects.length > 3 && (
+                      <ProjectTag>+{(team as any).active_projects.length - 3}</ProjectTag>
                     )}
                   </ProjectsList>
                 )}
@@ -237,7 +244,7 @@ const MyTeams: React.FC = () => {
         <SingleTeamHeader>
           <SingleTeamInfo>
             <SingleTeamName>{currentTeam.name}</SingleTeamName>
-            <SingleTeamDivision>{currentTeam.division?.name}</SingleTeamDivision>
+            <SingleTeamDivision>{(currentTeam as any).division?.name || ""}</SingleTeamDivision>
           </SingleTeamInfo>
 
           <TeamStats style={{ margin: 0, width: "auto" }}>
@@ -246,7 +253,11 @@ const MyTeams: React.FC = () => {
               <StatLabel>Thành viên</StatLabel>
             </StatItem>
             <StatItem>
-              <StatValue>{currentTeam.active_projects?.length || 0}</StatValue>
+              <StatValue>
+                {Array.isArray((currentTeam as any).active_projects) 
+                  ? (currentTeam as any).active_projects.length 
+                  : 0}
+              </StatValue>
               <StatLabel>Dự án</StatLabel>
             </StatItem>
           </TeamStats>
@@ -265,11 +276,16 @@ const MyTeams: React.FC = () => {
 
         {activeTab === "members" && (
           <>
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+            <div style={{ 
+              display: "flex", 
+              justifyContent: isMobile ? "stretch" : "flex-end", 
+              marginBottom: "16px" 
+            }}>
               <Button
                 variant="primary"
                 icon={<UserPlus size={18} />}
                 onClick={() => setIsAddMemberModalOpen(true)}
+                style={{ width: isMobile ? "100%" : "auto" }}
               >
                 Thêm thành viên
               </Button>

@@ -151,6 +151,7 @@ export const Legend = styled.div`
     grid-template-columns: repeat(2, 1fr);
     font-size: 11px;
     gap: 6px;
+    min-width: 0;
   }
 `;
 
@@ -205,15 +206,7 @@ export const DayCell = styled.div<{
   background: ${(props) => {
     if (!props.$isCurrentMonth) return "#f8f8f8";
     
-    // Request types colors
-    if (props.$status === "late-early") return "#FFF59D"; // Vàng nhạt cho đi muộn về sớm
-    if (props.$status === "leave") return "#B3E5FC"; // Xanh nhạt cho nghỉ có lương
-    if (props.$status === "holiday") return "#FFE0B2"; // Cam nhạt cho nghỉ không lương
-    if (props.$status === "remote") return "#E1BEE7"; // Tím nhạt cho làm việc từ xa
-    if (props.$status === "ot") return "#C8E6C9"; // Xanh lá nhạt cho OT
-    if (props.$status === "forgot-checkin") return "#FFCDD2"; // Đỏ nhạt cho quên chấm công
-    
-    // Regular status colors
+    // Chỉ hiển thị màu cho work, late, absent
     if (props.$status === "work") return "#c9f8c9"; // Xanh lá cho đủ công
     if (props.$status === "late") return "#FFE0B2"; // Cam cho đi muộn
     if (props.$status === "absent") return "#f3a7a7"; // Đỏ cho không có công
@@ -415,4 +408,75 @@ export const RequestBadge = styled.div<{ $type: string }>`
       default: return '#757575';
     }
   }};
+`;
+
+export const RequestIconsContainer = styled.div`
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-left: auto;
+`;
+
+export const RequestIcon = styled.div<{ $type: string; $status?: string }>`
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: ${(props) => {
+    switch (props.$type) {
+      case 'DAY_OFF':
+        return props.$status === 'APPROVED' ? '#B3E5FC' : props.$status === 'REJECTED' ? '#FFCDD2' : '#FFF59D';
+      case 'REMOTE_WORK':
+        return props.$status === 'APPROVED' ? '#E1BEE7' : props.$status === 'REJECTED' ? '#FFCDD2' : '#FFF59D';
+      case 'OVERTIME':
+        return props.$status === 'APPROVED' ? '#C8E6C9' : props.$status === 'REJECTED' ? '#FFCDD2' : '#FFF59D';
+      case 'LATE_EARLY':
+        return props.$status === 'APPROVED' ? '#FFF59D' : props.$status === 'REJECTED' ? '#FFCDD2' : '#FFF59D';
+      case 'FORGOT_CHECKIN':
+        return props.$status === 'APPROVED' ? '#FFCDD2' : props.$status === 'REJECTED' ? '#FFCDD2' : '#FFF59D';
+      default:
+        return '#E0E0E0';
+    }
+  }};
+  color: ${(props) => {
+    switch (props.$type) {
+      case 'DAY_OFF':
+        return props.$status === 'APPROVED' ? '#0288D1' : props.$status === 'REJECTED' ? '#C62828' : '#F57C00';
+      case 'REMOTE_WORK':
+        return props.$status === 'APPROVED' ? '#6A1B9A' : props.$status === 'REJECTED' ? '#C62828' : '#F57C00';
+      case 'OVERTIME':
+        return props.$status === 'APPROVED' ? '#2E7D32' : props.$status === 'REJECTED' ? '#C62828' : '#F57C00';
+      case 'LATE_EARLY':
+        return props.$status === 'APPROVED' ? '#F57C00' : props.$status === 'REJECTED' ? '#C62828' : '#F57C00';
+      case 'FORGOT_CHECKIN':
+        return props.$status === 'APPROVED' ? '#C62828' : props.$status === 'REJECTED' ? '#C62828' : '#F57C00';
+      default:
+        return '#757575';
+    }
+  }};
+  
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  @media (max-width: 768px) {
+    width: 16px;
+    height: 16px;
+    
+    svg {
+      width: 10px;
+      height: 10px;
+    }
+  }
 `;

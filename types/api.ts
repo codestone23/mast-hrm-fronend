@@ -234,6 +234,7 @@ export enum UserRole {
 export interface UpdateUserRequest {
   name?: string;
   email?: string;
+  status?: "ACTIVE" | "INACTIVE";
 }
 
 // Role types

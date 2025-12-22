@@ -11,6 +11,7 @@ import {
   Search,
   Crown
 } from 'lucide-react';
+import { useMobile } from '@/hooks/useMobile';
 import { Breadcrumb, BreadcrumbItemData, Input, Loading, Pagination } from '@/components/common';
 import {
   ProjectsContainer,
@@ -45,6 +46,7 @@ import { ROLE_NAMES, ProjectAccessType } from '@/constants/enums';
 
 const Projects: React.FC = () => {
   const router = useRouter();
+  const isMobile = useMobile();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showManagedOnly, setShowManagedOnly] = useState(false);
@@ -190,7 +192,7 @@ const Projects: React.FC = () => {
       </ProjectsHeader>
 
       <FilterContainer>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: isMobile ? "100%" : "200px" }}>
           <Input
             placeholder="Tìm kiếm theo tên dự án..."
             value={searchTerm}
@@ -200,6 +202,7 @@ const Projects: React.FC = () => {
             }}
             icon={<Search size={16} />}
             iconPosition="left"
+            fullWidth={isMobile}
           />
         </div>
         

@@ -313,16 +313,14 @@ const UserManagement: React.FC = () => {
     {
       key: "division_name",
       label: "Phòng ban",
-      width: "150px",
     },
     {
       key: "team_name",
       label: "Team",
-      width: "120px",
     },
     {
       key: "total_work_days",
-      label: "Ngày làm việc",
+      label: "Tổng số công",
       width: "120px",
       align: "center",
       render: (_, row) => (
@@ -494,82 +492,82 @@ const UserManagement: React.FC = () => {
         gap: "16px", 
         marginBottom: "20px" 
       }}>
-        <Card style={{ padding: "16px" }}>
+        <Card style={{ padding: isMobile ? "12px" : "16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ 
-              width: "48px", 
-              height: "48px", 
-              borderRadius: "12px", 
+              width: isMobile ? "40px" : "48px", 
+              height: isMobile ? "40px" : "48px", 
+              borderRadius: isMobile ? "10px" : "12px", 
               backgroundColor: "#e0e7ff", 
               display: "flex", 
               alignItems: "center", 
               justifyContent: "center" 
             }}>
-              <Users size={24} color="#6366f1" />
+              <Users size={isMobile ? 20 : 24} color="#6366f1" />
             </div>
             <div>
-              <div style={{ fontSize: "12px", color: "#6b7280" }}>Tổng nhân sự</div>
-              <div style={{ fontSize: "24px", fontWeight: 600, color: "#111827" }}>{summary.total_employees}</div>
+              <div style={{ fontSize: isMobile ? "11px" : "12px", color: "#6b7280" }}>Tổng nhân sự</div>
+              <div style={{ fontSize: isMobile ? "20px" : "24px", fontWeight: 600, color: "#111827" }}>{summary.total_employees}</div>
             </div>
           </div>
         </Card>
 
-        <Card style={{ padding: "16px" }}>
+        <Card style={{ padding: isMobile ? "12px" : "16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ 
-              width: "48px", 
-              height: "48px", 
-              borderRadius: "12px", 
+              width: isMobile ? "40px" : "48px", 
+              height: isMobile ? "40px" : "48px", 
+              borderRadius: isMobile ? "10px" : "12px", 
               backgroundColor: "#dcfce7", 
               display: "flex", 
               alignItems: "center", 
               justifyContent: "center" 
             }}>
-              <Calendar size={24} color="#16a34a" />
+              <Calendar size={isMobile ? 20 : 24} color="#16a34a" />
             </div>
             <div>
-              <div style={{ fontSize: "12px", color: "#6b7280" }}>Ngày làm việc TB</div>
-              <div style={{ fontSize: "24px", fontWeight: 600, color: "#111827" }}>{summary.average_work_days.toFixed(1)}</div>
+              <div style={{ fontSize: isMobile ? "11px" : "12px", color: "#6b7280" }}>Ngày làm việc TB</div>
+              <div style={{ fontSize: isMobile ? "20px" : "24px", fontWeight: 600, color: "#111827" }}>{summary.average_work_days.toFixed(1)}</div>
             </div>
           </div>
         </Card>
 
-        <Card style={{ padding: "16px" }}>
+        <Card style={{ padding: isMobile ? "12px" : "16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ 
-              width: "48px", 
-              height: "48px", 
-              borderRadius: "12px", 
+              width: isMobile ? "40px" : "48px", 
+              height: isMobile ? "40px" : "48px", 
+              borderRadius: isMobile ? "10px" : "12px", 
               backgroundColor: "#fef3c7", 
               display: "flex", 
               alignItems: "center", 
               justifyContent: "center" 
             }}>
-              <TrendingUp size={24} color="#d97706" />
+              <TrendingUp size={isMobile ? 20 : 24} color="#d97706" />
             </div>
             <div>
-              <div style={{ fontSize: "12px", color: "#6b7280" }}>Tỷ lệ CC TB</div>
-              <div style={{ fontSize: "24px", fontWeight: 600, color: "#111827" }}>{summary.average_attendance_rate.toFixed(1)}%</div>
+              <div style={{ fontSize: isMobile ? "11px" : "12px", color: "#6b7280" }}>Tỷ lệ CC TB</div>
+              <div style={{ fontSize: isMobile ? "20px" : "24px", fontWeight: 600, color: "#111827" }}>{summary.average_attendance_rate.toFixed(1)}%</div>
             </div>
           </div>
         </Card>
 
-        <Card style={{ padding: "16px" }}>
+        <Card style={{ padding: isMobile ? "12px" : "16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ 
-              width: "48px", 
-              height: "48px", 
-              borderRadius: "12px", 
+              width: isMobile ? "40px" : "48px", 
+              height: isMobile ? "40px" : "48px", 
+              borderRadius: isMobile ? "10px" : "12px", 
               backgroundColor: "#fee2e2", 
               display: "flex", 
               alignItems: "center", 
               justifyContent: "center" 
             }}>
-              <Clock size={24} color="#dc2626" />
+              <Clock size={isMobile ? 20 : 24} color="#dc2626" />
             </div>
             <div>
-              <div style={{ fontSize: "12px", color: "#6b7280" }}>Ngày công tháng</div>
-              <div style={{ fontSize: "24px", fontWeight: 600, color: "#111827" }}>{period.total_work_days}</div>
+              <div style={{ fontSize: isMobile ? "11px" : "12px", color: "#6b7280" }}>Ngày công tháng</div>
+              <div style={{ fontSize: isMobile ? "20px" : "24px", fontWeight: 600, color: "#111827" }}>{period.total_work_days}</div>
             </div>
           </div>
         </Card>
@@ -598,20 +596,26 @@ const UserManagement: React.FC = () => {
                   fullWidth={true}
                 />
               </SearchContainer>
-              <div style={{ display: "flex", gap: "12px" }}>
+              <div style={{ 
+                display: "flex", 
+                gap: "12px",
+                flexDirection: isMobile ? "column" : "row",
+                width: isMobile ? "100%" : "auto"
+              }}>
                 <CreateButton 
                   $isMobile={isMobile}
                   onClick={handleExport}
-                  style={{ backgroundColor: "#10b981" }}
+                  style={{ backgroundColor: "#10b981", width: isMobile ? "100%" : "auto" }}
                 >
-                  <Download size={20} />
+                  <Download size={isMobile ? 18 : 20} />
                   Xuất báo cáo
                 </CreateButton>
                 <CreateButton 
                   $isMobile={isMobile}
                   onClick={() => setIsCreateModalOpen(true)}
+                  style={{ width: isMobile ? "100%" : "auto" }}
                 >
-                  <Plus size={20} />
+                  <Plus size={isMobile ? 18 : 20} />
                   Tạo người dùng
                 </CreateButton>
               </div>
@@ -773,35 +777,35 @@ const UserManagement: React.FC = () => {
             <div style={{ marginBottom: "20px" }}>
               <strong>Tháng: </strong>{selectedMonth}
             </div>
-            <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <div style={{ maxHeight: isMobile ? "300px" : "400px", overflowY: "auto", overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: isMobile ? "600px" : "auto" }}>
                 <thead>
                   <tr style={{ backgroundColor: "#f3f4f6" }}>
-                    <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Ngày</th>
-                    <th style={{ padding: "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>Check in</th>
-                    <th style={{ padding: "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>Check out</th>
-                    <th style={{ padding: "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>Giờ làm</th>
-                    <th style={{ padding: "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>Trạng thái</th>
+                    <th style={{ padding: isMobile ? "8px" : "12px", textAlign: "left", borderBottom: "1px solid #e5e7eb", fontSize: isMobile ? "12px" : "14px" }}>Ngày</th>
+                    <th style={{ padding: isMobile ? "8px" : "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb", fontSize: isMobile ? "12px" : "14px" }}>Check in</th>
+                    <th style={{ padding: isMobile ? "8px" : "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb", fontSize: isMobile ? "12px" : "14px" }}>Check out</th>
+                    <th style={{ padding: isMobile ? "8px" : "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb", fontSize: isMobile ? "12px" : "14px" }}>Giờ làm</th>
+                    <th style={{ padding: isMobile ? "8px" : "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb", fontSize: isMobile ? "12px" : "14px" }}>Trạng thái</th>
                   </tr>
                 </thead>
                 <tbody>
                   {dailySummaryData.daily_records?.map((record, index) => (
                     <tr key={index}>
-                      <td style={{ padding: "12px", borderBottom: "1px solid #e5e7eb" }}>{record.date}</td>
-                      <td style={{ padding: "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>
+                      <td style={{ padding: isMobile ? "8px" : "12px", borderBottom: "1px solid #e5e7eb", fontSize: isMobile ? "12px" : "14px" }}>{record.date}</td>
+                      <td style={{ padding: isMobile ? "8px" : "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb", fontSize: isMobile ? "12px" : "14px" }}>
                         {record.check_in || "-"}
                       </td>
-                      <td style={{ padding: "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>
+                      <td style={{ padding: isMobile ? "8px" : "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb", fontSize: isMobile ? "12px" : "14px" }}>
                         {record.check_out || "-"}
                       </td>
-                      <td style={{ padding: "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>
+                      <td style={{ padding: isMobile ? "8px" : "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb", fontSize: isMobile ? "12px" : "14px" }}>
                         {record.work_hours}h
                       </td>
-                      <td style={{ padding: "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>
+                      <td style={{ padding: isMobile ? "8px" : "12px", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>
                         <span style={{
-                          padding: "4px 8px",
+                          padding: isMobile ? "3px 6px" : "4px 8px",
                           borderRadius: "4px",
-                          fontSize: "12px",
+                          fontSize: isMobile ? "11px" : "12px",
                           backgroundColor: record.is_late ? "#fee2e2" : "#dcfce7",
                           color: record.is_late ? "#dc2626" : "#16a34a",
                         }}>

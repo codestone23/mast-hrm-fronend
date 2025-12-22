@@ -32,6 +32,11 @@ export const Container = styled.div`
   flex-direction: column;
   gap: 16px;
   padding: 16px;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    gap: 12px;
+  }
 `;
 
 export const CommonRow = styled.div`
@@ -58,6 +63,12 @@ export const Tags = styled.div`
   border-left: 4px solid var(--primary-500);
   padding-left: 8px;
   color: var(--text-primary);
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+    padding-left: 6px;
+    border-left-width: 3px;
+  }
 `;
 
 export const StatisticRow = styled.div`

@@ -1,9 +1,9 @@
 import styled, { css } from "styled-components";
 
-export const CalendarContainer = styled.div`
+export const CalendarContainer = styled.div<{ $isMobile?: boolean }>`
   background: var(--card-background);
   border-radius: var(--radius-md);
-  padding: 1.5rem;
+  padding: ${props => props.$isMobile ? '0' : '1.5rem'};
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   width: 100%;
   display: flex;
@@ -104,7 +104,7 @@ export const TimeHeader = styled.div`
   z-index: 5;
 `;
 
-export const TimeSlot = styled.div`
+export const TimeSlot = styled.div<{ $isMobile?: boolean }>`
   height: 80px;
   display: flex;
   align-items: center;
@@ -114,7 +114,7 @@ export const TimeSlot = styled.div`
   color: var(--text-secondary);
   background: var(--card-background);
   border-bottom: 1px solid var(--border);
-  padding: 0 0.5rem;
+  padding: ${props => props.$isMobile ? '0' : '0 0.5rem'};
   text-align: center;
 `;
 

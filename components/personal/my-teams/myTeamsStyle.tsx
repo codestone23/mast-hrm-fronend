@@ -4,12 +4,21 @@ export const Container = styled.div`
   padding: 24px;
   min-height: 100vh;
   background-color: var(--background-secondary);
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 export const TeamsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 24px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 `;
 
 export const TeamCard = styled.div`
@@ -23,6 +32,11 @@ export const TeamCard = styled.div`
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transform: translateY(-2px);
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    border-radius: 12px;
   }
 `;
 
@@ -38,6 +52,11 @@ export const TeamName = styled.h3`
   font-weight: 600;
   color: #111827;
   margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+    word-break: break-word;
+  }
 `;
 
 export const TeamDivision = styled.span`
@@ -53,6 +72,11 @@ export const TeamStats = styled.div`
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin: 16px 0;
+
+  @media (max-width: 768px) {
+    gap: 8px;
+    margin: 12px 0;
+  }
 `;
 
 export const StatItem = styled.div`
@@ -60,18 +84,30 @@ export const StatItem = styled.div`
   padding: 12px;
   background: #f9fafb;
   border-radius: 8px;
+
+  @media (max-width: 768px) {
+    padding: 8px;
+  }
 `;
 
 export const StatValue = styled.div`
   font-size: 20px;
   font-weight: 600;
   color: #111827;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
 `;
 
 export const StatLabel = styled.div`
   font-size: 12px;
   color: #6b7280;
   margin-top: 4px;
+
+  @media (max-width: 768px) {
+    font-size: 11px;
+  }
 `;
 
 export const ProjectsList = styled.div`
@@ -83,6 +119,10 @@ export const ProjectsTitle = styled.div`
   font-weight: 500;
   color: #374151;
   margin-bottom: 8px;
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+  }
 `;
 
 export const ProjectTag = styled.span`
@@ -94,6 +134,13 @@ export const ProjectTag = styled.span`
   font-size: 12px;
   margin-right: 8px;
   margin-bottom: 8px;
+
+  @media (max-width: 768px) {
+    font-size: 11px;
+    padding: 3px 8px;
+    margin-right: 6px;
+    margin-bottom: 6px;
+  }
 `;
 
 export const SingleTeamContainer = styled.div`
@@ -101,6 +148,11 @@ export const SingleTeamContainer = styled.div`
   border-radius: 16px;
   padding: 32px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    border-radius: 12px;
+  }
 `;
 
 export const SingleTeamHeader = styled.div`
@@ -110,6 +162,14 @@ export const SingleTeamHeader = styled.div`
   margin-bottom: 24px;
   padding-bottom: 24px;
   border-bottom: 1px solid #e5e7eb;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+  }
 `;
 
 export const SingleTeamInfo = styled.div``;
@@ -119,6 +179,11 @@ export const SingleTeamName = styled.h2`
   font-weight: 700;
   color: #111827;
   margin: 0 0 8px 0;
+
+  @media (max-width: 768px) {
+    font-size: 20px;
+    word-break: break-word;
+  }
 `;
 
 export const SingleTeamDivision = styled.span`
@@ -132,6 +197,11 @@ export const TabsContainer = styled.div`
   margin-bottom: 24px;
   border-bottom: 1px solid #e5e7eb;
   padding-bottom: 8px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 1rem;
+    gap: 4px;
+  }
 `;
 
 export const Tab = styled.button<{ $active: boolean }>`
@@ -147,6 +217,18 @@ export const Tab = styled.button<{ $active: boolean }>`
 
   &:hover {
     background: ${({ $active }) => ($active ? "#4338ca" : "#f3f4f6")};
+  }
+
+  @media (max-width: 768px) {
+    padding: 8px 12px;
+    font-size: 12px;
+    flex: 1;
+    
+    svg {
+      width: 14px;
+      height: 14px;
+      margin-right: 4px;
+    }
   }
 `;
 
@@ -167,6 +249,12 @@ export const MemberItem = styled.div`
 
   &:hover {
     background: #f3f4f6;
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
 `;
 
@@ -193,6 +281,11 @@ export const MemberAvatar = styled.div`
     height: 100%;
     object-fit: cover;
   }
+
+  @media (max-width: 768px) {
+    width: 40px;
+    height: 40px;
+  }
 `;
 
 export const MemberDetails = styled.div``;
@@ -200,11 +293,21 @@ export const MemberDetails = styled.div``;
 export const MemberName = styled.div`
   font-weight: 500;
   color: #111827;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    word-break: break-word;
+  }
 `;
 
 export const MemberRole = styled.div`
   font-size: 12px;
   color: #6b7280;
+
+  @media (max-width: 768px) {
+    font-size: 11px;
+    word-break: break-word;
+  }
 `;
 
 export const MemberPosition = styled.span`
@@ -214,11 +317,24 @@ export const MemberPosition = styled.span`
   padding: 2px 8px;
   border-radius: 4px;
   margin-left: 8px;
+
+  @media (max-width: 768px) {
+    font-size: 11px;
+    padding: 2px 6px;
+    margin-left: 4px;
+    display: block;
+    margin-top: 4px;
+    margin-left: 0;
+  }
 `;
 
 export const ActionButtons = styled.div`
   display: flex;
   gap: 8px;
+
+  @media (max-width: 768px) {
+    flex-shrink: 0;
+  }
 `;
 
 export const IconButton = styled.button<{ $variant?: "danger" | "primary" }>`
@@ -240,12 +356,38 @@ export const IconButton = styled.button<{ $variant?: "danger" | "primary" }>`
     background: ${({ $variant }) =>
       $variant === "danger" ? "#fecaca" : $variant === "primary" ? "#c7d2fe" : "#e5e7eb"};
   }
+
+  @media (max-width: 768px) {
+    width: 32px;
+    height: 32px;
+    
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+`;
+
+export const TeamsTitle = styled.h2`
+  margin-bottom: 24px;
+  color: #111827;
+  font-size: 24px;
+  font-weight: 600;
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+    margin-bottom: 1rem;
+  }
 `;
 
 export const EmptyState = styled.div`
   text-align: center;
   padding: 60px 20px;
   color: #6b7280;
+
+  @media (max-width: 768px) {
+    padding: 40px 16px;
+  }
 `;
 
 export const EmptyIcon = styled.div`

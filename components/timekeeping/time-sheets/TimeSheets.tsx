@@ -12,6 +12,11 @@ import {
   ChevronRight,
   Plus,
   ScanFace,
+  Home,
+  Calendar as CalendarIcon,
+  Clock,
+  AlertCircle,
+  Briefcase,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -38,6 +43,8 @@ import {
   DayMenu,
   DayNumber,
   DayStatus,
+  RequestIconsContainer,
+  RequestIcon,
   Header,
   HeaderButtons,
   LeaveHours,
@@ -48,7 +55,6 @@ import {
   MonthButton,
   MonthDisplay,
   MonthNavigation,
-  RequestBadge,
   SidebarCard,
   SidebarContainer,
   SidebarContent,
@@ -69,6 +75,86 @@ import {
 } from "./timeSheetStyle";
 import { useTimeSheet } from "./useTimeSheet";
 
+interface TimeSheetRequest {
+  id: number;
+  user_id: number;
+  timesheet_id: number;
+  work_date: string;
+  request_type: string;
+  title: string;
+  reason: string;
+  status: string;
+  approved_by: number | null;
+  approved_at: string | null;
+  rejected_reason: string | null;
+  created_at: string;
+  updated_at: string;
+  user?: {
+    id: number;
+    email: string;
+    user_information?: {
+      name: string;
+      code?: string;
+      avatar?: string | null;
+    };
+  };
+  approved_by_user?: {
+    id: number;
+    email: string;
+    user_information?: {
+      name: string;
+      code?: string;
+    };
+  } | null;
+  day_off?: {
+    id: number;
+    duration: string;
+    type: string;
+    is_past: boolean;
+    created_at: string;
+    updated_at: string;
+    request_id: number;
+  } | null;
+  overtime?: {
+    id: number;
+    start_time: string;
+    end_time: string;
+    total_hours: number;
+    project_id: number;
+    request_id: number;
+    project?: {
+      id: number;
+      name: string;
+      code: string;
+    };
+  } | null;
+  late_early_request?: {
+    id: number;
+    late_minutes: number;
+    early_minutes: number;
+    request_id: number;
+  } | null;
+  forgot_checkin_request?: {
+    id: number;
+    checkin_time: string;
+    checkout_time: string;
+    request_id: number;
+  } | null;
+  remote_work_request?: {
+    id: number;
+    remote_type: string;
+    request_id: number;
+  } | null;
+}
+
+interface RequestsStructure {
+  remote_work?: TimeSheetRequest[];
+  day_off?: TimeSheetRequest[];
+  overtime?: TimeSheetRequest[];
+  late_early?: TimeSheetRequest[];
+  forgot_checkin?: TimeSheetRequest[];
+}
+
 interface ProcessedTimeSheetData {
   [date: string]: {
     status: string;
@@ -84,6 +170,7 @@ interface ProcessedTimeSheetData {
     request_type: string | null;
     paid_leave: number | null;
     unpaid_leave: number | null;
+    requests?: RequestsStructure | TimeSheetRequest[];
   };
 }
 
@@ -96,7 +183,7 @@ const TimeSheets: React.FC = () => {
     useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
-
+  const [selectedRequestForDetail, setSelectedRequestForDetail] = useState<TimeSheetRequest | null>(null);
 
   const [requestModalState, setRequestModalState] = useState<RequestModalState>(
     {
@@ -154,15 +241,14 @@ const TimeSheets: React.FC = () => {
   ];
 
   const legendItems = [
-    { color: "#c9f8c9", label: "Đủ công", status: "work" },
-    { color: "#FFE0B2", label: "Thiếu công/Đi muộn", status: "late" },
-    { color: "#f3a7a7", label: "Không có công", status: "absent" },
-    { color: "#B3E5FC", label: "Nghỉ có lương", status: "leave" },
-    { color: "#FFE0B2", label: "Nghỉ không lương", status: "holiday" },
-    { color: "#E1BEE7", label: "Làm việc từ xa", status: "remote" },
-    { color: "#C8E6C9", label: "Làm thêm giờ (OT)", status: "ot" },
-    { color: "#FFF59D", label: "Đi muộn/Về sớm", status: "late-early" },
-    { color: "#FFCDD2", label: "Quên chấm công", status: "forgot-checkin" },
+    { color: "#c9f8c9", label: "Đủ công", status: "work", type: "color" },
+    { color: "#FFE0B2", label: "Thiếu công/Đi muộn", status: "late", type: "color" },
+    { color: "#f3a7a7", label: "Không có công", status: "absent", type: "color" },
+    { requestType: REQUEST_TYPE.REMOTE_WORK, label: REQUEST_TYPE_LABEL.REMOTE_WORK, type: "icon" },
+    { requestType: REQUEST_TYPE.DAY_OFF, label: REQUEST_TYPE_LABEL.DAY_OFF, type: "icon" },
+    { requestType: REQUEST_TYPE.OVERTIME, label: REQUEST_TYPE_LABEL.OVERTIME, type: "icon" },
+    { requestType: REQUEST_TYPE.LATE_EARLY, label: REQUEST_TYPE_LABEL.LATE_EARLY, type: "icon" },
+    { requestType: REQUEST_TYPE.FORGOT_CHECKIN, label: REQUEST_TYPE_LABEL.FORGOT_CHECKIN, type: "icon" },
   ];
 
   const formatDateToVietnamTimezone = (date: Date) => {
@@ -306,6 +392,60 @@ const TimeSheets: React.FC = () => {
     }
   };
 
+  // Helper function to get all requests from new structure
+  const getAllRequests = (requests: RequestsStructure | TimeSheetRequest[] | undefined): TimeSheetRequest[] => {
+    if (!requests) return [];
+    
+    // Nếu là mảng (cấu trúc cũ)
+    if (Array.isArray(requests)) {
+      return requests;
+    }
+    
+    // Nếu là object với các mảng (cấu trúc mới)
+    const allRequests: TimeSheetRequest[] = [];
+    if (requests.remote_work && Array.isArray(requests.remote_work)) {
+      allRequests.push(...requests.remote_work);
+    }
+    if (requests.day_off && Array.isArray(requests.day_off)) {
+      allRequests.push(...requests.day_off);
+    }
+    if (requests.overtime && Array.isArray(requests.overtime)) {
+      allRequests.push(...requests.overtime);
+    }
+    if (requests.late_early && Array.isArray(requests.late_early)) {
+      allRequests.push(...requests.late_early);
+    }
+    if (requests.forgot_checkin && Array.isArray(requests.forgot_checkin)) {
+      allRequests.push(...requests.forgot_checkin);
+    }
+    
+    return allRequests;
+  };
+
+  // Helper function to get icon for request type
+  const getRequestIcon = (requestType: string) => {
+    switch (requestType.toUpperCase()) {
+      case REQUEST_TYPE.REMOTE_WORK:
+        return <Home size={12} />;
+      case REQUEST_TYPE.DAY_OFF:
+        return <CalendarIcon size={12} />;
+      case REQUEST_TYPE.OVERTIME:
+        return <Clock size={12} />;
+      case REQUEST_TYPE.LATE_EARLY:
+        return <AlertCircle size={12} />;
+      case REQUEST_TYPE.FORGOT_CHECKIN:
+        return <Briefcase size={12} />;
+      default:
+        return null;
+    }
+  };
+
+  // Handle request icon click
+  const handleRequestIconClick = (request: TimeSheetRequest) => {
+    setSelectedRequestForDetail(request);
+    setIsDetailModalOpen(true);
+  };
+
   // Helper function to map REQUEST_TYPE to API endpoint type
   const getRequestTypeEndpoint = (requestType: REQUEST_TYPE): string => {
     const typeMap: Record<REQUEST_TYPE, string> = {
@@ -404,8 +544,31 @@ const TimeSheets: React.FC = () => {
               <Legend>
                 {legendItems.map((item, index) => (
                   <LegendItem key={index}>
-                    <LegendColor $color={item.color} />
-                    {item.label}
+                    {item.type === "color" && item.color ? (
+                      <>
+                        <LegendColor $color={item.color} />
+                        {item.label}
+                      </>
+                    ) : item.type === "icon" && item.requestType ? (
+                      <>
+                        <RequestIcon
+                          $type={item.requestType}
+                          $status="APPROVED"
+                          style={{ 
+                            margin: 0, 
+                            cursor: "default",
+                            pointerEvents: "none"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = "scale(1)";
+                            e.currentTarget.style.boxShadow = "none";
+                          }}
+                        >
+                          {getRequestIcon(item.requestType)}
+                        </RequestIcon>
+                        {item.label}
+                      </>
+                    ) : null}
                   </LegendItem>
                 ))}
               </Legend>
@@ -451,11 +614,31 @@ const TimeSheets: React.FC = () => {
                           {String(day.dayNumber).padStart(2, "0")}/
                           {String(day.date.getMonth() + 1).padStart(2, "0")}
                         </DayNumber>
-                        <DayMenu
-                          onClick={() => handleDayMenuClick(day.fullDate)}
-                        >
-                          ...
-                        </DayMenu>
+                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                          {dayData && dayData.requests && (
+                            <RequestIconsContainer>
+                              {getAllRequests(dayData.requests).map((request, idx) => (
+                                <RequestIcon
+                                  key={idx}
+                                  $type={request.request_type}
+                                  $status={request.status}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRequestIconClick(request);
+                                  }}
+                                  title={getRequestTypeLabel(request.request_type)}
+                                >
+                                  {getRequestIcon(request.request_type)}
+                                </RequestIcon>
+                              ))}
+                            </RequestIconsContainer>
+                          )}
+                          <DayMenu
+                            onClick={() => handleDayMenuClick(day.fullDate)}
+                          >
+                            ...
+                          </DayMenu>
+                        </div>
                       </DayHeader>
 
                       {day.isCurrentMonth && (
@@ -463,30 +646,12 @@ const TimeSheets: React.FC = () => {
                           {hasNoData ? (
                             <>
                               <TimeDisplay>
-                                <span>In: 00:00</span>
-                                <span>Out: 00:00</span>
+                                <span>Vào: 00:00</span>
+                                <span>Ra: 00:00</span>
                               </TimeDisplay>
                             </>
                           ) : dayData ? (
                             <>
-                              {dayData?.requests &&
-                                dayData.requests.length > 0 && (
-                                  <>
-                                    {dayData.requests.map(
-                                      (request, requestIndex) =>
-                                        request?.request_type && (
-                                          <RequestBadge
-                                            key={requestIndex}
-                                            $type={request.request_type}
-                                          >
-                                            {getRequestTypeLabel(
-                                              request.request_type
-                                            )}
-                                          </RequestBadge>
-                                        )
-                                    )}
-                                  </>
-                                )}
                               <div>
                                 {dayData.lateTime > 0 && (
                                   <span>
@@ -593,7 +758,15 @@ const TimeSheets: React.FC = () => {
                           (
                             total: number,
                             day: ProcessedTimeSheetData[string]
-                          ) => total + (day.status === "leave" ? 8 : 0),
+                          ) => {
+                            const requests = getAllRequests(day.requests);
+                            const dayOffRequests = requests.filter(
+                              (req) => req.request_type === REQUEST_TYPE.DAY_OFF && 
+                              req.status === REQUEST_STATUS.APPROVED &&
+                              req.day_off?.type === "SICK"
+                            );
+                            return total + (dayOffRequests.length > 0 ? 8 : 0);
+                          },
                           0
                         )}
                   </StatNumber>
@@ -607,7 +780,15 @@ const TimeSheets: React.FC = () => {
                           (
                             total: number,
                             day: ProcessedTimeSheetData[string]
-                          ) => total + (day.status === "holiday" ? 8 : 0),
+                          ) => {
+                            const requests = getAllRequests(day.requests);
+                            const unpaidLeaveRequests = requests.filter(
+                              (req) => req.request_type === REQUEST_TYPE.DAY_OFF && 
+                              req.status === REQUEST_STATUS.APPROVED &&
+                              req.day_off?.type !== "SICK"
+                            );
+                            return total + (unpaidLeaveRequests.length > 0 ? 8 : 0);
+                          },
                           0
                         )}
                   </StatNumber>
@@ -733,12 +914,42 @@ const TimeSheets: React.FC = () => {
         onClose={() => {
           setIsDetailModalOpen(false);
           setSelectedRequest(null);
+          setSelectedRequestForDetail(null);
         }}
-        request={selectedRequest}
+        request={selectedRequest || (selectedRequestForDetail ? {
+          id: selectedRequestForDetail.id,
+          type: selectedRequestForDetail.request_type,
+          request_type: selectedRequestForDetail.request_type as REQUEST_TYPE,
+          user_id: selectedRequestForDetail.user_id,
+          title: selectedRequestForDetail.title,
+          reason: selectedRequestForDetail.reason,
+          status: selectedRequestForDetail.status as REQUEST_STATUS,
+          work_date: selectedRequestForDetail.work_date,
+          created_at: selectedRequestForDetail.created_at,
+          rejected_reason: selectedRequestForDetail.rejected_reason,
+          approved_at: selectedRequestForDetail.approved_at,
+          approved_by: selectedRequestForDetail.approved_by,
+          approved_by_user: selectedRequestForDetail.approved_by_user ? {
+            id: selectedRequestForDetail.approved_by_user.id,
+            email: selectedRequestForDetail.approved_by_user.email,
+            user_information: {
+              name: selectedRequestForDetail.approved_by_user.user_information?.name || "",
+              code: selectedRequestForDetail.approved_by_user.user_information?.code,
+            },
+          } : null,
+          user: selectedRequestForDetail.user || {
+            id: selectedRequestForDetail.user_id,
+            email: "",
+            user_information: {
+              name: "",
+              position: "",
+            },
+          },
+        } as Request : null)}
         canApprove={
-          selectedRequest
+          (selectedRequest || selectedRequestForDetail)
             ? activeTab === "LIST ĐỀ XUẤT" &&
-              selectedRequest.status === REQUEST_STATUS.PENDING
+              (selectedRequest?.status || selectedRequestForDetail?.status) === REQUEST_STATUS.PENDING
             : false
         }
         onApprove={handleApproveRequest}

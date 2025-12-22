@@ -11,6 +11,17 @@ import {
   ContentContainer,
   CreateButton,
 } from "@/components/hr/asset/assetStyle";
+import styled from "styled-components";
+
+const ButtonContainer = styled.div`
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: flex-end;
+
+  @media (max-width: 768px) {
+    justify-content: stretch;
+  }
+`;
 import { Asset } from "@/constants/types";
 import assetsService from "@/services/assets.service";
 import { Table, TableColumn } from "@/components/common";
@@ -63,7 +74,14 @@ const MyAssets: React.FC = () => {
       key: "asset_code",
       label: "Mã TS",
       width: "120px",
-      render: (_, row) => row.asset_code || row.code || "Không có", 
+      render: (_, row) => (
+        <div style={{ 
+          fontSize: "14px",
+          wordBreak: "break-word"
+        }}>
+          {row.asset_code || row.code || "Không có"}
+        </div>
+      ), 
     },
     {
       key: "name",
@@ -71,9 +89,20 @@ const MyAssets: React.FC = () => {
       width: "2fr",
       render: (_, row) => (
         <div>
-          <div style={{ fontWeight: 500 }}>{row.name}</div>
+          <div style={{ 
+            fontWeight: 500,
+            fontSize: "14px",
+            wordBreak: "break-word"
+          }}>
+            {row.name}
+          </div>
           {row.description && (
-            <div style={{ fontSize: "12px", color: "#6b7280" }}>
+            <div style={{ 
+              fontSize: "12px", 
+              color: "#6b7280",
+              marginTop: "4px",
+              wordBreak: "break-word"
+            }}>
               {row.description}
             </div>
           )}
@@ -84,7 +113,14 @@ const MyAssets: React.FC = () => {
       key: "category",
       label: "Danh mục",
       width: "1fr",
-      render: (_, row) => row.category || "Không có", 
+      render: (_, row) => (
+        <div style={{ 
+          fontSize: "14px",
+          wordBreak: "break-word"
+        }}>
+          {row.category || "Không có"}
+        </div>
+      ), 
     },
     {
       key: "actions",
@@ -136,12 +172,12 @@ const MyAssets: React.FC = () => {
       <ContentContainer>
         {activeTab === "assets" && (
           <>
-            <div style={{ marginBottom: "12px", display: "flex", justifyContent: "flex-end" }}>
+            <ButtonContainer>
               <CreateButton onClick={() => setIsCreateRequestModalOpen(true)}>
                 <Plus size={20} />
-                Tạo yêu cầu tài sản
+                <span>Tạo yêu cầu tài sản</span>
               </CreateButton>
-            </div>
+            </ButtonContainer>
 
             <Table
               columns={assetColumns}
@@ -158,12 +194,12 @@ const MyAssets: React.FC = () => {
 
         {activeTab === "requests" && (
           <>
-            <div style={{ marginBottom: "12px", display: "flex", justifyContent: "flex-end" }}>
+            <ButtonContainer>
               <CreateButton onClick={() => setIsCreateRequestModalOpen(true)}>
                 <Plus size={20} />
-                Tạo yêu cầu tài sản
+                <span>Tạo yêu cầu tài sản</span>
               </CreateButton>
-            </div>
+            </ButtonContainer>
 
             <MyAssetRequestsList requests={requests} />
             {pagination.total_pages > 1 && (

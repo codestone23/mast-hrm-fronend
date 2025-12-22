@@ -20,6 +20,7 @@ import {
   HourSlot,
   MeetingBlock,
 } from "./calendarStyle";
+import { useMobile } from "@/hooks/useMobile";
 
 interface CalendarProps {
   meetings: Meeting[];
@@ -39,7 +40,7 @@ const Calendar: React.FC<CalendarProps> = ({
   currentUserId,
 }) => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
-
+  const isMobile = useMobile();
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
   // Chỉ lấy 5 ngày từ thứ 2 đến thứ 6 (bỏ thứ 7 và CN)
   const weekDays = useMemo(() => {
@@ -167,7 +168,7 @@ const Calendar: React.FC<CalendarProps> = ({
   const weekRangeText = `${format(weekStart, "dd/MM", { locale: vi })} - ${format(weekEnd, "dd/MM/yyyy", { locale: vi })}`;
 
   return (
-    <CalendarContainer>
+    <CalendarContainer $isMobile={isMobile}>
       <CalendarHeader>
         <CalendarNavButton onClick={handlePrevWeek}>
           <ChevronLeft size={20} />
@@ -184,7 +185,7 @@ const Calendar: React.FC<CalendarProps> = ({
         <TimeColumn>
           <TimeHeader>Giờ</TimeHeader>
           {timeSlots.map((slot) => (
-            <TimeSlot key={slot}>{slot}</TimeSlot>
+            <TimeSlot key={slot} $isMobile={isMobile}>{slot}</TimeSlot>
           ))}
         </TimeColumn>
 

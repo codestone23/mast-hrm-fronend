@@ -53,6 +53,12 @@ export const UserAvatar = styled.div`
     border-radius: 50%;
     object-fit: cover;
   }
+
+  @media (max-width: 768px) {
+    width: 100px;
+    height: 100px;
+    border: 3px solid var(--border);
+  }
 `;
 
 export const UserName = styled.h2`
@@ -60,6 +66,10 @@ export const UserName = styled.h2`
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 0.5rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
 `;
 
 export const UserRole = styled.p`
@@ -202,6 +212,12 @@ export const SectionHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
 `;
 
 export const SectionTitle = styled.h3`
@@ -212,6 +228,10 @@ export const SectionTitle = styled.h3`
   display: flex;
   align-items: center;
   gap: 8px;
+
+  @media (max-width: 768px) {
+    font-size: 1.125rem;
+  }
 `;
 
 export const SectionAction = styled.button`
@@ -323,6 +343,11 @@ export const SkillCard = styled.div`
   border: 1px solid #e5e7eb;
   position: relative;
   flex-basis: 50%;
+
+  @media (max-width: 768px) {
+    flex-basis: 100%;
+    padding: 12px;
+  }
 `;
 
 export const SkillCardHeader = styled.div`
@@ -339,6 +364,11 @@ export const SkillTitle = styled.h4`
   margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 600;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    word-break: break-word;
+  }
 `;
 
 export const SkillDescription = styled.p`
@@ -420,6 +450,10 @@ export const ExperienceCard = styled.div`
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   position: relative;
+
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
 `;
 
 export const ExperienceCardHeader = styled.div`
@@ -436,6 +470,11 @@ export const ExperienceTitle = styled.h4`
   margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 600;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    word-break: break-word;
+  }
 `;
 
 export const ExperienceCompany = styled.p`
@@ -489,6 +528,10 @@ export const EducationCard = styled.div`
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   position: relative;
+
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
 `;
 
 export const EducationCardHeader = styled.div`
@@ -505,6 +548,11 @@ export const EducationTitle = styled.h4`
   margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 600;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    word-break: break-word;
+  }
 `;
 
 export const EducationMajor = styled.p`

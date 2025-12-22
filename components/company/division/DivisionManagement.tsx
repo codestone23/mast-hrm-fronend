@@ -138,11 +138,20 @@ const DivisionManagement: React.FC = () => {
             <DashboardCol>
                 <WelcomeCard>
                     <WelcomeContent>
-                        <h3>Quản lý phòng ban hệ thống</h3>
-                        <p>
+                        <h3 style={{ fontSize: isMobile ? "1.1rem" : "1.25rem" }}>Quản lý phòng ban hệ thống</h3>
+                        <p style={{ fontSize: isMobile ? "0.85rem" : "0.9rem" }}>
+                            {isMobile ? (
+                                <>
+                                    Tổng: {divisions.length} | Hoạt động: {activeDivisions}<br />
+                                    Nhân viên: {totalEmployees}
+                                </>
+                            ) : (
+                                <>
                             Tổng số phòng ban: {divisions.length} | Đang hoạt
                             động: {activeDivisions} | Tổng nhân viên:{" "}
                             {totalEmployees}
+                                </>
+                            )}
                         </p>
                     </WelcomeContent>
                 </WelcomeCard>
@@ -205,7 +214,7 @@ const DivisionManagement: React.FC = () => {
                     </AssetsGradientBox>
                     <AssetsListContainer>
                         <AssetsListTitle>
-                            <strong>Phân bố nhân viên theo phòng ban</strong>
+                            <strong style={{ fontSize: isMobile ? "0.85rem" : "0.9rem" }}>Phân bố nhân viên theo phòng ban</strong>
                         </AssetsListTitle>
                         {divisions.slice(0, 4).map((division) => (
                             <AssetsItem
@@ -217,25 +226,32 @@ const DivisionManagement: React.FC = () => {
                                         display: "flex",
                                         justifyContent: "space-between",
                                         alignItems: "center",
+                                        flexWrap: isMobile ? "wrap" : "nowrap",
+                                        gap: isMobile ? "4px" : "0",
                                     }}
                                 >
-                                    <span style={{ fontSize: "0.8rem" }}>
+                                    <span style={{ 
+                                        fontSize: isMobile ? "0.75rem" : "0.8rem",
+                                        wordBreak: "break-word",
+                                        flex: isMobile ? "1 1 100%" : "auto"
+                                    }}>
                                         {division.name}
                                     </span>
                                     <span
                                         style={{
-                                            fontSize: "0.75rem",
+                                            fontSize: isMobile ? "0.7rem" : "0.75rem",
                                             fontWeight: "600",
                                             color:
                                                 division.status === "ACTIVE"
                                                     ? "var(--success-600)"
                                                     : "var(--text-muted)",
-                                            padding: "2px 6px",
+                                            padding: isMobile ? "2px 4px" : "2px 6px",
                                             borderRadius: "4px",
                                             backgroundColor:
                                                 division.status === "ACTIVE"
                                                     ? "var(--success-100)"
                                                     : "var(--background-secondary)",
+                                            whiteSpace: "nowrap",
                                         }}
                                     >
                                         {division.member_count ?? 0} nhân viên
@@ -249,6 +265,7 @@ const DivisionManagement: React.FC = () => {
                                 style={{
                                     fontStyle: "italic",
                                     color: "var(--text-muted)",
+                                    fontSize: isMobile ? "0.75rem" : "0.8rem",
                                 }}
                             >
                                 ... và {divisions.length - 4} phòng ban khác

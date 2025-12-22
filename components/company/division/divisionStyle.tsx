@@ -105,6 +105,12 @@ export const DivisionGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 24px;
   margin-top: 20px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
 `;
 
 export const DivisionCard = styled.div`
@@ -121,6 +127,11 @@ export const DivisionCard = styled.div`
     box-shadow: var(--shadow-lg);
     transform: translateY(-2px);
   }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    border-radius: var(--radius-md);
+  }
 `;
 
 export const DivisionIcon = styled.div`
@@ -133,6 +144,12 @@ export const DivisionIcon = styled.div`
   color: var(--primary-600);
   margin-bottom: 20px;
   box-shadow: var(--shadow-sm);
+
+  @media (max-width: 768px) {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+  }
   `;
 
 export const DivisionInfo = styled.div`
@@ -149,6 +166,12 @@ export const DivisionName = styled.h3`
   color: var(--text-primary);
   margin: 0 0 12px 0;
   line-height: 1.3;
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+    margin-bottom: 8px;
+    word-break: break-word;
+  }
 `;
 
 export const DivisionDescription = styled.p`
@@ -160,6 +183,11 @@ export const DivisionDescription = styled.p`
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
 `;
 
 export const DivisionStats = styled.div`
@@ -198,6 +226,13 @@ export const DivisionActions = styled.div`
   ${DivisionCard}:hover & {
     opacity: 1;
   }
+
+  @media (max-width: 768px) {
+    top: 12px;
+    right: 12px;
+    opacity: 1;
+    gap: 6px;
+  }
 `;
 
 export const ActionButton = styled.button<{ $variant: "edit" | "delete" }>`
@@ -234,6 +269,16 @@ export const ActionButton = styled.button<{ $variant: "edit" | "delete" }>`
         `;
     }
   }}
+
+  @media (max-width: 768px) {
+    width: 32px;
+    height: 32px;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
 `;
 
 export const EmptyState = styled.div`
@@ -246,6 +291,11 @@ export const EmptyState = styled.div`
   background: linear-gradient(135deg, var(--background), var(--background-secondary));
   border-radius: var(--radius-lg);
   border: 2px dashed var(--border);
+
+  @media (max-width: 768px) {
+    padding: 40px 16px;
+    border-radius: var(--radius-md);
+  }
 `;
 
 export const EmptyIcon = styled.div`
@@ -259,6 +309,17 @@ export const EmptyIcon = styled.div`
   color: var(--primary-400);
   margin-bottom: 24px;
   box-shadow: var(--shadow-md);
+
+  @media (max-width: 768px) {
+    width: 72px;
+    height: 72px;
+    margin-bottom: 16px;
+    
+    svg {
+      width: 36px;
+      height: 36px;
+    }
+  }
 `;
 
 export const EmptyText = styled.p`
@@ -266,6 +327,10 @@ export const EmptyText = styled.p`
   color: var(--text-secondary);
   margin: 0;
   font-weight: 500;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
 `;
 
 // Modal Styles - tương tự như timekeeping

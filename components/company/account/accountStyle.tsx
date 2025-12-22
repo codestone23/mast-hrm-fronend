@@ -135,6 +135,12 @@ export const StatsRow = styled.div`
   gap: 24px;
   font-size: 14px;
   color: var(--text-secondary);
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 8px;
+    font-size: 12px;
+  }
 `;
 
 export const AccountTable = styled.div`
@@ -379,6 +385,11 @@ export const ActionMenuDropdown = styled.div.withConfig({
   }};
   transition: all 0.2s ease;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    min-width: 160px;
+    font-size: 13px;
+  }
 `;
 
 export const ActionMenuList = styled.ul`

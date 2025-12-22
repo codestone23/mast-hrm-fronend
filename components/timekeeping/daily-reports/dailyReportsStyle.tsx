@@ -108,6 +108,11 @@ export const CalendarContainer = styled.div`
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    border-radius: 8px;
+  }
 `;
 
 export const MonthNavigation = styled.div`
@@ -138,6 +143,10 @@ export const MonthDisplay = styled.h2`
   font-weight: 600;
   color: #333;
   margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
 `;
 
 export const Legend = styled.div`
@@ -185,6 +194,11 @@ export const WeekDay = styled.div`
   font-weight: 600;
   color: #333;
   font-size: 14px;
+
+  @media (max-width: 768px) {
+    padding: 8px 4px;
+    font-size: 11px;
+  }
 `;
 
 export const CalendarGrid = styled.div`
@@ -239,6 +253,10 @@ export const DayNumber = styled.div<{
     return "#333";
   }};
   font-size: 14px;
+
+  @media (max-width: 768px) {
+    font-size: 10px;
+  }
 `;
 
 export const DayStatus = styled.div`
@@ -269,6 +287,10 @@ export const HoursDisplay = styled.div`
   color: #4CAF50;
   font-weight: 500;
   margin-top: 4px;
+
+  @media (max-width: 768px) {
+    font-size: 10px;
+  }
 `;
 
 export const TabContentWrapper = styled.div<{ $isMobile?: boolean }>`

@@ -233,6 +233,14 @@ export const StatsNumber = styled.div`
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+    
+    &.large {
+      font-size: 2.5rem;
+    }
+  }
 `;
 
 export const StatsLabel = styled.div`
@@ -555,11 +563,19 @@ export const AssetsNumber = styled.div`
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
 `;
 
 export const AssetsLabel = styled.div`
   font-size: 0.9rem;
   opacity: 0.9;
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+  }
 `;
 
 export const AssetsListContainer = styled.div`
@@ -571,6 +587,11 @@ export const AssetsListContainer = styled.div`
 export const AssetsListTitle = styled.div`
   margin-bottom: 0.5rem;
   font-weight: 600;
+
+  @media (max-width: 768px) {
+    font-size: 0.85rem;
+    margin-bottom: 0.375rem;
+  }
 `;
 
 export const AssetsItem = styled.div<{ $marginBottom?: string }>`

@@ -84,6 +84,12 @@ export const Sidebar = styled.div`
   width: 280px;
   border-right: 1px solid #e5e7eb;
   background: #f9fafb;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
 `;
 
 export const SidebarItem = styled.div<{ $active: boolean }>`
@@ -101,6 +107,18 @@ export const SidebarItem = styled.div<{ $active: boolean }>`
 
   &:hover {
     background: ${(props) => (props.$active ? "#e3f2fd" : "#f3f4f6")};
+  }
+
+  @media (max-width: 768px) {
+    padding: 10px 16px;
+    font-size: 13px;
+    border-left: none;
+    border-bottom: 3px solid ${(props) => (props.$active ? "#2196F3" : "transparent")};
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
   }
 `;
 

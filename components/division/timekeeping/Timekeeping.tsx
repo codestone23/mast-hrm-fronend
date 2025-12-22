@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import AdminRequestsList from "@/components/timekeeping/AdminRequestsList";
-import AttendanceStatistics from "./AttendanceStatistics";
 import {
   TimekeepingContainer,
   Header,
@@ -33,7 +32,6 @@ const Timekeeping: React.FC = () => {
       </Header>
 
       <TabContent>
-        {/* {activeTab === "Thống kê chấm công" && <AttendanceStatistics />} */}
         {activeTab === "DANH SÁCH ĐỀ XUẤT NHÂN VIÊN" && <AdminRequestsList />}
       </TabContent>
     </TimekeepingContainer>

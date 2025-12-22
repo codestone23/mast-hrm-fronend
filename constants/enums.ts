@@ -32,6 +32,11 @@ export enum REQUEST_TYPE_LABEL {
     FORGOT_CHECKIN = "Quên chấm công",
 }
 
+export enum USER_STATUS {
+    ACTIVE = "ACTIVE",
+    INACTIVE = "INACTIVE",
+}
+
 export enum REQUEST_STATUS {
     PENDING = "PENDING",
     APPROVED = "APPROVED",

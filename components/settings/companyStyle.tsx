@@ -3,6 +3,10 @@ import styled from "styled-components";
 export const CompanyContainer = styled.div`
   background-color: var(--background-secondary);
   padding: 1rem;
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+  }
 `;
 
 export const Header = styled.div`
@@ -17,6 +21,10 @@ export const TabsContainer = styled.div`
   padding: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: fit-content;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 export const Tab = styled.div<{ $active: boolean }>`
@@ -43,6 +51,13 @@ export const Tab = styled.div<{ $active: boolean }>`
       color: #333;
     }
   `}
+
+  @media (max-width: 768px) {
+    padding: 10px 16px;
+    font-size: 12px;
+    flex: 1;
+    text-align: center;
+  }
 `;
 
 export const CompanyInfoSection = styled.div`
@@ -57,6 +72,11 @@ export const SectionTitle = styled.div`
   font-weight: 600;
   color: #333;
   margin-bottom: 1.5rem;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+    margin-bottom: 1rem;
+  }
 `;
 
 export const InfoCard = styled.div`
@@ -128,6 +148,11 @@ export const MainContent = styled.div`
   grid-template-columns: 1fr 300px;
   gap: 2rem;
   width: 100%;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 `;
 
 export const EmployeeSection = styled.div`
@@ -136,6 +161,11 @@ export const EmployeeSection = styled.div`
   padding: 1.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   border: 1px solid #f0f0f0;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    border-radius: 8px;
+  }
 `;
 
 export const SearchContainer = styled.div`
@@ -228,6 +258,11 @@ export const EmployeeCard = styled.div`
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(33, 150, 243, 0.1);
   }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
 `;
 
 export const EmployeeAvatar = styled.div`
@@ -240,6 +275,11 @@ export const EmployeeAvatar = styled.div`
   justify-content: center;
   color: #666;
   flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    width: 40px;
+    height: 40px;
+  }
 `;
 
 export const EmployeeInfo = styled.div`
@@ -251,17 +291,31 @@ export const EmployeeName = styled.div`
   font-weight: 600;
   color: #333;
   margin-bottom: 4px;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
 `;
 
 export const EmployeeEmail = styled.div`
   font-size: 12px;
   color: #666;
   margin-bottom: 4px;
+
+  @media (max-width: 768px) {
+    font-size: 11px;
+    word-break: break-word;
+  }
 `;
 
 export const EmployeePosition = styled.div`
   font-size: 11px;
   color: #999;
+
+  @media (max-width: 768px) {
+    font-size: 10px;
+    word-break: break-word;
+  }
 `;
 
 export const DivisionFilter = styled.div`
@@ -332,18 +386,34 @@ export const DivisionHeader = styled.div`
   font-weight: 600;
   font-size: 16px;
   box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 0.625rem 0.875rem;
+    flex-wrap: wrap;
+  }
 `;
 
 export const DivisionEmployeeGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
 `;
 
 export const Sidebar = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    gap: 1rem;
+    order: -1;
+  }
 `;
 
 export const SidebarCard = styled.div`
@@ -352,6 +422,11 @@ export const SidebarCard = styled.div`
   padding: 1.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   border: 1px solid #f0f0f0;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    border-radius: 8px;
+  }
 `;
 
 export const SidebarTitle = styled.h3`
@@ -366,6 +441,12 @@ export const SidebarTitle = styled.h3`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 0.875rem 1rem;
+    border-radius: 8px;
+  }
 `;
 
 export const SidebarCardTitle = styled.h4`
@@ -376,6 +457,11 @@ export const SidebarCardTitle = styled.h4`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+    margin-bottom: 0.75rem;
+  }
 `;
 
 export const FilterList = styled.div`
@@ -502,6 +588,12 @@ export const ShowMoreButton = styled.button`
   &:active {
     transform: translateY(0);
     box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.5rem 1rem;
+    font-size: 12px;
+    width: 100%;
   }
 `;
 

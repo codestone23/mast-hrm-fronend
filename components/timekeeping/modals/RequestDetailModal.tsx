@@ -169,8 +169,9 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
                 <IconWrapper><User size={12} /></IconWrapper>
                 Người tạo
               </InfoCardLabel>
-              <InfoCardValue>{request?.user?.user_information?.name}</InfoCardValue>
+              <InfoCardValue>{request?.user?.user_information?.name || request?.user?.email}</InfoCardValue>
             </InfoCard>
+            {request?.user?.user_information?.position && (
             <InfoCard>
               <InfoCardLabel>
                 <IconWrapper><User size={12} /></IconWrapper>
@@ -178,7 +179,17 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
               </InfoCardLabel>
               <InfoCardValue>{request?.user?.user_information?.position}</InfoCardValue>
             </InfoCard>
+            )}
             </>
+          )}
+          {request?.approved_by_user && (
+            <InfoCard>
+              <InfoCardLabel>
+                <IconWrapper><User size={12} /></IconWrapper>
+                Người duyệt
+              </InfoCardLabel>
+              <InfoCardValue>{request?.approved_by_user?.user_information?.name || request?.approved_by_user?.email}</InfoCardValue>
+            </InfoCard>
           )}
         </DetailInfoGrid>
 
@@ -197,7 +208,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
                     <IconWrapper><Clock size={12} /></IconWrapper>
                     Thời gian duyệt
                   </InfoCardLabel>
-                  <InfoCardValue>{formatDateTime(request.created_at)}</InfoCardValue>
+                  <InfoCardValue>{request.approved_at ? formatDateTime(request.approved_at) : formatDateTime(request.created_at)}</InfoCardValue>
                 </InfoCard>
               </InfoGrid>
             </ApprovalSection>
@@ -214,7 +225,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
                 Đã bị từ chối
               </RejectionSectionTitle>
               <WhiteReasonBox>
-                Request này đã bị từ chối.
+                {request.rejected_reason || 'Request này đã bị từ chối.'}
               </WhiteReasonBox>
             </RejectionSection>
           </>

@@ -3,6 +3,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Package, TrendingUp, TrendingDown, Activity } from "lucide-react";
+import { useMobile } from "@/hooks/useMobile";
 import {
     PieChart,
     Pie,
@@ -39,6 +40,7 @@ const COLORS = {
 };
 
 const AssetStats: React.FC = () => {
+    const isMobile = useMobile();
     const { data, isLoading, error } = useQuery({
         queryKey: ["assetStatistics"],
         queryFn: () => assetsService.getAssetsStatistics(),
@@ -172,7 +174,7 @@ const AssetStats: React.FC = () => {
                 <div
                     style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
+                        gridTemplateColumns: window.innerWidth <= 768 ? "1fr" : "1fr 1fr",
                         gap: "16px",
                         marginTop: "16px",
                     }}
@@ -182,13 +184,13 @@ const AssetStats: React.FC = () => {
                             style={{
                                 marginBottom: "16px",
                                 color: "#333",
-                                fontSize: "19px",
+                                fontSize: isMobile ? "16px" : "19px",
                                 fontWeight: 600,
                             }}
                         >
                             Thống kê yêu cầu
                         </h3>
-                        <ResponsiveContainer width="100%" height={260}>
+                        <ResponsiveContainer width="100%" height={isMobile ? 200 : 260}>
                             <PieChart>
                                 <Pie
                                     data={requestsData}
@@ -219,21 +221,21 @@ const AssetStats: React.FC = () => {
                             style={{
                                 marginBottom: "16px",
                                 color: "#333",
-                                fontSize: "19px",
+                                fontSize: isMobile ? "16px" : "19px",
                                 fontWeight: 600,
                             }}
                         >
                             Thống kê theo danh mục
                         </h3>
-                        <ResponsiveContainer width="100%" height={260}>
+                        <ResponsiveContainer width="100%" height={isMobile ? 200 : 260}>
                             <BarChart data={categoriesData}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis
                                     dataKey="name"
-                                    tick={{ fontSize: 12 }}
-                                    angle={-45}
+                                    tick={{ fontSize: isMobile ? 10 : 12 }}
+                                    angle={isMobile ? -90 : -45}
                                     textAnchor="end"
-                                    height={80}
+                                    height={isMobile ? 100 : 80}
                                 />
                                 <YAxis />
                                 <Tooltip />

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle, XCircle, FileText } from "lucide-react";
+import { useMobile } from "@/hooks/useMobile";
 import NewsCard from "@/components/news/NewsCard";
 import ReviewNewsModal from "@/components/news/modals/ReviewNewsModal";
 import ConfirmApproveModal from "@/components/news/modals/ConfirmApproveModal";
@@ -23,6 +24,7 @@ import { EmptyStateContainer, EmptyStateTitle, EmptyStateIcon } from "@/componen
 
 export default function AdminNewsPage() {
   const queryClient = useQueryClient();
+  const isMobile = useMobile();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
   
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -112,9 +114,9 @@ export default function AdminNewsPage() {
       ) : newsList.length === 0 ? (
         <EmptyStateContainer>
           <EmptyStateIcon>
-            <FileText size={48} />
+            <FileText size={isMobile ? 40 : 48} />
           </EmptyStateIcon>
-          <EmptyStateTitle>Không có tin tức nào cần duyệt</EmptyStateTitle>
+          <EmptyStateTitle style={{ fontSize: isMobile ? "16px" : "18px" }}>Không có tin tức nào cần duyệt</EmptyStateTitle>
         </EmptyStateContainer>
       ) : (
         <NewsGridWithReview>

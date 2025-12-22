@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Edit, Trash2, Send, FileText } from 'lucide-react';
+import { useMobile } from '@/hooks/useMobile';
 import NewsCard from '@/components/news/NewsCard';
 import CreateNewsModal from '@/components/news/modals/CreateNewsModal';
 import EditNewsModal from '@/components/news/modals/EditNewsModal';
@@ -37,6 +38,7 @@ const ITEMS_PER_PAGE = 10;
 export default function HRNewsPage() {
     const queryClient = useQueryClient();
     const { success: showSuccessToast, error: showErrorToast } = useToast();
+    const isMobile = useMobile();
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -203,12 +205,12 @@ export default function HRNewsPage() {
             {isLoading ? (
                 <Loading />
             ) : newsList.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '3rem' }}>
+                <div style={{ textAlign: 'center', padding: isMobile ? '2rem 1rem' : '3rem' }}>
                     <FileText
-                        size={48}
+                        size={isMobile ? 40 : 48}
                         style={{ opacity: 0.5, marginBottom: '1rem' }}
                     />
-                    <p>Chưa có tin tức nào</p>
+                    <p style={{ fontSize: isMobile ? '14px' : '16px' }}>Chưa có tin tức nào</p>
                 </div>
             ) : (
                 <>

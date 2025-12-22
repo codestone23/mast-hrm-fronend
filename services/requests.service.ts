@@ -19,6 +19,17 @@ export interface Request {
   start_time?: string;
   end_time?: string;
   project_id?: number;
+  rejected_reason?: string | null;
+  approved_at?: string | null;
+  approved_by?: number | null;
+  approved_by_user?: {
+    id: number;
+    email: string;
+    user_information: {
+      name: string;
+      code?: string;
+    };
+  } | null;
   user: {
     id: number;
     email: string;

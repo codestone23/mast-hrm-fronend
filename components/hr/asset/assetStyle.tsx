@@ -4,6 +4,10 @@ export const Container = styled.div`
   background-color: var(--background-secondary);
   min-height: 100vh;
   padding: 0.75rem;
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+  }
 `;
 
 export const HeaderContainer = styled.div`
@@ -11,6 +15,12 @@ export const HeaderContainer = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
 `;
 
 export const TabContainer = styled.div`
@@ -20,6 +30,10 @@ export const TabContainer = styled.div`
   border-radius: 8px;
   padding: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 export const TabButton = styled.div<{ $active: boolean }>`
@@ -50,6 +64,18 @@ export const TabButton = styled.div<{ $active: boolean }>`
       color: #333;
     }
   `}
+
+  @media (max-width: 768px) {
+    padding: 10px 16px;
+    font-size: 12px;
+    flex: 1;
+    gap: 4px;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
 `;
 
 export const ContentContainer = styled.div`
@@ -58,6 +84,11 @@ export const ContentContainer = styled.div`
   border-radius: 12px;
   padding: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
 `;
 
 export const SearchInput = styled.input`
@@ -100,6 +131,18 @@ export const CreateButton = styled.button<{ $isMobile?: boolean }>`
     background: #F57C00;
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 14px;
+    justify-content: center;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
   }
 `;
 

@@ -107,7 +107,7 @@ class DivisionWorkforceService {
   }
 
   async getMyTeams(): Promise<ApiResponse<DivisionTeamData[]>> {
-    const response = await axiosInstance.get(`/teams/my`);
+    const response = await axiosInstance.get(`/teams/managed`);
     return response.data;
   }
   async getProjectByTeamId(teamId: number): Promise<ApiResponse<Project[]>> {

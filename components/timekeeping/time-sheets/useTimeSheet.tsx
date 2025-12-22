@@ -50,8 +50,12 @@ export const useTimeSheet = () => {
         remote: string;
         request_type: string | null;
         requests?: {
-            request_type: string;
-        }[];
+            remote_work?: any[];
+            day_off?: any[];
+            overtime?: any[];
+            late_early?: any[];
+            forgot_checkin?: any[];
+        } | any[];
         paid_leave: number | null;
         unpaid_leave: number | null;
     }>, item: TimeSheet) => {
@@ -59,11 +63,9 @@ export const useTimeSheet = () => {
         const date = dayjs.utc(item.work_date).format('YYYY-MM-DD');
         
         // Format time với timezone +7 để hiển thị đúng giờ địa phương
-        const checkinTime = item.checkin ? dayjs.utc(item.checkin)
-            .utcOffset(7).format('HH:mm') : null;
+        const checkinTime = item.checkin ? dayjs.utc(item.checkin).format('HH:mm') : null;
         
-        const checkoutTime = item.checkout ? dayjs.utc(item.checkout)
-            .utcOffset(7).format('HH:mm') : null;
+        const checkoutTime = item.checkout ? dayjs.utc(item.checkout).format('HH:mm') : null;
         
         let totalWorkHours = 0;
         if (item.checkin && item.checkout) {
@@ -72,44 +74,17 @@ export const useTimeSheet = () => {
             totalWorkHours = 4;
         }
         
-        // Xác định status dựa trên dữ liệu
+        // Xác định status dựa trên dữ liệu - chỉ work, late, absent
         let status: string = 'absent';
         
-        // Ưu tiên request_type trước
-        if (item.request_type) {
-            switch (item.request_type) {
-                case 'LATE':
-                case 'EARLY':
-                case 'BOTH':
-                    status = 'late-early';
-                    break;
-                case 'PAID_LEAVE':
-                    status = 'leave';
-                    break;
-                case 'UNPAID_LEAVE':
-                    status = 'holiday';
-                    break;
-                case 'REMOTE_WORK':
-                case 'HYBRID':
-                    status = 'remote';
-                    break;
-                case 'OVERTIME':
-                    status = 'ot';
-                    break;
-                case 'FORGOT_CHECKIN':
-                    status = 'absent';
-                    break;
-                default:
-                    status = 'work';
-            }
-        } else if (item.checkin && item.checkout) {
+        // Chỉ xác định status dựa trên checkin/checkout và late_time
+        if (item.checkin && item.checkout) {
             status = item.late_time > 0 ? 'late' : 'work';
         } else if (item.checkin && !item.checkout) {
             status = 'work';
-        } else if (item.paid_leave || item.unpaid_leave) {
-            status = item.paid_leave ? 'leave' : 'holiday';
-        } else if (item.remote === 'REMOTE' || item.remote === 'HYBRID') {
-            status = 'remote';
+        } else {
+            // Không có checkin hoặc checkout
+            status = 'absent';
         }
 
         acc[date] = {

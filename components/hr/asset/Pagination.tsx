@@ -11,6 +11,12 @@ const PaginationContainer = styled.div`
   gap: 8px;
   margin-top: 20px;
   padding: 20px;
+
+  @media (max-width: 768px) {
+    gap: 4px;
+    padding: 16px 8px;
+    flex-wrap: wrap;
+  }
 `;
 
 const PageButton = styled.button<{ $active?: boolean; $disabled?: boolean }>`
@@ -37,6 +43,18 @@ const PageButton = styled.button<{ $active?: boolean; $disabled?: boolean }>`
   &:disabled {
     cursor: not-allowed;
     opacity: 0.5;
+  }
+
+  @media (max-width: 768px) {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    font-size: 12px;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
   }
 `;
 

@@ -481,32 +481,38 @@ const HRDailyReports: React.FC = () => {
                       display: "flex",
                       gap: "8px",
                       alignItems: "center",
-                      padding: "12px",
+                      padding: isMobile ? "10px" : "12px",
                       backgroundColor: "#f0f9ff",
                       borderRadius: "8px",
+                      flexDirection: isMobile ? "column" : "row",
+                      flexWrap: "wrap",
                     }}
                   >
-                    <span style={{ fontSize: "14px", fontWeight: 500 }}>
+                    <span style={{ fontSize: isMobile ? "13px" : "14px", fontWeight: 500, width: isMobile ? "100%" : "auto" }}>
                       Đã chọn: {selectedReportIds.size} báo cáo
                     </span>
+                    <div style={{ display: "flex", gap: "8px", width: isMobile ? "100%" : "auto" }}>
                     <Button
                       variant="primary"
                       size="sm"
-                      icon={<CheckCheck size={16} />}
+                        icon={<CheckCheck size={isMobile ? 14 : 16} />}
                       onClick={handleApproveAll}
                       disabled={approveAllMutation.isPending}
+                        style={{ flex: isMobile ? 1 : "auto" }}
                     >
                       Duyệt tất cả
                     </Button>
                     <Button
                       variant="error"
                       size="sm"
-                      icon={<X size={16} />}
+                        icon={<X size={isMobile ? 14 : 16} />}
                       onClick={handleRejectAll}
                       disabled={rejectAllMutation.isPending}
+                        style={{ flex: isMobile ? 1 : "auto" }}
                     >
                       Từ chối tất cả
                     </Button>
+                    </div>
                   </div>
                 </FilterRow>
               )}

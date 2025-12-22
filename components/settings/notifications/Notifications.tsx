@@ -19,11 +19,13 @@ import {
   ActionsBar,
   SearchContainer,
 } from "./notificationsStyle";
+import { useMobile } from "@/hooks/useMobile";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
+  const isMobile = useMobile();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -157,15 +159,16 @@ export default function NotificationsPage() {
         return (
           <div 
             style={{ 
-              maxWidth: "400px",
+              maxWidth: isMobile ? "100%" : "400px",
               position: "relative",
               display: "-webkit-box",
-              WebkitLineClamp: 3,
+              WebkitLineClamp: isMobile ? 2 : 3,
               WebkitBoxOrient: "vertical",
               overflow: "hidden",
               textOverflow: "ellipsis",
               lineHeight: "1.5",
-              maxHeight: "4.5em",
+              maxHeight: isMobile ? "3em" : "4.5em",
+              fontSize: isMobile ? "13px" : "14px",
             }}
             title={content}
           >
@@ -192,7 +195,12 @@ export default function NotificationsPage() {
       width: "10%",
       align: "center",
       render: (_, row) => (
-        <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+        <div style={{ 
+          display: "flex", 
+          gap: isMobile ? "4px" : "8px", 
+          justifyContent: "center",
+          flexWrap: isMobile ? "wrap" : "nowrap"
+        }}>
           <Button
             size="sm"
             variant="outline"
@@ -200,9 +208,10 @@ export default function NotificationsPage() {
               e.stopPropagation();
               handleEdit(row);
             }}
-            icon={<Edit size={14} />}
+            icon={<Edit size={isMobile ? 12 : 14} />}
+            style={{ fontSize: isMobile ? "12px" : "14px" }}
           >
-            Sửa
+            {isMobile ? "" : "Sửa"}
           </Button>
           <Button
             size="sm"
@@ -211,9 +220,10 @@ export default function NotificationsPage() {
               e.stopPropagation();
               handleDelete(row);
             }}
-            icon={<Trash2 size={14} />}
+            icon={<Trash2 size={isMobile ? 12 : 14} />}
+            style={{ fontSize: isMobile ? "12px" : "14px" }}
           >
-            Xóa
+            {isMobile ? "" : "Xóa"}
           </Button>
         </div>
       ),
@@ -255,7 +265,7 @@ export default function NotificationsPage() {
         loading={isLoading}
         error={error as Error | null}
         emptyState={{
-          icon: <Bell size={48} />,
+          icon: <Bell size={isMobile ? 40 : 48} />,
           message: searchTerm
             ? "Không tìm thấy thông báo nào"
             : "Chưa có thông báo nào",

@@ -681,17 +681,32 @@ const AssetManagement: React.FC = () => {
             </AssetFilterContainer>
             
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              <div style={{ padding: "1rem", background: "white", borderRadius: "12px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
-                <h3 style={{ margin: "0 0 0.25rem 0", fontSize: "1.4rem", fontWeight: 700, color: "#111827" }}>
+              <div style={{ 
+                padding: isMobile ? "0.75rem" : "1rem", 
+                background: "white", 
+                borderRadius: isMobile ? "8px" : "12px", 
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)" 
+              }}>
+                <h3 style={{ 
+                  margin: "0 0 0.25rem 0", 
+                  fontSize: isMobile ? "1.2rem" : "1.4rem", 
+                  fontWeight: 700, 
+                  color: "#111827" 
+                }}>
                   Danh sách yêu cầu tài sản
                 </h3>
-                <p style={{ margin: 0, fontSize: "15px", color: "#6b7280" }}>
+                <p style={{ margin: 0, fontSize: isMobile ? "13px" : "15px", color: "#6b7280" }}>
                   Tổng cộng: <strong style={{ color: "#2196F3" }}>{requestPagination.total || requests.length}</strong> yêu cầu
                 </p>
               </div>
               
               {isLoadingRequests ? (
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "60px 20px" }}>
+                <div style={{ 
+                  display: "flex", 
+                  justifyContent: "center", 
+                  alignItems: "center", 
+                  padding: isMobile ? "40px 16px" : "60px 20px" 
+                }}>
                   <Loading />
                 </div>
               ) : (

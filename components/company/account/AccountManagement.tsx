@@ -39,7 +39,7 @@ import { User as UserType } from "@/types/api";
 import userService from "@/services/user.service";
 import { useToast } from "@/hooks/useToast";
 import { useRouter } from "next/navigation";
-import { ROLE_NAMES, DivisionStatus } from "@/constants/enums";
+import { ROLE_NAMES, DivisionStatus, USER_STATUS } from "@/constants/enums";
 import ROUTERS from "@/config/router";
 import rolesService from "@/services/roles.service";
 import divisionsService from "@/services/divisions.service";
@@ -90,7 +90,9 @@ const AccountManagement: React.FC = () => {
   const [isAssignRoleModalOpen, setIsAssignRoleModalOpen] = useState(false);
   const [isUnassignRoleModalOpen, setIsUnassignRoleModalOpen] = useState(false);
   const [isRegisterFaceModalOpen, setIsRegisterFaceModalOpen] = useState(false);
+  const [isStatusConfirmModalOpen, setIsStatusConfirmModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
+  const [pendingStatusUpdate, setPendingStatusUpdate] = useState<{ userId: string; status: "ACTIVE" | "INACTIVE" } | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPositions, setMenuPositions] = React.useState<Record<string, { rect: DOMRect; position: 'top' | 'bottom' }>>({});
   const buttonRefs = React.useRef<Record<string, HTMLButtonElement | null>>({});
@@ -199,6 +201,25 @@ const AccountManagement: React.FC = () => {
     },
   });
 
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ userId, status }: { userId: string; status: "ACTIVE" | "INACTIVE" }) =>
+      userService.updateUser(userId, { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      showSuccessToast("Cập nhật trạng thái thành công");
+      setIsStatusConfirmModalOpen(false);
+      setPendingStatusUpdate(null);
+      setSelectedUser(null);
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      showErrorToast(err?.response?.data?.message || "Có lỗi xảy ra khi cập nhật trạng thái");
+      setIsStatusConfirmModalOpen(false);
+      setPendingStatusUpdate(null);
+      setSelectedUser(null);
+    },
+  });
+
 
   // Handlers
   const handleCreateAccount = (accountData: CreateAccountData) => {
@@ -241,6 +262,20 @@ const AccountManagement: React.FC = () => {
     setSelectedUser(null);
   };
 
+  const handleToggleStatus = (user: UserType) => {
+    const currentStatus = getUserStatus(user);  
+    const newStatus = currentStatus ? USER_STATUS.INACTIVE : USER_STATUS.ACTIVE;
+    setSelectedUser(user);
+    setPendingStatusUpdate({ userId: String(user.id), status: newStatus });
+    setIsStatusConfirmModalOpen(true);
+  };
+
+  const handleConfirmStatusUpdate = () => {
+    if (pendingStatusUpdate) {
+      updateStatusMutation.mutate(pendingStatusUpdate);
+    }
+  };
+
   const getUserName = (user: UserType) => {
     if (user.user_information && Array.isArray(user.user_information) && user.user_information.length > 0) {
       const info = user.user_information[0] as { name?: string };
@@ -263,15 +298,7 @@ const AccountManagement: React.FC = () => {
   };
 
   const getUserStatus = (user: UserType) => {
-    return user.deleted_at ? "inactive" : "active";
-  };
-
-  const getStatusColor = (status: string) => {
-    return status === "active" ? "#10b981" : "#ef4444";
-  };
-
-  const getStatusText = (status: string) => {
-    return status === "active" ? "Hoạt động" : "Không hoạt động";
+    return user.status === USER_STATUS.ACTIVE;
   };
 
   // Table columns
@@ -347,29 +374,6 @@ const AccountManagement: React.FC = () => {
       },
     },
     {
-      key: "status",
-      label: "Trạng thái",
-      width: "200px",
-      render: (_, row) => {
-        const status = getUserStatus(row);
-        return (
-          <span
-            style={{
-              display: "inline-block",
-              padding: "4px 8px",
-              borderRadius: "12px",
-              fontSize: "12px",
-              fontWeight: 500,
-              backgroundColor: `${getStatusColor(status)}20`,
-              color: getStatusColor(status),
-            }}
-          >
-            {getStatusText(status)}
-          </span>
-        );
-      },
-    },
-    {
       key: "user_division",
       label: "Phòng ban",
       width: "200px",
@@ -399,6 +403,51 @@ const AccountManagement: React.FC = () => {
           >
             {isRegistered ? "Đã đăng ký" : "Chưa đăng ký"}
           </span>
+        );
+      },
+    },
+    {
+      key: "status",
+      label: "Trạng thái",
+      width: "120px",
+      align: "center",
+      render: (_, row) => {
+        const isActive = getUserStatus(row);
+        const isLoading = updateStatusMutation.isPending;
+        
+        return (
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!isLoading) {
+                handleToggleStatus(row);
+              }
+            }}
+            style={{
+              position: "relative",
+              width: "48px",
+              height: "24px",
+              borderRadius: "12px",
+              backgroundColor: isActive ? "#10b981" : "#d1d5db",
+              cursor: isLoading ? "not-allowed" : "pointer",
+              transition: "background-color 0.2s",
+              opacity: isLoading ? 0.6 : 1,
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: "2px",
+                left: isActive ? "26px" : "2px",
+                width: "20px",
+                height: "20px",
+                borderRadius: "50%",
+                backgroundColor: "#ffffff",
+                transition: "left 0.2s",
+                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+              }}
+            />
+          </div>
         );
       },
     },
@@ -629,7 +678,7 @@ const AccountManagement: React.FC = () => {
               <span>
                 Đang hoạt động:{" "}
                 <strong style={{ color: "var(--success-600)" }}>
-                  {users.filter((u) => getUserStatus(u) === "active").length}
+                  {users.filter((u) => getUserStatus(u)).length}
                 </strong>
               </span>
             </StatsRow>
@@ -727,6 +776,23 @@ const AccountManagement: React.FC = () => {
         userId={selectedUser?.id || 0}
         userName={selectedUser ? getUserName(selectedUser) : undefined}
         onSuccess={handleRegisterFaceSuccess}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={isStatusConfirmModalOpen}
+        onClose={() => {
+          setIsStatusConfirmModalOpen(false);
+          setPendingStatusUpdate(null);
+          setSelectedUser(null);
+        }}
+        onConfirm={handleConfirmStatusUpdate}
+        title="Xác nhận thay đổi trạng thái"
+        message={
+          selectedUser && pendingStatusUpdate
+            ? `Bạn có chắc chắn muốn ${pendingStatusUpdate.status === USER_STATUS.ACTIVE ? "kích hoạt" : "vô hiệu hóa"} tài khoản "${getUserName(selectedUser)}"?`
+            : "Bạn có chắc chắn muốn thay đổi trạng thái tài khoản này?"
+        }
+        isLoading={updateStatusMutation.isPending}
       />
     </PersonalContainer>
   );

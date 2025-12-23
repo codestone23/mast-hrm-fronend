@@ -46,8 +46,8 @@ class ReportService {
     return response.data;
   }
 
-  async rejectReport(reportId: string | number, reject_reason: string): Promise<void> {
-    const response = await axiosInstance.post(`/daily-reports/${reportId}/reject`, { reject_reason });
+  async rejectReport(reportId: string | number, rejected_reason: string): Promise<void> {
+    const response = await axiosInstance.post(`/daily-reports/${reportId}/reject`, { rejected_reason });
     return response.data;
   }
 
@@ -56,13 +56,13 @@ class ReportService {
     return response.data;
   }
 
-  async rejectAllReports(userId: number, reject_reason: string): Promise<void> {
-    const response = await axiosInstance.post(`/daily-reports/reject-all`, { user_id: userId, reject_reason });
+  async rejectAllReports(userId: number, rejected_reason: string): Promise<void> {
+    const response = await axiosInstance.post(`/daily-reports/reject-all`, { user_id: userId, rejected_reason });
     return response.data;
   }
 
-  async approveReportsByIds(reportIds: number[], action: 'approve' | 'reject', reject_reason?: string): Promise<void> {
-    const response = await axiosInstance.post(`/daily-reports/approve-batch`, { report_ids: reportIds, action, reject_reason });
+  async approveReportsByIds(reportIds: number[], action: 'approve' | 'reject', rejected_reason?: string): Promise<void> {
+    const response = await axiosInstance.post(`/daily-reports/approve-batch`, { report_ids: reportIds, action, rejected_reason });
     return response.data;
   }
 

@@ -108,7 +108,7 @@ class AssetsService {
     async approveRequest(requestId: number | string, data: {
         status: "APPROVED" | "REJECTED";
         asset_id?: number | string;
-        rejection_reason?: string;
+        rejected_reason?: string;
         notes?: string;
     }): Promise<ApiResponse<void>> {
         const response = await axiosInstance.post(`/assets/requests/${requestId}/review`, data);

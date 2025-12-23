@@ -404,7 +404,7 @@ export interface AssetRequest {
   status: REQUEST_STATUS | string;
   approved_by: number | null;
   approved_at: string | null;
-  rejection_reason: string | null;
+  rejected_reason: string | null;
   fulfilled_at: string | null;
   notes: string | null;
   created_at: string;

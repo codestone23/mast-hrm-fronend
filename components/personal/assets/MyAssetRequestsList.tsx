@@ -477,12 +477,12 @@ const MyAssetRequestsList: React.FC<MyAssetRequestsListProps> = ({ requests }) =
                 </DescriptionSection>
               )}
 
-              {request.rejection_reason && (
+              {request.rejected_reason && (
                 <AlertBox $type="error">
                   <XCircle size={18} />
                   <div>
                     <strong>Lý do từ chối:</strong>
-                    {request.rejection_reason}
+                    {request.rejected_reason}
                   </div>
                 </AlertBox>
               )}

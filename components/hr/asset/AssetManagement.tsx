@@ -342,7 +342,7 @@ const AssetManagement: React.FC = () => {
   };
 
   const approveRequestMutation = useMutation({
-    mutationFn: ({ requestId, data }: { requestId: number | string; data: { status: "APPROVED" | "REJECTED"; asset_id?: number | string; rejection_reason?: string; notes?: string } }) =>
+    mutationFn: ({ requestId, data }: { requestId: number | string; data: { status: "APPROVED" | "REJECTED"; asset_id?: number | string; rejected_reason?: string; notes?: string } }) =>
       assetsService.approveRequest(requestId, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['asset-requests'] });
@@ -388,7 +388,7 @@ const AssetManagement: React.FC = () => {
         requestId: selectedRequestId,
         data: {
           status: "REJECTED",
-          rejection_reason: reason,
+          rejected_reason: reason,
         },
       });
     }

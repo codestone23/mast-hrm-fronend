@@ -202,9 +202,9 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
           />
 
           <Input
-            label="Vị trí"
+            label="Nơi mua tài sản"
             {...register("location")}
-            placeholder="Nhập vị trí"
+            placeholder="Nhập nơi mua"
             fullWidth
             disabled={isSubmitting}
           />

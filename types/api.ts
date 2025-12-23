@@ -690,7 +690,7 @@ export interface News {
   author_id: number;
   reason?: string | null;
   reviewer_id?: number | null;
-  reviewed_at?: string | null;
+  approved_at?: string | null;
   created_at: string;
   updated_at: string;
   deleted_at?: string | null;
@@ -843,9 +843,9 @@ export interface DailyReport {
   actual_time: number;
   status: DailyReportStatus;
   approved_by: number | null;
-  reviewed_at: string | null;
+  approved_at: string | null;
   description: string;
-  reject_reason: string | null;
+  rejected_reason: string | null;
   created_at: string;
   updated_at: string;
   user: {

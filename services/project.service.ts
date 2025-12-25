@@ -71,13 +71,58 @@ export interface ProjectMemberResponse {
   data: ProjectMember[];
 }
 
+export interface MilestoneProject {
+  id: number;
+  project_id: number;
+  name: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  progress: number;
+  order: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  project?: {
+    id: number;
+    name: string;
+    code: string;
+  };
+}
+
+export interface MilestoneProjectCreateRequest {
+  name: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  progress: number;
+  order: number;
+}
+
+export interface MilestoneProjectUpdateRequest {
+  name?: string;
+  description?: string;
+  start_date?: string;
+  end_date?: string;
+  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  progress?: number;
+  order?: number;
+}
+
+export interface ProcessMilestoneProjectUpdateRequest {
+  progress: number;
+}
+
 class ProjectService {
   // Lấy danh sách projects (admin)
   async getProjectsAdmin(
     page: number = 1, 
     search?: string, 
     division_id?: number,
-    project_access_type?: string
+    project_access_type?: string,
+    team_id?: number
   ): Promise<ProjectResponse> {
     const params = new URLSearchParams();
     params.append('page', page.toString());
@@ -89,6 +134,9 @@ class ProjectService {
     }
     if (project_access_type) {
       params.append('project_access_type', project_access_type);
+    }
+    if (team_id) {
+      params.append('team_id', team_id.toString());
     }
     const response = await axiosInstance.get(`/projects?${params.toString()}`);
     return response.data;
@@ -157,6 +205,35 @@ class ProjectService {
       params.append('project_access_type', project_access_type);
     }
     const response = await axiosInstance.get(`/projects/managed?${params.toString()}`);
+    return response.data;
+  }
+
+  async createMilestoneProject(projectId: string, data: MilestoneProjectCreateRequest): Promise<MilestoneProject> {
+    const response = await axiosInstance.post(`/milestones/projects/${projectId}`, data);
+    return response.data;
+  }
+
+  async getMilestoneProject(projectId: string): Promise<MilestoneProject[]> {
+    const response = await axiosInstance.get(`/milestones/projects/${projectId}`);
+    return response.data;
+  }
+
+  async getDetailMilestoneProject(milestoneId: string): Promise<MilestoneProject> {
+    const response = await axiosInstance.get(`/milestones/${milestoneId}`);
+    return response.data;
+  }
+
+  async updateMilestoneProject(milestoneId: string, data: MilestoneProjectUpdateRequest): Promise<MilestoneProject> {
+    const response = await axiosInstance.patch(`/milestones/${milestoneId}`, data);
+    return response.data;
+  }
+
+  async deleteMilestoneProject(milestoneId: string): Promise<void> {
+    await axiosInstance.delete(`/milestones/${milestoneId}`);
+  }
+
+  async updateProcessMilestoneProject(milestoneId: string, data: ProcessMilestoneProjectUpdateRequest): Promise<MilestoneProject> {
+    const response = await axiosInstance.patch(`/milestones/${milestoneId}/progress`, data);
     return response.data;
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
   Users, 
@@ -29,11 +29,15 @@ import {
   EmptyState,
   EmptyStateIcon,
   EmptyStateTitle,
-  EmptyStateDescription
+  EmptyStateDescription,
+  TabsContainer,
+  Tab,
+  TabContent,
 } from './projectDetailStyle';
 import projectService from '@/services/project.service';
 import ROUTERS from "@/config/router";
 import { ROLE_NAMES } from "@/constants/enums";
+import Milestones from './Milestones';
 
 interface ProjectDetailProps {
   projectId: string;
@@ -61,6 +65,8 @@ const industryLabels: Record<string, string> = {
 };
 
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
+  const [activeTab, setActiveTab] = useState<'overview' | 'milestones'>('overview');
+  
   const { data: project, isLoading, error } = useQuery({
     queryKey: ['project', projectId],
     queryFn: () => projectService.getProjectById(projectId),
@@ -138,7 +144,19 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
         </ProjectDetailMeta>
       </ProjectDetailHeader>
 
-      <ProjectDetailGrid>
+      <TabsContainer>
+        <Tab $active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>
+          <Briefcase size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+          Tổng quan
+        </Tab>
+        <Tab $active={activeTab === 'milestones'} onClick={() => setActiveTab('milestones')}>
+          <Target size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+          Milestones
+        </Tab>
+      </TabsContainer>
+
+      {activeTab === 'overview' && (
+        <ProjectDetailGrid>
         <ProjectDetailCard>
           <CardHeader>
             <CardIcon>
@@ -218,6 +236,13 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
           </ProjectDetailCard>
         )}
       </ProjectDetailGrid>
+      )}
+
+      {activeTab === 'milestones' && (
+        <TabContent>
+          <Milestones projectId={projectId} />
+        </TabContent>
+      )}
     </ProjectDetailContainer>
   );
 };

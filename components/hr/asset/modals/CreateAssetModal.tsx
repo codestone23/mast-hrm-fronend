@@ -4,6 +4,7 @@ import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Modal, Button, Input, Select, TextArea } from "@/components/common";
 import { Asset } from "@/constants/types";
+import { AssetStatus } from "@/constants/enums";
 import { FormRow } from "./modalStyle";
 
 interface CreateAssetModalProps {
@@ -24,10 +25,12 @@ interface FormData {
 }
 
 const statusOptions = [
-  { value: "AVAILABLE", label: "Trống" },
-  { value: "ASSIGNED", label: "Đang sử dụng" },
-  { value: "MAINTENANCE", label: "Bảo trì" },
-  { value: "RETIRED", label: "Thanh lý" },
+  { value: AssetStatus.AVAILABLE, label: "Có sẵn" },
+  { value: AssetStatus.ASSIGNED, label: "Đã gán" },
+  { value: AssetStatus.MAINTENANCE, label: "Bảo trì" },
+  { value: AssetStatus.RETIRED, label: "Ngừng sử dụng" },
+  { value: AssetStatus.LOST, label: "Mất" },
+  { value: AssetStatus.DAMAGED, label: "Hỏng" },
 ];
 
 const categoryOptions = [
@@ -56,7 +59,7 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
       asset_code: "",
       name: "",
       description: "",
-      status: "AVAILABLE",
+      status: AssetStatus.AVAILABLE,
       category: "",
       purchase_price: "",
       model: "",
@@ -64,8 +67,10 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
   });
 
   const handleClose = () => {
-    reset();
-    onClose();
+    if (!isLoading) {
+      reset();
+      onClose();
+    }
   };
 
   const onSubmit = (data: FormData) => {
@@ -73,12 +78,12 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
       asset_code: data.asset_code,
       name: data.name,
       description: data.description,
-      status: data.status as "available",
+      status: data.status as AssetStatus,
       category: data.category,
       purchase_price: data.purchase_price || "",
       model: data.model,
     } as Omit<Asset, "id">);
-    reset();
+    // Không reset form và không đóng modal ở đây, để parent component quản lý
   };
 
   return (
@@ -96,6 +101,7 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
             variant="primary"
             onClick={handleSubmit(onSubmit)}
             disabled={isLoading}
+            loading={isLoading}
           >
             {isLoading ? "Đang tạo..." : "Tạo tài sản"}
           </Button>
@@ -116,6 +122,7 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
                 error={errors.asset_code?.message}
                 required
                 fullWidth
+                disabled={isLoading}
               />
             )}
           />
@@ -132,6 +139,7 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
                 error={errors.name?.message}
                 required
                 fullWidth
+                disabled={isLoading}
               />
             )}
           />
@@ -147,6 +155,7 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
               placeholder="Nhập mô tả tài sản"
               rows={3}
               fullWidth
+              disabled={isLoading}
             />
           )}
         />
@@ -162,6 +171,7 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
                 {...field}
                 placeholder="Nhập giá"
                 fullWidth
+                disabled={isLoading}
               />
             )}
           />
@@ -176,6 +186,7 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
                 value={field.value}
                 onChange={field.onChange}
                 fullWidth
+                disabled={isLoading}
               />
             )}
           />
@@ -193,6 +204,7 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
                 onChange={field.onChange}
                 placeholder="Chọn danh mục"
                 fullWidth
+                disabled={isLoading}
               />
             )}
           />
@@ -206,6 +218,7 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
                 {...field}
                 placeholder="Nhập Model"
                 fullWidth
+                disabled={isLoading}
               />
             )}
           />

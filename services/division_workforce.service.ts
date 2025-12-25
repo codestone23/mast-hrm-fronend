@@ -96,7 +96,7 @@ class DivisionWorkforceService {
     return response.data;
   }
 
-  async addMembersToTeam(teamId: number, payload: { user_id: number; description?: string }): Promise<void> {
+  async addMembersToTeam(teamId: number, payload: { members: Array<{ user_id: number; description?: string; role_id?: number }> }): Promise<void> {
     const response = await axiosInstance.post(`/teams/${teamId}/members`, payload);
     return response.data;
   }

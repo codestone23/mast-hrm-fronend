@@ -21,6 +21,12 @@ export const TeamsGrid = styled.div`
   }
 `;
 
+export const TeamsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
 export const TeamCard = styled.div`
   background: white;
   border-radius: 16px;
@@ -398,5 +404,63 @@ export const EmptyIcon = styled.div`
 export const EmptyText = styled.p`
   font-size: 16px;
   margin: 0;
+`;
+
+export const ProjectsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 16px;
+
+  @media (max-width: 768px) {
+    gap: 12px;
+  }
+`;
+
+export const ProjectCard = styled.div`
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
+`;
+
+export const ProjectCardName = styled.h4`
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 8px 0;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
+`;
+
+export const ProjectCardDescription = styled.p`
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+  }
+`;
+
+export const ProjectCardMeta = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: #6b7280;
 `;
 

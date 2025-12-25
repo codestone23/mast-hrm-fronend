@@ -505,6 +505,7 @@ const AssetManagement: React.FC = () => {
       align: "center",
       render: (_, row) => {
         const isAssigned = row.status === AssetStatus.ASSIGNED;
+        const isAvailable = row.status === AssetStatus.AVAILABLE;
         return (
           <div style={{ display: "flex", gap: "8px" }}>
             <ActionButton $variant="view" onClick={(e) => {
@@ -526,20 +527,22 @@ const AssetManagement: React.FC = () => {
               }} title="Thu hồi tài sản">
                 <UserMinus size={16} />
               </ActionButton>
-            ) : (
+            ) : isAvailable ? (
               <ActionButton $variant="edit" onClick={(e) => {
                 e.stopPropagation();
                 handleAssignClick(row);
               }} title="Gán tài sản">
                 <UserPlus size={16} />
               </ActionButton>
+            ) : null}
+            {!isAssigned && (
+              <ActionButton $variant="delete" onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteClick(row);
+              }}>
+                <Trash2 size={16} />
+              </ActionButton>
             )}
-            <ActionButton $variant="delete" onClick={(e) => {
-              e.stopPropagation();
-              handleDeleteClick(row);
-            }}>
-              <Trash2 size={16} />
-            </ActionButton>
           </div>
         );
       },
@@ -735,18 +738,26 @@ const AssetManagement: React.FC = () => {
       {/* Modals */}
       <CreateAssetModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          if (!createMutation.isPending) {
+            setIsCreateModalOpen(false);
+          }
+        }}
         onSave={handleCreateAsset}
+        isLoading={createMutation.isPending}
       />
 
       <EditAssetModal
         isOpen={isEditModalOpen}
         onClose={() => {
-          setIsEditModalOpen(false);
-          setSelectedAsset(null);
+          if (!updateMutation.isPending) {
+            setIsEditModalOpen(false);
+            setSelectedAsset(null);
+          }
         }}
         asset={selectedAsset}
         onSave={handleEditAsset}
+        isLoading={updateMutation.isPending}
       />
 
       <AssetDetailModal

@@ -239,10 +239,17 @@ export const DeleteButton = styled.button`
   cursor: pointer;
   transition: all 0.2s ease;
   
-  &:hover {
+  &:hover:not(:disabled) {
     background: #dc2626;
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 `;
 

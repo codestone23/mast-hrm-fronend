@@ -556,3 +556,43 @@ export const EmptyStateDescription = styled.p`
   font-size: 0.875rem;
   margin: 0;
 `;
+
+export const TabsContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 8px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 1rem;
+    gap: 4px;
+    overflow-x: auto;
+  }
+`;
+
+export const Tab = styled.button<{ $active: boolean }>`
+  padding: 10px 20px;
+  border: none;
+  background: ${({ $active }) => ($active ? "#4f46e5" : "transparent")};
+  color: ${({ $active }) => ($active ? "white" : "#6b7280")};
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: ${({ $active }) => ($active ? "#4338ca" : "#f3f4f6")};
+  }
+
+  @media (max-width: 768px) {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+`;
+
+export const TabContent = styled.div`
+  margin-top: 24px;
+`;

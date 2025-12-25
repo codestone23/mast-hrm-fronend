@@ -15,7 +15,6 @@ import {
   DeleteButton,
   ConfirmContainer,
 } from "./modalStyle";
-import { Loading } from "@/components/common";
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean;
@@ -77,11 +76,11 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
           </ModalBody>
 
           <ModalFooter>
-            <CancelButton onClick={onClose}>
+            <CancelButton onClick={onClose} disabled={isLoading}>
               Hủy
             </CancelButton>
-            <DeleteButton onClick={onConfirm}>
-              {isLoading ? <Loading /> : "Xóa"}
+            <DeleteButton onClick={onConfirm} disabled={isLoading}>
+              {isLoading ? "Đang xóa..." : "Xóa"}
             </DeleteButton>
           </ModalFooter>
         </ModalContent>

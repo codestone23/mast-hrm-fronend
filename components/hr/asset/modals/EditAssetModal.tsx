@@ -11,6 +11,7 @@ interface EditAssetModalProps {
   onClose: () => void;
   asset: Asset | null;
   onSave: (assetData: Asset) => void;
+  isLoading?: boolean;
 }
 
 interface AssetFormData {
@@ -31,6 +32,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
   onClose,
   asset,
   onSave,
+  isLoading = false,
 }) => {
   const defaultValues: AssetFormData = useMemo(
     () => ({
@@ -51,7 +53,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     setValue,
     watch,
     reset,
@@ -109,11 +111,14 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
       };
 
       onSave(updatedAsset);
+      // Không reset form và không đóng modal ở đây, để parent component quản lý
     }
   };
 
   const handleClose = () => {
-    onClose();
+    if (!isLoading) {
+      onClose();
+    }
   };
 
   if (!isOpen || !asset) return null;
@@ -126,14 +131,14 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
       size="lg"
       footer={
         <>
-          <Button variant="ghost" onClick={handleClose} disabled={isSubmitting}>
+          <Button variant="ghost" onClick={handleClose} disabled={isLoading}>
             Hủy
           </Button>
           <Button
             variant="primary"
             onClick={handleSubmit(onSubmit)}
-            loading={isSubmitting}
-            disabled={isSubmitting}
+            loading={isLoading}
+            disabled={isLoading}
           >
             Lưu thay đổi
           </Button>
@@ -159,7 +164,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
             error={errors.name?.message}
             required
             fullWidth
-            disabled={isSubmitting}
+            disabled={isLoading}
           />
         </div>
 
@@ -169,7 +174,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
           placeholder="Nhập mô tả tài sản"
           rows={3}
           fullWidth
-          disabled={isSubmitting}
+          disabled={isLoading}
         />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
@@ -179,7 +184,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
             value={formData.category}
             onChange={(value) => setValue("category", value as AssetCategory)}
             fullWidth
-            disabled={isSubmitting}
+            disabled={isLoading}
           />
 
           <Select
@@ -188,7 +193,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
             value={formData.status}
             onChange={(value) => setValue("status", value as AssetStatus)}
             fullWidth
-            disabled={isSubmitting}
+            disabled={isLoading}
           />
         </div>
 
@@ -198,7 +203,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
             {...register("serial_number")}
             placeholder="Nhập số serial"
             fullWidth
-            disabled={isSubmitting}
+            disabled={isLoading}
           />
 
           <Input
@@ -206,7 +211,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
             {...register("location")}
             placeholder="Nhập nơi mua"
             fullWidth
-            disabled={isSubmitting}
+            disabled={isLoading}
           />
         </div>
 
@@ -217,7 +222,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
             {...register("purchase_date")}
             placeholder="Chọn ngày mua"
             fullWidth
-            disabled={isSubmitting}
+            disabled={isLoading}
           />
 
           <Input
@@ -226,7 +231,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
             {...register("purchase_price")}
             placeholder="Nhập giá mua"
             fullWidth
-            disabled={isSubmitting}
+            disabled={isLoading}
           />
         </div>
 
@@ -236,7 +241,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
           {...register("warranty_end_date")}
           placeholder="Chọn ngày hết bảo hành"
           fullWidth
-          disabled={isSubmitting}
+          disabled={isLoading}
         />
 
         <TextArea
@@ -245,7 +250,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
           placeholder="Nhập ghi chú"
           rows={3}
           fullWidth
-          disabled={isSubmitting}
+          disabled={isLoading}
         />
       </div>
     </Modal>

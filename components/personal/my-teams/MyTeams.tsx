@@ -1,17 +1,18 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Users, Plus, Trash2, FolderOpen, UserPlus } from "lucide-react";
+import { Users, Trash2, FolderOpen, UserPlus } from "lucide-react";
 import Image from "next/image";
 import { useMobile } from "@/hooks/useMobile";
+import { useUser } from "@/hooks/useUser";
 import divisionWorkforceService from "@/services/division_workforce.service";
-import { DivisionTeamData, DivisionMemberData } from "@/types/api";
+import projectService from "@/services/project.service";
 import { useToast } from "@/hooks/useToast";
 import { Button, ConfirmDeleteModal, Loading } from "@/components/common";
 import {
   Container,
-  TeamsGrid,
+  TeamsList,
   TeamCard,
   TeamHeader,
   TeamName,
@@ -20,9 +21,6 @@ import {
   StatItem,
   StatValue,
   StatLabel,
-  ProjectsList,
-  ProjectsTitle,
-  ProjectTag,
   SingleTeamContainer,
   SingleTeamHeader,
   SingleTeamInfo,
@@ -44,9 +42,13 @@ import {
   EmptyIcon,
   EmptyText,
   TeamsTitle,
+  ProjectsGrid,
+  ProjectCard as ProjectCardStyled,
+  ProjectCardName,
+  ProjectCardDescription,
+  ProjectCardMeta,
 } from "./myTeamsStyle";
 import AddMemberModal from "./modals/AddMemberModal";
-import TeamProjectsModal from "./modals/TeamProjectsModal";
 
 interface TeamMember {
   assignment_id: number;
@@ -65,12 +67,12 @@ const MyTeams: React.FC = () => {
   const queryClient = useQueryClient();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
   const isMobile = useMobile();
+  const { user } = useUser();
 
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"members" | "projects">("members");
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [isDeleteMemberModalOpen, setIsDeleteMemberModalOpen] = useState(false);
-  const [isProjectsModalOpen, setIsProjectsModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
 
   // Fetch my teams
@@ -96,6 +98,15 @@ const MyTeams: React.FC = () => {
 
   const members = (membersData?.data || []) as unknown as TeamMember[];
 
+  // Fetch team projects when projects tab is active
+  const { data: projectsData, isLoading: isLoadingProjects } = useQuery({
+    queryKey: ["team-projects", selectedTeam?.id],
+    queryFn: () => projectService.getProjectsAdmin(1, undefined, undefined, undefined, selectedTeam!.id),
+    enabled: !!selectedTeam && activeTab === "projects",
+  });
+
+  const projects = projectsData?.data || [];
+
   // Delete member mutation
   const deleteMemberMutation = useMutation({
     mutationFn: ({ teamId, userId }: { teamId: number; userId: number }) =>
@@ -119,22 +130,29 @@ const MyTeams: React.FC = () => {
   };
 
   const handleDeleteMember = (member: TeamMember) => {
+    // Kiểm tra nếu đang cố xóa chính mình
+    if (user?.id && member.user_id === user.id) {
+      showErrorToast("Bạn không thể xóa chính mình khỏi team");
+      return;
+    }
     setSelectedMember(member);
     setIsDeleteMemberModalOpen(true);
   };
 
   const handleConfirmDelete = () => {
     if (selectedTeam && selectedMember) {
+      // Kiểm tra lại trước khi xóa
+      if (user?.id && selectedMember.user_id === user.id) {
+        showErrorToast("Bạn không thể xóa chính mình khỏi team");
+        setIsDeleteMemberModalOpen(false);
+        setSelectedMember(null);
+        return;
+      }
       deleteMemberMutation.mutate({
         teamId: selectedTeam.id,
         userId: selectedMember.user_id,
       });
     }
-  };
-
-  const formatResourceByLevel = (resourceByLevel: unknown) => {
-    if (!resourceByLevel || typeof resourceByLevel !== "object") return {};
-    return resourceByLevel as Record<string, number>;
   };
 
   if (isLoadingTeams) {
@@ -158,69 +176,42 @@ const MyTeams: React.FC = () => {
     );
   }
 
-  // Multiple teams view - show grid of team cards
+  // Multiple teams view - show list of teams
   if (hasMultipleTeams && !selectedTeamId) {
     return (
       <Container>
         <TeamsTitle>
           Đội nhóm của tôi ({teams.length})
         </TeamsTitle>
-        <TeamsGrid>
+        <TeamsList>
           {teams.map((team) => {
-            const resourceLevels = formatResourceByLevel(team.resource_by_level);
+            const teamWithDivision = team as unknown as { division?: { name: string }; active_projects?: unknown[] };
             return (
               <TeamCard key={team.id} onClick={() => handleTeamClick(team.id)}>
                 <TeamHeader>
-                  <TeamName>{team.name}</TeamName>
-                  <TeamDivision>{(team as any).division?.name || ""}</TeamDivision>
-                </TeamHeader>
-
-                <TeamStats>
-                  <StatItem>
-                    <StatValue>{team.member_count || 0}</StatValue>
-                    <StatLabel>Thành viên</StatLabel>
-                  </StatItem>
-                  <StatItem>
-                    <StatValue>
-                      {Array.isArray((team as any).active_projects) 
-                        ? (team as any).active_projects.length 
-                        : 0}
-                    </StatValue>
-                    <StatLabel>Dự án</StatLabel>
-                  </StatItem>
-                  <StatItem>
-                    <StatValue>
-                      {Object.values(resourceLevels).reduce((a, b) => a + b, 0)}
-                    </StatValue>
-                    <StatLabel>Resources</StatLabel>
-                  </StatItem>
-                </TeamStats>
-
-                {Object.keys(resourceLevels).length > 0 && (
-                  <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "8px" }}>
-                    {Object.entries(resourceLevels).map(([level, count]) => (
-                      <span key={level} style={{ marginRight: "12px" }}>
-                        {level}: {count}
-                      </span>
-                    ))}
+                  <div>
+                    <TeamName>{team.name}</TeamName>
+                    <TeamDivision>{teamWithDivision.division?.name || ""}</TeamDivision>
                   </div>
-                )}
-
-                {Array.isArray((team as any).active_projects) && (team as any).active_projects.length > 0 && (
-                  <ProjectsList>
-                    <ProjectsTitle>Dự án đang hoạt động</ProjectsTitle>
-                    {(team as any).active_projects.slice(0, 3).map((project: { id: number; name: string }) => (
-                      <ProjectTag key={project.id}>{project.name}</ProjectTag>
-                    ))}
-                    {(team as any).active_projects.length > 3 && (
-                      <ProjectTag>+{(team as any).active_projects.length - 3}</ProjectTag>
-                    )}
-                  </ProjectsList>
-                )}
+                  <TeamStats style={{ margin: 0, width: "auto" }}>
+                    <StatItem>
+                      <StatValue>{team.member_count || 0}</StatValue>
+                      <StatLabel>Thành viên</StatLabel>
+                    </StatItem>
+                    <StatItem>
+                      <StatValue>
+                        {Array.isArray(teamWithDivision.active_projects) 
+                          ? teamWithDivision.active_projects.length 
+                          : 0}
+                      </StatValue>
+                      <StatLabel>Dự án</StatLabel>
+                    </StatItem>
+                  </TeamStats>
+                </TeamHeader>
               </TeamCard>
             );
           })}
-        </TeamsGrid>
+        </TeamsList>
       </Container>
     );
   }
@@ -244,7 +235,7 @@ const MyTeams: React.FC = () => {
         <SingleTeamHeader>
           <SingleTeamInfo>
             <SingleTeamName>{currentTeam.name}</SingleTeamName>
-            <SingleTeamDivision>{(currentTeam as any).division?.name || ""}</SingleTeamDivision>
+            <SingleTeamDivision>{((currentTeam as unknown) as { division?: { name: string } }).division?.name || ""}</SingleTeamDivision>
           </SingleTeamInfo>
 
           <TeamStats style={{ margin: 0, width: "auto" }}>
@@ -254,9 +245,12 @@ const MyTeams: React.FC = () => {
             </StatItem>
             <StatItem>
               <StatValue>
-                {Array.isArray((currentTeam as any).active_projects) 
-                  ? (currentTeam as any).active_projects.length 
-                  : 0}
+                {(() => {
+                  const teamWithProjects = (currentTeam as unknown) as { active_projects?: unknown[] };
+                  return Array.isArray(teamWithProjects.active_projects) 
+                    ? teamWithProjects.active_projects.length 
+                    : 0;
+                })()}
               </StatValue>
               <StatLabel>Dự án</StatLabel>
             </StatItem>
@@ -266,11 +260,11 @@ const MyTeams: React.FC = () => {
         <TabsContainer>
           <Tab $active={activeTab === "members"} onClick={() => setActiveTab("members")}>
             <Users size={16} style={{ marginRight: "8px", verticalAlign: "middle" }} />
-            Thành viên
+            Danh sách thành viên
           </Tab>
-          <Tab $active={activeTab === "projects"} onClick={() => setIsProjectsModalOpen(true)}>
+          <Tab $active={activeTab === "projects"} onClick={() => setActiveTab("projects")}>
             <FolderOpen size={16} style={{ marginRight: "8px", verticalAlign: "middle" }} />
-            Dự án
+            Danh sách dự án
           </Tab>
         </TabsContainer>
 
@@ -330,18 +324,55 @@ const MyTeams: React.FC = () => {
                         </MemberRole>
                       </MemberDetails>
                     </MemberInfo>
-                    <ActionButtons>
-                      <IconButton
-                        $variant="danger"
-                        onClick={() => handleDeleteMember(member)}
-                        title="Xóa khỏi team"
-                      >
-                        <Trash2 size={16} />
-                      </IconButton>
-                    </ActionButtons>
+                    {user?.id && member.user_id !== user.id && (
+                      <ActionButtons>
+                        <IconButton
+                          $variant="danger"
+                          onClick={() => handleDeleteMember(member)}
+                          title="Xóa khỏi team"
+                        >
+                          <Trash2 size={16} />
+                        </IconButton>
+                      </ActionButtons>
+                    )}
                   </MemberItem>
                 ))}
               </MembersList>
+            )}
+          </>
+        )}
+
+        {activeTab === "projects" && (
+          <>
+            {isLoadingProjects ? (
+              <Loading />
+            ) : projects.length === 0 ? (
+              <EmptyState>
+                <EmptyIcon>
+                  <FolderOpen size={48} />
+                </EmptyIcon>
+                <EmptyText>Chưa có dự án nào</EmptyText>
+              </EmptyState>
+            ) : (
+              <ProjectsGrid>
+                {projects.map((project) => (
+                  <ProjectCardStyled key={project.id}>
+                    <ProjectCardName>{project.name}</ProjectCardName>
+                    {project.description && (
+                      <ProjectCardDescription>{project.description}</ProjectCardDescription>
+                    )}
+                    <ProjectCardMeta>
+                      {project.code && <span>Mã: {project.code}</span>}
+                      {project.member_count !== undefined && (
+                        <span>{project.member_count} thành viên</span>
+                      )}
+                      {project.status && (
+                        <span>Trạng thái: {project.status}</span>
+                      )}
+                    </ProjectCardMeta>
+                  </ProjectCardStyled>
+                ))}
+              </ProjectsGrid>
             )}
           </>
         )}
@@ -352,13 +383,6 @@ const MyTeams: React.FC = () => {
         isOpen={isAddMemberModalOpen}
         onClose={() => setIsAddMemberModalOpen(false)}
         teamId={currentTeam.id}
-      />
-
-      <TeamProjectsModal
-        isOpen={isProjectsModalOpen}
-        onClose={() => setIsProjectsModalOpen(false)}
-        teamId={currentTeam.id}
-        teamName={currentTeam.name}
       />
 
       <ConfirmDeleteModal

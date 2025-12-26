@@ -102,10 +102,6 @@ class AuthService {
     return await TokenManager.refreshTokenIfNeeded();
   }
 
-  clearTokens(): void {
-    TokenManager.clearTokens();
-  }
-
   isTokenExpiringSoon(minutes: number = 5): boolean {
     const token = TokenManager.getAccessToken();
     if (!token) return true;

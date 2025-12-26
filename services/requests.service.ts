@@ -87,7 +87,6 @@ class RequestsService {
         const response = await axiosInstance.get(`/requests/my/all`, { 
           params: {
             ...params,
-            sort_order: 'desc',
           },
          });
         return response.data;

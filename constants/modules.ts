@@ -40,7 +40,6 @@ export const MODULE_DEFINITIONS: Omit<Module, "icon">[] = [
     allowedRoles: [
       ROLE_NAMES.ADMIN,
       ROLE_NAMES.DIVISION_HEAD,
-      ROLE_NAMES.PROJECT_MANAGER,
       ROLE_NAMES.TEAM_LEADER,
     ],
   },

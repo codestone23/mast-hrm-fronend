@@ -366,7 +366,7 @@ const DivisionManagement: React.FC = () => {
                               description: selectedDivision.description || "",
                               status:
                                   selectedDivision.status === "ACTIVE"
-                                      ? "ACTIVE"
+                                      ? "ACTIVE" 
                                       : "INACTIVE",
                               createdAt: selectedDivision.created_at,
                           } as LegacyDivision)

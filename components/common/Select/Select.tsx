@@ -193,7 +193,7 @@ const Select: React.FC<SelectProps> = ({
       {label && (
         <SelectLabel htmlFor={selectId} $required={required}>
           {label}
-          {required && <span className="required">*</span>}
+          {required && <span className="required" style={{ color: 'var(--error-500)' }}> *</span>}
         </SelectLabel>
       )}
       

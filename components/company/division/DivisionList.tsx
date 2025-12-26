@@ -66,7 +66,7 @@ const DivisionList: React.FC<Props> = ({
                                         fontSize: 12,
                                         fontWeight: 600,
                                     }}>
-                                    {division.status}
+                                    {division.status === "ACTIVE" ? "Hoạt động" : "Không hoạt động"}
                                 </span>
                             </div>
                         </DivisionStats>

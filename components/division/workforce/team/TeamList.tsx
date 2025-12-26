@@ -240,22 +240,22 @@ const TeamList: React.FC = () => {
               overflow: "hidden",
             }}
           >
-            {row.manager.avatar && row.manager.avatar.includes('https') ? (
-              <Image src={row.manager.avatar} alt={row.manager.name} width={40} height={40} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+            {row.manager?.avatar && row.manager?.avatar.includes('https') ? (
+              <Image src={row.manager?.avatar} alt={row.manager?.name} width={40} height={40} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
             ) : (
-              <span style={{ fontWeight: 500 }}>{row.manager.name.charAt(0).toUpperCase()}</span>
+              <span style={{ fontWeight: 500 }}>{row.manager?.name?.charAt(0).toUpperCase()}</span>
             )}
           </div>
           <div>
-            <div style={{ fontWeight: 500, color: "#111827", marginBottom: "2px" }}>{row.manager.name}</div>
-            <div style={{ fontSize: "12px", color: "#6b7280" }}>{row.manager.email}</div>
+            <div style={{ fontWeight: 500, color: "#111827", marginBottom: "2px" }}>{row.manager?.name}</div>
+            <div style={{ fontSize: "12px", color: "#6b7280" }}>{row.manager?.email}</div>
           </div>
         </div>
       ),
     },
     {
       key: "member_count",
-      label: "Số lượng thành viên",
+      label: "Số thành viên",
       width: "150px",
       align: "center",
       render: (_, row) => (
@@ -263,22 +263,12 @@ const TeamList: React.FC = () => {
       ),
     },
     {
-      key: "resource_by_level",
-      label: "Resource theo level",
-      width: "200px",
-      render: (_, row) => (
-        <span style={{ fontSize: "14px", color: "#6b7280" }}>
-          {formatResourceByLevel(row.resource_by_level)}
-        </span>
-      ),
-    },
-    {
       key: "active_projects",
-      label: "Dự án đang hoạt động",
+      label: "Số dự án",
       width: "150px",
       align: "center",
       render: (_, row) => (
-        <span style={{ fontSize: "14px" }}>{row.active_projects || "-"}</span>
+        <span style={{ fontSize: "14px" }}>{row.active_projects?.length ? row.active_projects?.length : "0"}</span>
       ),
     },
     {

@@ -16,7 +16,6 @@ export const SelectLabel = styled.label<{ $required?: boolean }>`
   color: var(--text-primary);
   
   ${({ $required }) => $required && css`
-    color: var(--error-500);
     margin-left: 0.25rem;
   `}
 `;

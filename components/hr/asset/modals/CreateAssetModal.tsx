@@ -214,9 +214,9 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
             control={control}
             render={({ field }) => (
               <Input
-                label="Model"
+                label="Kiểu tài sản"
                 {...field}
-                placeholder="Nhập Model"
+                placeholder="Nhập kiểu tài sản"
                 fullWidth
                 disabled={isLoading}
               />

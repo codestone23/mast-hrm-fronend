@@ -30,6 +30,7 @@ import { useToast } from "@/hooks/useToast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import divisionWorkforceService from "@/services/division_workforce.service";
 import { useMobile } from "@/hooks/useMobile";
+import { getRoleName } from "@/components/company/account/AccountManagement";
 interface TeamDetailProps {
   id?: string;
 }
@@ -203,27 +204,8 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
       width: "150px",
       render: (_, row) => (
         <span style={{ fontSize: "14px", color: "#6b7280" }}>
-          {row.role?.name || "-"}
+          {getRoleName(row.role?.name) || "-"}
         </span>
-      ),
-    },
-    {
-      key: "level",
-      label: "Level",
-      width: "100px",
-      render: (_, row) => (
-        <span style={{ fontSize: "14px", color: "#6b7280" }}>
-          {row.level?.name || "-"}
-        </span>
-      ),
-    },
-    {
-      key: "coefficient",
-      label: "Hệ số",
-      width: "100px",
-      align: "center",
-      render: (_, row) => (
-        <span style={{ fontWeight: 500 }}>{row.level?.coefficient || "-"}</span>
       ),
     },
     {
@@ -287,11 +269,11 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
                 <div style={{ fontSize: "14px", fontWeight: 500 }}>{teamData?.division?.name || "-"}</div>
               </div>
               <div>
-                <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Số lượng thành viên</div>
+                <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Số thành viên</div>
                 <div style={{ fontSize: "14px", fontWeight: 500 }}>{teamData?.member_count || 0}</div>
               </div>
               <div>
-                <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Số lượng dự án</div>
+                <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Số dự án</div>
                 <div style={{ fontSize: "14px", fontWeight: 500 }}>{teamData?.project_count || 0}</div>
               </div>
               <div>

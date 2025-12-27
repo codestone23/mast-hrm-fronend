@@ -8,7 +8,7 @@ import projectService, { MilestoneProject } from "@/services/project.service";
 import { useToast } from "@/hooks/useToast";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-import { ROLE_NAMES } from "@/constants/enums";
+import { MilestoneProjectStatus, ROLE_NAMES } from "@/constants/enums";
 import CreateEditMilestoneModal from "./modals/CreateEditMilestoneModal";
 import UpdateProgressModal from "./modals/UpdateProgressModal";
 import {
@@ -39,15 +39,15 @@ interface MilestonesProps {
 }
 
 const statusLabels: Record<string, string> = {
-  PENDING: "Chờ bắt đầu",
-  IN_PROGRESS: "Đang thực hiện",
-  COMPLETED: "Hoàn thành",
+  [MilestoneProjectStatus.PENDING]: "Chờ bắt đầu",
+  [MilestoneProjectStatus.IN_PROGRESS]: "Đang thực hiện",
+  [MilestoneProjectStatus.COMPLETED]: "Hoàn thành",
 };
 
 const statusColors: Record<string, string> = {
-  PENDING: "#6b7280",
-  IN_PROGRESS: "#3b82f6",
-  COMPLETED: "#10b981",
+  [MilestoneProjectStatus.PENDING]: "#6b7280",
+  [MilestoneProjectStatus.IN_PROGRESS]: "#3b82f6",
+  [MilestoneProjectStatus.COMPLETED]: "#10b981",
 };
 
 const Milestones: React.FC<MilestonesProps> = ({ projectId }) => {

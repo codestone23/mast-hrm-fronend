@@ -33,6 +33,7 @@ import {
   TabContentWrapper,
 } from "./dailyReportsStyle";
 import { REQUEST_STATUS } from "@/constants/enums";
+import { WEEK_DAYS } from "@/constants/constants";
 
 const DailyReports: React.FC = () => {
   const isMobile = useMobile();
@@ -56,16 +57,6 @@ const DailyReports: React.FC = () => {
   }, [currentDate, setPayload]);
 
   const tabs = ["Bảng báo cáo hằng ngày", "Danh sách báo cáo của tôi"];
-
-  const weekDays = [
-    "Thứ 2",
-    "Thứ 3",
-    "Thứ 4",
-    "Thứ 5",
-    "Thứ 6",
-    "Thứ 7",
-    "Chủ nhật",
-  ];
 
   const legendItems = [
     { color: "#c9f8c9", label: "Đã duyệt đủ 8 giờ" },
@@ -237,7 +228,7 @@ const DailyReports: React.FC = () => {
             </Legend>
 
             <CalendarHeader>
-              {weekDays.map((day) => (
+              {WEEK_DAYS.map((day) => (
                 <WeekDay key={day}>{day}</WeekDay>
               ))}
             </CalendarHeader>

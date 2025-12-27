@@ -7,13 +7,12 @@ import { Modal, Button, Select } from "@/components/common";
 import divisionsService from "@/services/divisions.service";
 import { RotationType } from "@/types/api";
 import { useToast } from "@/hooks/useToast";
+import { ITEMS_PER_PAGE_20 } from "@/constants/constants";
 
 interface CreateRotationModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const ITEMS_PER_PAGE = 20;
 
 const CreateRotationModal: React.FC<CreateRotationModalProps> = ({
   isOpen,
@@ -50,7 +49,7 @@ const CreateRotationModal: React.FC<CreateRotationModalProps> = ({
       divisionsService.listMembersOfDivision(
         selectedDivisionId!,
         pageParam,
-        ITEMS_PER_PAGE,
+        ITEMS_PER_PAGE_20,
         debouncedSearch || undefined
       ),
     getNextPageParam: (lastPage) => {

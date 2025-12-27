@@ -8,8 +8,7 @@ import reportService from "@/services/report.service";
 import { DailyReport, DailyReportStatus } from "@/types/api";
 import { useToast } from "@/hooks/useToast";
 import CreateDailyReportModal from "./modals/CreateDailyReportModal";
-
-const ITEMS_PER_PAGE = 10;
+import { ITEMS_PER_PAGE } from "@/constants/constants";
 
 const MyDailyReportsList: React.FC = () => {
   const queryClient = useQueryClient();

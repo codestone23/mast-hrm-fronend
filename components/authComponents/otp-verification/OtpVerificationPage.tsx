@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Shield } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import {
   OtpContainer,
   LeftSection,
@@ -17,15 +18,14 @@ import {
   Form,
   OtpInputGroup,
   OtpInput,
-  SubmitButton,
   BackToLogin,
   ResendSection,
   ResendText,
   ResendButton,
-  SuccessMessage,
   ErrorMessage,
   Timer,
 } from "./otpVerificationStyle";
+import { Button } from "@/components/common";
 import ROUTERS from "@/config/router";
 import { authService } from "@/services/auth.service";
 import SuccessModal from '@/components/common/SuccessModal/SuccessModal';
@@ -39,19 +39,36 @@ interface ApiError {
   message?: string;
 }
 
+interface OtpFormData {
+  otp: string;
+}
+
 const OtpVerificationPage: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
 
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
   const [canResend, setCanResend] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+    setValue,
+    reset,
+    clearErrors
+  } = useForm<OtpFormData>({
+    defaultValues: {
+      otp: ''
+    },
+    mode: 'onChange'
+  });
 
   useEffect(() => {
     // Kiểm tra email parameter
@@ -83,14 +100,21 @@ const OtpVerificationPage: React.FC = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  const handleOtpChange = (index: number, value: string) => {
+  const handleOtpChange = (index: number, value: string, onChange: (value: string) => void) => {
     if (!/^\d*$/.test(value)) return; // Chỉ cho phép số
 
-    const newOtp = [...otp];
+    const newOtp = [...otpDigits];
     newOtp[index] = value.slice(-1); // Chỉ lấy ký tự cuối
-    setOtp(newOtp);
+    setOtpDigits(newOtp);
+    
+    const otpValue = newOtp.join('');
+    setValue('otp', otpValue);
+    onChange(otpValue);
 
-    if (error) setError("");
+    if (error) {
+      setError("");
+      clearErrors();
+    }
 
     // Tự động chuyển sang ô tiếp theo
     if (value && index < 5) {
@@ -98,74 +122,62 @@ const OtpVerificationPage: React.FC = () => {
     }
 
     // Tự động submit khi nhập đủ 6 số
-    if (newOtp.every((digit) => digit !== "") && newOtp.join("").length === 6) {
-      setTimeout(() => handleSubmit(newOtp.join("")), 100);
+    if (newOtp.every((digit) => digit !== "") && otpValue.length === 6) {
+      setTimeout(() => {
+        onSubmit({ otp: otpValue });
+      }, 100);
     }
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
+    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData
-      .getData("text")
-      .replace(/\D/g, "")
-      .slice(0, 6);
 
-    if (pastedData.length === 6) {
-      const newOtp = pastedData.split("");
-      setOtp(newOtp);
-      inputRefs.current[5]?.focus();
-    }
-  };
-
-  const handleSubmit = async (otpValue?: string) => {
-    const otpToVerify = otpValue || otp.join("");
+  const onSubmit = async (data: OtpFormData) => {
+    const otpToVerify = data.otp;
 
     if (otpToVerify.length !== 6) {
       setError("Vui lòng nhập đủ 6 chữ số");
       return;
     }
 
-    setIsLoading(true);
     setError("");
+    clearErrors();
 
     try {
       await authService.verifyOTP(otpToVerify, email);
-
       setShowSuccessModal(true);
     } catch (error: unknown) {
       const apiError = error as ApiError;
       const errorMessage = apiError?.response?.data?.message || apiError?.message || "Mã OTP không chính xác. Vui lòng thử lại.";
       setError(errorMessage);
-      setOtp(["", "", "", "", "", ""]);
+      setOtpDigits(["", "", "", "", "", ""]);
+      setValue('otp', '');
+      reset();
       inputRefs.current[0]?.focus();
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleResendOtp = async () => {
-    setIsLoading(true);
     setError("");
+    clearErrors();
 
     try {
       await authService.forgotPassword({ email });
 
       setTimeLeft(300);
       setCanResend(false);
-      setOtp(["", "", "", "", "", ""]);
+      setOtpDigits(["", "", "", "", "", ""]);
+      setValue('otp', '');
+      reset();
       inputRefs.current[0]?.focus();
     } catch (error: unknown) {
       const apiError = error as ApiError;
       const errorMessage = apiError?.response?.data?.message || apiError?.message || "Không thể gửi lại mã OTP. Vui lòng thử lại sau.";
       setError(errorMessage);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -176,7 +188,7 @@ const OtpVerificationPage: React.FC = () => {
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
     // Chuyển hướng đến trang reset password với token
-    router.push(`${ROUTERS.AUTH.RESET_PASSWORD}?token=${btoa(email + ":" + otp.join(""))}`);
+    router.push(`${ROUTERS.AUTH.RESET_PASSWORD}?token=${btoa(email + ":" + otpDigits.join(""))}`);
   };
 
 
@@ -190,7 +202,7 @@ const OtpVerificationPage: React.FC = () => {
   };
 
   if (!email) {
-    return null; // hoặc loading component
+    return null; 
   }
 
   return (
@@ -208,80 +220,98 @@ const OtpVerificationPage: React.FC = () => {
             <strong>{maskEmail(email)}</strong>
           </Subtitle>
 
-          {false ? (
-            <SuccessMessage>
-              <Shield size={24} style={{ marginRight: "0.5rem" }} />
-              Xác thực thành công! Đang chuyển hướng đến trang đặt lại mật
-              khẩu...
-            </SuccessMessage>
-          ) : (
-            <Form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSubmit();
+          <Form onSubmit={handleSubmit(onSubmit)}>
+            {error && <ErrorMessage>{error}</ErrorMessage>}
+
+            <Controller
+              name="otp"
+              control={control}
+              rules={{
+                required: 'Vui lòng nhập đủ 6 chữ số',
+                validate: (value) => value.length === 6 || 'Vui lòng nhập đủ 6 chữ số'
               }}
+              render={({ field: { onChange } }) => {
+                const handlePasteWithOnChange = (e: React.ClipboardEvent) => {
+                  e.preventDefault();
+                  const pastedData = e.clipboardData
+                    .getData("text")
+                    .replace(/\D/g, "")
+                    .slice(0, 6);
+
+                  if (pastedData.length === 6) {
+                    const newOtp = pastedData.split("");
+                    setOtpDigits(newOtp);
+                    setValue('otp', pastedData);
+                    onChange(pastedData);
+                    inputRefs.current[5]?.focus();
+                  }
+                };
+
+                return (
+                  <OtpInputGroup>
+                    {otpDigits.map((digit, index) => (
+                      <OtpInput
+                        key={index}
+                        ref={(el) => {
+                          if (el) {
+                            inputRefs.current[index] = el;
+                          }
+                        }}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleOtpChange(index, e.target.value, onChange)}
+                        onKeyDown={(e) => handleKeyDown(index, e)}
+                        onPaste={index === 0 ? handlePasteWithOnChange : undefined}
+                        disabled={isSubmitting}
+                        autoComplete="one-time-code"
+                      />
+                    ))}
+                  </OtpInputGroup>
+                );
+              }}
+            />
+
+            <Timer>
+              Mã có hiệu lực trong: <span>{formatTime(timeLeft)}</span>
+            </Timer>
+
+            <Button 
+              type="submit" 
+              disabled={isSubmitting || otpDigits.join("").length !== 6}
+              loading={isSubmitting}
+              style={{ width: '100%' }}
             >
-              {error && <ErrorMessage>{error}</ErrorMessage>}
+              {isSubmitting ? "Đang xác thực..." : "Xác thực OTP"}
+            </Button>
 
-              <OtpInputGroup>
-                {otp.map((digit, index) => (
-                  <OtpInput
-                    key={index}
-                    ref={(el) => {
-                      if (el) {
-                        inputRefs.current[index] = el;
-                      }
-                    }}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    onPaste={index === 0 ? handlePaste : undefined}
-                    disabled={isLoading}
-                    autoComplete="one-time-code"
-                  />
-                ))}
-              </OtpInputGroup>
-
-              <Timer>
-                Mã có hiệu lực trong: <span>{formatTime(timeLeft)}</span>
-              </Timer>
-
-              <SubmitButton
-                type="submit"
-                disabled={isLoading || otp.join("").length !== 6}
-              >
-                {isLoading ? "Đang xác thực..." : "Xác thực OTP"}
-              </SubmitButton>
-
-              <ResendSection>
-                <ResendText>Không nhận được mã?</ResendText>
-                <ResendButton
-                  type="button"
-                  onClick={handleResendOtp}
-                  disabled={!canResend || isLoading}
-                >
-                  {canResend
-                    ? "Gửi lại mã"
-                    : `Gửi lại sau ${formatTime(timeLeft)}`}
-                </ResendButton>
-              </ResendSection>
-
-              <BackToLogin
-                as="button"
+            <ResendSection>
+              <ResendText>Không nhận được mã?</ResendText>
+              <ResendButton
                 type="button"
-                onClick={handleBackToForgotPassword}
+                onClick={handleResendOtp}
+                disabled={!canResend || isSubmitting}
               >
-                <ArrowLeft
-                  size={16}
-                  style={{ marginRight: "0.5rem", display: "inline" }}
-                />
-                Quay lại
-              </BackToLogin>
-            </Form>
-          )}
+                {canResend
+                  ? "Gửi lại mã"
+                  : `Gửi lại sau ${formatTime(timeLeft)}`}
+              </ResendButton>
+            </ResendSection>
+
+            <BackToLogin
+              as="button"
+              type="button"
+              onClick={handleBackToForgotPassword}
+              disabled={isSubmitting}
+            >
+              <ArrowLeft
+                size={16}
+                style={{ marginRight: "0.5rem", display: "inline" }}
+              />
+              Quay lại
+            </BackToLogin>
+          </Form>
         </OtpCard>
       </LeftSection>
 

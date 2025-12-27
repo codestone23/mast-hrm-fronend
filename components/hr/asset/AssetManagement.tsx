@@ -34,8 +34,7 @@ import assetsService, { GetAssetsParams } from "@/services/assets.service";
 import { Select, Input, Table, TableColumn, Loading, Pagination, ConfirmApproveModal } from "@/components/common";
 import { useToast } from "@/hooks/useToast";
 import RejectModal from "@/components/timekeeping/modals/RejectModal";
-
-const ITEMS_PER_PAGE = 10;
+import { ITEMS_PER_PAGE } from "@/constants/constants";
 
 const AssetManagement: React.FC = () => {
   const queryClient = useQueryClient();

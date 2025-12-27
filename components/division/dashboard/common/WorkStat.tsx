@@ -34,9 +34,14 @@ const WorkStat: React.FC = () => {
     new Date()
   );
 
-  const [isOpenEmpLeaveModal, setIsOpenEmpLeaveModal] = useState(false);
-  const [isOpenEmpLateModal, setIsOpenEmpLateModal] = useState(false);
-  const [isOpenEmpWorkModal, setIsOpenEmpWorkModal] = useState(false);
+  enum ModalType {
+    NONE = "NONE",
+    LEAVE = "LEAVE",
+    LATE = "LATE",
+    WORK = "WORK",
+  }
+
+  const [openModal, setOpenModal] = useState<ModalType>(ModalType.NONE);
 
   const selectedDivisionId = useSelector(
     (state: RootState) => state.division.selectedDivisionId
@@ -82,7 +87,7 @@ const WorkStat: React.FC = () => {
       ) : workDataInfo ? (
         <Grid>
           <LeftCard
-            onClick={() => setIsOpenEmpWorkModal(true)}
+            onClick={() => setOpenModal(ModalType.WORK)}
             style={{ cursor: "pointer" }}
           >
             <CardHeader>Số lượng đi làm</CardHeader>
@@ -100,7 +105,7 @@ const WorkStat: React.FC = () => {
           </LeftCard>
 
           <RightCard
-            onClick={() => setIsOpenEmpLeaveModal(true)}
+            onClick={() => setOpenModal(ModalType.LEAVE)}
             style={{ cursor: "pointer" }}
           >
             <CardHeader>Nhân viên nghỉ phép</CardHeader>
@@ -126,7 +131,7 @@ const WorkStat: React.FC = () => {
           </RightCard>
 
           <BottomCard
-            onClick={() => setIsOpenEmpLateModal(true)}
+            onClick={() => setOpenModal(ModalType.LATE)}
             style={{ cursor: "pointer" }}
           >
             <CardHeader>Thông tin đi muộn</CardHeader>
@@ -136,11 +141,6 @@ const WorkStat: React.FC = () => {
                   <StatNumber>{workDataInfo?.late_info?.late_count}</StatNumber>
                   <StatLabel>Người</StatLabel>
                 </StatGroup>
-
-                {/* <StatGroup>
-                  <StatNumber>{workDataInfo?.late_info?.minutes}</StatNumber>
-                  <StatLabel>Phút</StatLabel>
-                </StatGroup> */}
               </StatBlock>
               <ArrowBtn>
                 <ArrowRight />
@@ -156,8 +156,8 @@ const WorkStat: React.FC = () => {
       )}
 
       <EmpLeaveModal
-        isOpen={isOpenEmpLeaveModal}
-        onClose={() => setIsOpenEmpLeaveModal(false)}
+        isOpen={openModal === ModalType.LEAVE}
+        onClose={() => setOpenModal(ModalType.NONE)}
         date={
           selectedTime ? selectedTime.toLocaleDateString("en-GB") : undefined
         }
@@ -165,16 +165,16 @@ const WorkStat: React.FC = () => {
       />
 
       <EmpLateModal
-        isOpen={isOpenEmpLateModal}
-        onClose={() => setIsOpenEmpLateModal(false)}
+        isOpen={openModal === ModalType.LATE}
+        onClose={() => setOpenModal(ModalType.NONE)}
         date={
           selectedTime ? selectedTime.toLocaleDateString("en-GB") : undefined
         }
       />
 
       <EmpWorkModal
-        isOpen={isOpenEmpWorkModal}
-        onClose={() => setIsOpenEmpWorkModal(false)}
+        isOpen={openModal === ModalType.WORK}
+        onClose={() => setOpenModal(ModalType.NONE)}
         date={
           selectedTime ? selectedTime.toLocaleDateString("en-GB") : undefined
         }

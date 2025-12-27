@@ -30,7 +30,10 @@ import { useToast } from "@/hooks/useToast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import divisionWorkforceService from "@/services/division_workforce.service";
 import { useMobile } from "@/hooks/useMobile";
-import { getRoleName } from "@/components/company/account/AccountManagement";
+import { getRoleName } from "@/utils/help";
+import { ROLE_NAMES } from "@/constants/enums";
+import { ITEMS_PER_PAGE } from "@/constants/constants";
+import ROUTERS from "@/config/router";
 interface TeamDetailProps {
   id?: string;
 }
@@ -79,7 +82,6 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
     );
   }, [allMembers, debouncedSearch]);
 
-  const ITEMS_PER_PAGE = 10;
   const paginatedMembers = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
     const end = start + ITEMS_PER_PAGE;
@@ -112,13 +114,13 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
   });
 
   const handleBack = () => {
-    router.push("/division/workforce");
+    router.push(ROUTERS.DIVISION.WORKFORCE);
   };
 
   const addMemberMutation = useMutation({
     mutationFn: (payload: { user_id: number; description?: string }) => {
       if (!id) throw new Error("Team ID is required");
-      return divisionWorkforceService.addMembersToTeam(Number(id), payload);
+      return divisionWorkforceService.addMembersToTeam(Number(id), { members: [payload] });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["division-workforce", "members"] });
@@ -204,7 +206,7 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
       width: "150px",
       render: (_, row) => (
         <span style={{ fontSize: "14px", color: "#6b7280" }}>
-          {getRoleName(row.role?.name) || "-"}
+          {getRoleName(row.role?.name as ROLE_NAMES) || "-"}
         </span>
       ),
     },

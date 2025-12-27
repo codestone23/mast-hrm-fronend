@@ -537,3 +537,70 @@ export const SaveButton = styled.button`
     box-shadow: none;
   }
 `;
+
+// New styled-components for DivisionManagement
+export const HeaderTitle = styled.h3<{ $isMobile?: boolean }>`
+  font-size: ${props => props.$isMobile ? "1.1rem" : "1.25rem"};
+  margin: 0;
+`;
+
+export const HeaderDescription = styled.p<{ $isMobile?: boolean }>`
+  font-size: ${props => props.$isMobile ? "0.85rem" : "0.9rem"};
+  margin: 0;
+`;
+
+export const StatsLabel = styled.div`
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+`;
+
+export const DistributionTitle = styled.strong<{ $isMobile?: boolean }>`
+  font-size: ${props => props.$isMobile ? "0.85rem" : "0.9rem"};
+`;
+
+export const DistributionItemWrapper = styled.div<{ $isMobile?: boolean }>`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: ${props => props.$isMobile ? "wrap" : "nowrap"};
+  gap: ${props => props.$isMobile ? "4px" : "0"};
+`;
+
+export const DistributionName = styled.span<{ $isMobile?: boolean }>`
+  font-size: ${props => props.$isMobile ? "0.75rem" : "0.8rem"};
+  word-break: break-word;
+  flex: ${props => props.$isMobile ? "1 1 100%" : "auto"};
+`;
+
+export const DistributionBadge = styled.span<{ 
+  $isActive: boolean;
+  $isMobile?: boolean;
+}>`
+  font-size: ${props => props.$isMobile ? "0.7rem" : "0.75rem"};
+  font-weight: 600;
+  color: ${props => props.$isActive ? "var(--success-600)" : "var(--text-muted)"};
+  padding: ${props => props.$isMobile ? "2px 4px" : "2px 6px"};
+  border-radius: 4px;
+  background-color: ${props => props.$isActive ? "var(--success-100)" : "var(--background-secondary)"};
+  white-space: nowrap;
+`;
+
+export const MoreDivisionsText = styled.span<{ $isMobile?: boolean }>`
+  font-style: italic;
+  color: var(--text-muted);
+  font-size: ${props => props.$isMobile ? "0.75rem" : "0.8rem"};
+`;
+
+export const EmptyStateButtonWrapper = styled.div`
+  margin-top: 16px;
+`;
+
+export const PaginationWrapper = styled.div`
+  margin-top: 16px;
+`;
+
+export const CardContent = styled.div<{ $padding?: number }>`
+  padding: ${props => props.$padding || 16}px;
+  color: var(--text-secondary);
+`;

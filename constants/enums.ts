@@ -93,6 +93,12 @@ export enum ProjectStatus {
     CLOSED = "CLOSED",
 }
 
+export enum MilestoneProjectStatus {
+    PENDING = "PENDING",
+    IN_PROGRESS = "IN_PROGRESS",
+    COMPLETED = "COMPLETED",
+}
+
 export enum ProjectType {
     CUSTOMER = "CUSTOMER",
     IN_HOUSE = "IN_HOUSE",

@@ -5,10 +5,11 @@ import { UserProfile, User } from "@/constants/types";
 export const useAccountDetail = (accountId: string) => {
     const { data, isLoading, error, refetch } = useQuery({
         queryKey: ['account-detail', accountId],
-        queryFn: async () => {
+        queryFn: async (): Promise<UserProfile> => {
             const response = await userService.getUserById(accountId);
             const user = response as unknown as User;
-            const userProfile: UserProfile = {
+            
+            return {
                 id: user.id,
                 email: user.email,
                 name: user.name,
@@ -27,16 +28,10 @@ export const useAccountDetail = (accountId: string) => {
                 remaining_leave_days: user.remaining_leave_days,
                 organization: user.organization as UserProfile['organization'],
             };
-            return userProfile;
         },
         enabled: !!accountId,
     });
 
-    return {
-        data,
-        isLoading,
-        error,
-        refetch,
-    };
+    return { data, isLoading, error, refetch };
 };
 

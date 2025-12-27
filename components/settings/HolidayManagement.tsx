@@ -15,8 +15,7 @@ import Modal from "@/components/common/Modal/Modal";
 import ConfirmDeleteModal from "@/components/common/ConfirmDeleteModal/ConfirmDeleteModal";
 import Pagination from "@/components/common/Pagination/Pagination";
 import { formatDateForAPI, parseDateFromAPI } from "@/utils/dateUtils";
-
-const ITEMS_PER_PAGE = 10;
+import { ITEMS_PER_PAGE } from "@/constants/constants";
 
 const HolidayManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);

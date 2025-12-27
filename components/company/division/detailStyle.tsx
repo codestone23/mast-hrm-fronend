@@ -84,4 +84,21 @@ export const LoadMoreButton = styled.button`
   background: white;
 `;
 
+export const CardMarginTop = styled.div`
+  margin-top: 16px;
+`;
+
+export const DivisionInfoContent = styled.div`
+  padding: 16px;
+  color: var(--text-secondary);
+`;
+
+export const DivisionInfoRow = styled.div`
+  margin-bottom: 8px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
 

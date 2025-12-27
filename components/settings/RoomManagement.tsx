@@ -14,8 +14,7 @@ import ConfirmDeleteModal from "@/components/common/ConfirmDeleteModal/ConfirmDe
 import Pagination from "@/components/common/Pagination/Pagination";
 import Select from "@/components/common/Select/Select";
 import { Loading } from "@/components/common";
-
-const ITEMS_PER_PAGE = 10;
+import { ITEMS_PER_PAGE } from "@/constants/constants";
 
 const RoomManagement: React.FC = () => {
   const queryClient = useQueryClient();

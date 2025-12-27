@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Modal, Button, Input, TextArea, Select, DatePicker } from "@/components/common";
 import { ProjectCreateRequest } from "@/services/project.service";
@@ -10,6 +11,8 @@ import { RootState } from "@/store";
 import { ProjectIndustry, ProjectStatus, ProjectType } from "@/constants/enums";
 import userService from "@/services/user.service";
 import { User } from "@/types/api";
+import { formatDateForAPI, parseDateFromAPI } from "@/utils/dateUtils";
+import { FormContainer, FormGrid, FormGridFull } from "./createProjectModalStyle";
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -18,26 +21,39 @@ interface CreateProjectModalProps {
 }
 
 const projectTypeOptions = [
-  { value: 'CUSTOMER', label: 'Khách hàng' },
-  { value: 'IN_HOUSE', label: 'Nội bộ' },
-  { value: 'START_UP', label: 'Khởi nghiệp' },
-  { value: 'INTERNAL', label: 'Nội bộ' },
+  { value: ProjectType.CUSTOMER, label: 'Khách hàng' },
+  { value: ProjectType.IN_HOUSE, label: 'Nội bộ' },
+  { value: ProjectType.START_UP, label: 'Khởi nghiệp' },
+  { value: ProjectType.INTERNAL, label: 'Nội bộ' },
 ];
 
 const statusOptions = [
-  { value: 'OPEN', label: 'Mở' },
-  { value: 'IN_PROGRESS', label: 'Đang thực hiện' },
-  { value: 'PENDING', label: 'Tạm dừng' },
-  { value: 'CLOSED', label: 'Đã đóng' },
+  { value: ProjectStatus.OPEN, label: 'Mở' },
+  { value: ProjectStatus.IN_PROGRESS, label: 'Đang thực hiện' },
+  { value: ProjectStatus.PENDING, label: 'Tạm dừng' },
+  { value: ProjectStatus.CLOSED, label: 'Đã đóng' },
 ];
 
 const industryOptions = [
-  { value: 'IT', label: 'Công nghệ thông tin' },
-  { value: 'FINANCE', label: 'Tài chính' },
-  { value: 'MANUFACTURING', label: 'Sản xuất' },
-  { value: 'OTHER', label: 'Khác' },
+  { value: ProjectIndustry.IT, label: 'Công nghệ thông tin' },
+  { value: ProjectIndustry.FINANCE, label: 'Tài chính' },
+  { value: ProjectIndustry.MANUFACTURING, label: 'Sản xuất' },
+  { value: ProjectIndustry.OTHER, label: 'Khác' },
 ];
 
+
+interface CreateProjectFormData {
+  name: string;
+  code: string;
+  status: ProjectStatus;
+  project_type: ProjectType;
+  industry: ProjectIndustry;
+  description: string;
+  start_date: Date | null;
+  end_date: Date | null;
+  team_id?: number;
+  manager_id?: number;
+}
 
 const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   isOpen,
@@ -46,30 +62,41 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 }) => {
   const selectedDivisionId = useSelector((state: RootState) => state.division.selectedDivisionId);
   const { createProject, isPending } = useProjectMutation();
-  const [formData, setFormData] = useState<Partial<ProjectCreateRequest>>({
-    name: '',
-    code: '',
-    status: 'OPEN',
-    division_id: selectedDivisionId || 0,
-    project_type: 'INTERNAL',
-    industry: 'IT',
-    description: '',
-    start_date: '',
-    end_date: '',
-    manager_id: undefined,
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [managerSearchTerm, setManagerSearchTerm] = useState("");
   const [debouncedManagerSearch, setDebouncedManagerSearch] = useState("");
 
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+    reset,
+    watch,
+  } = useForm<CreateProjectFormData>({
+    defaultValues: {
+      name: '',
+      code: '',
+      status: ProjectStatus.OPEN,
+      project_type: ProjectType.INTERNAL,
+      industry: ProjectIndustry.IT,
+      description: '',
+      start_date: null,
+      end_date: null,
+      team_id: undefined,
+      manager_id: undefined,
+    },
+    mode: "onChange",
+  });
+
+  const startDate = watch("start_date");
+
   useEffect(() => {
-    if (isOpen && selectedDivisionId) {
-      setFormData(prev => ({
-        ...prev,
-        division_id: selectedDivisionId,
-      }));
+    if (!isOpen) {
+      reset();
+      setManagerSearchTerm("");
+      setDebouncedManagerSearch("");
     }
-  }, [isOpen, selectedDivisionId]);
+  }, [isOpen, reset]);
 
   // Debounce search term
   useEffect(() => {
@@ -126,251 +153,217 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     ];
   }, [allUsers]);
 
-  const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!formData.name?.trim()) {
-      newErrors.name = 'Tên dự án là bắt buộc';
-    }
-    if (!formData.code?.trim()) {
-      newErrors.code = 'Mã dự án là bắt buộc';
-    }
-    if (!formData.description?.trim()) {
-      newErrors.description = 'Mô tả là bắt buộc';
-    } 
-    if (!formData.start_date) {
-      newErrors.start_date = 'Ngày bắt đầu là bắt buộc';
-    }
-    if (!formData.end_date) {
-      newErrors.end_date = 'Ngày kết thúc là bắt buộc';
-    }
-    if (formData.start_date && formData.end_date) {
-      const start = new Date(formData.start_date);
-      const end = new Date(formData.end_date);
-      if (end < start) {
-        newErrors.end_date = 'Ngày kết thúc phải sau ngày bắt đầu';
-      }
-    }
-    if (!formData.division_id) {
-      newErrors.division_id = 'Phòng ban là bắt buộc';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = () => {
-    if (!validate()) {
+  const onSubmit = async (data: CreateProjectFormData) => {
+    if (!selectedDivisionId) {
       return;
     }
 
     const payload: ProjectCreateRequest = {
-      name: formData.name!,
-      code: formData.code!,
-      status: formData.status!,
-      division_id: formData.division_id!,
-      team_id: formData.team_id,
-      manager_id: formData.manager_id,
-      project_type: formData.project_type!,
-      industry: formData.industry!,
-      description: formData.description!,
-      start_date: formData.start_date!,
-      end_date: formData.end_date!,
+      name: data.name.trim(),
+      code: data.code.trim(),
+      status: data.status,
+      division_id: selectedDivisionId,
+      team_id: data.team_id,
+      manager_id: data.manager_id === 0 ? undefined : data.manager_id,
+      project_type: data.project_type,
+      industry: data.industry,
+      description: data.description.trim(),
+      start_date: data.start_date ? formatDateForAPI(data.start_date) : '',
+      end_date: data.end_date ? formatDateForAPI(data.end_date) : '',
     };
 
     createProject(payload, {
       onSuccess: () => {
         onSave();
-        handleClose();
+        onClose();
       },
     });
   };
 
-  const handleClose = () => {
-    setFormData({
-      name: '',
-      code: '',
-      status: 'OPEN',
-      division_id: selectedDivisionId || 0,
-      project_type: 'INTERNAL',
-      industry: 'IT',
-      description: '',
-      start_date: '',
-      end_date: '',
-      manager_id: undefined,
-    });
-    setErrors({});
-    setManagerSearchTerm("");
-    setDebouncedManagerSearch("");
-    onClose();
-  };
-
-  const formatDateForInput = (date: Date | null): string => {
-    if (!date) return '';
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  const parseDateFromString = (dateString: string): Date | null => {
-    if (!dateString) return null;
-    const date = new Date(dateString);
-    return isNaN(date.getTime()) ? null : date;
-  };
-
-  const footer = (
-    <>
-      <Button variant="ghost" onClick={handleClose} disabled={isPending}>
-        Hủy
-      </Button>
-      <Button variant="primary" onClick={handleSubmit} loading={isPending}>
-        Tạo dự án
-      </Button>
-    </>
-  );
-
   return (
     <Modal
       isOpen={isOpen}
-      onClose={handleClose}
+      onClose={onClose}
       title="Tạo dự án mới"
-      footer={footer}
       size="lg"
+      closable
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={isPending}>
+            Hủy
+          </Button>
+          <Button variant="primary" onClick={handleSubmit(onSubmit)} loading={isPending}>
+            Tạo dự án
+          </Button>
+        </>
+      }
     >
-      <div style={{ display: 'grid', gap: '16px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+      <FormContainer>
+        <FormGrid>
           <Input
             label="Tên dự án"
             required
-            value={formData.name || ''}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            {...register("name", {
+              required: "Tên dự án là bắt buộc",
+            })}
             placeholder="Nhập tên dự án"
-            error={errors.name}
+            error={errors.name?.message}
             disabled={isPending}
           />
           <Input
             label="Mã dự án"
             required
-            value={formData.code || ''}
-            onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+            {...register("code", {
+              required: "Mã dự án là bắt buộc",
+            })}
             placeholder="Nhập mã dự án"
-            error={errors.code}
+            error={errors.code?.message}
             disabled={isPending}
           />
-        </div>
+        </FormGrid>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          <Select
-            label="Trạng thái"
-            required
-            options={statusOptions}
-            value={formData.status || 'OPEN'}
-            onChange={(v) => setFormData({ ...formData, status: v as ProjectStatus })} 
-            error={errors.status}
-            disabled={isPending}
+        <FormGrid>
+          <Controller
+            name="status"
+            control={control}
+            rules={{ required: "Trạng thái là bắt buộc" }}
+            render={({ field }) => (
+              <Select
+                label="Trạng thái"
+                required
+                options={statusOptions}
+                value={field.value}
+                onChange={(v) => field.onChange(v as ProjectStatus)}
+                error={errors.status?.message}
+                disabled={isPending}
+              />
+            )}
           />
-          <Select
-            label="Loại dự án"
-            required
-            options={projectTypeOptions}
-            value={formData.project_type || 'INTERNAL'}
-            onChange={(v) => setFormData({ ...formData, project_type: v as ProjectType })}
-            error={errors.project_type}
-            disabled={isPending}
+          <Controller
+            name="project_type"
+            control={control}
+            rules={{ required: "Loại dự án là bắt buộc" }}
+            render={({ field }) => (
+              <Select
+                label="Loại dự án"
+                required
+                options={projectTypeOptions}
+                value={field.value}
+                onChange={(v) => field.onChange(v as ProjectType)}
+                error={errors.project_type?.message}
+                disabled={isPending}
+              />
+            )}
           />
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          <div>
-            <DatePicker
-              label="Ngày bắt đầu"
-              required
-              value={parseDateFromString(formData.start_date || '')}
-              onChange={(date) => {
-                setFormData({ 
-                  ...formData, 
-                  start_date: formatDateForInput(date) 
-                });
-              }}
-              error={errors.start_date}
-              disabled={isPending}
-            />
-          </div>
-          <div>
-            <DatePicker
-              label="Ngày kết thúc"
-              required
-              value={parseDateFromString(formData.end_date || '')}
-              onChange={(date) => {
-                setFormData({ 
-                  ...formData, 
-                  end_date: formatDateForInput(date) 
-                });
-              }}
-              error={errors.end_date}
-              disabled={isPending}
-              minDate={parseDateFromString(formData.start_date || '') || undefined}
-            />
-          </div>
-        </div>
+        </FormGrid>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          <Select
-            label="Ngành"
-            required
-            options={industryOptions}
-            value={formData.industry || 'IT'}
-            onChange={(v) => setFormData({ ...formData, industry: v as ProjectIndustry })}
-            error={errors.industry}
-            disabled={isPending}
+        <FormGrid>
+          <Controller
+            name="start_date"
+            control={control}
+            rules={{ required: "Ngày bắt đầu là bắt buộc" }}
+            render={({ field }) => (
+              <DatePicker
+                label="Ngày bắt đầu"
+                required
+                value={field.value}
+                onChange={(date) => field.onChange(date)}
+                error={errors.start_date?.message}
+                disabled={isPending}
+              />
+            )}
+          />
+          <Controller
+            name="end_date"
+            control={control}
+            rules={{
+              required: "Ngày kết thúc là bắt buộc",
+              validate: (value) => {
+                if (startDate && value && value < startDate) {
+                  return "Ngày kết thúc phải sau ngày bắt đầu";
+                }
+                return true;
+              },
+            }}
+            render={({ field }) => (
+              <DatePicker
+                label="Ngày kết thúc"
+                required
+                value={field.value}
+                onChange={(date) => field.onChange(date)}
+                error={errors.end_date?.message}
+                disabled={isPending}
+                minDate={startDate || undefined}
+              />
+            )}
+          />
+        </FormGrid>
+
+        <FormGrid>
+          <Controller
+            name="industry"
+            control={control}
+            rules={{ required: "Ngành là bắt buộc" }}
+            render={({ field }) => (
+              <Select
+                label="Ngành"
+                required
+                options={industryOptions}
+                value={field.value}
+                onChange={(v) => field.onChange(v as ProjectIndustry)}
+                error={errors.industry?.message}
+                disabled={isPending}
+              />
+            )}
           />
           <Input
             label="Team ID (tùy chọn)"
             type="number"
-            value={formData.team_id?.toString() || ''}
-            onChange={(e) => setFormData({ 
-              ...formData, 
-              team_id: e.target.value ? Number(e.target.value) : undefined 
+            {...register("team_id", {
+              valueAsNumber: true,
             })}
             placeholder="Nhập Team ID"
             disabled={isPending}
           />
-        </div>
+        </FormGrid>
 
-        <Select
-          label="Quản lý dự án"
-          options={managerOptions}
-          value={formData.manager_id || 0}
-          onChange={(v) => {
-            const managerId = Number(v);
-            setFormData({ 
-              ...formData, 
-              manager_id: managerId === 0 ? undefined : managerId
-            });
-          }}
-          placeholder="Chọn quản lý dự án"
-          searchable
-          onSearchChange={setManagerSearchTerm}
-          hasNextPage={!!hasNextPage}
-          isFetchingNextPage={!!isFetchingNextPage}
-          fetchNextPage={fetchNextPage || (() => {})}
-          loadingText="Đang tải thêm..."
-          disabled={isPending || !selectedDivisionId}
-          error={errors.manager_id}
+        <Controller
+          name="manager_id"
+          control={control}
+          render={({ field }) => (
+            <Select
+              label="Quản lý dự án"
+              options={managerOptions}
+              value={field.value || 0}
+              onChange={(v) => {
+                const managerId = Number(v);
+                field.onChange(managerId === 0 ? undefined : managerId);
+              }}
+              placeholder="Chọn quản lý dự án"
+              searchable
+              onSearchChange={setManagerSearchTerm}
+              hasNextPage={!!hasNextPage}
+              isFetchingNextPage={!!isFetchingNextPage}
+              fetchNextPage={fetchNextPage || (() => {})}
+              loadingText="Đang tải thêm..."
+              disabled={isPending || !selectedDivisionId}
+              error={errors.manager_id?.message}
+            />
+          )}
         />
 
         <TextArea
           label="Mô tả"
           required
-          value={formData.description || ''}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          {...register("description", {
+            required: "Mô tả là bắt buộc",
+          })}
           placeholder="Nhập mô tả dự án"
-          error={errors.description}
+          error={errors.description?.message}
           disabled={isPending}
           rows={3}
         />
-
-      </div>
+      </FormContainer>
     </Modal>
   );
 };

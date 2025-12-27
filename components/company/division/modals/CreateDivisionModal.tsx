@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Modal, Button, Input, Select, TextArea } from "@/components/common";
 import { useCreateDivision } from "@/hooks/useDivisions";
@@ -8,11 +9,20 @@ import { useToast } from "@/hooks/useToast";
 import { DivisionType } from "@/constants/enums";
 import { CreateDivisionRequest, User } from "@/types/api";
 import userService from "@/services/user.service";
+import { FormContainer, FormGrid } from "./modalStyle";
 
 interface CreateDivisionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave?: (payload: CreateDivisionRequest) => void;
+}
+
+interface CreateDivisionFormData {
+  name: string;
+  description: string;
+  parent_id?: number;
+  type: DivisionType;
+  leader_id?: number;
 }
 
 const CreateDivisionModal: React.FC<CreateDivisionModalProps> = ({ 
@@ -21,16 +31,25 @@ const CreateDivisionModal: React.FC<CreateDivisionModalProps> = ({
   onSave 
 }) => {
   const { success: showSuccessToast, error: showErrorToast } = useToast();
-  const [form, setForm] = useState<CreateDivisionRequest>({ 
-    name: "", 
-    description: "", 
-    parent_id: undefined, 
-    type: DivisionType.TECHNICAL, 
-    leader_id: undefined 
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [leaderSearchTerm, setLeaderSearchTerm] = useState("");
   const [debouncedLeaderSearch, setDebouncedLeaderSearch] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+    reset,
+  } = useForm<CreateDivisionFormData>({
+    defaultValues: {
+      name: "",
+      description: "",
+      parent_id: undefined,
+      type: DivisionType.TECHNICAL,
+      leader_id: undefined,
+    },
+    mode: "onChange",
+  });
 
 
   // Debounce search term
@@ -93,30 +112,19 @@ const CreateDivisionModal: React.FC<CreateDivisionModalProps> = ({
   // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setForm({ 
-        name: "", 
-        description: "", 
-        parent_id: undefined, 
-        type: DivisionType.TECHNICAL, 
-        leader_id: undefined 
-      });
-      setErrors({});
+      reset();
       setLeaderSearchTerm("");
       setDebouncedLeaderSearch("");
     }
-  }, [isOpen]);
+  }, [isOpen, reset]);
 
   // Handle mutation success/error
   useEffect(() => {
     if (createMutation.isSuccess) {
       showSuccessToast("Tạo phòng ban thành công");
       onClose();
-      // Note: Mutation is handled internally, onSave is optional for backward compatibility
-      if (onSave) {
-        onSave(form);
-      }
     }
-  }, [createMutation.isSuccess, onClose, onSave, form, showSuccessToast]);
+  }, [createMutation.isSuccess, onClose, showSuccessToast]);
 
   useEffect(() => {
     if (createMutation.isError) {
@@ -127,35 +135,19 @@ const CreateDivisionModal: React.FC<CreateDivisionModalProps> = ({
     }
   }, [createMutation.isError, createMutation.error, showErrorToast]);
 
-  const validate = (): boolean => {
-    const e: Record<string, string> = {};
-    if (!form.name?.trim()) {
-      e.name = "Tên phòng ban là bắt buộc";
-    }
-    if (!form.type) {
-      e.type = "Loại phòng ban là bắt buộc";
-    }
-    if (!form.leader_id) {
-      e.leader_id = "Trưởng phòng là bắt buộc";
-    }
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const handleSubmit = () => {
-    if (!validate()) {
-      return;
-    }
-
+  const onSubmit = (data: CreateDivisionFormData) => {
     const payload: CreateDivisionRequest = {
-      name: form.name.trim(),
-      description: form.description?.trim() || "",
-      parent_id: form.parent_id,
-      type: form.type,
-      leader_id: form.leader_id,
+      name: data.name.trim(),
+      description: data.description?.trim() || "",
+      parent_id: data.parent_id,
+      type: data.type,
+      leader_id: data.leader_id,
     };
 
     createMutation.mutate(payload);
+    if (onSave) {
+      onSave(payload);
+    }
   };
 
   const handleClose = () => {
@@ -186,7 +178,7 @@ const CreateDivisionModal: React.FC<CreateDivisionModalProps> = ({
           <Button
             type="button"
             variant="primary"
-            onClick={handleSubmit}
+            onClick={handleSubmit(onSubmit)}
             loading={isLoading}
             disabled={isLoading}
           >
@@ -195,81 +187,82 @@ const CreateDivisionModal: React.FC<CreateDivisionModalProps> = ({
         </>
       }
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      <FormContainer>
         <Input
           label="Tên phòng ban"
           required
-          value={form.name}
-          onChange={(e) => {
-            setForm({ ...form, name: e.target.value });
-            if (errors.name) {
-              setErrors({ ...errors, name: "" });
-            }
-          }}
-          error={errors.name}
+          {...register("name", {
+            required: "Tên phòng ban là bắt buộc",
+          })}
+          error={errors.name?.message}
           placeholder="Nhập tên phòng ban"
           disabled={isLoading}
           fullWidth
         />
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-          <Select
-            label="Trưởng phòng"
-            required
-            options={leaderOptions}
-            value={form.leader_id ?? ""}
-            onChange={(v) => {
-              setForm({ ...form, leader_id: v ? Number(v) : undefined });
-              if (errors.leader_id) {
-                setErrors({ ...errors, leader_id: "" });
-              }
+        <FormGrid>
+          <Controller
+            name="leader_id"
+            control={control}
+            rules={{
+              required: "Trưởng phòng là bắt buộc",
             }}
-            placeholder="Chọn trưởng phòng"
-            searchable
-            onSearchChange={setLeaderSearchTerm}
-            hasNextPage={hasNextPage}
-            isFetchingNextPage={isFetchingNextPage}
-            fetchNextPage={fetchNextPage}
-            loadingText="Đang tải thêm..."
-            disabled={isLoading || isLoadingUsers}
-            error={errors.leader_id}
-            fullWidth
+            render={({ field }) => (
+              <Select
+                label="Trưởng phòng"
+                required
+                options={leaderOptions}
+                value={field.value ?? ""}
+                onChange={(v) => field.onChange(v ? Number(v) : undefined)}
+                placeholder="Chọn trưởng phòng"
+                searchable
+                onSearchChange={setLeaderSearchTerm}
+                hasNextPage={hasNextPage}
+                isFetchingNextPage={isFetchingNextPage}
+                fetchNextPage={fetchNextPage}
+                loadingText="Đang tải thêm..."
+                disabled={isLoading || isLoadingUsers}
+                error={errors.leader_id?.message}
+                fullWidth
+              />
+            )}
           />
 
-          <Select
-            label="Loại phòng ban"
-            required
-            options={[
-              { value: DivisionType.TECHNICAL, label: "Kỹ thuật" },
-              { value: DivisionType.BUSINESS, label: "Kinh doanh" },
-              { value: DivisionType.OPERATIONS, label: "Vận hành" },
-              { value: DivisionType.OTHER, label: "Khác" },
-            ]}
-            value={form.type}
-            onChange={(v) => {
-              setForm({ ...form, type: v as DivisionType });
-              if (errors.type) {
-                setErrors({ ...errors, type: "" });
-              }
+          <Controller
+            name="type"
+            control={control}
+            rules={{
+              required: "Loại phòng ban là bắt buộc",
             }}
-            error={errors.type}
-            disabled={isLoading}
-            fullWidth
+            render={({ field }) => (
+              <Select
+                label="Loại phòng ban"
+                required
+                options={[
+                  { value: DivisionType.TECHNICAL, label: "Kỹ thuật" },
+                  { value: DivisionType.BUSINESS, label: "Kinh doanh" },
+                  { value: DivisionType.OPERATIONS, label: "Vận hành" },
+                  { value: DivisionType.OTHER, label: "Khác" },
+                ]}
+                value={field.value}
+                onChange={(v) => field.onChange(v as DivisionType)}
+                error={errors.type?.message}
+                disabled={isLoading}
+                fullWidth
+              />
+            )}
           />
-        </div>
+        </FormGrid>
 
         <TextArea
           label="Mô tả"
-          value={form.description || ""}
-          onChange={(e) => {
-            setForm({ ...form, description: e.target.value });
-          }}
+          {...register("description")}
           placeholder="Nhập mô tả phòng ban (tùy chọn)"
           rows={4}
           disabled={isLoading}
           fullWidth
         />
-      </div>
+      </FormContainer>
     </Modal>
   );
 };

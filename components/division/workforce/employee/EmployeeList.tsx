@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
@@ -16,14 +16,11 @@ import {
   CardTitle,
   IconWrapper,
   DashboardCol,
-  CreateButton,
   SearchContainer,
   FilterRow,
   FilterItemSmall,
   FilterContainer,
   StatsRow,
-} from "@/components/company/account/accountStyle";
-import {
   ActionMenuContainer,
   ActionMenuButton,
   ActionMenuDropdown,
@@ -31,18 +28,35 @@ import {
   ActionMenuItem,
   ActionMenuLink,
   ActionMenuDivider,
-} from "@/components/company/account/accountStyle";
+  UserInfoCell,
+  AvatarContainer,
+  AvatarInitial,
+  UserInfoText,
+  UserNameText,
+  UserEmailText,
+  SkillsContainer,
+  SkillTag,
+  MoreSkillsText,
+  EmptySkillsText,
+  RolesContainer,
+  RoleBadge,
+  EmptyRoleText,
+  StatsText,
+  PaginationWrapper,
+} from "./employeeListStyle";
 import { useRouter } from "next/navigation";
-import { useDivisionMembers } from "@/hooks/useDivisionWorkforce";
+import { useDivisionMembers, useDivisionTeams } from "@/hooks/useDivisionWorkforce";
 import { DivisionMemberData, User as UserType, ScopeType } from "@/types/api";
 import userService from "@/services/user.service";
-import { getRoleName } from "@/components/company/account/AccountManagement";
+import { getRoleName } from "@/utils/help";
 import AssignEmployeeRoleModal from "./modals/AssignEmployeeRoleModal";
 import UnassignEmployeeRoleModal from "./modals/UnassignEmployeeRoleModal";
 import { ConfirmDeleteModal } from "@/components/common";
 import { useToast } from "@/hooks/useToast";
-
-const ITEMS_PER_PAGE = 10;
+import { ITEMS_PER_PAGE } from "@/constants/constants";
+import ROUTERS from "@/config/router";
+import { useSkills, usePositions } from "@/hooks/useSettings";
+import { Skill } from "@/services/settings.service";
 
 // helper to format date
 const fmtDate = (d: string) => {
@@ -67,6 +81,13 @@ const formatSkills = (skills: string | null | undefined) => {
   return skillsList;
 };
 
+enum ModalType {
+  NONE = "NONE",
+  ASSIGN_ROLE = "ASSIGN_ROLE",
+  UNASSIGN_ROLE = "UNASSIGN_ROLE",
+  DELETE = "DELETE",
+}
+
 const SkillsDisplay: React.FC<{ skills: string | null | undefined }> = ({ skills }) => {
   const skillsList = formatSkills(skills);
   const maxSkills = 3;
@@ -74,34 +95,22 @@ const SkillsDisplay: React.FC<{ skills: string | null | undefined }> = ({ skills
   const hasMore = skillsList.length > maxSkills;
 
   if (skillsList.length === 0) {
-    return <span style={{ color: "#9ca3af", fontStyle: "italic" }}>-</span>;
+    return <EmptySkillsText>-</EmptySkillsText>;
   }
 
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center" }}>
+    <SkillsContainer>
       {displaySkills.map((skill, index) => (
-        <span
-          key={index}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            padding: "4px 10px",
-            background: "linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)",
-            color: "#0369a1",
-            borderRadius: "6px",
-            fontSize: "12px",
-            fontWeight: 500,
-          }}
-        >
+        <SkillTag key={index}>
           {skill}
-        </span>
+        </SkillTag>
       ))}
       {hasMore && (
-        <span style={{ color: "#64748b", fontSize: "12px", fontStyle: "italic" }}>
+        <MoreSkillsText>
           +{skillsList.length - maxSkills}
-        </span>
+        </MoreSkillsText>
       )}
-    </div>
+    </SkillsContainer>
   );
 };
 
@@ -122,10 +131,7 @@ const EmployeeList: React.FC = () => {
   const [skillId, setSkillId] = useState<number | undefined>(undefined);
   const [levelId, setLevelId] = useState<number | undefined>(undefined);
 
-  // Modal states
-  const [isAssignRoleModalOpen, setIsAssignRoleModalOpen] = useState(false);
-  const [isUnassignRoleModalOpen, setIsUnassignRoleModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [openModal, setOpenModal] = useState<ModalType>(ModalType.NONE);
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPositions, setMenuPositions] = React.useState<Record<string, { rect: DOMRect; position: 'top' | 'bottom' }>>({});
@@ -167,6 +173,52 @@ const EmployeeList: React.FC = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [openMenuId]);
+
+  // Fetch filter options
+  const { data: teamsData } = useDivisionTeams(
+    selectedDivisionId,
+    "",
+    1,
+    100
+  );
+
+  const { data: skillsData } = useSkills({ limit: 100 });
+
+  const { data: positionsData } = usePositions({ limit: 100 });
+
+  // Prepare filter options
+  const teamOptions = useMemo(() => {
+    const teams = teamsData?.data || [];
+    return [
+      { value: "", label: "Tất cả Team" },
+      ...teams.map((team) => ({
+        value: String(team.id),
+        label: team.name,
+      })),
+    ];
+  }, [teamsData]);
+
+  const skillOptions = useMemo(() => {
+    const skills = skillsData?.data || [];
+    return [
+      { value: "", label: "Tất cả kỹ năng" },
+      ...skills.map((skill: Skill) => ({
+        value: String(skill.skill_id),
+        label: skill.skill?.name || "",
+      })),
+    ];
+  }, [skillsData]);
+
+  const positionOptions = useMemo(() => {
+    const positions = positionsData?.data || [];
+    return [
+      { value: "", label: "Tất cả vị trí" },
+      ...positions.map((position) => ({
+        value: String(position.id),
+        label: position.name,
+      })),
+    ];
+  }, [positionsData]);
 
   const { data, isLoading, error } = useDivisionMembers(
     selectedDivisionId,
@@ -234,8 +286,7 @@ const EmployeeList: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["division-workforce"] });
       showSuccessToast("Xóa nhân viên thành công");
-      setIsDeleteModalOpen(false);
-      setSelectedUser(null);
+      handleCloseModal();
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } } };
@@ -244,62 +295,67 @@ const EmployeeList: React.FC = () => {
   });
 
   // Handlers
-  const handleViewDetail = (member: DivisionMemberData) => {
-    router.push(`/division/workforce/employee/${member.user_id}`);
-  };
+  const handleViewDetail = useCallback((member: DivisionMemberData) => {
+    router.push(`${ROUTERS.DIVISION.WORKFORCE}/employee/${member.user_id}`);
+  }, [router]);
 
-  const handleAssignRole = async (member: DivisionMemberData) => {
+  const handleAssignRole = useCallback(async (member: DivisionMemberData) => {
     const user = usersMap.get(member.user_id);
     if (!user) {
       try {
         const fetchedUser = await userService.getUserById(String(member.user_id));
         setSelectedUser(fetchedUser);
-        setIsAssignRoleModalOpen(true);
-      } catch (error) {
+        setOpenModal(ModalType.ASSIGN_ROLE);
+      } catch {
         showErrorToast("Không thể tải thông tin người dùng");
       }
     } else {
       setSelectedUser(user);
-      setIsAssignRoleModalOpen(true);
+      setOpenModal(ModalType.ASSIGN_ROLE);
     }
-  };
+  }, [usersMap, showErrorToast]);
 
-  const handleUnassignRole = async (member: DivisionMemberData) => {
+  const handleUnassignRole = useCallback(async (member: DivisionMemberData) => {
     const user = usersMap.get(member.user_id);
     if (!user) {
       try {
         const fetchedUser = await userService.getUserById(String(member.user_id));
         setSelectedUser(fetchedUser);
-        setIsUnassignRoleModalOpen(true);
-      } catch (error) {
+        setOpenModal(ModalType.UNASSIGN_ROLE);
+      } catch {
         showErrorToast("Không thể tải thông tin người dùng");
       }
     } else {
       setSelectedUser(user);
-      setIsUnassignRoleModalOpen(true);
+      setOpenModal(ModalType.UNASSIGN_ROLE);
     }
-  };
+  }, [usersMap, showErrorToast]);
 
-  const handleDelete = async (member: DivisionMemberData) => {
+  const handleDelete = useCallback(async (member: DivisionMemberData) => {
     const user = usersMap.get(member.user_id);
     if (!user) {
       try {
         const fetchedUser = await userService.getUserById(String(member.user_id));
         setSelectedUser(fetchedUser);
-        setIsDeleteModalOpen(true);
-      } catch (error) {
+        setOpenModal(ModalType.DELETE);
+      } catch {
         showErrorToast("Không thể tải thông tin người dùng");
       }
     } else {
       setSelectedUser(user);
-      setIsDeleteModalOpen(true);
+      setOpenModal(ModalType.DELETE);
     }
-  };
+  }, [usersMap, showErrorToast]);
 
   const handleConfirmDelete = () => {
     if (selectedUser) {
       deleteMutation.mutate(String(selectedUser.id));
     }
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(ModalType.NONE);
+    setSelectedUser(null);
   };
 
   const getUserName = (user: UserType) => {
@@ -327,31 +383,19 @@ const EmployeeList: React.FC = () => {
       label: "Thông tin",
       width: "200px",
       render: (_, row) => (
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              backgroundColor: "#e0e7ff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#6366f1",
-              overflow: "hidden",
-            }}
-          >
+        <UserInfoCell>
+          <AvatarContainer>
             {row.avatar && row.avatar.includes('https') ? (
               <Image src={row.avatar} alt={row.name} width={40} height={40} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
             ) : (
-              <span style={{ fontWeight: 500 }}>{row.name.charAt(0).toUpperCase()}</span>
+              <AvatarInitial>{row.name.charAt(0).toUpperCase()}</AvatarInitial>
             )}
-          </div>
-          <div>
-            <div style={{ fontWeight: 500, color: "#111827", marginBottom: "2px" }}>{row.name}</div>
-            <div style={{ fontSize: "12px", color: "#6b7280" }}>{row.email}</div>
-          </div>
-        </div>
+          </AvatarContainer>
+          <UserInfoText>
+            <UserNameText>{row.name}</UserNameText>
+            <UserEmailText>{row.email}</UserEmailText>
+          </UserInfoText>
+        </UserInfoCell>
       ),
     },
     {
@@ -389,27 +433,16 @@ const EmployeeList: React.FC = () => {
       render: (_, row) => {
         const roles = getMemberRoles(row);
         if (roles.length === 0) {
-          return <span style={{ color: "#6b7280", fontSize: "14px" }}>Chưa có vai trò</span>;
+          return <EmptyRoleText>Chưa có vai trò</EmptyRoleText>;
         }
         return (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+          <RolesContainer>
             {roles.map((assignment, index) => (
-              <span
-                key={index}
-                style={{
-                  display: "inline-block",
-                  padding: "4px 10px",
-                  borderRadius: "12px",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  backgroundColor: "#e0e7ff",
-                  color: "#6366f1",
-                }}
-              >
+              <RoleBadge key={index}>
                 {getRoleName(assignment.role_name)}
-              </span>
+              </RoleBadge>
             ))}
-          </div>
+          </RolesContainer>
         );
       },
     },
@@ -529,7 +562,7 @@ const EmployeeList: React.FC = () => {
         );
       },
     },
-  ], [usersMap, openMenuId, menuPositions]);
+  ], [openMenuId, menuPositions, handleViewDetail, handleAssignRole, handleUnassignRole, handleDelete]);
 
   const emptyMessage = useMemo(() => {
     if (!selectedDivisionId) return "Vui lòng chọn phòng ban";
@@ -563,33 +596,22 @@ const EmployeeList: React.FC = () => {
               <FilterItemSmall $isMobile={isMobile}>
                 <Select
                   label="Lọc theo Team"
-                  options={[
-                    { value: "", label: "Tất cả Team" },
-                    { value: "1", label: "Why's Team" },
-                    { value: "2", label: "Dev Ops" },
-                    { value: "3", label: "Finance" },
-                    { value: "4", label: "HR" },
-                  ]}
-                  value={teamId || ""}
+                  options={teamOptions}
+                  value={teamId ? String(teamId) : ""}
                   onChange={(value) => {
                     setTeamId(value === "" ? undefined : Number(value));
                     setCurrentPage(1);
                   }}
                   placeholder="Chọn Team"
                   fullWidth
+                  disabled={!selectedDivisionId}
                 />
               </FilterItemSmall>
               <FilterItemSmall $isMobile={isMobile}>
                 <Select
                   label="Lọc theo vị trí"
-                  options={[
-                    { value: "", label: "Tất cả vị trí" },
-                    { value: "1", label: "Dev" },
-                    { value: "2", label: "PM" },
-                    { value: "3", label: "Designer" },
-                    { value: "4", label: "Tester" },
-                  ]}
-                  value={positionId || ""}
+                  options={positionOptions}
+                  value={positionId ? String(positionId) : ""}
                   onChange={(value) => {
                     setPositionId(value === "" ? undefined : Number(value));
                     setCurrentPage(1);
@@ -601,12 +623,8 @@ const EmployeeList: React.FC = () => {
               <FilterItemSmall $isMobile={isMobile}>
                 <Select
                   label="Lọc theo kỹ năng"
-                  options={[
-                    { value: "", label: "Tất cả kỹ năng" },
-                    { value: "1", label: "PHP" },
-                    { value: "2", label: "React" },
-                  ]}
-                  value={skillId || ""}
+                  options={skillOptions}
+                  value={skillId ? String(skillId) : ""}
                   onChange={(value) => {
                     setSkillId(value === "" ? undefined : Number(value));
                     setCurrentPage(1);
@@ -615,30 +633,11 @@ const EmployeeList: React.FC = () => {
                   fullWidth
                 />
               </FilterItemSmall>
-              <FilterItemSmall $isMobile={isMobile}>
-                <Select
-                  label="Lọc theo level"
-                  options={[
-                    { value: "", label: "Tất cả level" },
-                    { value: "1", label: "Intern" },
-                    { value: "2", label: "Fresher" },
-                    { value: "3", label: "Junior" },
-                    { value: "4", label: "Senior" },
-                  ]}
-                  value={levelId || ""}
-                  onChange={(value) => {
-                    setLevelId(value === "" ? undefined : Number(value));
-                    setCurrentPage(1);
-                  }}
-                  placeholder="Chọn level"
-                  fullWidth
-                />
-              </FilterItemSmall>
             </FilterRow>
             <StatsRow>
               <span>
                 Tổng số:{" "}
-                <strong style={{ color: "var(--text-primary)" }}>{pagination.total || tableData.length}</strong>
+                <StatsText>{pagination.total || tableData.length}</StatsText>
               </span>
             </StatsRow>
           </FilterContainer>
@@ -669,12 +668,12 @@ const EmployeeList: React.FC = () => {
                 icon: <User size={48} />,
                 message: emptyMessage,
               }}
-              onRowClick={(row) => router.push(`/division/workforce/employee/${row.user_id}`)}
+              onRowClick={(row) => router.push(`${ROUTERS.DIVISION.WORKFORCE}/employee/${row.user_id}`)}
               rowKey="user_id"
             />
 
             {pagination.total_pages > 1 && (
-              <div style={{ marginTop: "16px" }}>
+              <PaginationWrapper>
                 <Pagination
                   currentPage={currentPage}
                   totalPages={pagination.total_pages}
@@ -683,7 +682,7 @@ const EmployeeList: React.FC = () => {
                   onPageChange={setCurrentPage}
                   showInfo={true}
                 />
-              </div>
+              </PaginationWrapper>
             )}
           </Card>
         </DashboardCol>
@@ -691,29 +690,20 @@ const EmployeeList: React.FC = () => {
 
       {/* Modals */}
       <AssignEmployeeRoleModal
-        isOpen={isAssignRoleModalOpen}
-        onClose={() => {
-          setIsAssignRoleModalOpen(false);
-          setSelectedUser(null);
-        }}
+        isOpen={openModal === ModalType.ASSIGN_ROLE}
+        onClose={handleCloseModal}
         user={selectedUser}
       />
 
       <UnassignEmployeeRoleModal
-        isOpen={isUnassignRoleModalOpen}
-        onClose={() => {
-          setIsUnassignRoleModalOpen(false);
-          setSelectedUser(null);
-        }}
+        isOpen={openModal === ModalType.UNASSIGN_ROLE}
+        onClose={handleCloseModal}
         user={selectedUser}
       />
 
       <ConfirmDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setIsDeleteModalOpen(false);
-          setSelectedUser(null);
-        }}
+        isOpen={openModal === ModalType.DELETE}
+        onClose={handleCloseModal}
         onConfirm={handleConfirmDelete}
         title="Xóa nhân viên"
         message={`Bạn có chắc chắn muốn xóa nhân viên "${selectedUser ? getUserName(selectedUser) : ""}"?`}

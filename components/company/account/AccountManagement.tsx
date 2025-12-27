@@ -29,6 +29,20 @@ import {
   HeaderRow,
   FilterContainer,
   StatsRow,
+  UserInfoCell,
+  UserAvatarCell,
+  UserInfoText,
+  UserNameText,
+  UserEmailText,
+  RoleBadgeContainer,
+  RoleBadge,
+  EmptyRoleText,
+  FaceRegistrationBadge,
+  StatusToggle,
+  StatusToggleThumb,
+  StatsText,
+  StatsValue,
+  PaginationWrapper,
 } from "./accountStyle";
 import CreateAccountModal from "./modals/CreateAccountModal";
 import AssignRoleModal from "./modals/AssignRoleModal";
@@ -45,8 +59,8 @@ import rolesService from "@/services/roles.service";
 import divisionsService from "@/services/divisions.service";
 import { Role, DivisionListItem } from "@/types/api";
 import Image from "next/image";
-
-const ITEMS_PER_PAGE = 10;
+import { getRoleName } from "@/utils/help";
+import { ITEMS_PER_PAGE } from "@/constants/constants";
 
 interface CreateAccountData {
   name: string;
@@ -54,24 +68,15 @@ interface CreateAccountData {
   password: string;
 }
 
-export const getRoleName = (roleName: ROLE_NAMES) => {
-  switch (roleName) {
-    case ROLE_NAMES.EMPLOYEE: 
-      return "Nhân viên";
-    case ROLE_NAMES.TEAM_LEADER:
-      return "Trưởng nhóm";
-    case ROLE_NAMES.DIVISION_HEAD:
-      return "Trưởng phòng";
-    case ROLE_NAMES.PROJECT_MANAGER:
-      return "Trưởng dự án";
-    case ROLE_NAMES.HR_MANAGER:
-      return "Trưởng HR";
-    case ROLE_NAMES.ADMIN:
-      return "Quản trị viên";
-    default:
-      return roleName;
-  }
-};
+enum ModalType {
+  NONE = "none",
+  CREATE = "create",
+  DELETE = "delete",
+  ASSIGN_ROLE = "assignRole",
+  UNASSIGN_ROLE = "unassignRole",
+  REGISTER_FACE = "registerFace",
+  STATUS_CONFIRM = "statusConfirm",
+}
 
 const AccountManagement: React.FC = () => {
   const router = useRouter();
@@ -85,14 +90,9 @@ const AccountManagement: React.FC = () => {
   const [selectedRoleId, setSelectedRoleId] = useState<number | undefined>(undefined);
   const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined);
   const [selectedDivisionId, setSelectedDivisionId] = useState<number | undefined>(undefined);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isAssignRoleModalOpen, setIsAssignRoleModalOpen] = useState(false);
-  const [isUnassignRoleModalOpen, setIsUnassignRoleModalOpen] = useState(false);
-  const [isRegisterFaceModalOpen, setIsRegisterFaceModalOpen] = useState(false);
-  const [isStatusConfirmModalOpen, setIsStatusConfirmModalOpen] = useState(false);
+  const [openModal, setOpenModal] = useState<ModalType>(ModalType.NONE);
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
-  const [pendingStatusUpdate, setPendingStatusUpdate] = useState<{ userId: string; status: "ACTIVE" | "INACTIVE" } | null>(null);
+  const [pendingStatusUpdate, setPendingStatusUpdate] = useState<{ userId: string; status: USER_STATUS } | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPositions, setMenuPositions] = React.useState<Record<string, { rect: DOMRect; position: 'top' | 'bottom' }>>({});
   const buttonRefs = React.useRef<Record<string, HTMLButtonElement | null>>({});
@@ -179,7 +179,7 @@ const AccountManagement: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       showSuccessToast("Tạo tài khoản thành công");
-      setIsCreateModalOpen(false);
+      setOpenModal(ModalType.NONE);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } } };
@@ -192,7 +192,7 @@ const AccountManagement: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       showSuccessToast("Xóa tài khoản thành công");
-      setIsDeleteModalOpen(false);
+      setOpenModal(ModalType.NONE);
       setSelectedUser(null);
     },
     onError: (error: unknown) => {
@@ -202,19 +202,19 @@ const AccountManagement: React.FC = () => {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ userId, status }: { userId: string; status: "ACTIVE" | "INACTIVE" }) =>
+    mutationFn: ({ userId, status }: { userId: string; status: USER_STATUS }) =>
       userService.updateUser(userId, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       showSuccessToast("Cập nhật trạng thái thành công");
-      setIsStatusConfirmModalOpen(false);
+      setOpenModal(ModalType.NONE);
       setPendingStatusUpdate(null);
       setSelectedUser(null);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } } };
       showErrorToast(err?.response?.data?.message || "Có lỗi xảy ra khi cập nhật trạng thái");
-      setIsStatusConfirmModalOpen(false);
+      setOpenModal(ModalType.NONE);
       setPendingStatusUpdate(null);
       setSelectedUser(null);
     },
@@ -238,27 +238,27 @@ const AccountManagement: React.FC = () => {
 
   const handleDelete = (user: UserType) => {
     setSelectedUser(user);
-    setIsDeleteModalOpen(true);
+    setOpenModal(ModalType.DELETE);
   };
 
   const handleAssignRole = (user: UserType) => {
     setSelectedUser(user);
-    setIsAssignRoleModalOpen(true);
+    setOpenModal(ModalType.ASSIGN_ROLE);
   };
 
   const handleUnassignRole = (user: UserType) => {
     setSelectedUser(user);
-    setIsUnassignRoleModalOpen(true);
+    setOpenModal(ModalType.UNASSIGN_ROLE);
   };
 
   const handleRegisterFace = (user: UserType) => {
     setSelectedUser(user);
-    setIsRegisterFaceModalOpen(true);
+    setOpenModal(ModalType.REGISTER_FACE);
   };
 
   const handleRegisterFaceSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["users"] });
-    setIsRegisterFaceModalOpen(false);
+    setOpenModal(ModalType.NONE);
     setSelectedUser(null);
   };
 
@@ -267,7 +267,13 @@ const AccountManagement: React.FC = () => {
     const newStatus = currentStatus ? USER_STATUS.INACTIVE : USER_STATUS.ACTIVE;
     setSelectedUser(user);
     setPendingStatusUpdate({ userId: String(user.id), status: newStatus });
-    setIsStatusConfirmModalOpen(true);
+    setOpenModal(ModalType.STATUS_CONFIRM);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(ModalType.NONE);
+    setSelectedUser(null);
+    setPendingStatusUpdate(null);
   };
 
   const handleConfirmStatusUpdate = () => {
@@ -276,8 +282,8 @@ const AccountManagement: React.FC = () => {
     }
   };
 
-  const getUserName = (user: UserType) => {
-    if (user.user_information && Array.isArray(user.user_information) && user.user_information.length > 0) {
+  const getUserName = (user: UserType): string => {
+    if (Array.isArray(user.user_information) && user.user_information.length > 0) {
       const info = user.user_information[0] as { name?: string };
       return info?.name || user.name || user.email;
     }
@@ -285,7 +291,7 @@ const AccountManagement: React.FC = () => {
   };
 
   const getUserInfo = (user: UserType) => {
-    if (user.user_information && Array.isArray(user.user_information) && user.user_information.length > 0) {
+    if (Array.isArray(user.user_information) && user.user_information.length > 0) {
       return user.user_information[0] as {
         name?: string;
         phone?: string;
@@ -297,7 +303,7 @@ const AccountManagement: React.FC = () => {
     return null;
   };
 
-  const getUserStatus = (user: UserType) => {
+  const getUserStatus = (user: UserType): boolean => {
     return user.status === USER_STATUS.ACTIVE;
   };
 
@@ -311,31 +317,26 @@ const AccountManagement: React.FC = () => {
         const userName = getUserName(row);
         const userInfo = getUserInfo(row);
         return (
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                backgroundColor: "#e0e7ff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#6366f1",
-                overflow: "hidden",
-              }}
-            >
-              {userInfo?.avatar && userInfo.avatar.includes('https') ? (
-                <Image src={userInfo.avatar} alt={userName} width={40} height={40} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" /> 
+          <UserInfoCell>
+            <UserAvatarCell>
+              {userInfo?.avatar?.includes('https') ? (
+                <Image 
+                  src={userInfo.avatar} 
+                  alt={userName} 
+                  width={40} 
+                  height={40} 
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                  loading="lazy" 
+                /> 
               ) : (
                 <User size={20} />
               )}
-            </div>
-            <div>
-              <div style={{ fontWeight: 500, color: "#111827", marginBottom: "2px" }}>{userName}</div>
-              <div style={{ fontSize: "12px", color: "#6b7280" }}>{row.email}</div>
-            </div>
-          </div>
+            </UserAvatarCell>
+            <UserInfoText>
+              <UserNameText>{userName}</UserNameText>
+              <UserEmailText>{row.email}</UserEmailText>
+            </UserInfoText>
+          </UserInfoCell>
         );
       },
     },
@@ -344,32 +345,22 @@ const AccountManagement: React.FC = () => {
       label: "Vai trò",
       render: (_, row) => {
         const roles = row.user_role_assignments || [];
-        // Filter only COMPANY scope roles
         const companyRoles = roles.filter(
           (assignment) => assignment.scope_type === "COMPANY"
         );
+        
         if (companyRoles.length === 0) {
-          return <span style={{ color: "#6b7280", fontSize: "14px" }}>Chưa có vai trò</span>;
+          return <EmptyRoleText>Chưa có vai trò</EmptyRoleText>;
         }
+        
         return (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+          <RoleBadgeContainer>
             {companyRoles.map((assignment, index) => (
-              <span
-                key={index}
-                style={{
-                  display: "inline-block",
-                  padding: "4px 10px",
-                  borderRadius: "12px",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  backgroundColor: "#e0e7ff",
-                  color: "#6366f1",
-                }}
-              >
+              <RoleBadge key={index}>
                 {getRoleName(assignment.role.name)}
-              </span>
+              </RoleBadge>
             ))}
-          </div>
+          </RoleBadgeContainer>
         );
       },
     },
@@ -388,21 +379,11 @@ const AccountManagement: React.FC = () => {
       label: "Đăng ký khuôn mặt",
       width: "150px",
       render: (_, row) => {
-        const isRegistered = row.register_face_url && row.register_face_at;
+        const isRegistered = !!(row.register_face_url && row.register_face_at);
         return (
-          <span
-            style={{
-              display: "inline-block",
-              padding: "4px 8px",
-              borderRadius: "12px",
-              fontSize: "12px",
-              fontWeight: 500,
-              backgroundColor: isRegistered ? "#10b98120" : "#ef444420",
-              color: isRegistered ? "#10b981" : "#ef4444",
-            }}
-          >
+          <FaceRegistrationBadge $isRegistered={isRegistered}>
             {isRegistered ? "Đã đăng ký" : "Chưa đăng ký"}
-          </span>
+          </FaceRegistrationBadge>
         );
       },
     },
@@ -416,38 +397,18 @@ const AccountManagement: React.FC = () => {
         const isLoading = updateStatusMutation.isPending;
         
         return (
-          <div
+          <StatusToggle
+            $isActive={isActive}
+            $isLoading={isLoading}
             onClick={(e) => {
               e.stopPropagation();
               if (!isLoading) {
                 handleToggleStatus(row);
               }
             }}
-            style={{
-              position: "relative",
-              width: "48px",
-              height: "24px",
-              borderRadius: "12px",
-              backgroundColor: isActive ? "#10b981" : "#d1d5db",
-              cursor: isLoading ? "not-allowed" : "pointer",
-              transition: "background-color 0.2s",
-              opacity: isLoading ? 0.6 : 1,
-            }}
           >
-            <div
-              style={{
-                position: "absolute",
-                top: "2px",
-                left: isActive ? "26px" : "2px",
-                width: "20px",
-                height: "20px",
-                borderRadius: "50%",
-                backgroundColor: "#ffffff",
-                transition: "left 0.2s",
-                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-              }}
-            />
-          </div>
+            <StatusToggleThumb $isActive={isActive} />
+          </StatusToggle>
         );
       },
     },
@@ -465,22 +426,24 @@ const AccountManagement: React.FC = () => {
           e.stopPropagation();
           if (isOpen) {
             setOpenMenuId(null);
-          } else {
-            const button = buttonRefs.current[menuId];
-            if (button) {
-              const rect = button.getBoundingClientRect();
-              const dropdownHeight = 200; // Approximate height of dropdown
-              const spaceBelow = window.innerHeight - rect.bottom;
-              const spaceAbove = rect.top;
-              const position: 'top' | 'bottom' = spaceBelow < dropdownHeight && spaceAbove > spaceBelow ? 'top' : 'bottom';
-              
-              setMenuPositions(prev => ({
-                ...prev,
-                [menuId]: { rect, position }
-              }));
-              setOpenMenuId(menuId);
-            }
+            return;
           }
+
+          const button = buttonRefs.current[menuId];
+          if (!button) return;
+
+          const rect = button.getBoundingClientRect();
+          const dropdownHeight = 200;
+          const spaceBelow = window.innerHeight - rect.bottom;
+          const spaceAbove = rect.top;
+          const position: 'top' | 'bottom' = 
+            spaceBelow < dropdownHeight && spaceAbove > spaceBelow ? 'top' : 'bottom';
+          
+          setMenuPositions(prev => ({
+            ...prev,
+            [menuId]: { rect, position }
+          }));
+          setOpenMenuId(menuId);
         };
 
         return (
@@ -607,7 +570,7 @@ const AccountManagement: React.FC = () => {
               </SearchContainer>
               <CreateButton 
                 $isMobile={isMobile}
-                onClick={() => setIsCreateModalOpen(true)}
+                onClick={() => setOpenModal(ModalType.CREATE)}
               >
                 <Plus size={20} />
                 Tạo tài khoản mới
@@ -671,16 +634,14 @@ const AccountManagement: React.FC = () => {
               </FilterItem>
             </FilterRow>
             <StatsRow>
-              <span>
-                Tổng số:{" "}
-                <strong style={{ color: "var(--text-primary)" }}>{pagination.total || users.length}</strong>
-              </span>
-              <span>
-                Đang hoạt động:{" "}
-                <strong style={{ color: "var(--success-600)" }}>
+              <StatsText>
+                Tổng số: <StatsValue>{pagination.total || users.length}</StatsValue>
+              </StatsText>
+              <StatsText>
+                Đang hoạt động: <StatsValue $color="var(--success-600)">
                   {users.filter((u) => getUserStatus(u)).length}
-                </strong>
-              </span>
+                </StatsValue>
+              </StatsText>
             </StatsRow>
           </FilterContainer>
         </Card>
@@ -714,7 +675,7 @@ const AccountManagement: React.FC = () => {
             />
 
             {pagination.total_pages > 1 && (
-              <div style={{ marginTop: "16px" }}>
+              <PaginationWrapper>
                 <Pagination
                   currentPage={currentPage}
                   totalPages={pagination.total_pages}
@@ -723,7 +684,7 @@ const AccountManagement: React.FC = () => {
                   onPageChange={setCurrentPage}
                   showInfo={true}
                 />
-              </div>
+              </PaginationWrapper>
             )}
           </Card>
         </DashboardCol>
@@ -731,18 +692,15 @@ const AccountManagement: React.FC = () => {
 
       {/* Modals */}
       <CreateAccountModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        isOpen={openModal === ModalType.CREATE}
+        onClose={handleCloseModal}
         onSave={handleCreateAccount}
         isLoading={createMutation.isPending}
       />
 
       <ConfirmDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setIsDeleteModalOpen(false);
-          setSelectedUser(null);
-        }}
+        isOpen={openModal === ModalType.DELETE}
+        onClose={handleCloseModal}
         onConfirm={handleDeleteAccount}
         title="Xóa tài khoản"
         message={`Bạn có chắc chắn muốn xóa tài khoản "${selectedUser ? getUserName(selectedUser) : ""}"?`}
@@ -750,41 +708,28 @@ const AccountManagement: React.FC = () => {
       />
 
       <AssignRoleModal
-        isOpen={isAssignRoleModalOpen}
-        onClose={() => {
-          setIsAssignRoleModalOpen(false);
-          setSelectedUser(null);
-        }}
+        isOpen={openModal === ModalType.ASSIGN_ROLE}
+        onClose={handleCloseModal}
         user={selectedUser}
       />
 
       <UnassignRoleModal
-        isOpen={isUnassignRoleModalOpen}
-        onClose={() => {
-          setIsUnassignRoleModalOpen(false);
-          setSelectedUser(null);
-        }}
+        isOpen={openModal === ModalType.UNASSIGN_ROLE}
+        onClose={handleCloseModal}
         user={selectedUser}
       />
 
       <RegisterFaceModal
-        isOpen={isRegisterFaceModalOpen}
-        onClose={() => {
-          setIsRegisterFaceModalOpen(false);
-          setSelectedUser(null);
-        }}
+        isOpen={openModal === ModalType.REGISTER_FACE}
+        onClose={handleCloseModal}
         userId={selectedUser?.id || 0}
         userName={selectedUser ? getUserName(selectedUser) : undefined}
         onSuccess={handleRegisterFaceSuccess}
       />
 
       <ConfirmDeleteModal
-        isOpen={isStatusConfirmModalOpen}
-        onClose={() => {
-          setIsStatusConfirmModalOpen(false);
-          setPendingStatusUpdate(null);
-          setSelectedUser(null);
-        }}
+        isOpen={openModal === ModalType.STATUS_CONFIRM}
+        onClose={handleCloseModal}
         onConfirm={handleConfirmStatusUpdate}
         title="Xác nhận thay đổi trạng thái"
         message={

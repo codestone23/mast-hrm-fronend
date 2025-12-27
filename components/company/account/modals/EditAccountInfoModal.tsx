@@ -43,8 +43,6 @@ const EditAccountInfoModal: React.FC<EditAccountInfoModalProps> = ({
     []
   );
 
-  console.log(initialData);
-
   const {
     register,
     handleSubmit,

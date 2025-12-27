@@ -1,13 +1,24 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Modal, Button, Select } from "@/components/common";
 import { SelectOption } from "@/components/common/Select/Select";
 import { User as UserType, ScopeType } from "@/types/api";
 import rolesService from "@/services/roles.service";
 import { useToast } from "@/hooks/useToast";
-import { getRoleName } from "@/components/company/account/AccountManagement";
+import { getRoleName } from "@/utils/help";
+import {
+  FormContainer,
+  UserInfoSection,
+  UserInfoLabel,
+  UserInfoValue,
+  InfoBox,
+  RolesContainer,
+  RoleBadge,
+  RolesLabel,
+} from "./unassignEmployeeRoleModalStyle";
 
 interface UnassignEmployeeRoleModalProps {
   isOpen: boolean;
@@ -24,7 +35,22 @@ const UnassignEmployeeRoleModal: React.FC<UnassignEmployeeRoleModalProps> = ({
 }) => {
   const queryClient = useQueryClient();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
-  const [selectedAssignmentIndex, setSelectedAssignmentIndex] = useState<string | number>("");
+
+  interface UnassignRoleFormData {
+    assignmentIndex: number;
+  }
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<UnassignRoleFormData>({
+    defaultValues: {
+      assignmentIndex: -1,
+    },
+    mode: "onChange",
+  });
 
   // Get user's existing DIVISION and PROJECT scope role assignments
   const existingAssignments = user?.user_role_assignments?.filter(
@@ -45,12 +71,12 @@ const UnassignEmployeeRoleModal: React.FC<UnassignEmployeeRoleModalProps> = ({
     };
   });
 
-  // Reset form when modal closes or user changes
+  // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setSelectedAssignmentIndex("");
+      reset();
     }
-  }, [isOpen, user]);
+  }, [isOpen, reset]);
 
   // Unassign role mutation
   const unassignRoleMutation = useMutation({
@@ -71,7 +97,6 @@ const UnassignEmployeeRoleModal: React.FC<UnassignEmployeeRoleModalProps> = ({
       queryClient.invalidateQueries({ queryKey: ["users"] });
       showSuccessToast("Thu hồi vai trò thành công");
       onClose();
-      setSelectedAssignmentIndex("");
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } } };
@@ -81,13 +106,13 @@ const UnassignEmployeeRoleModal: React.FC<UnassignEmployeeRoleModalProps> = ({
     },
   });
 
-  const handleSubmit = () => {
-    if (!user || selectedAssignmentIndex === "") {
+  const onSubmit = (data: UnassignRoleFormData) => {
+    if (!user || data.assignmentIndex < 0) {
       showErrorToast("Vui lòng chọn vai trò cần thu hồi");
       return;
     }
 
-    const assignment = existingAssignments[Number(selectedAssignmentIndex)];
+    const assignment = existingAssignments[data.assignmentIndex];
     if (!assignment) {
       showErrorToast("Vai trò không hợp lệ");
       return;
@@ -103,7 +128,6 @@ const UnassignEmployeeRoleModal: React.FC<UnassignEmployeeRoleModalProps> = ({
 
   const handleClose = () => {
     if (!unassignRoleMutation.isPending) {
-      setSelectedAssignmentIndex("");
       onClose();
     }
   };
@@ -128,78 +152,76 @@ const UnassignEmployeeRoleModal: React.FC<UnassignEmployeeRoleModalProps> = ({
           <Button
             type="button"
             variant="error"
-            onClick={handleSubmit}
+            onClick={handleSubmit(onSubmit)}
             loading={unassignRoleMutation.isPending || isLoading}
-            disabled={unassignRoleMutation.isPending || isLoading || selectedAssignmentIndex === ""}
+            disabled={unassignRoleMutation.isPending || isLoading}
           >
             Thu hồi vai trò
           </Button>
         </>
       }
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      <FormContainer>
         {user && (
-          <div>
-            <div style={{ fontSize: "14px", color: "#6b7280", marginBottom: "8px" }}>
-              Nhân viên
-            </div>
-            <div style={{ fontSize: "16px", fontWeight: 500, color: "#111827" }}>
+          <UserInfoSection>
+            <UserInfoLabel>Nhân viên</UserInfoLabel>
+            <UserInfoValue>
               {user.user_information && 
                typeof user.user_information === 'object' && 
                !Array.isArray(user.user_information) &&
                'name' in user.user_information
                 ? (user.user_information as { name: string }).name
                 : user.name || user.email}
-            </div>
-          </div>
+            </UserInfoValue>
+          </UserInfoSection>
         )}
 
         {existingAssignments.length > 0 ? (
           <>
-            <Select
-              label="Vai trò cần thu hồi"
-              options={assignmentOptions}
-              value={selectedAssignmentIndex}
-              onChange={(value) => setSelectedAssignmentIndex(value)}
-              placeholder="Chọn vai trò cần thu hồi"
-              required
-              fullWidth
-              disabled={unassignRoleMutation.isPending || isLoading}
+            <Controller
+              name="assignmentIndex"
+              control={control}
+              rules={{ 
+                required: "Vui lòng chọn vai trò cần thu hồi",
+                validate: (value) => value >= 0 || "Vui lòng chọn vai trò cần thu hồi"
+              }}
+              render={({ field }) => (
+                <Select
+                  label="Vai trò cần thu hồi"
+                  options={assignmentOptions}
+                  value={field.value >= 0 ? field.value : ""}
+                  onChange={(value) => field.onChange(value ? Number(value) : -1)}
+                  placeholder="Chọn vai trò cần thu hồi"
+                  required
+                  fullWidth
+                  disabled={unassignRoleMutation.isPending || isLoading}
+                  error={errors.assignmentIndex?.message}
+                />
+              )}
             />
 
-            <div style={{ fontSize: "14px", color: "#6b7280" }}>
-              <div style={{ marginBottom: "4px" }}>Tất cả vai trò hiện tại (Phòng ban/Dự án/Đội nhóm):</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+            <div>
+              <RolesLabel>Tất cả vai trò hiện tại (Phòng ban/Dự án/Đội nhóm):</RolesLabel>
+              <RolesContainer>
                 {existingAssignments.map((assignment, index) => {
                   const scopeInfo = assignment.scope_id 
                     ? ` (${assignment.scope_type} #${assignment.scope_id})`
                     : ` (${assignment.scope_type})`;
                   return (
-                    <span
-                      key={index}
-                      style={{
-                        display: "inline-block",
-                        padding: "4px 12px",
-                        borderRadius: "12px",
-                        fontSize: "12px",
-                        fontWeight: 500,
-                        backgroundColor: "#e0e7ff",
-                        color: "#6366f1",
-                      }}
-                    >
+                    <RoleBadge key={index}>
                       {getRoleName(assignment.role.name)}{scopeInfo}
-                    </span>
+                    </RoleBadge>
                   );
                 })}
-              </div>
+              </RolesContainer>
             </div>
           </>
         ) : (
-          <div style={{ fontSize: "14px", color: "#ef4444", padding: "12px", backgroundColor: "#fef2f2", borderRadius: "8px" }}>
+          <InfoBox $variant="error">
             Nhân viên này chưa có vai trò nào (Phòng ban/Dự án/Đội nhóm) để thu hồi.
-          </div>
+          </InfoBox>
         )}
-      </div>
+      </FormContainer>
     </Modal>
   );
 };

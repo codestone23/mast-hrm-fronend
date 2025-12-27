@@ -10,8 +10,7 @@ import Input from "@/components/common/Input/Input";
 import Modal from "@/components/common/Modal/Modal";
 import ConfirmDeleteModal from "@/components/common/ConfirmDeleteModal/ConfirmDeleteModal";
 import Pagination from "@/components/common/Pagination/Pagination";
-
-const ITEMS_PER_PAGE = 10;
+import { ITEMS_PER_PAGE } from "@/constants/constants";
 
 const LanguageManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");

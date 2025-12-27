@@ -1,3 +1,4 @@
+import { ITEMS_PER_PAGE } from "@/constants/constants";
 import axiosInstance from '@/lib/axios';
 import {
   ApiResponse,
@@ -10,7 +11,7 @@ import {
 class UserService {
   async getUsers(
     page: number = 1, 
-    limit: number = 10, 
+    limit: number = ITEMS_PER_PAGE, 
     search?: string,
     role_id?: number,
     status?: string,

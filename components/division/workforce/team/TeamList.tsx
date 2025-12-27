@@ -28,8 +28,8 @@ import {
 import divisionWorkforceService from "@/services/division_workforce.service";
 import { DivisionTeamData, DivisionTeamUpdateRequest, DivisionTeamCreateRequest } from "@/types/api";
 import { useToast } from "@/hooks/useToast";
-
-const ITEMS_PER_PAGE = 10;
+import { ITEMS_PER_PAGE } from "@/constants/constants";
+import ROUTERS from "@/config/router";
 
 const TeamList: React.FC = () => {
   const router = useRouter();
@@ -183,7 +183,7 @@ const TeamList: React.FC = () => {
   };
 
   const handleViewDetail = (team: DivisionTeamData) => {
-    router.push(`/division/workforce/team/${team.id}`);
+    router.push(`${ROUTERS.DIVISION.WORKFORCE}/team/${team.id}`);
   };
 
   const formatDate = (dateString: string) => {
@@ -192,23 +192,6 @@ const TeamList: React.FC = () => {
       return date.toLocaleDateString("vi-VN");
     } catch {
       return dateString;
-    }
-  };
-
-  const formatResourceByLevel = (resourceByLevel: unknown) => {
-    if (!resourceByLevel) return "-";
-    try {
-      if (typeof resourceByLevel === "string") {
-        return resourceByLevel;
-      }
-      if (typeof resourceByLevel === "object") {
-        const entries = Object.entries(resourceByLevel);
-        if (entries.length === 0) return "-";
-        return entries.map(([key, value]) => `${key}: ${value}`).join(", ");
-      }
-      return String(resourceByLevel);
-    } catch {
-      return "-";
     }
   };
 
@@ -397,7 +380,7 @@ const TeamList: React.FC = () => {
                 icon: <Users size={48} />,
                 message: emptyStateMessage,
               }}
-              onRowClick={(row) => router.push(`/division/workforce/team/${row.id}`)}
+              onRowClick={(row) => router.push(`${ROUTERS.DIVISION.WORKFORCE}/team/${row.id}`)}
               rowKey="id"
             />
 

@@ -8,6 +8,7 @@ export interface Skill {
   created_at?: string;
   updated_at?: string;
   deleted_at?: string | null;
+  skill_id: number;
   skill?: {
     id: number;
     name: string;

@@ -17,7 +17,7 @@ import {
   Experience,
   Education,
 } from "@/services/profile.service";
-import EditAccountInfoModal from "@/components/company/account/EditAccountInfoModal";
+import EditAccountInfoModal from "@/components/company/account/modals/EditAccountInfoModal";
 import BasicInfoTab from "@/components/personal/personal-info/BasicInfoTab";
 import SkillsTab from "@/components/personal/personal-info/SkillsTab";
 import PersonalInfoSidebar from "@/components/personal/personal-info/PersonalInfoSidebar";
@@ -54,15 +54,6 @@ const UserDetail: React.FC<UserDetailProps> = ({ userId }) => {
     setIsEditPersonalModalOpen(true);
   };
 
-  // Avatar handlers - disabled for admin view
-  const handleAvatarClick = () => {
-    // Disabled for admin
-  };
-
-  const handleAvatarChange = async () => {
-    // Disabled for admin
-  };
-
   useEffect(() => {
     if (data) {
       setSkills(data?.user_skills || []);
@@ -83,8 +74,6 @@ const UserDetail: React.FC<UserDetailProps> = ({ userId }) => {
         data={data}
         avatarUrl={avatarUrl}
         isUploading={false}
-        onAvatarClick={handleAvatarClick}
-        onAvatarChange={handleAvatarChange}
         fileInputRef={fileInputRef}
       />
 

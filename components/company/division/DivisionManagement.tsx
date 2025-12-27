@@ -28,6 +28,16 @@ import {
     EmptyIcon,
     EmptyText,
     DivisionFilterContainer,
+    HeaderTitle,
+    HeaderDescription,
+    StatsLabel,
+    DistributionTitle,
+    DistributionItemWrapper,
+    DistributionName,
+    DistributionBadge,
+    MoreDivisionsText,
+    EmptyStateButtonWrapper,
+    PaginationWrapper,
 } from "./divisionStyle";
 import CreateDivisionModal from "./modals/CreateDivisionModal";
 import EditDivisionModal from "./modals/EditDivisionModal";
@@ -54,6 +64,13 @@ import { useToast } from "@/contexts/ToastContext";
 import ROUTERS from "@/config/router";
 import { DivisionStatus } from "@/constants/enums";
 
+enum ModalType {
+    NONE = "NONE",
+    CREATE = "CREATE",
+    EDIT = "EDIT",
+    DELETE = "DELETE",
+}
+
 const DivisionManagement: React.FC = () => {
     const router = useRouter();
     const isMobile = useMobile();
@@ -64,9 +81,8 @@ const DivisionManagement: React.FC = () => {
     );
     const [page, setPage] = useState(1);
     const [limit] = useState(10);
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    
+    const [openModal, setOpenModal] = useState<ModalType>(ModalType.NONE);
     const [selectedDivision, setSelectedDivision] =
         useState<DivisionListItem | null>(null);
 
@@ -96,38 +112,41 @@ const DivisionManagement: React.FC = () => {
 
     const handleCreateDivision = async (payload: CreateDivisionRequest) => {
         await createMutation.mutateAsync(payload);
-        setIsCreateModalOpen(false);
+        handleCloseModal();
     };
 
     const handleEditDivision = async (
         payload: UpdateDivisionRequest & { id?: string | number }
     ) => {
         await updateMutation.mutateAsync(payload);
-        setIsEditModalOpen(false);
-        setSelectedDivision(null);
+        handleCloseModal();
     };
 
     const handleDeleteDivision = async () => {
         if (selectedDivision) {
             await deleteMutation.mutateAsync(selectedDivision.id);
-            setIsDeleteModalOpen(false);
-            setSelectedDivision(null);
+            handleCloseModal();
         }
     };
 
     const handleEdit = (division: DivisionListItem) => {
         setSelectedDivision(division);
-        setIsEditModalOpen(true);
+        setOpenModal(ModalType.EDIT);
     };
 
     const handleDelete = (division: DivisionListItem) => {
         setSelectedDivision(division);
-        setIsDeleteModalOpen(true);
+        setOpenModal(ModalType.DELETE);
+    };
+
+    const handleCloseModal = () => {
+        setOpenModal(ModalType.NONE);
+        setSelectedDivision(null);
     };
 
     const renderHeader = () => {
         const activeDivisions = divisions.filter(
-            (div) => div.status === "ACTIVE"
+            (div) => div.status === DivisionStatus.ACTIVE
         ).length;
         const totalEmployees = divisions.reduce(
             (acc, div) => acc + (div.member_count ?? 0),
@@ -138,8 +157,8 @@ const DivisionManagement: React.FC = () => {
             <DashboardCol>
                 <WelcomeCard>
                     <WelcomeContent>
-                        <h3 style={{ fontSize: isMobile ? "1.1rem" : "1.25rem" }}>Quản lý phòng ban hệ thống</h3>
-                        <p style={{ fontSize: isMobile ? "0.85rem" : "0.9rem" }}>
+                        <HeaderTitle $isMobile={isMobile}>Quản lý phòng ban hệ thống</HeaderTitle>
+                        <HeaderDescription $isMobile={isMobile}>
                             {isMobile ? (
                                 <>
                                     Tổng: {divisions.length} | Hoạt động: {activeDivisions}<br />
@@ -152,7 +171,7 @@ const DivisionManagement: React.FC = () => {
                             {totalEmployees}
                                 </>
                             )}
-                        </p>
+                        </HeaderDescription>
                     </WelcomeContent>
                 </WelcomeCard>
 
@@ -174,7 +193,7 @@ const DivisionManagement: React.FC = () => {
                         />
                         <CreateButton
                             $isMobile={isMobile}
-                            onClick={() => setIsCreateModalOpen(true)}
+                            onClick={() => setOpenModal(ModalType.CREATE)}
                         >
                             <Plus size={isMobile ? 18 : 20} />
                             {isMobile ? "Tạo mới" : "Tạo phòng ban mới"}
@@ -190,15 +209,9 @@ const DivisionManagement: React.FC = () => {
                         <CardTitle>Tổng quan phòng ban</CardTitle>
                     </StatsHeader>
                     <StatsNumber className="large">{total}</StatsNumber>
-                    <div
-                        style={{
-                            fontSize: "0.8rem",
-                            color: "var(--text-secondary)",
-                            marginTop: "0.25rem",
-                        }}
-                    >
+                    <StatsLabel>
                         phòng ban
-                    </div>
+                    </StatsLabel>
                 </StatsCard>
 
                 <Card>
@@ -214,62 +227,32 @@ const DivisionManagement: React.FC = () => {
                     </AssetsGradientBox>
                     <AssetsListContainer>
                         <AssetsListTitle>
-                            <strong style={{ fontSize: isMobile ? "0.85rem" : "0.9rem" }}>Phân bố nhân viên theo phòng ban</strong>
+                            <DistributionTitle $isMobile={isMobile}>Phân bố nhân viên theo phòng ban</DistributionTitle>
                         </AssetsListTitle>
                         {divisions.slice(0, 4).map((division) => (
                             <AssetsItem
                                 $marginBottom="0.25rem"
                                 key={division.id}
                             >
-                                <div
-                                    style={{
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                        flexWrap: isMobile ? "wrap" : "nowrap",
-                                        gap: isMobile ? "4px" : "0",
-                                    }}
-                                >
-                                    <span style={{ 
-                                        fontSize: isMobile ? "0.75rem" : "0.8rem",
-                                        wordBreak: "break-word",
-                                        flex: isMobile ? "1 1 100%" : "auto"
-                                    }}>
+                                <DistributionItemWrapper $isMobile={isMobile}>
+                                    <DistributionName $isMobile={isMobile}>
                                         {division.name}
-                                    </span>
-                                    <span
-                                        style={{
-                                            fontSize: isMobile ? "0.7rem" : "0.75rem",
-                                            fontWeight: "600",
-                                            color:
-                                                division.status === "ACTIVE"
-                                                    ? "var(--success-600)"
-                                                    : "var(--text-muted)",
-                                            padding: isMobile ? "2px 4px" : "2px 6px",
-                                            borderRadius: "4px",
-                                            backgroundColor:
-                                                division.status === "ACTIVE"
-                                                    ? "var(--success-100)"
-                                                    : "var(--background-secondary)",
-                                            whiteSpace: "nowrap",
-                                        }}
+                                    </DistributionName>
+                                    <DistributionBadge
+                                        $isActive={division.status === DivisionStatus.ACTIVE}
+                                        $isMobile={isMobile}
                                     >
                                         {division.member_count ?? 0} nhân viên
-                                    </span>
-                                </div>
+                                    </DistributionBadge>
+                                </DistributionItemWrapper>
                             </AssetsItem>
                         ))}
                         {divisions.length > 4 && (
-                            <AssetsItem
-                                $marginBottom="0.25rem"
-                                style={{
-                                    fontStyle: "italic",
-                                    color: "var(--text-muted)",
-                                    fontSize: isMobile ? "0.75rem" : "0.8rem",
-                                }}
+                            <MoreDivisionsText
+                                $isMobile={isMobile}
                             >
                                 ... và {divisions.length - 4} phòng ban khác
-                            </AssetsItem>
+                            </MoreDivisionsText>
                         )}
                     </AssetsListContainer>
                 </Card>
@@ -304,16 +287,16 @@ const DivisionManagement: React.FC = () => {
                                         : "Chưa có phòng ban nào trong hệ thống"}
                                 </EmptyText>
                                 {!searchTerm && (
-                                    <div style={{ marginTop: "16px" }}>
+                                    <EmptyStateButtonWrapper>
                                         <CreateButton
                                             onClick={() =>
-                                                setIsCreateModalOpen(true)
+                                                setOpenModal(ModalType.CREATE)
                                             }
                                         >
                                             <Plus size={20} />
                                             Tạo phòng ban đầu tiên
                                         </CreateButton>
-                                    </div>
+                                    </EmptyStateButtonWrapper>
                                 )}
                             </EmptyState>
                         ) : (
@@ -328,7 +311,7 @@ const DivisionManagement: React.FC = () => {
                                     onEdit={handleEdit}
                                     onDelete={handleDelete}
                                 />
-                                <div style={{ marginTop: 16 }}>
+                                <PaginationWrapper>
                                     <Pagination
                                         currentPage={page}
                                         totalPages={totalPages}
@@ -336,7 +319,7 @@ const DivisionManagement: React.FC = () => {
                                         itemsPerPage={limit}
                                         onPageChange={(p) => setPage(p)}
                                     />
-                                </div>
+                                </PaginationWrapper>
                             </>
                         )}
                     </Card>
@@ -345,19 +328,16 @@ const DivisionManagement: React.FC = () => {
 
             {/* Modals */}
             <CreateDivisionModal
-                isOpen={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
+                isOpen={openModal === ModalType.CREATE}
+                onClose={handleCloseModal}
                 onSave={(payload: CreateDivisionRequest) =>
                     handleCreateDivision(payload)
                 }
             />
 
             <EditDivisionModal
-                isOpen={isEditModalOpen}
-                onClose={() => {
-                    setIsEditModalOpen(false);
-                    setSelectedDivision(null);
-                }}
+                isOpen={openModal === ModalType.EDIT}
+                onClose={handleCloseModal}
                 division={
                     selectedDivision
                         ? ({
@@ -365,9 +345,9 @@ const DivisionManagement: React.FC = () => {
                               name: selectedDivision.name,
                               description: selectedDivision.description || "",
                               status:
-                                  selectedDivision.status === "ACTIVE"
-                                      ? "ACTIVE" 
-                                      : "INACTIVE",
+                                  selectedDivision.status === DivisionStatus.ACTIVE
+                                      ? DivisionStatus.ACTIVE 
+                                      : DivisionStatus.INACTIVE,
                               createdAt: selectedDivision.created_at,
                           } as LegacyDivision)
                         : null
@@ -376,11 +356,8 @@ const DivisionManagement: React.FC = () => {
             />
 
             <ConfirmDeleteModal
-                isOpen={isDeleteModalOpen}
-                onClose={() => {
-                    setIsDeleteModalOpen(false);
-                    setSelectedDivision(null);
-                }}
+                isOpen={openModal === ModalType.DELETE}
+                onClose={handleCloseModal}
                 onConfirm={handleDeleteDivision}
                 title="Xóa phòng ban"
                 message={`Bạn có chắc chắn muốn xóa phòng ban "${selectedDivision?.name}"? Hành động này không thể hoàn tác.`}

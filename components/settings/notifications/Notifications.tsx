@@ -20,8 +20,7 @@ import {
   SearchContainer,
 } from "./notificationsStyle";
 import { useMobile } from "@/hooks/useMobile";
-
-const ITEMS_PER_PAGE = 10;
+import { ITEMS_PER_PAGE } from "@/constants/constants";
 
 export default function NotificationsPage() {
   const queryClient = useQueryClient();

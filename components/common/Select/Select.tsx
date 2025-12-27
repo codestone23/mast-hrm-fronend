@@ -79,8 +79,6 @@ const Select: React.FC<SelectProps> = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`; 
-
   useEffect(() => {
     if (value !== undefined) {
       setSelectedValue(value);
@@ -111,6 +109,31 @@ const Select: React.FC<SelectProps> = ({
       searchInputRef.current.focus();
     }
   }, [isOpen, searchable]);
+
+  // Update triggerRect when dropdown is open and on scroll/resize
+  useEffect(() => {
+    if (!isOpen || !triggerRef.current) return;
+
+    const updateTriggerRect = () => {
+      if (triggerRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        setTriggerRect(rect);
+      }
+    };
+
+    // Update immediately
+    updateTriggerRect();
+
+    // Update on scroll
+    window.addEventListener('scroll', updateTriggerRect, true);
+    // Update on resize
+    window.addEventListener('resize', updateTriggerRect);
+
+    return () => {
+      window.removeEventListener('scroll', updateTriggerRect, true);
+      window.removeEventListener('resize', updateTriggerRect);
+    };
+  }, [isOpen]);
 
   // Infinite scroll logic
   useEffect(() => {
@@ -189,9 +212,9 @@ const Select: React.FC<SelectProps> = ({
   };
 
   return (
-    <SelectContainer className={className} $fullWidth={fullWidth}>
+    <SelectContainer className={!!className ? className : ''} $fullWidth={fullWidth}>
       {label && (
-        <SelectLabel htmlFor={selectId} $required={required}>
+        <SelectLabel $required={required}>
           {label}
           {required && <span className="required" style={{ color: 'var(--error-500)' }}> *</span>}
         </SelectLabel>
@@ -200,7 +223,6 @@ const Select: React.FC<SelectProps> = ({
       <div ref={selectRef} style={{ position: 'relative' }}>
         <SelectTrigger
           ref={triggerRef}
-          id={selectId}
           $size={size}
           $disabled={disabled}
           $hasError={!!error}
@@ -256,8 +278,8 @@ const Select: React.FC<SelectProps> = ({
                   {filteredOptions.map((option, index) => (
                     <SelectOption
                       key={`${option.value}-${option.label}-${index}`}
-                      disabled={option.disabled}
-                      selected={option.value === selectedValue}
+                      $disabled={option.disabled}
+                      $selected={option.value === selectedValue}
                       onClick={() => handleSelect(option)}
                       role="option"
                       aria-selected={option.value === selectedValue}

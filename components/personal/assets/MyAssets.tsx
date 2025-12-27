@@ -30,8 +30,7 @@ import AssetDetailModal from "@/components/hr/asset/modals/AssetDetailModal";
 import CreateAssetRequestModal from "./modals/CreateAssetRequestModal";
 import MyAssetRequestsList from "./MyAssetRequestsList";
 import Pagination from "@/components/hr/asset/Pagination";
-
-const ITEMS_PER_PAGE = 10;
+import { ITEMS_PER_PAGE } from "@/constants/constants";
 
 const MyAssets: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"assets" | "requests">("assets");

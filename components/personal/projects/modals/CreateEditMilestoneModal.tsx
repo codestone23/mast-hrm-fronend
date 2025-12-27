@@ -21,6 +21,7 @@ import {
   MilestoneProject,
   MilestoneProjectCreateRequest,
 } from "@/services/project.service";
+import { MilestoneProjectStatus } from "@/constants/enums";
 
 interface CreateEditMilestoneModalProps {
   isOpen: boolean;
@@ -34,9 +35,9 @@ interface CreateEditMilestoneModalProps {
 }
 
 const statusOptions = [
-  { value: "PENDING", label: "Chờ bắt đầu" },
-  { value: "IN_PROGRESS", label: "Đang thực hiện" },
-  { value: "COMPLETED", label: "Hoàn thành" },
+  { value: MilestoneProjectStatus.PENDING, label: "Chờ bắt đầu" },
+  { value: MilestoneProjectStatus.IN_PROGRESS, label: "Đang thực hiện" },
+  { value: MilestoneProjectStatus.COMPLETED, label: "Hoàn thành" },
 ];
 
 const CreateEditMilestoneModal: React.FC<CreateEditMilestoneModalProps> = ({
@@ -54,7 +55,7 @@ const CreateEditMilestoneModal: React.FC<CreateEditMilestoneModalProps> = ({
     description: "",
     start_date: "",
     end_date: "",
-    status: "PENDING",
+    status: MilestoneProjectStatus.PENDING,
     progress: 0,
     order: 1,
   });
@@ -68,7 +69,7 @@ const CreateEditMilestoneModal: React.FC<CreateEditMilestoneModalProps> = ({
           description: milestone.description,
           start_date: milestone.start_date.split("T")[0],
           end_date: milestone.end_date.split("T")[0],
-          status: milestone.status,
+          status: milestone.status as MilestoneProjectStatus,
           progress: milestone.progress,
           order: milestone.order,
         });
@@ -82,7 +83,7 @@ const CreateEditMilestoneModal: React.FC<CreateEditMilestoneModalProps> = ({
           description: "",
           start_date: "",
           end_date: "",
-          status: "PENDING",
+          status: MilestoneProjectStatus.PENDING,
           progress: 0,
           order: nextOrder,
         });
@@ -141,7 +142,7 @@ const CreateEditMilestoneModal: React.FC<CreateEditMilestoneModalProps> = ({
       description: "",
       start_date: "",
       end_date: "",
-      status: "PENDING",
+      status: MilestoneProjectStatus.PENDING,
       progress: 0,
       order: 1,
     });
@@ -234,7 +235,7 @@ const CreateEditMilestoneModal: React.FC<CreateEditMilestoneModalProps> = ({
                   <Select
                     value={formData.status}
                     onChange={(value) =>
-                      setFormData({ ...formData, status: String(value) as "PENDING" | "IN_PROGRESS" | "COMPLETED" })
+                      setFormData({ ...formData, status: String(value) as MilestoneProjectStatus })
                     }
                     options={statusOptions}
                     fullWidth

@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Grid3X3, User, User as UserIcon, Lock, LogOut, Bell, Menu, X } from "lucide-react";
-import { ChangePasswordModal } from "@/components/common";
 import NotificationDropdown from "@/components/common/NotificationDropdown/NotificationDropdown";
 import {
   HeaderContainer,
@@ -32,6 +31,7 @@ import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
 import { useRouter } from "next/navigation";
 import CookieManager from "@/utils/cookies";
 import { useMobile } from "@/hooks/useMobile";
+import ChangePasswordModal from "@/components/authComponents/change-password-model/ChangePasswordModal";
 
 interface NavItem {
   id: string;

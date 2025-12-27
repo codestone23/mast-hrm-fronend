@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { Mail, ArrowLeft } from 'lucide-react';
 import {
   ForgotPasswordContainer,
@@ -12,16 +13,10 @@ import {
   Title,
   Subtitle,
   Form,
-  InputGroup,
-  InputLabel,
-  InputWrapper,
-  Input,
-  InputIcon,
-  SubmitButton,
   BackToLogin,
-  SuccessMessage,
   ErrorMessage
 } from './forgotPasswordStyle';
+import { Input, Button } from '@/components/common';
 import { authService } from '@/services/auth.service';
 import SuccessModal from '@/components/common/SuccessModal/SuccessModal';
 
@@ -30,55 +25,50 @@ interface ForgotPasswordProps {
   onEmailSent?: (email: string) => void;
 }
 
+interface ForgotPasswordFormData {
+  email: string;
+}
+
 const ForgotPasswordPage: React.FC<ForgotPasswordProps> = ({ onBackToLogin, onEmailSent }) => {
-  const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email) {
-      setError('Vui lòng nhập email của bạn');
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+    clearErrors
+  } = useForm<ForgotPasswordFormData>({
+    defaultValues: {
+      email: ''
+    },
+    mode: 'onChange'
+  });
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Email không hợp lệ');
-      return;
-    }
-
-    setIsLoading(true);
+  const onSubmit = async (data: ForgotPasswordFormData) => {
     setError('');
+    clearErrors();
 
     try {
-      await authService.forgotPassword({ email });
-      
+      await authService.forgotPassword({ email: data.email });
+      setSubmittedEmail(data.email);
       setShowSuccessModal(true);
+      reset();
     } catch {
       const errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
       setError(errorMessage);
-    } finally {
-      setIsLoading(false);
     }
-  };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-    if (error) setError('');
   };
 
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
     // Chuyển sang màn OTP nếu có callback
     if (onEmailSent) {
-      onEmailSent(email);
-    } else {
-      setEmail('');
+      onEmailSent(submittedEmail);
     }
+    setSubmittedEmail('');
   };
 
   return (
@@ -95,48 +85,40 @@ const ForgotPasswordPage: React.FC<ForgotPasswordProps> = ({ onBackToLogin, onEm
             Nhập email của bạn để nhận hướng dẫn đặt lại mật khẩu
           </Subtitle>
 
-          {false ? (
-            <div>
-              <SuccessMessage>
-                Email đã được gửi! Vui lòng kiểm tra hộp thư của bạn để đặt lại mật khẩu.
-              </SuccessMessage>
-              <BackToLogin as="button" type="button" onClick={onBackToLogin} style={{ marginTop: '1rem', display: 'block' }}>
-                <ArrowLeft size={16} style={{ marginRight: '0.5rem', display: 'inline' }} />
-                Quay lại đăng nhập
-              </BackToLogin>
-            </div>
-          ) : (
-            <Form onSubmit={handleSubmit}>
-              {error && <ErrorMessage>{error}</ErrorMessage>}
-              
-              <InputGroup>
-                <InputLabel htmlFor="email">Email</InputLabel>
-                <InputWrapper>
-                  <InputIcon>
-                    <Mail size={16} />
-                  </InputIcon>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="Nhập email của bạn"
-                    value={email}
-                    onChange={handleEmailChange}
-                    required
-                  />
-                </InputWrapper>
-              </InputGroup>
+          <Form onSubmit={handleSubmit(onSubmit)}>
+            {error && <ErrorMessage>{error}</ErrorMessage>}
+            
+            <Input
+              label="Email"
+              type="email"
+              placeholder="Nhập email của bạn"
+              {...register('email', {
+                required: 'Vui lòng nhập email của bạn',
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: 'Email không hợp lệ'
+                }
+              })}
+              icon={<Mail size={16} />}
+              required
+              disabled={isSubmitting}
+              error={errors.email?.message}
+            />
 
-              <SubmitButton type="submit" disabled={isLoading}>
-                {isLoading ? 'Đang gửi...' : 'Gửi email đặt lại mật khẩu'}
-              </SubmitButton>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              loading={isSubmitting}
+              style={{ width: '100%', marginTop: '1.5rem' }}
+            >
+              {isSubmitting ? 'Đang gửi...' : 'Gửi email đặt lại mật khẩu'}
+            </Button>
 
-              <BackToLogin as="button" type="button" onClick={onBackToLogin}>
-                <ArrowLeft size={16} style={{ marginRight: '0.5rem', display: 'inline' }} />
-                Quay lại đăng nhập
-              </BackToLogin>
-            </Form>
-          )}
+            <BackToLogin as="button" type="button" onClick={onBackToLogin} disabled={isSubmitting}>
+              <ArrowLeft size={16} style={{ marginRight: '0.5rem', display: 'inline' }} />
+              Quay lại đăng nhập
+            </BackToLogin>
+          </Form>
         </ForgotPasswordCard>
       </LeftSection>
 

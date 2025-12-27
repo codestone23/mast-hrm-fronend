@@ -58,7 +58,7 @@ export const CreateButton = styled.button`
   &:hover {
     background: #F57C00;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
+    box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3); 
   }
 `;
 

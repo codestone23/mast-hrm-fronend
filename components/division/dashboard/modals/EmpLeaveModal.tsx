@@ -22,27 +22,11 @@ interface EmployeeLeaveModalProps {
   entries?: LeaveEntryData[];
 }
 
-const SAMPLE_DATA = (n = 10) => {
-  return new Array(n).fill(null).map((_, i) => ({
-    user_id: i,
-    avatar: `https://i.pravatar.cc/100?img=${i}`,
-    name: "Nguyen Van A",
-    email: `employee${i}@company.com`,
-    position: "Designer",
-    leave_type: "Personal Leave",
-    reason: "Personal matters",
-    start_date: "2024-06-15",
-    end_date: "2024-06-15",
-    status: i % 4 === 0 ? "Rejected" : i % 3 === 0 ? "Approved" : "Pending",
-    duration: "4 hours",
-  }));
-};
-
 const EmployeeLeaveModal: React.FC<EmployeeLeaveModalProps> = ({
   isOpen,
   onClose,
   date,
-  entries = SAMPLE_DATA(10),
+  entries = [],
 }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Nhân viên nghỉ phép" size="xl">
@@ -50,7 +34,7 @@ const EmployeeLeaveModal: React.FC<EmployeeLeaveModalProps> = ({
         <DateLabel>{date}</DateLabel>
 
         <List>
-          {entries.map((e) => (
+          {entries.length > 0 && entries.map((e) => (
             <Row key={e.user_id}>
               <Avatar src={e.avatar && e.avatar.includes('https') ? e.avatar : `/images/background-login.png`} alt={e.name} />
               <Info>

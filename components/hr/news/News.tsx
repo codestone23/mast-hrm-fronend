@@ -32,8 +32,7 @@ import {
     NewsCardWithActions,
     ActionButtons,
 } from './hrNewsStyle';
-
-const ITEMS_PER_PAGE = 10;
+import { ITEMS_PER_PAGE } from '@/constants/constants';
 
 export default function HRNewsPage() {
     const queryClient = useQueryClient();

@@ -7,6 +7,7 @@ import { Modal, Button, Input } from "@/components/common";
 import { User as UserType, UpdateUserRequest } from "@/types/api";
 import userService from "@/services/user.service";
 import { useToast } from "@/hooks/useToast";
+import { FormContainer } from "./modalStyle";
 
 interface EditAccountFormData {
   name: string;
@@ -137,7 +138,7 @@ const EditAccountModal: React.FC<EditAccountModalProps> = ({
         </>
       }
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      <FormContainer>
         <Input
           label="Tên đầy đủ"
           {...register("name", {
@@ -175,7 +176,7 @@ const EditAccountModal: React.FC<EditAccountModalProps> = ({
           fullWidth
           disabled={isSubmitting || updateMutation.isPending}
         />
-      </div>
+      </FormContainer>
     </Modal>
   );
 };

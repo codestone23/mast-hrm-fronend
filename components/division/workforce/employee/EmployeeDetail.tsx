@@ -26,6 +26,7 @@ import SkillsTab from "@/components/personal/personal-info/SkillsTab";
 import PersonalInfoSidebar from "@/components/personal/personal-info/PersonalInfoSidebar";
 import TimeSheets from "./Tabs/TimeSheets";
 import { useMobile } from "@/hooks/useMobile";
+import ROUTERS from "@/config/router";
 
 interface EmployeeDetailProps {
   id?: string;
@@ -48,16 +49,7 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ id }) => {
   const [educations, setEducations] = useState<Education[]>([]);
 
   const handleBack = () => {
-    router.push("/division/workforce");
-  };
-
-  // Avatar handlers - disabled for admin view
-  const handleAvatarClick = () => {
-    // Disabled for admin
-  };
-
-  const handleAvatarChange = async () => {
-    // Disabled for admin
+    router.push(ROUTERS.DIVISION.WORKFORCE);
   };
 
   useEffect(() => {
@@ -80,8 +72,6 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ id }) => {
         data={data}
         avatarUrl={avatarUrl}
         isUploading={false}
-        onAvatarClick={handleAvatarClick}
-        onAvatarChange={handleAvatarChange}
         fileInputRef={fileInputRef}
         initPersonalInfo={data as any}
       />

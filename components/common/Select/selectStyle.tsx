@@ -109,6 +109,8 @@ export const SelectDropdown = styled.div.withConfig({
   top: ${({ $triggerRect }) => $triggerRect ? `${$triggerRect.bottom + 4}px` : 'auto'};
   left: ${({ $triggerRect }) => $triggerRect ? `${$triggerRect.left}px` : 'auto'};
   width: ${({ $triggerRect }) => $triggerRect ? `${$triggerRect.width}px` : 'auto'};
+  min-width: ${({ $triggerRect }) => $triggerRect ? `${$triggerRect.width}px` : '100px'};
+  max-width: ${({ $triggerRect }) => $triggerRect ? `${$triggerRect.width}px` : 'none'};
   z-index: 1002;
   background: white;
   border: 1px solid var(--border);
@@ -153,8 +155,8 @@ export const SelectOptionsContainer = styled.div`
 `;
 
 export const SelectOption = styled.div<{
-  disabled?: boolean;
-  selected?: boolean;
+  $disabled?: boolean;
+  $selected?: boolean;
 }>`
   display: flex;
   align-items: center;
@@ -164,19 +166,19 @@ export const SelectOption = styled.div<{
   font-size: 0.875rem;
   transition: background-color 0.2s ease;
   
-  ${({ selected }) => selected && css`
+  ${({ $selected }) => $selected && css`
     background-color: var(--primary-50);
     color: var(--primary-600);
     font-weight: 500;
   `}
   
-  ${({ disabled }) => disabled && css`
+  ${({ $disabled }) => $disabled && css`
     opacity: 0.5;
     cursor: not-allowed;
   `}
   
   &:hover:not([disabled]) {
-    background-color: ${({ selected }) => selected ? 'var(--primary-100)' : 'var(--gray-50)'};
+    background-color: ${({ $selected }) => $selected ? 'var(--primary-100)' : 'var(--gray-50)'};
   }
   
   &:first-child {

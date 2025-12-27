@@ -11,8 +11,7 @@ import Modal from "@/components/common/Modal/Modal";
 import ConfirmDeleteModal from "@/components/common/ConfirmDeleteModal/ConfirmDeleteModal";
 import Pagination from "@/components/common/Pagination/Pagination";
 import Select from "@/components/common/Select/Select";
-
-const ITEMS_PER_PAGE = 10;
+import { ITEMS_PER_PAGE } from "@/constants/constants";
 
 const PositionManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");

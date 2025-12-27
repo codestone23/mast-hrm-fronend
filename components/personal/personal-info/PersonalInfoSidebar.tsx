@@ -23,8 +23,8 @@ interface PersonalInfoSidebarProps {
   data?: UserProfileType;
   avatarUrl: string | null;
   isUploading: boolean;
-  onAvatarClick: () => void;
-  onAvatarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onAvatarClick?: () => void;
+  onAvatarChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   initPersonalInfo?: User;
 }
@@ -41,7 +41,7 @@ const PersonalInfoSidebar: React.FC<PersonalInfoSidebarProps> = ({
   return (
     <LeftSidebar>
       <UserProfile>
-        <UserAvatar onClick={onAvatarClick} style={{ cursor: 'pointer', position: 'relative' }}>
+        <UserAvatar onClick={() => onAvatarClick?.()} style={{ cursor: 'pointer', position: 'relative' }}>
           {avatarUrl && avatarUrl.includes('https') ? (
             <Image
               src={avatarUrl}
@@ -75,7 +75,7 @@ const PersonalInfoSidebar: React.FC<PersonalInfoSidebarProps> = ({
             ref={fileInputRef}
             type="file"
             accept="image/jpeg,image/jpg,image/png,image/webp"
-            onChange={onAvatarChange}
+            onChange={(e) => onAvatarChange?.(e)}
             style={{ display: 'none' }}
             disabled={isUploading}
           />

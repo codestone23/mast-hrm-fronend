@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import Modal from "@/components/common/Modal/Modal";
+import React, { useMemo, useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { Modal, Button } from "@/components/common";
 import Input from "@/components/common/Input/Input";
 import Select from "@/components/common/Select/Select";
 import { useDivisionCandidates } from "@/hooks/useDivisions";
+import { FormContainer } from "./modalStyle";
 
 interface AddMemberModalProps {
     isOpen: boolean;
@@ -13,14 +15,33 @@ interface AddMemberModalProps {
     onAdd: (userId: number) => Promise<void> | void;
 }
 
+interface AddMemberFormData {
+    search: string;
+    userId?: number;
+}
+
 const AddMemberModal: React.FC<AddMemberModalProps> = ({
     isOpen,
     divisionId,
     onClose,
     onAdd,
 }) => {
-    const [search, setSearch] = useState("");
-    const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+    const {
+        register,
+        handleSubmit,
+        control,
+        watch,
+        reset,
+        formState: { errors },
+    } = useForm<AddMemberFormData>({
+        defaultValues: {
+            search: "",
+            userId: undefined,
+        },
+        mode: "onChange",
+    });
+
+    const search = watch("search");
 
     const candidatesQuery = useDivisionCandidates(divisionId, search);
     const options = useMemo(
@@ -34,41 +55,31 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
         [candidatesQuery.data]
     );
 
+    useEffect(() => {
+        if (!isOpen) {
+            reset();
+        }
+    }, [isOpen, reset]);
+
+    const onSubmit = async (data: AddMemberFormData) => {
+        if (data.userId) {
+            await onAdd(data.userId);
+        }
+    };
+
     const footer = (
         <>
-            <button
-                type="button"
-                onClick={onClose}
-                style={{
-                    padding: "10px 16px",
-                    border: "1px solid var(--border)",
-                    borderRadius: 8,
-                    background: "white",
-                    color: "var(--text-primary)",
-                    cursor: "pointer",
-                }}
-            >
+            <Button type="button" variant="ghost" onClick={onClose}>
                 Hủy
-            </button>
-            <button
-                disabled={!selectedUserId}
-                onClick={async () => {
-                    if (selectedUserId) {
-                        await onAdd(selectedUserId);
-                        setSelectedUserId(null);
-                    }
-                }}
-                style={{
-                    padding: "10px 16px",
-                    border: "none",
-                    borderRadius: 8,
-                    background: "var(--primary-500)",
-                    color: "white",
-                    cursor: "pointer",
-                }}
+            </Button>
+            <Button
+                type="button"
+                variant="primary"
+                onClick={handleSubmit(onSubmit)}
+                disabled={!watch("userId")}
             >
                 Thêm
-            </button>
+            </Button>
         </>
     );
 
@@ -80,21 +91,32 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
             footer={footer}
             size="md"
         >
-            <div style={{ display: "grid", gap: 12 }}>
+            <FormContainer>
                 <Input
                     placeholder="Tìm theo tên hoặc email"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    {...register("search")}
+                    fullWidth
                 />
-                <Select
-                    options={options}
-                    value={selectedUserId ?? ""}
-                    onChange={(v) => setSelectedUserId(Number(v))}
-                    hasNextPage={!!candidatesQuery.hasNextPage}
-                    isFetchingNextPage={!!candidatesQuery.isFetchingNextPage}
-                    fetchNextPage={() => candidatesQuery.fetchNextPage()}
+                <Controller
+                    name="userId"
+                    control={control}
+                    rules={{
+                        required: "Vui lòng chọn người dùng",
+                    }}
+                    render={({ field }) => (
+                        <Select
+                            options={options}
+                            value={field.value ?? ""}
+                            onChange={(v) => field.onChange(v ? Number(v) : undefined)}
+                            hasNextPage={!!candidatesQuery.hasNextPage}
+                            isFetchingNextPage={!!candidatesQuery.isFetchingNextPage}
+                            fetchNextPage={() => candidatesQuery.fetchNextPage()}
+                            error={errors.userId?.message}
+                            fullWidth
+                        />
+                    )}
                 />
-            </div>
+            </FormContainer>
         </Modal>
     );
 };

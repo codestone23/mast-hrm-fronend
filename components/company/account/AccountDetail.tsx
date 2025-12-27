@@ -10,6 +10,10 @@ import {
   TabItem,
   TabContent,
   BackButton,
+  DetailHeaderWrapper,
+  DetailHeaderContentWrapper,
+  DetailHeaderTitleGroup,
+  DetailPageTitle,
 } from "./accountDetailStyle";
 import { useAccountDetail } from "./useAccountDetail";
 import {
@@ -17,7 +21,7 @@ import {
   Experience,
   Education,
 } from "@/services/profile.service";
-import EditAccountInfoModal from "./EditAccountInfoModal";
+import EditAccountInfoModal from "./modals/EditAccountInfoModal";
 import BasicInfoTab from "@/components/personal/personal-info/BasicInfoTab";
 import SkillsTab from "@/components/personal/personal-info/SkillsTab";
 import PersonalInfoSidebar from "@/components/personal/personal-info/PersonalInfoSidebar";
@@ -27,17 +31,18 @@ interface AccountDetailProps {
   accountId: string;
 }
 
+const enum Tab {
+  BASIC = "basic",
+  SKILLS = "skills",
+}
+
 const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("basic");
+  const [activeTab, setActiveTab] = useState(Tab.BASIC);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const { data, refetch } = useAccountDetail(accountId);
-
-  // Avatar states
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-
-  // Modal states
   const [isEditPersonalModalOpen, setIsEditPersonalModalOpen] =
     useState(false);
 
@@ -54,27 +59,22 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
     setIsEditPersonalModalOpen(true);
   };
 
-  // Avatar handlers - disabled for admin view
-  const handleAvatarClick = () => {
-    // Disabled for admin
-  };
-
-  const handleAvatarChange = async () => {
-    // Disabled for admin
-  };
-
   useEffect(() => {
-    if (data) {
-      setSkills(data?.user_skills || []);
-      setExperiences(data.experience || []);
-      setEducations(
-        (data.education || []).map((edu) => ({
-          ...edu,
-          description: (edu as { description?: string }).description || "",
-        }))
-      );
-      setAvatarUrl(data.user_information?.avatar && data.user_information.avatar.includes('https') ? data.user_information.avatar : null); 
-    }
+    if (!data) return;
+
+    setSkills(data.user_skills || []);
+    setExperiences(data.experience || []);
+    setEducations(
+      (data.education || []).map((edu) => ({
+        ...edu,
+        description: (edu as { description?: string }).description || "",
+      }))
+    );
+    setAvatarUrl(
+      data.user_information?.avatar?.includes('https') 
+        ? data.user_information.avatar 
+        : null
+    );
   }, [data]);
 
   return (
@@ -83,59 +83,42 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
         data={data}
         avatarUrl={avatarUrl}
         isUploading={false}
-        onAvatarClick={handleAvatarClick}
-        onAvatarChange={handleAvatarChange}
         fileInputRef={fileInputRef}
       />
 
       <MainContent>
-        <div
-          style={{
-            padding: "20px",
-            borderBottom: "1px solid var(--border-color)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <DetailHeaderWrapper>
+          <DetailHeaderContentWrapper>
+            <DetailHeaderTitleGroup>
               <BackButton onClick={handleBack}>
                 <ArrowLeft size={20} />
               </BackButton>
-              <h1
-                style={{ margin: 0, fontSize: "24px", fontWeight: "600" }}
-              >
-                Chi tiết tài khoản
-              </h1>
-            </div>
-          </div>
-        </div>
+              <DetailPageTitle>Chi tiết tài khoản</DetailPageTitle>
+            </DetailHeaderTitleGroup>
+          </DetailHeaderContentWrapper>
+        </DetailHeaderWrapper>
 
         <ContentTabs>
           <TabItem
-            $active={activeTab === "basic"}
-            onClick={() => setActiveTab("basic")}
+            $active={activeTab === Tab.BASIC}
+            onClick={() => setActiveTab(Tab.BASIC)}
           >
             THÔNG TIN CƠ BẢN
           </TabItem>
           <TabItem
-            $active={activeTab === "skills"}
-            onClick={() => setActiveTab("skills")}
+            $active={activeTab === Tab.SKILLS}
+            onClick={() => setActiveTab(Tab.SKILLS)}
           >
             THÔNG TIN CÔNG VIỆC
           </TabItem>
         </ContentTabs>
 
         <TabContent>
-          {activeTab === "basic" && (
+          {activeTab === Tab.BASIC && (
             <BasicInfoTab data={data} onEdit={handleEditPersonalInfo} />
           )}
 
-          {activeTab === "skills" && (
+          {activeTab === Tab.SKILLS && (
             <SkillsTab
               skills={skills}
               experiences={experiences}
@@ -159,8 +142,8 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ accountId }) => {
         initialData={
           data?.user_information
             ? {
-                name: data?.user_information?.name || "",
-                email: data?.email || "",
+                name: data.user_information.name || "",
+                email: data.email || "",
               }
             : undefined
         }

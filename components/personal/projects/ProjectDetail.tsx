@@ -36,32 +36,33 @@ import {
 } from './projectDetailStyle';
 import projectService from '@/services/project.service';
 import ROUTERS from "@/config/router";
-import { ROLE_NAMES } from "@/constants/enums";
+import { ProjectIndustry, ProjectStatus, ProjectType, ROLE_NAMES } from "@/constants/enums";
 import Milestones from './Milestones';
+import { getRoleName } from '@/utils/help';
 
 interface ProjectDetailProps {
   projectId: string;
 }
 
 const statusLabels: Record<string, string> = {
-  'OPEN': 'Mở',
-  'IN_PROGRESS': 'Đang thực hiện',
-  'PENDING': 'Tạm dừng',
-  'CLOSED': 'Đã đóng'
+  [ProjectStatus.OPEN]: 'Mở',
+  [ProjectStatus.IN_PROGRESS]: 'Đang thực hiện',
+  [ProjectStatus.PENDING]: 'Tạm dừng',
+  [ProjectStatus.CLOSED]: 'Đã đóng'
 };
 
 const projectTypeLabels: Record<string, string> = {
-  'CUSTOMER': 'Khách hàng',
-  'IN_HOUSE': 'Nội bộ',
-  'START_UP': 'Khởi nghiệp',
-  'INTERNAL': 'Nội bộ'
+  [ProjectType.CUSTOMER]: 'Khách hàng',
+  [ProjectType.IN_HOUSE]: 'Nội bộ',
+  [ProjectType.START_UP]: 'Khởi nghiệp',
+  [ProjectType.INTERNAL]: 'Nội bộ'
 };
 
 const industryLabels: Record<string, string> = {
-  'IT': 'Công nghệ thông tin',
-  'FINANCE': 'Tài chính',
-  'MANUFACTURING': 'Sản xuất',
-  'OTHER': 'Khác'
+  [ProjectIndustry.IT]: 'Công nghệ thông tin',
+  [ProjectIndustry.FINANCE]: 'Tài chính',
+  [ProjectIndustry.MANUFACTURING]: 'Sản xuất',
+  [ProjectIndustry.OTHER]: 'Khác'
 };
 
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
@@ -84,24 +85,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
     }
   ];
 
-  const getRoleName = (role: ROLE_NAMES) => {
-    switch (role) {
-      case ROLE_NAMES.EMPLOYEE:
-        return 'Nhân viên';
-      case ROLE_NAMES.TEAM_LEADER:
-        return 'Trưởng nhóm';
-      case ROLE_NAMES.DIVISION_HEAD:
-        return 'Trưởng phòng';
-      case ROLE_NAMES.PROJECT_MANAGER:
-        return 'Trưởng dự án';
-      case ROLE_NAMES.HR_MANAGER:
-        return 'Trưởng HR';
-      case ROLE_NAMES.ADMIN:
-        return 'Quản trị viên';
-      default:
-        return role;
-    }
-  };
 
   if (isLoading) {
     return (

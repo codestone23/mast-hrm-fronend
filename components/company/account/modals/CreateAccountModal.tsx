@@ -1,12 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { Modal, Button, Input } from "@/components/common";
+import { FormContainer, FormGrid } from "./modalStyle";
 
 interface CreateAccountData {
   name: string;
   email: string;
   password: string;
+}
+
+interface CreateAccountFormData extends CreateAccountData {
+  confirmPassword: string;
 }
 
 interface CreateAccountModalProps {
@@ -22,69 +28,36 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   onSave,
   isLoading = false,
 }) => {
-  const [formData, setFormData] = useState<CreateAccountData & { confirmPassword: string }>({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+  } = useForm<CreateAccountFormData>({
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    mode: "onChange",
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof CreateAccountData | "confirmPassword", string>>>({});
+  const password = watch("password");
 
   useEffect(() => {
     if (!isOpen) {
-      setFormData({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      });
-      setErrors({});
+      reset();
     }
-  }, [isOpen]);
+  }, [isOpen, reset]);
 
-  const validate = (): boolean => {
-    const newErrors: Partial<Record<keyof CreateAccountData | "confirmPassword", string>> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Tên là bắt buộc";
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email là bắt buộc";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email không hợp lệ";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Mật khẩu là bắt buộc";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự";
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = () => {
-    if (validate()) {
-      onSave({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-      });
-    }
-  };
-
-  const handleChange = (field: keyof typeof formData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field as keyof typeof errors]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
+  const onSubmit = (data: CreateAccountFormData) => {
+    onSave({
+      name: data.name,
+      email: data.email,
+      password: data.password,
+    });
   };
 
   return (
@@ -107,7 +80,7 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
           <Button
             type="button"
             variant="primary"
-            onClick={handleSubmit}
+            onClick={handleSubmit(onSubmit)}
             loading={isLoading}
             disabled={isLoading}
           >
@@ -116,54 +89,70 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
         </>
       }
     >
-      <div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
-            <Input
-              label="Tên đầy đủ"
-              value={formData.name}
-              onChange={(e) => handleChange("name", e.target.value)}
-              placeholder="Nhập tên đầy đủ"
-              error={errors.name}
-              required
-              fullWidth
-            />
-
-            <Input
-              label="Email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => handleChange("email", e.target.value)}
-              placeholder="Nhập email"
-              error={errors.email}
-              required
-              fullWidth
-            />
-          </div>
-
+      <FormContainer>
+        <FormGrid>
           <Input
-            label="Mật khẩu"
-            type="password"
-            value={formData.password}
-            onChange={(e) => handleChange("password", e.target.value)}
-            placeholder="Nhập mật khẩu"
-            error={errors.password}
+            label="Tên đầy đủ"
+            {...register("name", {
+              required: "Tên là bắt buộc",
+            })}
+            placeholder="Nhập tên đầy đủ"
+            error={errors.name?.message}
             required
             fullWidth
+            disabled={isLoading}
           />
 
           <Input
-            label="Xác nhận mật khẩu"
-            type="password"
-            value={formData.confirmPassword}
-            onChange={(e) => handleChange("confirmPassword", e.target.value)}
-            placeholder="Nhập lại mật khẩu"
-            error={errors.confirmPassword}
+            label="Email"
+            type="email"
+            {...register("email", {
+              required: "Email là bắt buộc",
+              pattern: {
+                value: /\S+@\S+\.\S+/,
+                message: "Email không hợp lệ",
+              },
+            })}
+            placeholder="Nhập email"
+            error={errors.email?.message}
             required
             fullWidth
+            disabled={isLoading}
           />
-        </div>
-      </div>
+        </FormGrid>
+
+        <Input
+          label="Mật khẩu"
+          type="password"
+          {...register("password", {
+            required: "Mật khẩu là bắt buộc",
+            minLength: {
+              value: 6,
+              message: "Mật khẩu phải có ít nhất 6 ký tự",
+            },
+          })}
+          placeholder="Nhập mật khẩu"
+          error={errors.password?.message}
+          required
+          fullWidth
+          disabled={isLoading}
+        />
+
+        <Input
+          label="Xác nhận mật khẩu"
+          type="password"
+          {...register("confirmPassword", {
+            required: "Vui lòng xác nhận mật khẩu",
+            validate: (value) =>
+              value === password || "Mật khẩu xác nhận không khớp",
+          })}
+          placeholder="Nhập lại mật khẩu"
+          error={errors.confirmPassword?.message}
+          required
+          fullWidth
+          disabled={isLoading}
+        />
+      </FormContainer>
     </Modal>
   );
 };

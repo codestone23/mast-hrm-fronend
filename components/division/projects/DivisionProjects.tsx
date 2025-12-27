@@ -33,18 +33,22 @@ import {
   EmptyState,
   EmptyStateIcon,
   EmptyStateTitle,
-  EmptyStateDescription
-} from "@/components/personal/projects/projectStyle";
+  EmptyStateDescription,
+  SearchContainer,
+  CreateButton,
+  PaginationWrapper,
+} from "./divisionProjectsStyle";
 import projectService, { Project } from "@/services/project.service";
 import { useProjectMutation } from "@/hooks/useProjectMutation";
 import CreateProjectModal from "./modals/CreateProjectModal";
 import ROUTERS from "@/config/router";
+import { ProjectStatus } from "@/constants/enums";
 
 const statusLabels: Record<string, string> = {
-  'OPEN': 'Mở',
-  'IN_PROGRESS': 'Đang thực hiện',
-  'PENDING': 'Tạm dừng',
-  'CLOSED': 'Đã đóng'
+  [ProjectStatus.OPEN]: 'Mở',
+  [ProjectStatus.IN_PROGRESS]: 'Đang thực hiện',
+  [ProjectStatus.PENDING]: 'Tạm dừng',
+  [ProjectStatus.CLOSED]: 'Đã đóng'
 };
 
 const DivisionProjects: React.FC = () => {
@@ -54,8 +58,14 @@ const DivisionProjects: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+
+  enum ModalType {
+    NONE = "NONE",
+    CREATE = "CREATE",
+    DELETE = "DELETE",
+  }
+
+  const [openModal, setOpenModal] = useState<ModalType>(ModalType.NONE);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
   const { deleteProject, isDeleting } = useProjectMutation();
@@ -82,7 +92,7 @@ const DivisionProjects: React.FC = () => {
   const pagination = projectsResponse?.pagination;
 
   const handleCreateProject = () => {
-    setIsCreateModalOpen(true);
+    setOpenModal(ModalType.CREATE);
   };
 
   const handleViewDetail = (projectId: number) => {
@@ -91,14 +101,14 @@ const DivisionProjects: React.FC = () => {
 
   const handleDeleteProject = (project: Project) => {
     setProjectToDelete(project);
-    setDeleteModalOpen(true);
+    setOpenModal(ModalType.DELETE);
   };
 
   const confirmDelete = () => {
     if (projectToDelete) {
       deleteProject(projectToDelete.id.toString(), {
         onSuccess: () => {
-          setDeleteModalOpen(false);
+          setOpenModal(ModalType.NONE);
           setProjectToDelete(null);
         },
       });
@@ -106,7 +116,12 @@ const DivisionProjects: React.FC = () => {
   };
 
   const handleCreateSuccess = () => {
-    setIsCreateModalOpen(false);
+    setOpenModal(ModalType.NONE);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(ModalType.NONE);
+    setProjectToDelete(null);
   };
 
   if (!selectedDivisionId) {
@@ -171,7 +186,7 @@ const DivisionProjects: React.FC = () => {
           </Button>
         </ProjectsHeader>
         
-        <div style={{ marginBottom: '1.5rem' }}>
+        <SearchContainer>
           <Input
             placeholder="Tìm kiếm theo tên dự án..."
             value={searchTerm}
@@ -179,7 +194,7 @@ const DivisionProjects: React.FC = () => {
             icon={<Search size={16} />}
             iconPosition="left"
           />
-        </div>
+        </SearchContainer>
         
         <EmptyState>
           <EmptyStateIcon>
@@ -192,8 +207,8 @@ const DivisionProjects: React.FC = () => {
         </EmptyState>
 
         <CreateProjectModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
+          isOpen={openModal === ModalType.CREATE}
+          onClose={handleCloseModal}
           onSave={handleCreateSuccess}
         />
       </ProjectsContainer>
@@ -209,17 +224,19 @@ const DivisionProjects: React.FC = () => {
             {pagination?.total || projects.length} dự án
           </ProjectsSubtitle>
         </div>
-        <Button 
-          variant="primary" 
-          onClick={handleCreateProject}
-          style={{ width: isMobile ? "100%" : "auto", marginTop: isMobile ? "12px" : "0" }}
-        >
-          <Plus size={isMobile ? 14 : 16} />
-          Tạo dự án
-        </Button>
+        <CreateButton $isMobile={isMobile}>
+          <Button 
+            variant="primary" 
+            onClick={handleCreateProject}
+            style={{ width: isMobile ? "100%" : "auto" }}
+          >
+            <Plus size={isMobile ? 14 : 16} />
+            Tạo dự án
+          </Button>
+        </CreateButton>
       </ProjectsHeader>
 
-      <div style={{ marginBottom: '1.5rem' }}>
+      <SearchContainer>
         <Input
           placeholder="Tìm kiếm theo tên dự án..."
           value={searchTerm}
@@ -227,7 +244,7 @@ const DivisionProjects: React.FC = () => {
           icon={<Search size={16} />}
           iconPosition="left"
         />
-      </div>
+      </SearchContainer>
 
       {isLoading ? (
         <Loading />
@@ -277,7 +294,7 @@ const DivisionProjects: React.FC = () => {
 
 
       {pagination && pagination.total_pages > 1 && (
-        <div style={{ marginTop: '2rem' }}>
+        <PaginationWrapper>
           <Pagination
             currentPage={page}
             totalPages={pagination.total_pages}
@@ -286,18 +303,18 @@ const DivisionProjects: React.FC = () => {
             onPageChange={setPage}
             showInfo={true}
           />
-        </div>
+        </PaginationWrapper>
       )}
 
       <CreateProjectModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        isOpen={openModal === ModalType.CREATE}
+        onClose={handleCloseModal}
         onSave={handleCreateSuccess}
       />
 
       <ConfirmDeleteModal
-        isOpen={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
+        isOpen={openModal === ModalType.DELETE}
+        onClose={handleCloseModal}
         onConfirm={confirmDelete}
         title="Xóa dự án"
         message={`Bạn có chắc chắn muốn xóa dự án "${projectToDelete?.name}"?`}

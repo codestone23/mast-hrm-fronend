@@ -146,3 +146,26 @@ export const CardHeaderActions = styled.div<{ $isMobile?: boolean }>`
 export const ResponsiveButton = styled.button<{ $isMobile?: boolean }>`
   width: ${props => props.$isMobile ? '100%' : 'auto'};
 `;
+
+export const DetailHeaderWrapper = styled.div`
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+`;
+
+export const DetailHeaderContentWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+export const DetailHeaderTitleGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+`;
+
+export const DetailPageTitle = styled.h1`
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+`;

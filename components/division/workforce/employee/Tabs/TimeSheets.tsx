@@ -26,6 +26,7 @@ import {
 } from "./timeSheetStyle";
 
 import { useTimeSheet } from "./useTimeSheet";
+import { WEEK_DAYS } from "@/constants/constants";
 
 interface ProcessedTimeSheetData {
   [date: string]: {
@@ -68,16 +69,6 @@ const TimeSheets: React.FC<TimeSheetsProps> = ({ employeeId }) => {
       end_date: endDate,
     });
   }, [currentDate, setPayload]);
-
-  const weekDays = [
-    "Thứ 2",
-    "Thứ 3",
-    "Thứ 4",
-    "Thứ 5",
-    "Thứ 6",
-    "Thứ 7",
-    "Chủ nhật",
-  ];
 
   const legendItems = [
     { color: "#4CAF50", label: "Đủ công", status: "work" },
@@ -215,7 +206,7 @@ const TimeSheets: React.FC<TimeSheetsProps> = ({ employeeId }) => {
         </Legend>
 
         <CalendarHeader>
-          {weekDays.map((day) => (
+          {WEEK_DAYS.map((day) => (
             <WeekDay key={day}>{day}</WeekDay>
           ))}
         </CalendarHeader>

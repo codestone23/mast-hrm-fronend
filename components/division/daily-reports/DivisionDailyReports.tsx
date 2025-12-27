@@ -23,12 +23,23 @@ import {
   FilterItemSmall,
   FilterContainer,
   StatsRow,
-} from "@/components/company/account/accountStyle";
+  StatusBadge,
+  TableCellText,
+  TableCellTitle,
+  TableCellHours,
+  ActionsContainer,
+  CheckboxInput,
+  SelectedReportsBanner,
+  SelectedCountText,
+  SelectedActionsContainer,
+  SelectedActionButton,
+  PaginationWrapper,
+  StatsText,
+} from "./dailyReportsStyle";
 import projectService from "@/services/project.service";
 import { useDivisionMembers } from "@/hooks/useDivisionWorkforce";
 import RejectDailyReportModal from "./modals/RejectDailyReportModal";
-
-const ITEMS_PER_PAGE = 10;
+import { ITEMS_PER_PAGE } from "@/constants/constants";
 
 const DivisionDailyReports: React.FC = () => {
   const isMobile = useMobile();
@@ -73,13 +84,13 @@ const DivisionDailyReports: React.FC = () => {
     enabled: !!selectedDivisionId,
   });
 
-  const reports = data?.data || [];
-  const pagination = data?.pagination || {
+  const reports = useMemo(() => data?.data || [], [data?.data]);
+  const pagination = useMemo(() => data?.pagination || {
     total: 0,
     current_page: 1,
     total_pages: 1,
     limit: ITEMS_PER_PAGE,
-  };
+  }, [data?.pagination]);
 
   // Fetch projects for filter
   const { data: projectsData } = useQuery({
@@ -88,7 +99,7 @@ const DivisionDailyReports: React.FC = () => {
     enabled: !!selectedDivisionId,
   });
 
-  const projects = projectsData?.data || [];
+  const projects = useMemo(() => projectsData?.data || [], [projectsData?.data]);
   const projectOptions = useMemo(
     () => [
       { value: "", label: "Tất cả dự án" },
@@ -109,7 +120,7 @@ const DivisionDailyReports: React.FC = () => {
     {}
   );
 
-  const members = membersData?.data || [];
+  const members = useMemo(() => membersData?.data || [], [membersData?.data]);
   const userOptions = useMemo(
     () => [
       { value: "", label: "Tất cả người tạo" },
@@ -183,9 +194,9 @@ const DivisionDailyReports: React.FC = () => {
     },
   });
 
-  const handleApprove = (reportId: number) => {
+  const handleApprove = useCallback((reportId: number) => {
     approveMutation.mutate(reportId);
-  };
+  }, [approveMutation]);
 
   const handleReject = (reportId: number) => {
     setSelectedReportIds(new Set([reportId]));
@@ -266,19 +277,9 @@ const DivisionDailyReports: React.FC = () => {
     const config = statusConfig[status] || statusConfig.PENDING;
 
     return (
-      <span
-        style={{
-          display: "inline-block",
-          padding: "4px 10px",
-          borderRadius: "12px",
-          fontSize: "12px",
-          fontWeight: 500,
-          backgroundColor: `${config.color}20`,
-          color: config.color,
-        }}
-      >
+      <StatusBadge $color={config.color}>
         {config.label}
-      </span>
+      </StatusBadge>
     );
   };
 
@@ -287,7 +288,7 @@ const DivisionDailyReports: React.FC = () => {
       {
         key: "select",
         label: (
-          <input
+          <CheckboxInput
             type="checkbox"
             checked={
               (() => {
@@ -298,22 +299,20 @@ const DivisionDailyReports: React.FC = () => {
               })()
             }
             onChange={toggleSelectAll}
-            style={{ cursor: "pointer" }}
           />
         ),
         width: "50px",
         align: "center",
         render: (_, row) => {
           if (row.status !== DailyReportStatus.PENDING) {
-            return null; // Không hiển thị checkbox cho report không phải PENDING
+            return null; 
           }
           return (
-            <input
+            <CheckboxInput
               type="checkbox"
               checked={selectedReportIds.has(row.id)}
               onChange={() => toggleSelectReport(row.id)}
               onClick={(e) => e.stopPropagation()}
-              style={{ cursor: "pointer" }}
             />
           );
         },
@@ -329,9 +328,9 @@ const DivisionDailyReports: React.FC = () => {
         label: "Người tạo",
         width: "150px",
         render: (_, row) => (
-          <span style={{ fontSize: "14px", color: "#6b7280" }}>
+          <TableCellText>
             {row.user.user_information.name}
-          </span>
+          </TableCellText>
         ),
       },
       {
@@ -339,7 +338,7 @@ const DivisionDailyReports: React.FC = () => {
         label: "Tiêu đề",
         width: "2fr",
         render: (_, row) => (
-          <div style={{ fontWeight: 500, color: "#111827" }}>{row.title}</div>
+          <TableCellTitle>{row.title}</TableCellTitle>
         ),
       },
       {
@@ -347,9 +346,9 @@ const DivisionDailyReports: React.FC = () => {
         label: "Dự án",
         width: "150px",
         render: (_, row) => (
-          <span style={{ fontSize: "14px", color: "#6b7280" }}>
+          <TableCellText>
             {row.project.name}
-          </span>
+          </TableCellText>
         ),
       },
       {
@@ -358,7 +357,7 @@ const DivisionDailyReports: React.FC = () => {
         width: "100px",
         align: "center",
         render: (_, row) => (
-          <span style={{ fontWeight: 500 }}>{row.actual_time}h</span>
+          <TableCellHours>{row.actual_time}h</TableCellHours>
         ),
       },
       {
@@ -374,7 +373,7 @@ const DivisionDailyReports: React.FC = () => {
         width: "200px",
         align: "center",
         render: (_, row) => (
-          <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+          <ActionsContainer>
             {row.status === DailyReportStatus.PENDING && (
               <>
                 <Button
@@ -403,7 +402,7 @@ const DivisionDailyReports: React.FC = () => {
                 </Button>
               </>
             )}
-          </div>
+          </ActionsContainer>
         ),
       },
     ],
@@ -484,52 +483,45 @@ const DivisionDailyReports: React.FC = () => {
               </FilterRow>
               {selectedReportIds.size > 0 && (
                 <FilterRow $isMobile={isMobile}>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "8px",
-                      alignItems: "center",
-                      padding: isMobile ? "10px" : "12px",
-                      backgroundColor: "#f0f9ff",
-                      borderRadius: "8px",
-                      flexDirection: isMobile ? "column" : "row",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <span style={{ fontSize: isMobile ? "13px" : "14px", fontWeight: 500, width: isMobile ? "100%" : "auto" }}>
+                  <SelectedReportsBanner $isMobile={isMobile}>
+                    <SelectedCountText $isMobile={isMobile}>
                       Đã chọn: {selectedReportIds.size} báo cáo
-                    </span>
-                    <div style={{ display: "flex", gap: "8px", width: isMobile ? "100%" : "auto" }}>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                        icon={<CheckCheck size={isMobile ? 14 : 16} />}
-                      onClick={handleApproveAll}
-                      disabled={approveAllMutation.isPending}
-                        style={{ flex: isMobile ? 1 : "auto" }}
-                    >
-                      Duyệt tất cả
-                    </Button>
-                    <Button
-                      variant="error"
-                      size="sm"
-                        icon={<X size={isMobile ? 14 : 16} />}
-                      onClick={handleRejectAll}
-                      disabled={rejectAllMutation.isPending}
-                        style={{ flex: isMobile ? 1 : "auto" }}
-                    >
-                      Từ chối tất cả
-                    </Button>
-                    </div>
-                  </div>
+                    </SelectedCountText>
+                    <SelectedActionsContainer $isMobile={isMobile}>
+                      <SelectedActionButton $isMobile={isMobile}>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          icon={<CheckCheck size={isMobile ? 14 : 16} />}
+                          onClick={handleApproveAll}
+                          disabled={approveAllMutation.isPending}
+                          style={{ width: "100%" }}
+                        >
+                          Duyệt tất cả
+                        </Button>
+                      </SelectedActionButton>
+                      <SelectedActionButton $isMobile={isMobile}>
+                        <Button
+                          variant="error"
+                          size="sm"
+                          icon={<X size={isMobile ? 14 : 16} />}
+                          onClick={handleRejectAll}
+                          disabled={rejectAllMutation.isPending}
+                          style={{ width: "100%" }}
+                        >
+                          Từ chối tất cả
+                        </Button>
+                      </SelectedActionButton>
+                    </SelectedActionsContainer>
+                  </SelectedReportsBanner>
                 </FilterRow>
               )}
               <StatsRow>
                 <span>
                   Tổng số:{" "}
-                  <strong style={{ color: "var(--text-primary)" }}>
+                  <StatsText>
                     {pagination.total || reports.length}
-                  </strong>
+                  </StatsText>
                 </span>
               </StatsRow>
             </FilterContainer>
@@ -557,7 +549,7 @@ const DivisionDailyReports: React.FC = () => {
             />
 
             {pagination.total_pages > 1 && (
-              <div style={{ marginTop: "16px" }}>
+              <PaginationWrapper>
                 <Pagination
                   currentPage={currentPage}
                   totalPages={pagination.total_pages}
@@ -566,7 +558,7 @@ const DivisionDailyReports: React.FC = () => {
                   onPageChange={setCurrentPage}
                   showInfo={true}
                 />
-              </div>
+              </PaginationWrapper>
             )}
           </Card>
         </DashboardCol>

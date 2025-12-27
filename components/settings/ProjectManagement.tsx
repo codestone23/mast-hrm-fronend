@@ -16,8 +16,8 @@ import Pagination from "@/components/common/Pagination/Pagination";
 import TextArea from "@/components/common/TextArea/TextArea";
 import DatePicker from "@/components/common/DatePicker/DatePicker";
 import { ProjectAccessType } from "@/constants/enums";
+import { ITEMS_PER_PAGE } from "@/constants/constants";
 
-const ITEMS_PER_PAGE = 10;
 const ProjectManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");

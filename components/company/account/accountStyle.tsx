@@ -438,3 +438,111 @@ export const ActionMenuDivider = styled.div`
   background: var(--border-color);
   margin: 4px 0;
 `;
+
+// Table cell components
+export const UserInfoCell = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+export const UserAvatarCell = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e0e7ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6366f1;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+export const UserInfoText = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const UserNameText = styled.div`
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 2px;
+`;
+
+export const UserEmailText = styled.div`
+  font-size: 12px;
+  color: #6b7280;
+`;
+
+export const RoleBadgeContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+`;
+
+export const RoleBadge = styled.span`
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: #e0e7ff;
+  color: #6366f1;
+`;
+
+export const EmptyRoleText = styled.span`
+  color: #6b7280;
+  font-size: 14px;
+`;
+
+export const FaceRegistrationBadge = styled.span<{ $isRegistered: boolean }>`
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: ${props => props.$isRegistered ? '#10b98120' : '#ef444420'};
+  color: ${props => props.$isRegistered ? '#10b981' : '#ef4444'};
+`;
+
+export const StatusToggle = styled.div<{ $isActive: boolean; $isLoading: boolean }>`
+  position: relative;
+  width: 48px;
+  height: 24px;
+  border-radius: 12px;
+  background-color: ${props => props.$isActive ? '#10b981' : '#d1d5db'};
+  cursor: ${props => props.$isLoading ? 'not-allowed' : 'pointer'};
+  transition: background-color 0.2s;
+  opacity: ${props => props.$isLoading ? 0.6 : 1};
+`;
+
+export const StatusToggleThumb = styled.div<{ $isActive: boolean }>`
+  position: absolute;
+  top: 2px;
+  left: ${props => props.$isActive ? '26px' : '2px'};
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  transition: left 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+`;
+
+export const StatsText = styled.span`
+  font-size: 14px;
+  color: var(--text-secondary);
+`;
+
+export const StatsValue = styled.strong<{ $color?: string }>`
+  color: ${props => props.$color || 'var(--text-primary)'};
+`;
+
+export const PaginationWrapper = styled.div`
+  margin-top: 16px;
+`;

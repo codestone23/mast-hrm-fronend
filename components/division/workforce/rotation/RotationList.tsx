@@ -1,10 +1,10 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { useQuery } from "@tanstack/react-query";
-import { Select, Input, Pagination, Table, TableColumn, DatePicker } from "@/components/common";
-import { RefreshCw, Search, ArrowRight } from "lucide-react";
+import { Pagination, Table, TableColumn, DatePicker } from "@/components/common";
+import { RefreshCw } from "lucide-react";
 import {
   PersonalContainer,
   DashboardGridAccount,
@@ -16,19 +16,15 @@ import {
   FilterContainer,
   FilterRow,
   FilterItemSmall,
-  SearchContainer,
   StatsRow,
-  RotationBadge,
   DivisionTransfer,
   DivisionName,
-  ArrowIcon,
 } from "./rotationStyle";
 import divisionsService from "@/services/divisions.service";
 import { RotationMember, RotationType } from "@/types/api";
 import { useMobile } from "@/hooks/useMobile";
 import RotationDetailModal from "./modals/RotationDetailModal";
-
-const ITEMS_PER_PAGE = 10;
+import { ITEMS_PER_PAGE } from "@/constants/constants";
 
 const fmtDate = (d: string) => {
   try {
@@ -138,7 +134,7 @@ const RotationList: React.FC = () => {
                     label="Từ ngày"
                     value={dateFrom}
                     onChange={(value) => {
-                      setDateFrom(value);
+                      setDateFrom(value?.toISOString() || "");
                       setCurrentPage(1);
                     }}
                     placeholder="Chọn ngày bắt đầu"
@@ -149,7 +145,7 @@ const RotationList: React.FC = () => {
                     label="Đến ngày"
                     value={dateTo}
                     onChange={(value) => {
-                      setDateTo(value);
+                      setDateTo(value?.toISOString() || "");
                       setCurrentPage(1);
                     }}
                     placeholder="Chọn ngày kết thúc"

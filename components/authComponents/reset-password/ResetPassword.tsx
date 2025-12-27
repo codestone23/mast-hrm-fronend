@@ -1,8 +1,8 @@
 "use client";
 
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState } from 'react';
-import { Lock, Eye, EyeOff, CheckCircle, ArrowLeft } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { Lock, CheckCircle, ArrowLeft } from 'lucide-react';
 import {
   ResetPasswordContainer,
   LeftSection,
@@ -15,22 +15,19 @@ import {
   Title,
   Subtitle,
   Form,
-  InputGroup,
-  InputLabel,
-  InputWrapper,
-  Input,
-  InputIcon,
-  TogglePasswordButton,
   PasswordStrengthIndicator,
   PasswordStrengthBar,
   PasswordStrengthText,
   PasswordRequirements,
   RequirementItem,
-  SubmitButton,
   BackToLogin,
   ErrorMessage,
   SuccessMessage
 } from './resetPasswordStyle';
+import { Input, Button } from '@/components/common';
+import { authService } from '@/services/auth.service';
+import { ResetPasswordRequest } from '@/types/api';
+import { getPasswordStrength } from "@/utils/help";
 
 interface ResetPasswordProps {
   token: string;
@@ -44,94 +41,90 @@ interface PasswordStrength {
   color: string;
 }
 
+interface ResetPasswordFormData {
+  password: string;
+  confirmPassword: string;
+}
+
 const ResetPassword: React.FC<ResetPasswordProps> = ({ 
+  token,
   onBackToLogin, 
   onPasswordReset 
 }) => {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
-  const getPasswordStrength = (password: string): PasswordStrength => {
-    let score = 0;
-    
-    if (password.length >= 8) score += 1;
-    if (/[a-z]/.test(password)) score += 1;
-    if (/[A-Z]/.test(password)) score += 1;
-    if (/\d/.test(password)) score += 1;
-    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+    setError: setFormError,
+    clearErrors
+  } = useForm<ResetPasswordFormData>({
+    defaultValues: {
+      password: '',
+      confirmPassword: ''
+    },
+    mode: 'onChange'
+  });
 
-    const strengthMap = {
-      0: { label: 'Rất yếu', color: '#ef4444' },
-      1: { label: 'Yếu', color: '#f97316' },
-      2: { label: 'Trung bình', color: '#eab308' },
-      3: { label: 'Mạnh', color: '#22c55e' },
-      4: { label: 'Rất mạnh', color: '#16a34a' },
-      5: { label: 'Cực mạnh', color: '#15803d' }
-    };
+  const password = watch('password');
 
-    return { score, ...strengthMap[score as keyof typeof strengthMap] };
-  };
-
-  const passwordStrength = getPasswordStrength(password);
+  const passwordStrength = getPasswordStrength(password || '');
 
   const passwordRequirements = [
-    { text: 'Ít nhất 8 ký tự', met: password.length >= 8 },
-    { text: 'Chứa chữ thường', met: /[a-z]/.test(password) },
-    { text: 'Chứa chữ hoa', met: /[A-Z]/.test(password) },
-    { text: 'Chứa số', met: /\d/.test(password) },
-    { text: 'Chứa ký tự đặc biệt', met: /[^A-Za-z0-9]/.test(password) }
+    { text: 'Ít nhất 8 ký tự', met: (password || '').length >= 8 },
+    { text: 'Chứa chữ thường', met: /[a-z]/.test(password || '') },
+    { text: 'Chứa chữ hoa', met: /[A-Z]/.test(password || '') },
+    { text: 'Chứa số', met: /\d/.test(password || '') },
+    { text: 'Chứa ký tự đặc biệt', met: /[^A-Za-z0-9]/.test(password || '') }
   ];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!password) {
-      setError('Vui lòng nhập mật khẩu mới');
-      return;
-    }
+  const validatePasswordStrength = (password: string): boolean => {
+    const strength = getPasswordStrength(password);
+    return strength.score >= 3;
+  };
 
-    if (password !== confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp');
-      return;
-    }
+  const validatePasswordMatch = (confirmPassword: string, formValues: ResetPasswordFormData): boolean => {
+    return confirmPassword === formValues.password;
+  };
 
-    if (passwordStrength.score < 3) {
-      setError('Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn');
-      return;
-    }
-
-    setIsLoading(true);
+  const onSubmit = async (data: ResetPasswordFormData) => {
     setError('');
+    clearErrors();
+
+    if (!validatePasswordStrength(data.password)) {
+      setFormError('password', {
+        type: 'manual',
+        message: 'Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn'
+      });
+      return;
+    }
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Decode token để lấy email và OTP
+      const decodedToken = atob(token);
+      const [email, otp] = decodedToken.split(':');
+      
+      const resetData: ResetPasswordRequest = {
+        email: email,
+        otp: otp,
+        newPassword: data.password
+      };
+
+      await authService.resetPassword(resetData);
       
       setSuccess(true);
       setTimeout(() => {
         onPasswordReset();
       }, 2000);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error);
-      setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
-    } finally {
-      setIsLoading(false);
+      const apiError = error as { response?: { data?: { message?: string } } };
+      const errorMessage = apiError?.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+      setError(errorMessage);
     }
-  };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-    if (error) setError('');
-  };
-
-  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setConfirmPassword(e.target.value);
-    if (error) setError('');
   };
 
   return (
@@ -156,31 +149,26 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({
               </SuccessMessage>
             </div>
           ) : (
-            <Form onSubmit={handleSubmit}>
+            <Form onSubmit={handleSubmit(onSubmit)}>
               {error && <ErrorMessage>{error}</ErrorMessage>}
               
-              <InputGroup>
-                <InputLabel htmlFor="password">Mật khẩu mới</InputLabel>
-                <InputWrapper>
-                  <InputIcon>
-                    <Lock size={16} />
-                  </InputIcon>
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Nhập mật khẩu mới"
-                    value={password}
-                    onChange={handlePasswordChange}
-                    required
-                  />
-                  <TogglePasswordButton
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </TogglePasswordButton>
-                </InputWrapper>
+              <div>
+                <Input
+                  label="Mật khẩu mới"
+                  type="password"
+                  placeholder="Nhập mật khẩu mới"
+                  {...register('password', {
+                    required: 'Vui lòng nhập mật khẩu mới',
+                    validate: {
+                      strength: (value) => 
+                        validatePasswordStrength(value) || 'Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn'
+                    }
+                  })}
+                  icon={<Lock size={16} />}
+                  required
+                  disabled={isSubmitting}
+                  error={errors.password?.message}
+                />
                 
                 {password && (
                   <>
@@ -204,37 +192,33 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({
                     </PasswordRequirements>
                   </>
                 )}
-              </InputGroup>
+              </div>
 
-              <InputGroup>
-                <InputLabel htmlFor="confirmPassword">Xác nhận mật khẩu</InputLabel>
-                <InputWrapper>
-                  <InputIcon>
-                    <Lock size={16} />
-                  </InputIcon>
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    placeholder="Nhập lại mật khẩu mới"
-                    value={confirmPassword}
-                    onChange={handleConfirmPasswordChange}
-                    required
-                  />
-                  <TogglePasswordButton
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </TogglePasswordButton>
-                </InputWrapper>
-              </InputGroup>
+              <Input
+                label="Xác nhận mật khẩu"
+                type="password"
+                placeholder="Nhập lại mật khẩu mới"
+                {...register('confirmPassword', {
+                  required: 'Vui lòng xác nhận mật khẩu mới',
+                  validate: (value, formValues) => 
+                    validatePasswordMatch(value, formValues) || 'Mật khẩu xác nhận không khớp'
+                })}
+                icon={<Lock size={16} />}
+                required
+                disabled={isSubmitting}
+                error={errors.confirmPassword?.message}
+              />
 
-              <SubmitButton type="submit" disabled={isLoading || passwordStrength.score < 3}>
-                {isLoading ? 'Đang xử lý...' : 'Đặt lại mật khẩu'}
-              </SubmitButton>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || passwordStrength.score < 3}
+                loading={isSubmitting}
+                style={{ width: '100%' }}
+              >
+                {isSubmitting ? 'Đang xử lý...' : 'Đặt lại mật khẩu'}
+              </Button>
 
-              <BackToLogin as="button" type="button" onClick={onBackToLogin}>
+              <BackToLogin as="button" type="button" onClick={onBackToLogin} disabled={isSubmitting}>
                 <ArrowLeft size={16} style={{ marginRight: '0.5rem', display: 'inline' }} />
                 Quay lại đăng nhập
               </BackToLogin>

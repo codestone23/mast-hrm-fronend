@@ -39,12 +39,7 @@ const Workforce: React.FC = () => {
         </TabsContainer>
 
         <div>
-          {activeTab === "employee" && (
-            <Button variant="warning" size="md">
-              Luân chuyển
-            </Button>
-          )}
-          {activeTab === "Danh sách luân chuyển" && (
+          {activeTab === "rotation" && (
             <Button variant="primary" size="md" onClick={() => setIsCreateRotationModalOpen(true)}>
               Tạo luân chuyển
             </Button>
@@ -53,6 +48,11 @@ const Workforce: React.FC = () => {
       </Header>
 
       {Tabs.find((tab) => tab.id === activeTab)?.component}
+
+      <CreateRotationModal
+        isOpen={isCreateRotationModalOpen}
+        onClose={() => setIsCreateRotationModalOpen(false)}
+      />
     </Container>
   );
 };

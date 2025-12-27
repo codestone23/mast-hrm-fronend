@@ -1,4 +1,4 @@
-import { DivisionStatus, DivisionType, ROLE_NAMES } from "@/constants/enums";
+import { DivisionStatus, DivisionType, ROLE_NAMES, USER_STATUS } from "@/constants/enums";
 
 // Base API Response types
 export interface ApiResponse<T = unknown> {
@@ -234,7 +234,7 @@ export enum UserRole {
 export interface UpdateUserRequest {
   name?: string;
   email?: string;
-  status?: "ACTIVE" | "INACTIVE";
+  status?: USER_STATUS;
 }
 
 // Role types

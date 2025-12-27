@@ -24,8 +24,7 @@ import {
 } from "@/components/company/account/accountStyle";
 import projectService from "@/services/project.service";
 import RejectDailyReportModal from "../../division/daily-reports/modals/RejectDailyReportModal";
-
-const ITEMS_PER_PAGE = 10;
+import { ITEMS_PER_PAGE } from "@/constants/constants";
 
 const HRDailyReports: React.FC = () => {
   const isMobile = useMobile();

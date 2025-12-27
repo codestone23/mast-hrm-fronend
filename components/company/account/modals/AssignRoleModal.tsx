@@ -1,14 +1,30 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Modal, Button, Select } from "@/components/common";
 import { SelectOption } from "@/components/common/Select/Select";
 import { User as UserType, Role, ScopeType } from "@/types/api";
 import rolesService from "@/services/roles.service";
 import { useToast } from "@/hooks/useToast";
-import { getRoleName } from "../AccountManagement";
+import { getRoleName } from "@/utils/help";
 import { ROLE_NAMES } from "@/constants/enums";
+import {
+  FormContainer,
+  UserInfoSection,
+  UserInfoLabel,
+  UserInfoValue,
+  RoleBadgeContainer,
+  RoleBadge,
+  CurrentRolesSection,
+  CurrentRolesLabel,
+  ErrorMessage,
+} from "./modalStyle";
+
+interface AssignRoleFormData {
+  roleId: string | number;
+}
 
 interface AssignRoleModalProps {
   isOpen: boolean;
@@ -25,12 +41,27 @@ const AssignRoleModal: React.FC<AssignRoleModalProps> = ({
 }) => {
   const queryClient = useQueryClient();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
-  const [selectedRoleId, setSelectedRoleId] = useState<string | number>("");
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<AssignRoleFormData>({
+    defaultValues: {
+      roleId: "",
+    },
+    mode: "onChange",
+  });
 
   // Get user's existing COMPANY scope role IDs
-  const existingRoleIds = user?.user_role_assignments
-    ?.filter((assignment) => assignment.scope_type === ScopeType.COMPANY)
-    .map((assignment) => assignment.role.id) || [];
+  const existingRoleIds = useMemo(
+    () =>
+      user?.user_role_assignments
+        ?.filter((assignment) => assignment.scope_type === ScopeType.COMPANY)
+        .map((assignment) => assignment.role.id) || [],
+    [user]
+  );
 
   // Fetch roles
   const { data: rolesData, isLoading: isLoadingRoles } = useQuery({
@@ -42,31 +73,43 @@ const AssignRoleModal: React.FC<AssignRoleModalProps> = ({
   const roles = rolesData || [];
 
   // Filter only COMPANY scope roles (HR_MANAGER, EMPLOYEE, ADMIN)
-  const companyScopeRoles = roles.filter((role: Role) => {
-    const roleName = role.name as ROLE_NAMES;
-    return (
-      roleName === ROLE_NAMES.HR_MANAGER ||
-      roleName === ROLE_NAMES.EMPLOYEE ||
-      roleName === ROLE_NAMES.ADMIN
-    );
-  });
-
-  // Filter out roles that user already has
-  const availableRoles = companyScopeRoles.filter(
-    (role: Role) => !existingRoleIds.includes(role.id)
+  const companyScopeRoles = useMemo(
+    () =>
+      roles.filter((role: Role) => {
+        const roleName = role.name as ROLE_NAMES;
+        return (
+          roleName === ROLE_NAMES.HR_MANAGER ||
+          roleName === ROLE_NAMES.EMPLOYEE ||
+          roleName === ROLE_NAMES.ADMIN
+        );
+      }),
+    [roles]
   );
 
-  const roleOptions: SelectOption[] = availableRoles.map((role: Role) => ({
-    value: role.id,
-    label: getRoleName(role.name as ROLE_NAMES),
-  }));
+  // Filter out roles that user already has
+  const availableRoles = useMemo(
+    () =>
+      companyScopeRoles.filter(
+        (role: Role) => !existingRoleIds.includes(role.id)
+      ),
+    [companyScopeRoles, existingRoleIds]
+  );
 
-  // Reset form when modal closes or user changes
+  const roleOptions: SelectOption[] = useMemo(
+    () =>
+      availableRoles.map((role: Role) => ({
+        value: role.id,
+        label: getRoleName(role.name as ROLE_NAMES),
+      })),
+    [availableRoles]
+  );
+
+  // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setSelectedRoleId("");
+      reset();
     }
-  }, [isOpen]);
+  }, [isOpen, reset]);
 
   // Assign role mutation
   const assignRoleMutation = useMutation({
@@ -76,7 +119,7 @@ const AssignRoleModal: React.FC<AssignRoleModalProps> = ({
       queryClient.invalidateQueries({ queryKey: ["users"] });
       showSuccessToast("Gán vai trò thành công");
       onClose();
-      setSelectedRoleId("");
+      reset();
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } } };
@@ -86,23 +129,36 @@ const AssignRoleModal: React.FC<AssignRoleModalProps> = ({
     },
   });
 
-  const handleSubmit = () => {
-    if (!user || !selectedRoleId) {
+  const onSubmit = (data: AssignRoleFormData) => {
+    if (!user || !data.roleId) {
       showErrorToast("Vui lòng chọn vai trò");
       return;
     }
 
     assignRoleMutation.mutate({
       userId: Number(user.id),
-      roleId: Number(selectedRoleId),
+      roleId: Number(data.roleId),
     });
   };
 
   const handleClose = () => {
     if (!assignRoleMutation.isPending) {
-      setSelectedRoleId("");
+      reset();
       onClose();
     }
+  };
+
+  const getUserName = (): string => {
+    if (!user) return "";
+    if (
+      user.user_information &&
+      typeof user.user_information === "object" &&
+      !Array.isArray(user.user_information) &&
+      "name" in user.user_information
+    ) {
+      return (user.user_information as { name: string }).name;
+    }
+    return user.name || user.email;
   };
 
   return (
@@ -125,75 +181,72 @@ const AssignRoleModal: React.FC<AssignRoleModalProps> = ({
           <Button
             type="button"
             variant="primary"
-            onClick={handleSubmit}
+            onClick={handleSubmit(onSubmit)}
             loading={assignRoleMutation.isPending || isLoading}
-            disabled={assignRoleMutation.isPending || isLoading || !selectedRoleId}
+            disabled={
+              assignRoleMutation.isPending ||
+              isLoading ||
+              isSubmitting ||
+              isLoadingRoles
+            }
           >
             Gán vai trò
           </Button>
         </>
       }
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      <FormContainer>
         {user && (
-          <div>
-            <div style={{ fontSize: "14px", color: "#6b7280", marginBottom: "8px" }}>
-              Tài khoản
-            </div>
-            <div style={{ fontSize: "16px", fontWeight: 500, color: "#111827" }}>
-              {user.user_information && 
-               typeof user.user_information === 'object' && 
-               !Array.isArray(user.user_information) &&
-               'name' in user.user_information
-                ? (user.user_information as { name: string }).name
-                : user.name || user.email}
-            </div>
-          </div>
+          <UserInfoSection>
+            <UserInfoLabel>Tài khoản</UserInfoLabel>
+            <UserInfoValue>{getUserName()}</UserInfoValue>
+          </UserInfoSection>
         )}
 
-        <Select
-          label="Vai trò"
-          options={roleOptions}
-          value={selectedRoleId}
-          onChange={(value) => setSelectedRoleId(value)}
-          placeholder="Chọn vai trò"
-          required
-          fullWidth
-          disabled={assignRoleMutation.isPending || isLoading || isLoadingRoles}
+        <Controller
+          name="roleId"
+          control={control}
+          rules={{ required: "Vui lòng chọn vai trò" }}
+          render={({ field }) => (
+            <Select
+              label="Vai trò"
+              options={roleOptions}
+              value={field.value}
+              onChange={field.onChange}
+              placeholder="Chọn vai trò"
+              required
+              fullWidth
+              disabled={
+                assignRoleMutation.isPending || isLoading || isLoadingRoles
+              }
+              error={errors.roleId?.message}
+            />
+          )}
         />
 
         {existingRoleIds.length > 0 && (
-          <div style={{ fontSize: "14px", color: "#6b7280" }}>
-            <div style={{ marginBottom: "4px" }}>Vai trò hiện tại (Company):</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+          <CurrentRolesSection>
+            <CurrentRolesLabel>Vai trò hiện tại (Company):</CurrentRolesLabel>
+            <RoleBadgeContainer>
               {user?.user_role_assignments
-                ?.filter((assignment) => assignment.scope_type === ScopeType.COMPANY)
+                ?.filter(
+                  (assignment) => assignment.scope_type === ScopeType.COMPANY
+                )
                 .map((assignment, index) => (
-                  <span
-                    key={index}
-                    style={{
-                      display: "inline-block",
-                      padding: "4px 12px",
-                      borderRadius: "12px",
-                      fontSize: "12px",
-                      fontWeight: 500,
-                      backgroundColor: "#e0e7ff",
-                      color: "#6366f1",
-                    }}
-                  >
+                  <RoleBadge key={index}>
                     {getRoleName(assignment.role.name)}
-                  </span>
+                  </RoleBadge>
                 ))}
-            </div>
-          </div>
+            </RoleBadgeContainer>
+          </CurrentRolesSection>
         )}
 
         {availableRoles.length === 0 && (
-          <div style={{ fontSize: "14px", color: "#ef4444", padding: "12px", backgroundColor: "#fef2f2", borderRadius: "8px" }}>
+          <ErrorMessage>
             Tài khoản này đã có tất cả các vai trò có sẵn.
-          </div>
+          </ErrorMessage>
         )}
-      </div>
+      </FormContainer>
     </Modal>
   );
 };

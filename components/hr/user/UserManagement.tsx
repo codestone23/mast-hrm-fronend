@@ -42,8 +42,7 @@ import { useRouter } from "next/navigation";
 import ROUTERS from "@/config/router";
 import divisionsService from "@/services/divisions.service";
 import { DivisionListItem, DivisionTeamData } from "@/types/api";
-
-const ITEMS_PER_PAGE = 20;
+import { ITEMS_PER_PAGE_20 } from "@/constants/constants";
 
 interface CreateAccountData {
   name: string;
@@ -148,7 +147,7 @@ const UserManagement: React.FC = () => {
         team_id: selectedTeamId,
         search: debouncedSearch || undefined,
         page: currentPage,
-        limit: ITEMS_PER_PAGE,
+        limit: ITEMS_PER_PAGE_20,
         sort_order: 'desc',
       }),
     enabled: !!selectedMonth,
@@ -170,7 +169,7 @@ const UserManagement: React.FC = () => {
     total: 0,
     page: 1,
     total_pages: 1,
-    limit: ITEMS_PER_PAGE,
+    limit: ITEMS_PER_PAGE_20,
   };
   const summary = data?.summary;
   const period = data?.period;
@@ -720,7 +719,7 @@ const UserManagement: React.FC = () => {
                   currentPage={currentPage}
                   totalPages={pagination.total_pages}
                   totalItems={pagination.total}
-                  itemsPerPage={ITEMS_PER_PAGE}
+                  itemsPerPage={ITEMS_PER_PAGE_20}
                   onPageChange={setCurrentPage}
                   showInfo={true}
                 />

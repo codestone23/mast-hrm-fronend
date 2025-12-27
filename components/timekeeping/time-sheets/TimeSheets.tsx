@@ -74,6 +74,7 @@ import {
   TabContentWrapper,
 } from "./timeSheetStyle";
 import { useTimeSheet } from "./useTimeSheet";
+import { WEEK_DAYS } from "@/constants/constants";
 
 interface TimeSheetRequest {
   id: number;
@@ -228,16 +229,6 @@ const TimeSheets: React.FC = () => {
       setActiveTab("DANH SÁCH ĐỀ XUẤT");
     }
   }, [searchParams, tabs]);
-
-  const weekDays = [
-    "Thứ 2",
-    "Thứ 3",
-    "Thứ 4",
-    "Thứ 5",
-    "Thứ 6",
-    "Thứ 7",
-    "Chủ nhật",
-  ];
 
   const legendItems = [
     { color: "#c9f8c9", label: "Đủ công", status: "work", type: "color" },
@@ -573,7 +564,7 @@ const TimeSheets: React.FC = () => {
               </Legend>
 
               <CalendarHeader>
-                {weekDays.map((day) => (
+                {WEEK_DAYS.map((day) => (
                   <WeekDay key={day}>{day}</WeekDay>
                 ))}
               </CalendarHeader>

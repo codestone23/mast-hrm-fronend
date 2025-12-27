@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { BriefcaseBusiness } from "lucide-react";
 
 export const Container = styled.div`
   width: 100%;
@@ -155,4 +156,12 @@ export const EmptyDataContainer = styled.div`
 export const EmptyDataText = styled.div`
   font-size: 16px;
   color: #64748b;
+`;
+
+export const EmptyDataIcon = styled(BriefcaseBusiness)`
+  color: #e0e0e0;
+`;
+
+export const ClickableCard = styled(CardBase)`
+  cursor: pointer;
 `;

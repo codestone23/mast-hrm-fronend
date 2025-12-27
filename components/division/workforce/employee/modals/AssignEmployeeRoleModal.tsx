@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Modal, Button, Select } from "@/components/common";
 import { SelectOption } from "@/components/common/Select/Select";
@@ -9,10 +10,20 @@ import rolesService from "@/services/roles.service";
 import projectService from "@/services/project.service";
 import divisionWorkforceService from "@/services/division_workforce.service";
 import { useToast } from "@/hooks/useToast";
-import { getRoleName } from "@/components/company/account/AccountManagement";
+import { getRoleName } from "@/utils/help";
 import { ROLE_NAMES } from "@/constants/enums";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+import {
+  FormContainer,
+  UserInfoSection,
+  UserInfoLabel,
+  UserInfoValue,
+  InfoBox,
+  RolesContainer,
+  RoleBadge,
+  RolesLabel,
+} from "./assignEmployeeRoleModalStyle";
 
 interface AssignEmployeeRoleModalProps {
   isOpen: boolean;
@@ -32,10 +43,27 @@ const AssignEmployeeRoleModal: React.FC<AssignEmployeeRoleModalProps> = ({
   const selectedDivisionId = useSelector(
     (state: RootState) => state.division.selectedDivisionId
   );
-  
-  const [selectedRoleId, setSelectedRoleId] = useState<string | number>("");
-  const [selectedScopeType, setSelectedScopeType] = useState<ScopeType | "">("");
-  const [selectedScopeId, setSelectedScopeId] = useState<string | number>("");
+
+  interface AssignRoleFormData {
+    roleId: number;
+    scopeId: number;
+  }
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+  } = useForm<AssignRoleFormData>({
+    defaultValues: {
+      roleId: 0,
+      scopeId: 0,
+    },
+    mode: "onChange",
+  });
+
+  const selectedRoleId = watch("roleId");
 
   // Get user's existing role assignments for DIVISION and PROJECT scope
   const existingAssignments = user?.user_role_assignments?.filter(
@@ -107,31 +135,12 @@ const AssignEmployeeRoleModal: React.FC<AssignEmployeeRoleModalProps> = ({
     return [];
   }, [selectedRole, projects, teams]);
 
-  // Reset form when modal closes or user changes
+  // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setSelectedRoleId("");
-      setSelectedScopeType("");
-      setSelectedScopeId("");
+      reset();
     }
-  }, [isOpen]);
-
-  // Update scope type when role changes
-  useEffect(() => {
-    if (selectedRole) {
-      if (selectedRole.name === 'project_manager') {
-        setSelectedScopeType(ScopeType.PROJECT);
-      } else if (selectedRole.name === 'team_leader') {
-        setSelectedScopeType(ScopeType.TEAM);
-      } else if (selectedRole.name === 'division_head') {
-        setSelectedScopeType(ScopeType.DIVISION);
-        setSelectedScopeId(selectedDivisionId || "");
-      }
-    } else {
-      setSelectedScopeType("");
-      setSelectedScopeId("");
-    }
-  }, [selectedRole, selectedDivisionId]);
+  }, [isOpen, reset]);
 
   // Assign role mutation
   const assignRoleMutation = useMutation({
@@ -152,9 +161,6 @@ const AssignEmployeeRoleModal: React.FC<AssignEmployeeRoleModalProps> = ({
       queryClient.invalidateQueries({ queryKey: ["users"] });
       showSuccessToast("Gán vai trò thành công");
       onClose();
-      setSelectedRoleId("");
-      setSelectedScopeType("");
-      setSelectedScopeId("");
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } } };
@@ -164,44 +170,53 @@ const AssignEmployeeRoleModal: React.FC<AssignEmployeeRoleModalProps> = ({
     },
   });
 
-  const handleSubmit = () => {
-    if (!user || !selectedRoleId) {
+  const onSubmit = (data: AssignRoleFormData) => {
+    if (!user || !data.roleId) {
       showErrorToast("Vui lòng chọn vai trò");
       return;
     }
 
-    if (!selectedScopeType) {
-      showErrorToast("Vui lòng chọn scope type");
+    const selectedRole = roles.find((r: Role) => r.id === Number(data.roleId));
+    if (!selectedRole) {
+      showErrorToast("Vai trò không hợp lệ");
       return;
     }
 
-    // For division_head, use selectedDivisionId
-    // For project_manager and team_leader, use selectedScopeId
+    let scopeType: ScopeType;
     let scopeId: number | null = null;
-    if (selectedRole?.name === 'division_head') {
+
+    if (selectedRole.name === 'division_head') {
+      scopeType = ScopeType.DIVISION;
       scopeId = selectedDivisionId || null;
-    } else if (needsScopeSelection && selectedScopeId) {
-      scopeId = Number(selectedScopeId);
-    } else if (!needsScopeSelection) {
-      scopeId = null;
+    } else if (selectedRole.name === 'project_manager') {
+      scopeType = ScopeType.PROJECT;
+      if (!data.scopeId) {
+        showErrorToast("Vui lòng chọn dự án");
+        return;
+      }
+      scopeId = Number(data.scopeId);
+    } else if (selectedRole.name === 'team_leader') {
+      scopeType = ScopeType.TEAM;
+      if (!data.scopeId) {
+        showErrorToast("Vui lòng chọn team");
+        return;
+      }
+      scopeId = Number(data.scopeId);
     } else {
-      showErrorToast("Vui lòng chọn project/team");
+      showErrorToast("Vai trò không hợp lệ");
       return;
     }
 
     assignRoleMutation.mutate({
       userId: Number(user.id),
-      roleId: Number(selectedRoleId),
-      scopeType: selectedScopeType as ScopeType,
+      roleId: Number(data.roleId),
+      scopeType,
       scopeId,
     });
   };
 
   const handleClose = () => {
     if (!assignRoleMutation.isPending) {
-      setSelectedRoleId("");
-      setSelectedScopeType("");
-      setSelectedScopeId("");
       onClose();
     }
   };
@@ -226,111 +241,116 @@ const AssignEmployeeRoleModal: React.FC<AssignEmployeeRoleModalProps> = ({
           <Button
             type="button"
             variant="primary"
-            onClick={handleSubmit}
+            onClick={handleSubmit(onSubmit)}
             loading={assignRoleMutation.isPending || isLoading}
-            disabled={
-              assignRoleMutation.isPending || 
-              isLoading || 
-              !selectedRoleId || 
-              !selectedScopeType ||
-              (needsScopeSelection && !selectedScopeId)
-            }
+            disabled={assignRoleMutation.isPending || isLoading}
           >
             Gán vai trò
           </Button>
         </>
       }
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      <FormContainer>
         {user && (
-          <div>
-            <div style={{ fontSize: "14px", color: "#6b7280", marginBottom: "8px" }}>
-              Nhân viên
-            </div>
-            <div style={{ fontSize: "16px", fontWeight: 500, color: "#111827" }}>
+          <UserInfoSection>
+            <UserInfoLabel>Nhân viên</UserInfoLabel>
+            <UserInfoValue>
               {user.user_information && 
                typeof user.user_information === 'object' && 
                !Array.isArray(user.user_information) &&
                'name' in user.user_information
                 ? (user.user_information as { name: string }).name
                 : user.name || user.email}
-            </div>
-          </div>
+            </UserInfoValue>
+          </UserInfoSection>
         )}
 
-        <Select
-          label="Vai trò"
-          options={roleOptions}
-          value={selectedRoleId}
-          onChange={(value) => setSelectedRoleId(value)}
-          placeholder="Chọn vai trò"
-          required
-          fullWidth
-          disabled={assignRoleMutation.isPending || isLoading || isLoadingRoles}
+        <Controller
+          name="roleId"
+          control={control}
+          rules={{ required: "Vui lòng chọn vai trò" }}
+          render={({ field }) => (
+            <Select
+              label="Vai trò"
+              options={roleOptions}
+              value={field.value || ""}
+              onChange={(value) => field.onChange(value ? Number(value) : 0)}
+              placeholder="Chọn vai trò"
+              required
+              fullWidth
+              disabled={assignRoleMutation.isPending || isLoading || isLoadingRoles}
+              error={errors.roleId?.message}
+            />
+          )}
         />
 
         {selectedRole && selectedRole.name === 'project_manager' && (
-          <Select
-            label="Dự án"
-            options={scopeOptions}
-            value={selectedScopeId}
-            onChange={(value) => setSelectedScopeId(value)}
-            placeholder="Chọn dự án"
-            required
-            fullWidth
-            disabled={assignRoleMutation.isPending || isLoading}
+          <Controller
+            name="scopeId"
+            control={control}
+            rules={{ required: "Vui lòng chọn dự án" }}
+            render={({ field }) => (
+              <Select
+                label="Dự án"
+                options={scopeOptions}
+                value={field.value || ""}
+                onChange={(value) => field.onChange(value ? Number(value) : 0)}
+                placeholder="Chọn dự án"
+                required
+                fullWidth
+                disabled={assignRoleMutation.isPending || isLoading}
+                error={errors.scopeId?.message}
+              />
+            )}
           />
         )}
 
         {selectedRole && selectedRole.name === 'team_leader' && (
-          <Select
-            label="Team"
-            options={scopeOptions}
-            value={selectedScopeId}
-            onChange={(value) => setSelectedScopeId(value)}
-            placeholder="Chọn team"
-            required
-            fullWidth
-            disabled={assignRoleMutation.isPending || isLoading}
+          <Controller
+            name="scopeId"
+            control={control}
+            rules={{ required: "Vui lòng chọn team" }}
+            render={({ field }) => (
+              <Select
+                label="Team"
+                options={scopeOptions}
+                value={field.value || ""}
+                onChange={(value) => field.onChange(value ? Number(value) : 0)}
+                placeholder="Chọn team"
+                required
+                fullWidth
+                disabled={assignRoleMutation.isPending || isLoading}
+                error={errors.scopeId?.message}
+              />
+            )}
           />
         )}
 
         {selectedRole && selectedRole.name === 'division_head' && (
-          <div style={{ fontSize: "14px", color: "#6b7280", padding: "12px", backgroundColor: "#f3f4f6", borderRadius: "8px" }}>
+          <InfoBox>
             Vai trò này sẽ được gán cho phòng ban hiện tại
-          </div>
+          </InfoBox>
         )}
 
         {existingAssignments.length > 0 && (
-          <div style={{ fontSize: "14px", color: "#6b7280" }}>
-            <div style={{ marginBottom: "4px" }}>Vai trò hiện tại (Phòng ban/Dự án/Đội nhóm):</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+          <div>
+            <RolesLabel>Vai trò hiện tại (Phòng ban/Dự án/Đội nhóm):</RolesLabel>
+            <RolesContainer>
               {existingAssignments.map((assignment, index) => (
-                <span
-                  key={index}
-                  style={{
-                    display: "inline-block",
-                    padding: "4px 12px",
-                    borderRadius: "12px",
-                    fontSize: "12px",
-                    fontWeight: 500,
-                    backgroundColor: "#e0e7ff",
-                    color: "#6366f1",
-                  }}
-                >
+                <RoleBadge key={index}>
                   {getRoleName(assignment.role.name)} ({assignment.scope_type})
-                </span>
+                </RoleBadge>
               ))}
-            </div>
+            </RolesContainer>
           </div>
         )}
 
         {availableRoles.length === 0 && (
-          <div style={{ fontSize: "14px", color: "#ef4444", padding: "12px", backgroundColor: "#fef2f2", borderRadius: "8px" }}>
+          <InfoBox $variant="error">
             Không có vai trò nào có thể gán cho nhân viên trong phòng ban này.
-          </div>
+          </InfoBox>
         )}
-      </div>
+      </FormContainer>
     </Modal>
   );
 };

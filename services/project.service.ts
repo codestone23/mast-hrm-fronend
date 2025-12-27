@@ -1,4 +1,4 @@
-import { ROLE_NAMES, ProjectAccessType } from "@/constants/enums";
+import { ROLE_NAMES, ProjectAccessType, ProjectType, ProjectStatus, MilestoneProjectStatus, ProjectIndustry } from "@/constants/enums";
 import axiosInstance from "@/lib/axios";
 
 export interface ProjectMember {
@@ -12,12 +12,12 @@ export interface Project {
   id: number;
   name: string;
   code: string;
-  status: 'OPEN' | 'IN_PROGRESS' | 'PENDING' | 'CLOSED';
+  status: ProjectStatus;
   division_id: number | null;
   team_id: number | null;
-  project_type: 'CUSTOMER' | 'IN_HOUSE' | 'START_UP' | 'INTERNAL';
+  project_type: ProjectType;
   project_access_type?: string;
-  industry: 'IT' | 'FINANCE' | 'MANUFACTURING' | 'OTHER';
+  industry: ProjectIndustry;
   progress: number | null;
   scope: string;
   description: string;
@@ -35,13 +35,13 @@ export interface Project {
 export interface ProjectCreateRequest {
   name: string;
   code: string;
-  status?: 'OPEN' | 'IN_PROGRESS' | 'PENDING' | 'CLOSED';
+  status?: ProjectStatus;
   division_id?: number;
   team_id?: number;
   manager_id?: number;
-  project_type?: 'CUSTOMER' | 'IN_HOUSE' | 'START_UP' | 'INTERNAL';
+  project_type?: ProjectType;
   project_access_type?: 'COMPANY' | 'RESTRICTED';
-  industry?: 'IT' | 'FINANCE' | 'MANUFACTURING' | 'OTHER';
+  industry?: ProjectIndustry;
   description: string;
   start_date: string;
   end_date: string;
@@ -96,7 +96,7 @@ export interface MilestoneProjectCreateRequest {
   description: string;
   start_date: string;
   end_date: string;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  status: MilestoneProjectStatus;
   progress: number;
   order: number;
 }
@@ -106,7 +106,7 @@ export interface MilestoneProjectUpdateRequest {
   description?: string;
   start_date?: string;
   end_date?: string;
-  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  status?: MilestoneProjectStatus;
   progress?: number;
   order?: number;
 }

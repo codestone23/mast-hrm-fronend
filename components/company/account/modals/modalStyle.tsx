@@ -626,3 +626,71 @@ export const ActionButtons = styled.div`
   display: flex;
   gap: 8px;
 `;
+
+// Modal Form Styles
+export const FormContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+export const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const UserInfoSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const UserInfoLabel = styled.div`
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 8px;
+`;
+
+export const UserInfoValue = styled.div`
+  font-size: 16px;
+  font-weight: 500;
+  color: #111827;
+`;
+
+export const RoleBadgeContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+export const RoleBadge = styled.span`
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: #e0e7ff;
+  color: #6366f1;
+`;
+
+export const CurrentRolesSection = styled.div`
+  font-size: 14px;
+  color: #6b7280;
+`;
+
+export const CurrentRolesLabel = styled.div`
+  margin-bottom: 4px;
+`;
+
+export const ErrorMessage = styled.div`
+  font-size: 14px;
+  color: #ef4444;
+  padding: 12px;
+  background-color: #fef2f2;
+  border-radius: 8px;
+`;

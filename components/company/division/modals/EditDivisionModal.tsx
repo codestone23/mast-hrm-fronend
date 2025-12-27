@@ -1,13 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import Modal from "@/components/common/Modal/Modal";
+import React, { useEffect, useMemo } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { Modal, Button } from "@/components/common";
 import Input from "@/components/common/Input/Input";
 import Select from "@/components/common/Select/Select";
+import TextArea from "@/components/common/TextArea/TextArea";
 import { Division } from "@/constants/types";
 import { useDivisionsList } from "@/hooks/useDivisions";
 import { DivisionStatus, DivisionType } from "@/constants/enums";
 import { UpdateDivisionRequest } from "@/types/api";
+import { FormContainer } from "./modalStyle";
 
 interface EditDivisionModalProps {
   isOpen: boolean;
@@ -16,98 +19,149 @@ interface EditDivisionModalProps {
   onSave: (payload: UpdateDivisionRequest & { id?: number | string }) => void;
 }
 
+interface EditDivisionFormData {
+  name: string;
+  description: string;
+  parent_id?: number;
+  type: DivisionType;
+  status: DivisionStatus;
+}
+
 const EditDivisionModal: React.FC<EditDivisionModalProps> = ({
   isOpen,
   onClose,
   division,
   onSave,
 }) => {
-  const [form, setForm] = useState<UpdateDivisionRequest>({ name: "", description: "", parent_id: undefined, type: DivisionType.TECHNICAL, status: DivisionStatus.ACTIVE });
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const parentsQuery = useDivisionsList({ page: 1, limit: 100 });
   const parentOptions = useMemo(() => (parentsQuery.data?.data ?? []).map(d => ({ value: d.id, label: d.name })), [parentsQuery.data]);
 
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+    reset,
+  } = useForm<EditDivisionFormData>({
+    defaultValues: {
+      name: "",
+      description: "",
+      parent_id: undefined,
+      type: DivisionType.TECHNICAL,
+      status: DivisionStatus.ACTIVE,
+    },
+    mode: "onChange",
+  });
+
   useEffect(() => {
     if (division) {
-      setForm({
+      reset({
         name: division.name || "",
         description: division.description || "",
         parent_id: undefined,
         type: DivisionType.TECHNICAL,
-        status: division.status === "active" ? DivisionStatus.ACTIVE : DivisionStatus.INACTIVE,
+        status: division.status === DivisionStatus.ACTIVE ? DivisionStatus.ACTIVE : DivisionStatus.INACTIVE,
       });
     }
-  }, [division]);
+  }, [division, reset]);
 
-  // no-op
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!form.name.trim()) {
-      newErrors.name = "Tên phòng ban là bắt buộc";
+  useEffect(() => {
+    if (!isOpen) {
+      reset();
     }
+  }, [isOpen, reset]);
 
-    if (!form.description?.trim()) {
-      newErrors.description = "Mô tả là bắt buộc";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (validateForm() && division) {
-      onSave({ ...form, status: form.status });
-      setErrors({});
-    }
-  };
-
-  const handleClose = () => {
-    setErrors({});
-    onClose();
+  const onSubmit = (data: EditDivisionFormData) => {
+    onSave({ ...data, status: data.status });
   };
 
   if (!isOpen || !division) return null;
 
   const footer = (
     <>
-      <button type="button" onClick={handleClose} style={{ padding: '10px 16px', border: '1px solid var(--border)', borderRadius: 8, background: 'white' }}>Hủy</button>
-      <button type="submit" form="edit-division-form" style={{ padding: '10px 16px', border: 'none', borderRadius: 8, background: 'var(--primary-500)', color: 'white' }}>Lưu thay đổi</button>
+      <Button type="button" variant="ghost" onClick={onClose}>
+        Hủy
+      </Button>
+      <Button type="button" variant="primary" onClick={handleSubmit(onSubmit)}>
+        Lưu thay đổi
+      </Button>
     </>
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Chỉnh sửa phòng ban" footer={footer} size="md">
-      <form id="edit-division-form" onSubmit={handleSubmit}>
-        <div style={{ display: 'grid', gap: 12 }}>
-          <Input label="Tên phòng ban" required value={form.name} onChange={(e)=>setForm({ ...form, name: e.target.value })} error={errors.name} />
-          <Input label="Mô tả" multiline rows={4} value={form.description || ''} onChange={(e)=>setForm({ ...form, description: e.target.value })} error={errors.description} />
-          <Select
-            options={[
-              { value: DivisionType.TECHNICAL, label: 'Kỹ thuật' },
-              { value: DivisionType.BUSINESS, label: 'Kinh doanh' },
-              { value: DivisionType.OPERATIONS, label: 'Vận hành' },
-              { value: DivisionType.OTHER, label: 'Khác' },
-            ]}
-            value={form.type}
-            onChange={(v)=>setForm({ ...form, type: String(v) })}
-          />
-          <Select
-            options={[{ value: '', label: 'Không có phòng ban cha' }, ...parentOptions]}
-            value={form.parent_id ?? ''}
-            onChange={(v)=>setForm({ ...form, parent_id: v ? Number(v) : undefined })}
-            placeholder="Phòng ban cha"
-          />
-          <Select
-            options={[{ value: DivisionStatus.ACTIVE, label: 'ACTIVE' }, { value: DivisionStatus.INACTIVE, label: 'INACTIVE' }]}
-            value={form.status}
-            onChange={(v)=>setForm({ ...form, status: String(v) as unknown as DivisionStatus })}
-          />
-        </div>
-      </form>
+    <Modal isOpen={isOpen} onClose={onClose} title="Chỉnh sửa phòng ban" footer={footer} size="md">
+      <FormContainer>
+        <Input
+          label="Tên phòng ban"
+          required
+          {...register("name", {
+            required: "Tên phòng ban là bắt buộc",
+          })}
+          error={errors.name?.message}
+          fullWidth
+        />
+        
+        <TextArea
+          label="Mô tả"
+          rows={4}
+          {...register("description", {
+            required: "Mô tả là bắt buộc",
+          })}
+          error={errors.description?.message}
+          fullWidth
+        />
+        
+        <Controller
+          name="type"
+          control={control}
+          render={({ field }) => (
+            <Select
+              label="Loại phòng ban"
+              options={[
+                { value: DivisionType.TECHNICAL, label: 'Kỹ thuật' },
+                { value: DivisionType.BUSINESS, label: 'Kinh doanh' },
+                { value: DivisionType.OPERATIONS, label: 'Vận hành' },
+                { value: DivisionType.OTHER, label: 'Khác' },
+              ]}
+              value={field.value}
+              onChange={(v) => field.onChange(String(v))}
+              fullWidth
+            />
+          )}
+        />
+        
+        <Controller
+          name="parent_id"
+          control={control}
+          render={({ field }) => (
+            <Select
+              label="Phòng ban cha"
+              options={[{ value: '', label: 'Không có phòng ban cha' }, ...parentOptions]}
+              value={field.value ?? ''}
+              onChange={(v) => field.onChange(v ? Number(v) : undefined)}
+              placeholder="Phòng ban cha"
+              fullWidth
+            />
+          )}
+        />
+        
+        <Controller
+          name="status"
+          control={control}
+          render={({ field }) => (
+            <Select
+              label="Trạng thái"
+              options={[
+                { value: DivisionStatus.ACTIVE, label: 'Hoạt động' },
+                { value: DivisionStatus.INACTIVE, label: 'Không hoạt động' }
+              ]}
+              value={field.value}
+              onChange={(v) => field.onChange(String(v) as DivisionStatus)}
+              fullWidth
+            />
+          )}
+        />
+      </FormContainer>
     </Modal>
   );
 };

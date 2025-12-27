@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { Lock, CheckCircle } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { Modal, Button, Input } from '@/components/common';
@@ -17,27 +18,50 @@ import {
   RequirementItem,
   ErrorMessage
 } from './changePasswordModalStyle';
+import { getPasswordStrength } from "@/utils/help";
 
 export interface ChangePasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface PasswordStrength {
+export interface PasswordStrength {
   score: number;
   label: string;
   color: string;
+}
+
+interface ChangePasswordFormData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   isOpen,
   onClose
 }) => {
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const { success: showSuccessToast } = useToast();
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors, isSubmitting },
+    setError: setFormError,
+    clearErrors
+  } = useForm<ChangePasswordFormData>({
+    defaultValues: {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    },
+    mode: 'onChange'
+  });
+
+  const newPassword = watch('newPassword');
 
   const changePasswordMutation = useMutation({
     mutationFn: (data: ChangePasswordRequest) =>
@@ -53,95 +77,76 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
     }
   });
 
-  const getPasswordStrength = (password: string): PasswordStrength => {
-    let score = 0;
-    
-    if (password.length >= 8) score += 1;
-    if (/[a-z]/.test(password)) score += 1;
-    if (/[A-Z]/.test(password)) score += 1;
-    if (/\d/.test(password)) score += 1;
-    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+  useEffect(() => {
+    if (isOpen) {
+      reset({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      setError('');
+      clearErrors();
+    }
+  }, [isOpen, reset]);
 
-    const strengthMap = {
-      0: { label: 'Rất yếu', color: '#ef4444' },
-      1: { label: 'Yếu', color: '#f97316' },
-      2: { label: 'Trung bình', color: '#eab308' },
-      3: { label: 'Mạnh', color: '#22c55e' },
-      4: { label: 'Rất mạnh', color: '#16a34a' },
-      5: { label: 'Cực mạnh', color: '#15803d' }
-    };
-
-    return { score, ...strengthMap[score as keyof typeof strengthMap] };
-  };
-
-  const passwordStrength = getPasswordStrength(newPassword);
+  const passwordStrength = getPasswordStrength(newPassword || '');
 
   const passwordRequirements = [
-    { text: 'Ít nhất 8 ký tự', met: newPassword.length >= 8 },
-    { text: 'Chứa chữ thường', met: /[a-z]/.test(newPassword) },
-    { text: 'Chứa chữ hoa', met: /[A-Z]/.test(newPassword) },
-    { text: 'Chứa số', met: /\d/.test(newPassword) },
-    { text: 'Chứa ký tự đặc biệt', met: /[^A-Za-z0-9]/.test(newPassword) }
+    { text: 'Ít nhất 8 ký tự', met: (newPassword || '').length >= 8 },
+    { text: 'Chứa chữ thường', met: /[a-z]/.test(newPassword || '') },
+    { text: 'Chứa chữ hoa', met: /[A-Z]/.test(newPassword || '') },
+    { text: 'Chứa số', met: /\d/.test(newPassword || '') },
+    { text: 'Chứa ký tự đặc biệt', met: /[^A-Za-z0-9]/.test(newPassword || '') }
   ];
 
-  const handleSubmit = async () => {
-    if (!currentPassword) {
-      setError('Vui lòng nhập mật khẩu hiện tại');
-      return;
-    }
+  const validatePasswordStrength = (password: string): boolean => {
+    const strength = getPasswordStrength(password);
+    return strength.score >= 3;
+  };
 
-    if (!newPassword) {
-      setError('Vui lòng nhập mật khẩu mới');
-      return;
-    }
+  const validatePasswordMatch = (confirmPassword: string, formValues: ChangePasswordFormData): boolean => {
+    return confirmPassword === formValues.newPassword;
+  };
 
-    if (newPassword !== confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp');
-      return;
-    }
-
-    if (passwordStrength.score < 3) {
-      setError('Mật khẩu mới quá yếu. Vui lòng chọn mật khẩu mạnh hơn');
-      return;
-    }
-
-    if (currentPassword === newPassword) {
-      setError('Mật khẩu mới phải khác mật khẩu hiện tại');
-      return;
-    }
-
+  const onSubmit = async (data: ChangePasswordFormData) => {
     setError('');
-    changePasswordMutation.mutate({ currentPassword, newPassword });
+    clearErrors();
+
+    if (data.currentPassword === data.newPassword) {
+      setFormError('newPassword', {
+        type: 'manual',
+        message: 'Mật khẩu mới phải khác mật khẩu hiện tại'
+      });
+      return;
+    }
+
+    if (!validatePasswordStrength(data.newPassword)) {
+      setFormError('newPassword', {
+        type: 'manual',
+        message: 'Mật khẩu mới quá yếu. Vui lòng chọn mật khẩu mạnh hơn'
+      });
+      return;
+    }
+
+    changePasswordMutation.mutate({
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword
+    });
   };
 
   const handleClose = () => {
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+    reset({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
     setError('');
+    clearErrors();
     changePasswordMutation.reset();
     onClose();
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    switch (field) {
-      case 'current':
-        setCurrentPassword(value);
-        break;
-      case 'new':
-        setNewPassword(value);
-        break;
-      case 'confirm':
-        setConfirmPassword(value);
-        break;
-    }
-    if (error) setError('');
-  };
-
-  const isFormValid = currentPassword && newPassword && confirmPassword && 
-                     newPassword === confirmPassword && passwordStrength.score >= 3;
-  
-  const isLoading = changePasswordMutation.isPending;
+  const isLoading = isSubmitting || changePasswordMutation.isPending;
 
   return (
     <Modal
@@ -155,8 +160,8 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
             Hủy
           </Button>
           <Button 
-            onClick={handleSubmit}
-            disabled={!isFormValid || isLoading}
+            onClick={handleSubmit(onSubmit)}
+            disabled={isLoading}
             loading={isLoading}
           >
             {isLoading ? 'Đang đổi mật khẩu...' : 'Đổi mật khẩu'}
@@ -172,11 +177,13 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
             label="Mật khẩu hiện tại"
             type="password"
             placeholder="Nhập mật khẩu hiện tại"
-            value={currentPassword}
-            onChange={(e) => handleInputChange('current', e.target.value)}
+            {...register('currentPassword', {
+              required: 'Vui lòng nhập mật khẩu hiện tại'
+            })}
             icon={<Lock size={16} />}
             required
             disabled={isLoading}
+            error={errors.currentPassword?.message}
           />
         </FormSection>
 
@@ -185,11 +192,17 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
             label="Mật khẩu mới"
             type="password"
             placeholder="Nhập mật khẩu mới"
-            value={newPassword}
-            onChange={(e) => handleInputChange('new', e.target.value)}
+            {...register('newPassword', {
+              required: 'Vui lòng nhập mật khẩu mới',
+              validate: {
+                strength: (value) => 
+                  validatePasswordStrength(value) || 'Mật khẩu mới quá yếu. Vui lòng chọn mật khẩu mạnh hơn'
+              }
+            })}
             icon={<Lock size={16} />}
             required
             disabled={isLoading}
+            error={errors.newPassword?.message}
           />
 
           {newPassword && (
@@ -221,12 +234,15 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
             label="Xác nhận mật khẩu mới"
             type="password"
             placeholder="Nhập lại mật khẩu mới"
-            value={confirmPassword}
-            onChange={(e) => handleInputChange('confirm', e.target.value)}
+            {...register('confirmPassword', {
+              required: 'Vui lòng xác nhận mật khẩu mới',
+              validate: (value, formValues) => 
+                validatePasswordMatch(value, formValues) || 'Mật khẩu xác nhận không khớp'
+            })}
             icon={<Lock size={16} />}
-            error={confirmPassword && newPassword !== confirmPassword ? 'Mật khẩu xác nhận không khớp' : undefined}
             required
             disabled={isLoading}
+            error={errors.confirmPassword?.message}
           />
         </FormSection>
       </ModalContent>

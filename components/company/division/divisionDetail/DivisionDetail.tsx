@@ -10,7 +10,6 @@ import {
     CreateButton,
 } from "@/components/company/division/divisionStyle";
 import Input from "@/components/common/Input/Input";
-// Select is not used directly here (Pagination used instead)
 import Pagination from "@/components/common/Pagination/Pagination";
 import AddMemberModal from "@/components/company/division/modals/AddMemberModal";
 import { ConfirmDeleteModal, Loading } from "@/components/common";
@@ -35,6 +34,9 @@ import {
     MemberEmail,
     DangerButton,
     LoadMoreContainer,
+    CardMarginTop,
+    DivisionInfoContent,
+    DivisionInfoRow,
 } from "@/components/company/division/detailStyle";
 import { DivisionStatus } from "@/constants/enums";
 
@@ -109,15 +111,15 @@ const DivisionDetailPage: React.FC<{ divisionId: number }> = ({
                         {division?.name ?? "Chi tiết phòng ban"}
                     </CardTitle>
                 </CardHeader>
-                <div style={{ padding: 16, color: "var(--text-secondary)" }}>
-                    <div>
+                <DivisionInfoContent>
+                    <DivisionInfoRow>
                         Trạng thái:{" "}
                         {getStatusText(
                             division?.status ?? DivisionStatus.ACTIVE
                         )}
-                    </div>
-                    <div>Mô tả: {division?.description || "-"}</div>
-                </div>
+                    </DivisionInfoRow>
+                    <DivisionInfoRow>Mô tả: {division?.description || "-"}</DivisionInfoRow>
+                </DivisionInfoContent>
             </Card>
         ),
         [division]
@@ -127,7 +129,7 @@ const DivisionDetailPage: React.FC<{ divisionId: number }> = ({
         <PageContainer>
             {header}
 
-            <Card style={{ marginTop: 16 }}>
+            <CardMarginTop as={Card}>
                 <CardHeader>
                     <IconWrapper>
                         <Users size={20} />
@@ -211,7 +213,7 @@ const DivisionDetailPage: React.FC<{ divisionId: number }> = ({
                         </MembersGrid>
                     )}
                 </SectionBody>
-            </Card>
+            </CardMarginTop>
             <AddMemberModal
                 isOpen={isAddModalOpen}
                 divisionId={divisionId}

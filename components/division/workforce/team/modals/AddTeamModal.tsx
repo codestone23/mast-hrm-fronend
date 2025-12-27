@@ -1,26 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { X } from "lucide-react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { DatePicker, Input, Select } from "@/components/common";
+import { Button, DatePicker, Input, Select } from "@/components/common";
 import { formatDateForAPI, parseDateFromAPI } from "@/utils/dateUtils";
-import {
-  ModalOverlay,
-  ModalContainer,
-  ModalContent,
-  ModalHeader,
-  ModalTitle,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  FormGroup,
-  FormLabel,
-  CancelButton,
-  SaveButton,
-} from "@/components/hr/asset/modals/modalStyle";
+import { Modal } from "@/components/common";
 import divisionWorkforceService from "@/services/division_workforce.service";
 import { DivisionTeamCreateRequest, DivisionMemberData } from "@/types/api";
+import { FormContainer } from "./addTeamModalStyle";
 
 interface Props {
   isOpen: boolean;
@@ -30,30 +19,38 @@ interface Props {
   isLoading?: boolean;
 }
 
+interface AddTeamFormData {
+  name: string;
+  foundingDate: Date | null;
+  leaderId: number;
+}
+
 const AddTeamModal: React.FC<Props> = ({ isOpen, onClose, onSave, divisionId, isLoading = false }) => {
-  const [data, setData] = useState<DivisionTeamCreateRequest>({
-    divisionId: divisionId,
-    name: "",
-    foundingDate: "",
-    leaderId: 0,
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [leaderSearchTerm, setLeaderSearchTerm] = useState("");
   const [debouncedLeaderSearch, setDebouncedLeaderSearch] = useState("");
 
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+    reset,
+  } = useForm<AddTeamFormData>({
+    defaultValues: {
+      name: "",
+      foundingDate: null,
+      leaderId: 0,
+    },
+    mode: "onChange",
+  });
+
   useEffect(() => {
     if (!isOpen) {
-      setData({
-        divisionId: divisionId,
-        name: "",
-        foundingDate: "",
-        leaderId: 0,
-      });
-      setErrors({});
+      reset();
       setLeaderSearchTerm("");
       setDebouncedLeaderSearch("");
     }
-  }, [isOpen, divisionId]);
+  }, [isOpen, reset]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -99,140 +96,102 @@ const AddTeamModal: React.FC<Props> = ({ isOpen, onClose, onSave, divisionId, is
     [members]
   );
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!data.name.trim()) {
-      newErrors.name = "Tên team là bắt buộc";
-    }
-
-    if (!data.leaderId || data.leaderId === 0) {
-      newErrors.leaderId = "Vui lòng chọn người quản lý";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSave = async () => {
-    if (!validateForm()) return;
-
-    try {
-      await onSave(data);
-      setData({
-        divisionId: divisionId,
-        name: "",
-        foundingDate: "",
-        leaderId: 0,
-      });
-      setErrors({});
-      onClose();
-    } catch {
-      // Error handling is done in parent component
-    }
-  };
-
-  const handleClose = () => {
-    setData({
+  const onSubmit = async (data: AddTeamFormData) => {
+    const payload: DivisionTeamCreateRequest = {
       divisionId: divisionId,
-      name: "",
-      foundingDate: "",
-      leaderId: 0,
-    });
-    setErrors({});
-    setLeaderSearchTerm("");
-    setDebouncedLeaderSearch("");
-    onClose();
+      name: data.name.trim(),
+      foundingDate: data.foundingDate ? formatDateForAPI(data.foundingDate) : "",
+      leaderId: data.leaderId,
+    };
+    await onSave(payload);
   };
-
-  if (!isOpen) return null;
 
   return (
-    <ModalOverlay onClick={handleClose}>
-      <ModalContainer size="md" onClick={(e) => e.stopPropagation()}>
-        <ModalContent>
-          <ModalHeader>
-            <ModalTitle>Tạo team</ModalTitle>
-            <ModalCloseButton onClick={handleClose}>
-              <X size={20} />
-            </ModalCloseButton>
-          </ModalHeader>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Tạo team"
+      size="md"
+      closable
+      footer={
+        <>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+            disabled={isLoading}
+          >
+            Hủy
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleSubmit(onSubmit)}
+            loading={isLoading}
+            disabled={isLoading}
+          >
+            Tạo team
+          </Button>
+        </>
+      }
+    >
+      <FormContainer>
+        <Input
+          label="Tên team"
+          required
+          {...register("name", {
+            required: "Tên team là bắt buộc",
+          })}
+          placeholder="Nhập tên team"
+          error={errors.name?.message}
+          fullWidth
+          disabled={isLoading}
+        />
 
-          <ModalBody>
-            <FormGroup>
-              <FormLabel>
-                Tên team <span style={{ color: "#ef4444" }}>*</span>
-              </FormLabel>
-              <Input
-                value={data.name}
-                onChange={(e) => {
-                  setData({ ...data, name: e.target.value });
-                  if (errors.name) {
-                    setErrors({ ...errors, name: "" });
-                  }
-                }}
-                placeholder="Nhập tên team"
-                error={errors.name}
-                fullWidth
-              />
-            </FormGroup>
+        <Controller
+          name="foundingDate"
+          control={control}
+          render={({ field }) => (
+            <DatePicker
+              label="Ngày thành lập"
+              value={field.value}
+              onChange={(date) => field.onChange(date)}
+              placeholder="Chọn ngày thành lập"
+              fullWidth
+              disabled={isLoading}
+            />
+          )}
+        />
 
-            <FormGroup>
-              <DatePicker
-                label="Ngày thành lập"
-                value={parseDateFromAPI(data.foundingDate)}
-                onChange={(date) =>
-                  setData({
-                    ...data,
-                    foundingDate: date ? formatDateForAPI(date) : "",
-                  })
-                }
-                placeholder="Chọn ngày thành lập"
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <FormLabel>
-                Người quản lý <span style={{ color: "#ef4444" }}>*</span>
-              </FormLabel>
-              <Select
-                options={leaderOptions}
-                value={data.leaderId ? String(data.leaderId) : ""}
-                onChange={(value) => {
-                  setData({ ...data, leaderId: value ? Number(value) : 0 });
-                  if (errors.leaderId) {
-                    setErrors({ ...errors, leaderId: "" });
-                  }
-                }}
-                placeholder="Chọn người quản lý"
-                fullWidth
-                searchable={true}
-                onSearchChange={setLeaderSearchTerm}
-                hasNextPage={hasNextPage}
-                isFetchingNextPage={isFetchingNextPage}
-                fetchNextPage={fetchNextPage}
-                loadingText="Đang tải thêm thành viên..."
-                disabled={isLoading}
-              />
-              {errors.leaderId && (
-                <span style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>
-                  {errors.leaderId}
-                </span>
-              )}
-            </FormGroup>
-          </ModalBody>
-
-          <ModalFooter>
-            <CancelButton type="button" onClick={handleClose} disabled={isLoading}>
-              Hủy
-            </CancelButton>
-            <SaveButton type="button" onClick={handleSave} disabled={isLoading}>
-              {isLoading ? "Đang tạo..." : "Tạo team"}
-            </SaveButton>
-          </ModalFooter>
-        </ModalContent>
-      </ModalContainer>
-    </ModalOverlay>
+        <Controller
+          name="leaderId"
+          control={control}
+          rules={{
+            required: "Vui lòng chọn người quản lý",
+            validate: (value) => value !== 0 || "Vui lòng chọn người quản lý",
+          }}
+          render={({ field }) => (
+            <Select
+              label="Người quản lý"
+              required
+              options={leaderOptions}
+              value={field.value ? String(field.value) : ""}
+              onChange={(value) => field.onChange(value ? Number(value) : 0)}
+              placeholder="Chọn người quản lý"
+              fullWidth
+              searchable={true}
+              onSearchChange={setLeaderSearchTerm}
+              hasNextPage={hasNextPage}
+              isFetchingNextPage={isFetchingNextPage}
+              fetchNextPage={fetchNextPage}
+              loadingText="Đang tải thêm thành viên..."
+              disabled={isLoading}
+              error={errors.leaderId?.message}
+            />
+          )}
+        />
+      </FormContainer>
+    </Modal>
   );
 };
 

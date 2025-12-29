@@ -15,70 +15,77 @@ export const useRegisterFace = () => {
         mutationFn: async (
             data: RegisterFaceData & { user_id: number },
         ): Promise<unknown> => {
-            const faceUrl =
-                process.env.NEXT_PUBLIC_FACE_IDENTIFICATION_URL;
+            // const faceUrl =
+            //     process.env.NEXT_PUBLIC_FACE_IDENTIFICATION_URL;
 
-            if (!faceUrl) {
-                throw new Error("FACE_IDENTIFICATION_URL không được cấu hình");
-            }
+            // if (!faceUrl) {
+            //     throw new Error("FACE_IDENTIFICATION_URL không được cấu hình");
+            // }
 
-            const faceForm = new FormData();
-            faceForm.append("user_id", String(data.user_id));
-            faceForm.append("image", data.image as Blob);
+            // const faceForm = new FormData();
+            // faceForm.append("user_id", String(data.user_id));
+            // faceForm.append("image", data.image as Blob);
 
-            const faceRes = await fetch(`${faceUrl}/add_user`, {
-                method: "POST",
-                body: faceForm,
+            // const faceRes = await fetch(`${faceUrl}/add_user`, {
+            //     method: "POST",
+            //     body: faceForm,
+            // });
+
+            // if (!faceRes.ok) {
+            //     const errText = await faceRes.text();
+            //     throw new Error(
+            //         `Đăng ký khuôn mặt với Face service thất bại: ${faceRes.status} - ${errText}`,
+            //     );
+            // }
+
+            // await faceRes.json();
+
+            // const presign = await profileService.getPresignedUrl({
+            //     file_type: (data.image as File).type,
+            //     folder: "faces",
+            // });
+
+            // const uploadForm = new FormData();
+            // uploadForm.append("file", data.image as Blob);
+            // uploadForm.append("public_id", presign.public_id);
+            // uploadForm.append("signature", presign.signature);
+            // uploadForm.append("timestamp", presign.timestamp.toString());
+            // uploadForm.append("api_key", presign.api_key);
+            // uploadForm.append("folder", presign.folder);
+            // if (presign.transformation) {
+            //     uploadForm.append("transformation", presign.transformation);
+            // }
+
+            // const uploadRes = await fetch(presign.upload_url, {
+            //     method: "POST",
+            //     body: uploadForm,
+            // });
+
+            // if (!uploadRes.ok) {
+            //     const errText = await uploadRes.text();
+            //     throw new Error(
+            //         `Upload ảnh thất bại: ${uploadRes.status} - ${errText}`,
+            //     );
+            // }
+
+            // const uploadJson = await uploadRes.json();
+            // const uploadedUrl = uploadJson.secure_url as string;
+
+            // if (!uploadedUrl) {
+            //     throw new Error("Không xác định được URL ảnh sau upload");
+            // }
+
+            // const response = await TimekeepingService.registerFace({
+            //     user_id: data.user_id,
+            //     photo_url: uploadedUrl,
+            // });
+
+            const formData = new FormData();
+            Object.entries(data).forEach(([key, value]) => {
+                formData.append(key, value);
             });
 
-            if (!faceRes.ok) {
-                const errText = await faceRes.text();
-                throw new Error(
-                    `Đăng ký khuôn mặt với Face service thất bại: ${faceRes.status} - ${errText}`,
-                );
-            }
-
-            await faceRes.json();
-
-            const presign = await profileService.getPresignedUrl({
-                file_type: (data.image as File).type,
-                folder: "faces",
-            });
-
-            const uploadForm = new FormData();
-            uploadForm.append("file", data.image as Blob);
-            uploadForm.append("public_id", presign.public_id);
-            uploadForm.append("signature", presign.signature);
-            uploadForm.append("timestamp", presign.timestamp.toString());
-            uploadForm.append("api_key", presign.api_key);
-            uploadForm.append("folder", presign.folder);
-            if (presign.transformation) {
-                uploadForm.append("transformation", presign.transformation);
-            }
-
-            const uploadRes = await fetch(presign.upload_url, {
-                method: "POST",
-                body: uploadForm,
-            });
-
-            if (!uploadRes.ok) {
-                const errText = await uploadRes.text();
-                throw new Error(
-                    `Upload ảnh thất bại: ${uploadRes.status} - ${errText}`,
-                );
-            }
-
-            const uploadJson = await uploadRes.json();
-            const uploadedUrl = uploadJson.secure_url as string;
-
-            if (!uploadedUrl) {
-                throw new Error("Không xác định được URL ảnh sau upload");
-            }
-
-            const response = await TimekeepingService.registerFace({
-                user_id: data.user_id,
-                photo_url: uploadedUrl,
-            });
+            const response = await TimekeepingService.registerFace(formData);
 
             return response;
         },

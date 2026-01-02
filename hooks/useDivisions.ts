@@ -31,12 +31,13 @@ export function useDivisionDetail(id: number | string) {
   });
 }
 
-export function useCreateDivision() {
+export function useCreateDivision(onSuccess?: () => void) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (payload: CreateDivisionRequest) => divisionsService.createDivision(payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["divisions", "list"] });
+      onSuccess?.();
     },
   });
 }

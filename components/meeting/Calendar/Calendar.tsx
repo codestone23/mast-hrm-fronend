@@ -21,6 +21,7 @@ import {
   MeetingBlock,
 } from "./calendarStyle";
 import { useMobile } from "@/hooks/useMobile";
+import { Modal, DatePicker, Button } from "@/components/common";
 
 interface CalendarProps {
   meetings: Meeting[];
@@ -40,6 +41,8 @@ const Calendar: React.FC<CalendarProps> = ({
   currentUserId,
 }) => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
+  const [isWeekPickerOpen, setIsWeekPickerOpen] = useState(false);
+  const [selectedWeekDate, setSelectedWeekDate] = useState<Date | null>(null);
   const isMobile = useMobile();
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
   // Chỉ lấy 5 ngày từ thứ 2 đến thứ 6 (bỏ thứ 7 và CN)
@@ -57,6 +60,7 @@ const Calendar: React.FC<CalendarProps> = ({
     const slots: string[] = [];
     for (let hour = 8; hour <= 17; hour++) {
       slots.push(`${hour.toString().padStart(2, "0")}:00`);
+      slots.push(`${hour.toString().padStart(2, "0")}:30`);
     }
     return slots;
   }, []);
@@ -149,8 +153,8 @@ const Calendar: React.FC<CalendarProps> = ({
       return null;
     }
 
-    const duration = (meetingEnd.getTime() - meetingStart.getTime()) / (1000 * 60 * 60);
-    const height = duration * 80;
+    const duration = (meetingEnd.getTime() - meetingStart.getTime()) / (1000 * 60); // duration in minutes
+    const height = (duration / 30) * 40; // 40px per 30 minutes
 
     return {
       top: 0,
@@ -167,13 +171,38 @@ const Calendar: React.FC<CalendarProps> = ({
   
   const weekRangeText = `${format(weekStart, "dd/MM", { locale: vi })} - ${format(weekEnd, "dd/MM/yyyy", { locale: vi })}`;
 
+  const handleTitleClick = () => {
+    setSelectedWeekDate(currentWeek);
+    setIsWeekPickerOpen(true);
+  };
+
+  const handleWeekSelect = (date: Date | null) => {
+    if (date) {
+      setSelectedWeekDate(date);
+    }
+  };
+
+  const handleConfirmWeek = () => {
+    if (selectedWeekDate) {
+      const newWeek = startOfWeek(selectedWeekDate, { weekStartsOn: 1 });
+      setCurrentWeek(newWeek);
+      onMonthChange?.(newWeek);
+    }
+    setIsWeekPickerOpen(false);
+  };
+
+  const handleCloseWeekPicker = () => {
+    setIsWeekPickerOpen(false);
+    setSelectedWeekDate(null);
+  };
+
   return (
     <CalendarContainer $isMobile={isMobile}>
       <CalendarHeader>
         <CalendarNavButton onClick={handlePrevWeek}>
           <ChevronLeft size={20} />
         </CalendarNavButton>
-        <CalendarTitle>
+        <CalendarTitle $clickable onClick={handleTitleClick}>
           Tuần {weekRangeText}
         </CalendarTitle>
         <CalendarNavButton onClick={handleNextWeek}>
@@ -184,9 +213,16 @@ const Calendar: React.FC<CalendarProps> = ({
       <WeeklyGrid>
         <TimeColumn>
           <TimeHeader>Giờ</TimeHeader>
-          {timeSlots.map((slot) => (
-            <TimeSlot key={slot} $isMobile={isMobile}>{slot}</TimeSlot>
-          ))}
+          {timeSlots.map((slot) => {
+            const [, minute] = slot.split(":").map(Number);
+            // Chỉ hiển thị label cho các mốc :00, ẩn label cho :30
+            const displayText = minute === 0 ? slot : "";
+            return (
+              <TimeSlot key={slot} $isMobile={isMobile}>
+                {displayText}
+              </TimeSlot>
+            );
+          })}
         </TimeColumn>
 
         {weekDays.map((day) => {
@@ -242,6 +278,46 @@ const Calendar: React.FC<CalendarProps> = ({
           );
         })}
       </WeeklyGrid>
+
+      <Modal
+        isOpen={isWeekPickerOpen}
+        onClose={handleCloseWeekPicker}
+        title="Chọn tuần"
+        size="sm"
+      >
+        <div style={{ padding: '1rem 0' }}>
+          <DatePicker
+            value={selectedWeekDate}
+            onChange={handleWeekSelect}
+            placeholder="Chọn ngày trong tuần"
+            label="Chọn ngày"
+            fullWidth={true}
+            size="md"
+          />
+          <div style={{ 
+            marginTop: '1.5rem', 
+            display: 'flex', 
+            gap: '0.75rem', 
+            justifyContent: 'flex-end' 
+          }}>
+            <Button
+              variant="outline"
+              onClick={handleCloseWeekPicker}
+              size="md"
+            >
+              Hủy
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleConfirmWeek}
+              size="md"
+              disabled={!selectedWeekDate}
+            >
+              Xác nhận
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </CalendarContainer>
   );
 };

@@ -84,7 +84,7 @@ export interface RequestStats {
 
 class RequestsService {
     async getMyRequests(params: RequestParams = {}): Promise<PaginatedResponse<Request>> {
-        const response = await axiosInstance.get(`/requests/my/all`, { 
+        const response = await axiosInstance.get(`/requests/my`, { 
           params: {
             ...params,
           },

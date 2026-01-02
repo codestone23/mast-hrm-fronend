@@ -359,7 +359,7 @@ const TeamList: React.FC = () => {
   };
 
   return (
-    <PersonalContainer>
+    <>
       <DashboardGridAccount>
         {renderHeader()}
         <DashboardCol $span={2}>
@@ -444,7 +444,7 @@ const TeamList: React.FC = () => {
           />
         </>
       )}
-    </PersonalContainer>
+    </>
   );
 };
 

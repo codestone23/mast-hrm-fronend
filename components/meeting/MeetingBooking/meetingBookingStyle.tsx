@@ -3,7 +3,7 @@ import styled from "styled-components";
 export const BookingForm = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0.5rem;
 `;
 
 export const FormRow = styled.div<{ $inline?: boolean }>`

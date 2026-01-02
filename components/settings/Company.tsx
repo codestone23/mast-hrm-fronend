@@ -86,8 +86,8 @@ interface UserWithDetails {
   user_information?: {
     name?: string;
     avatar?: string;
-    [key: string]: unknown;
-  } | unknown[];
+    expertise?: string;
+  };
 }
 
 const Company: React.FC = () => {
@@ -171,7 +171,7 @@ const Company: React.FC = () => {
         : null;
       
       // Get position name
-      const position = userWithDetails.position?.name || "Không có"; 
+      const position = userWithDetails?.user_information?.expertise ?? "Không có"; 
       
       // Get user_information for avatar
       const userInfo = Array.isArray(userWithDetails.user_information) 
@@ -179,15 +179,48 @@ const Company: React.FC = () => {
         : (userWithDetails.user_information as { avatar?: string });
       const avatar = userInfo?.avatar || undefined;
       
+      const code = user.user_information?.code;
+      const userId = typeof code === 'string' ? parseInt(code, 10) : (code ?? user.id);
+      
       return {
-        id: user.id,
-        name: user.name || "Không có", 
+        id: user.user_information?.code ?? user.id,
+        name: user?.name ?? user?.user_information?.name ?? "Không có", 
         email: user.email || "",
         position: position,
         division: divisionName || "Còn lại",
         avatar: avatar,
       };
     });
+
+    // Group ALL employees by division (for divisions list in sidebar)
+    const allGrouped: GroupedEmployees = {};
+    employeesList.forEach((employee) => {
+      const divName = employee.division;
+      if (!allGrouped[divName]) {
+        allGrouped[divName] = [];
+      }
+      allGrouped[divName].push(employee);
+    });
+
+    // Create divisions list with counts from ALL employees (not filtered)
+    const divisionsList = [
+      { name: "Tất cả", count: employeesList.length },
+      ...Object.keys(allGrouped)
+        .filter(divName => divName !== "Còn lại")
+        .map(divName => ({
+          name: divName,
+          count: allGrouped[divName].length,
+        }))
+        .sort((a, b) => b.count - a.count), // Sort by count descending
+    ];
+
+    // Add "Còn lại" at the end if it exists
+    if (allGrouped["Còn lại"] && allGrouped["Còn lại"].length > 0) {
+      divisionsList.push({
+        name: "Còn lại",
+        count: allGrouped["Còn lại"].length,
+      });
+    }
 
     // Filter employees based on division (search is handled by API)
     const filteredEmployees = employeesList.filter((employee) => {
@@ -196,7 +229,7 @@ const Company: React.FC = () => {
       return matchesDivision;
     });
 
-    // Group by division
+    // Group filtered employees by division (for display)
     const grouped: GroupedEmployees = {};
     filteredEmployees.forEach((employee) => {
       const divName = employee.division;
@@ -205,26 +238,6 @@ const Company: React.FC = () => {
       }
       grouped[divName].push(employee);
     });
-
-    // Create divisions list with counts
-    const divisionsList = [
-      { name: "Tất cả", count: filteredEmployees.length },
-      ...Object.keys(grouped)
-        .filter(divName => divName !== "Còn lại")
-        .map(divName => ({
-          name: divName,
-          count: grouped[divName].length,
-        }))
-        .sort((a, b) => b.count - a.count), // Sort by count descending
-    ];
-
-    // Add "Còn lại" at the end if it exists
-    if (grouped["Còn lại"] && grouped["Còn lại"].length > 0) {
-      divisionsList.push({
-        name: "Còn lại",
-        count: grouped["Còn lại"].length,
-      });
-    }
 
     return {
       employees: filteredEmployees,
@@ -395,3 +408,4 @@ const Company: React.FC = () => {
 };
 
 export default Company;
+

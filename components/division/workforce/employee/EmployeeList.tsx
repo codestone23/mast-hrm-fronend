@@ -647,7 +647,7 @@ const EmployeeList: React.FC = () => {
   };
 
   return (
-    <PersonalContainer>
+    <>
       <DashboardGridAccount>
         {renderHeader()}
         <DashboardCol $span={2}>
@@ -709,7 +709,7 @@ const EmployeeList: React.FC = () => {
         message={`Bạn có chắc chắn muốn xóa nhân viên "${selectedUser ? getUserName(selectedUser) : ""}"?`}
         isLoading={deleteMutation.isPending}
       />
-    </PersonalContainer>
+    </>
   );
 };
 

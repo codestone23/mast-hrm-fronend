@@ -374,11 +374,10 @@ const Personal: React.FC = () => {
 									<div>
 										Người quản lý:{" "}
 										<strong>
-											{user?.organization.division
-												.division_head.name !==
+											{user?.organization.division?.division_head?.name &&
+												user?.organization.division?.division_head?.name !==
 												user?.user_information?.name
-												? user?.organization.division
-													.division_head.name
+												? user?.organization.division?.division_head?.name
 												: "Không có"}
 										</strong>
 									</div>
@@ -409,7 +408,7 @@ const Personal: React.FC = () => {
 												Tổng số công
 											</div>
 											<div className="value">
-												{statsData.totalWorkDays}
+												{Number(statsData.totalWorkDays.split("/")[0] || 0)}
 											</div>
 										</div>
 										<div className="metric-item">
@@ -435,14 +434,6 @@ const Personal: React.FC = () => {
 											</div>
 											<div className="value">
 												{statsData.lateMinutes}
-											</div>
-										</div>
-										<div className="metric-item">
-											<div className="label">
-												Thời gian vi phạm
-											</div>
-											<div className="value">
-												{statsData.violationTime}
 											</div>
 										</div>
 										<div className="metric-item">

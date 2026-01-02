@@ -300,7 +300,6 @@ const PersonalInfo = () => {
     };
 
     useEffect(() => {
-        console.log(data);
         if (data) {
             setSkills(data.user_skills ?? data.user_information?.user_skills ?? []);
             setExperiences(data.experience ?? data.user_information?.experience ?? []);

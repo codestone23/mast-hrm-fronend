@@ -61,7 +61,7 @@ export const Navigation = styled.div<{ $isMobile?: boolean }>`
 `;
 
 export const NavItem = styled.div<{ $active?: boolean; $isMobile?: boolean }>`
-  padding: ${props => props.$isMobile ? '0.75rem 1rem' : '1rem 1.5rem'};
+  padding: ${props => props.$isMobile ? '0.75rem 1rem' : '1rem 1rem'};
   color: ${props => props.$active ? 'var(--secondary-500)' : 'var(--gray-200)'};
   background-color: ${props => props.$active ? 'var(--gray-600)' : 'transparent'};
   cursor: pointer;

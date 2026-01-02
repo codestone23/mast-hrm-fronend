@@ -70,6 +70,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
+  // View mode for quick navigation: 'date' | 'month' | 'year'
+  const [viewMode, setViewMode] = useState<'date' | 'month' | 'year'>(mode);
   
   const datePickerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -104,6 +106,11 @@ const DatePicker: React.FC<DatePickerProps> = ({
       setInputValue(formatDate(date));
     }
   }, [value, formatDate]);
+
+  // Reset view mode when mode prop changes
+  useEffect(() => {
+    setViewMode(mode);
+  }, [mode]);
 
   useEffect(() => {
     setInputValue(formatDate(selectedDate));
@@ -238,19 +245,38 @@ const DatePicker: React.FC<DatePickerProps> = ({
     const year = viewDate.getFullYear();
     if (isMonthDisabled(year, monthIndex)) return;
 
-    const date = new Date(year, monthIndex, 1);
+    const date = new Date(year, monthIndex, selectedDate?.getDate() || 1);
     setSelectedDate(date);
+    setViewDate(date);
     setInputValue(formatDate(date));
-    setIsOpen(false);
-    onChange?.(date);
+    
+    // If mode is 'date', go back to date view after selecting month
+    if (mode === 'date') {
+      setViewMode('date');
+    } else {
+      setIsOpen(false);
+      onChange?.(date);
+    }
   };
 
   const handleYearSelect = (year: number) => {
-    const date = new Date(year, 0, 1);
+    const month = selectedDate?.getMonth() || viewDate.getMonth();
+    const day = selectedDate?.getDate() || 1;
+    const date = new Date(year, month, day);
     setSelectedDate(date);
+    setViewDate(date);
     setInputValue(formatDate(date));
-    setIsOpen(false);
-    onChange?.(date);
+    
+    // If mode is 'date', go back to month view after selecting year
+    if (mode === 'date') {
+      setViewMode('month');
+    } else if (mode === 'month') {
+      setIsOpen(false);
+      onChange?.(date);
+    } else {
+      setIsOpen(false);
+      onChange?.(date);
+    }
   };
 
   const getDaysInMonth = (date: Date): Date[] => {
@@ -326,6 +352,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
                 if (!isOpen && triggerRef.current) {
                   const rect = triggerRef.current.getBoundingClientRect();
                   setTriggerRect(rect);
+                  // Reset view mode when opening
+                  setViewMode(mode);
                 }
                 setIsOpen(!isOpen);
               }
@@ -338,13 +366,16 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
         {isOpen && createPortal(
           <DatePickerDropdown ref={dropdownRef} $align={align} $triggerRect={triggerRect || undefined}>
-            {mode === 'date' ? (
+            {viewMode === 'date' ? (
               <>
                 <CalendarHeader>
                   <CalendarNav onClick={handlePrevMonth}>
                     <ChevronLeft size={16} />
                   </CalendarNav>
-                  <CalendarTitle>
+                  <CalendarTitle 
+                    $clickable={mode === 'date'}
+                    onClick={() => mode === 'date' && setViewMode('month')}
+                  >
                     {monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}
                   </CalendarTitle>
                   <CalendarNav onClick={handleNextMonth}>
@@ -371,13 +402,16 @@ const DatePicker: React.FC<DatePickerProps> = ({
                   ))}
                 </CalendarGrid>
               </>
-            ) : mode === 'month' ? (
+            ) : viewMode === 'month' ? (
               <>
                 <CalendarHeader>
                   <CalendarNav onClick={handlePrevYear}>
                     <ChevronLeft size={16} />
                   </CalendarNav>
-                  <CalendarTitle>
+                  <CalendarTitle 
+                    $clickable={mode === 'date'}
+                    onClick={() => mode === 'date' && setViewMode('year')}
+                  >
                     {viewDate.getFullYear()}
                   </CalendarTitle>
                   <CalendarNav onClick={handleNextYear}>

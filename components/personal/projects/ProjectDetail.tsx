@@ -202,7 +202,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
             <ProjectOverview>
               <ProjectInfo>
                 {project.members.map((member, index) => (
-                  <ProjectInfoItem key={member.id}>
+                  <ProjectInfoItem key={`member-${member.id}-${index}`}>
                     <ProjectInfoLabel>{index + 1}. {member.name}</ProjectInfoLabel> 
                     <ProjectInfoValue>
                       <div>

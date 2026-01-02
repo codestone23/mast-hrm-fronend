@@ -409,10 +409,6 @@ const MyAssetRequestsList: React.FC<MyAssetRequestsListProps> = ({ requests }) =
               <CardTitleSection>
                 <AssetName>
                   {request.asset?.name || "Yêu cầu tài sản"}
-                  <MetaItem>
-                    <Hash size={14} />
-                    <span>ID: {request.id}</span>
-                  </MetaItem>
                   <InfoRow>
                     <InfoBadge>
                       <Package size={14} />

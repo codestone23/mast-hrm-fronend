@@ -104,16 +104,10 @@ const DivisionManagement: React.FC = () => {
         showErrorToast(error || "Có lỗi xảy ra khi xóa phòng ban");
     };
 
-    const createMutation = useCreateDivision();
     const deleteMutation = useDeleteDivision(handleDeleteError);
     const updateMutation = useUpdateDivision(selectedDivision?.id ?? 0);
 
     const filteredDivisions = divisions; // server-side filtered
-
-    const handleCreateDivision = async (payload: CreateDivisionRequest) => {
-        await createMutation.mutateAsync(payload);
-        handleCloseModal();
-    };
 
     const handleEditDivision = async (
         payload: UpdateDivisionRequest & { id?: string | number }
@@ -330,9 +324,6 @@ const DivisionManagement: React.FC = () => {
             <CreateDivisionModal
                 isOpen={openModal === ModalType.CREATE}
                 onClose={handleCloseModal}
-                onSave={(payload: CreateDivisionRequest) =>
-                    handleCreateDivision(payload)
-                }
             />
 
             <EditDivisionModal

@@ -98,7 +98,7 @@ const CreateDailyReportModal: React.FC<CreateDailyReportModalProps> = ({
   } = useInfiniteQuery({
     queryKey: ["my-projects", debouncedProjectSearch],
     queryFn: ({ pageParam = 1 }) =>
-      projectService.getMyProjects(pageParam, debouncedProjectSearch || undefined),
+      projectService.getProjectsAdmin(pageParam, debouncedProjectSearch || undefined),
     enabled: isOpen,
     getNextPageParam: (lastPage) => {
       const totalPages = lastPage.pagination?.total_pages || 0;

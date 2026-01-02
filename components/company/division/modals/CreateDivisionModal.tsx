@@ -14,7 +14,6 @@ import { FormContainer, FormGrid } from "./modalStyle";
 interface CreateDivisionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave?: (payload: CreateDivisionRequest) => void;
 }
 
 interface CreateDivisionFormData {
@@ -27,8 +26,7 @@ interface CreateDivisionFormData {
 
 const CreateDivisionModal: React.FC<CreateDivisionModalProps> = ({ 
   isOpen, 
-  onClose,
-  onSave 
+  onClose
 }) => {
   const { success: showSuccessToast, error: showErrorToast } = useToast();
   const [leaderSearchTerm, setLeaderSearchTerm] = useState("");
@@ -106,8 +104,13 @@ const CreateDivisionModal: React.FC<CreateDivisionModalProps> = ({
     ];
   }, [allUsers]);
 
+  const onSuccess = () => {
+    showSuccessToast("Tạo phòng ban thành công");
+    onClose();
+  };
+
   // Create division mutation
-  const createMutation = useCreateDivision();
+  const createMutation = useCreateDivision(onSuccess);
 
   // Reset form when modal closes
   useEffect(() => {
@@ -118,14 +121,6 @@ const CreateDivisionModal: React.FC<CreateDivisionModalProps> = ({
     }
   }, [isOpen, reset]);
 
-  // Handle mutation success/error
-  useEffect(() => {
-    if (createMutation.isSuccess) {
-      showSuccessToast("Tạo phòng ban thành công");
-      onClose();
-    }
-  }, [createMutation.isSuccess, onClose, showSuccessToast]);
-
   useEffect(() => {
     if (createMutation.isError) {
       const error = createMutation.error as { response?: { data?: { message?: string } } };
@@ -133,7 +128,7 @@ const CreateDivisionModal: React.FC<CreateDivisionModalProps> = ({
         error?.response?.data?.message || "Có lỗi xảy ra khi tạo phòng ban"
       );
     }
-  }, [createMutation.isError, createMutation.error, showErrorToast]);
+  }, [createMutation.isError, createMutation.error]);
 
   const onSubmit = (data: CreateDivisionFormData) => {
     const payload: CreateDivisionRequest = {
@@ -145,9 +140,6 @@ const CreateDivisionModal: React.FC<CreateDivisionModalProps> = ({
     };
 
     createMutation.mutate(payload);
-    if (onSave) {
-      onSave(payload);
-    }
   };
 
   const handleClose = () => {

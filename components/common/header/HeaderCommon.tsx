@@ -136,9 +136,9 @@ const HeaderCommon = (props: HeaderCommonProps) => {
 
         {!isMobile ? (
           <Navigation $isMobile={isMobile}>
-            {navItems.map((item) => (
+            {navItems.map((item, index) => (
               <NavItem
-                key={item.id}
+                key={`nav-item-${item.id}-${index}`}
                 $active={activeTab.startsWith(item.id.slice(1))}
                 $isMobile={isMobile}
                 onClick={() => handleTabClick(item.id)}

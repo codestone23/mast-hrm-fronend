@@ -194,7 +194,7 @@ export const DivisionStats = styled.div`
   display: flex;
   align-items: center;
   gap: 20px;
-  margin-bottom: 12px;
+  margin-bottom: 0px;
   flex-wrap: wrap;
 
   .stat {

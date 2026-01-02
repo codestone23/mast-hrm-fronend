@@ -339,9 +339,7 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                                                         gửi:
                                                         <span>
                                                             {
-                                                                request.user
-                                                                    .user_information
-                                                                    .name
+                                                                request.user?.user_information?.name
                                                             }
                                                         </span>
                                                     </RequestMetaItem>

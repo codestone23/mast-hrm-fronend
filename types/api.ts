@@ -159,7 +159,7 @@ export interface User {
   updated_at: string;
   register_face_url?: string;
   register_face_at?: string;
-  user_information: unknown[] | {
+  user_information?: {
     id: number;
     user_id: number;
     personal_email: string | null;

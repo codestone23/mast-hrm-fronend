@@ -622,7 +622,7 @@ const UserManagement: React.FC = () => {
             <FilterRow $isMobile={isMobile}>
               <FilterItem $isMobile={isMobile}>
                 <Select
-                  label="Tháng *"
+                  label="Thời gian"
                   options={monthOptions}
                   value={selectedMonth}
                   onChange={(value) => {

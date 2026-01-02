@@ -152,10 +152,28 @@ export const CalendarNav = styled.button`
   }
 `;
 
-export const CalendarTitle = styled.div`
+export const CalendarTitle = styled.div<{ $clickable?: boolean }>`
   font-weight: 600;
   color: var(--text-primary);
   font-size: 0.875rem;
+  ${({ $clickable }) =>
+    $clickable &&
+    css`
+      cursor: pointer;
+      user-select: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: var(--gray-100);
+        color: var(--primary-600);
+      }
+
+      &:active {
+        background-color: var(--gray-200);
+      }
+    `}
 `;
 
 export const CalendarGrid = styled.div`

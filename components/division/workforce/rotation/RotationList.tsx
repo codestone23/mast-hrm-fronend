@@ -117,7 +117,7 @@ const RotationList: React.FC = () => {
   }, [selectedDivisionId, dateFrom, dateTo]);
 
   return (
-    <PersonalContainer>
+    <>
       <DashboardGridAccount>
         <DashboardCol>
           <Card>
@@ -214,7 +214,7 @@ const RotationList: React.FC = () => {
         }}
         rotationId={selectedRotation?.id || null}
       />
-    </PersonalContainer>
+    </>
   );
 };
 

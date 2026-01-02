@@ -39,12 +39,30 @@ export const CalendarNavButton = styled.button`
   }
 `;
 
-export const CalendarTitle = styled.h2`
+export const CalendarTitle = styled.h2<{ $clickable?: boolean }>`
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
   text-transform: capitalize;
+  ${({ $clickable }) =>
+    $clickable &&
+    css`
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--radius-sm);
+
+      &:hover {
+        background: var(--gray-100);
+        color: var(--primary-600);
+      }
+
+      &:active {
+        background: var(--gray-200);
+      }
+    `}
 `;
 
 export const WeeklyGrid = styled.div`
@@ -105,7 +123,7 @@ export const TimeHeader = styled.div`
 `;
 
 export const TimeSlot = styled.div<{ $isMobile?: boolean }>`
-  height: 80px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -177,7 +195,7 @@ export const DayContent = styled.div`
 `;
 
 export const HourSlot = styled.div<{ $isPast?: boolean }>`
-  height: 80px;
+  height: 40px;
   border-bottom: 1px solid var(--border);
   position: relative;
   cursor: ${({ $isPast }) => ($isPast ? "not-allowed" : "pointer")};

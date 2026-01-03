@@ -74,16 +74,18 @@ export const useTimeSheet = () => {
             totalWorkHours = 4;
         }
         
-        // Xác định status dựa trên dữ liệu - chỉ work, late, absent
+        // Xác định status dựa trên is_complete và total_work_time
         let status: string = 'absent';
         
-        // Chỉ xác định status dựa trên checkin/checkout và late_time
-        if (item.checkin && item.checkout) {
-            status = item.late_time > 0 ? 'late' : 'work';
-        } else if (item.checkin && !item.checkout) {
+        // 1. is_complete = true -> đủ công (work)
+        // 2. is_complete = false + total_work_time != null -> thiếu công (late)
+        // 3. is_complete = false + total_work_time = null -> không có công (absent)
+        if (item.is_complete === true) {
             status = 'work';
+        } else if (item.is_complete === false && item.total_work_time != null) {
+            status = 'late';
         } else {
-            // Không có checkin hoặc checkout
+            // is_complete = false && total_work_time = null
             status = 'absent';
         }
 

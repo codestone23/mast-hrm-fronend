@@ -125,7 +125,6 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
         if (approveModal.request) {
             setProcessingRequestId(approveModal.request.id);
             approveMutation.mutate({
-                type: getTypeEndpoint(approveModal.request.type),
                 id: approveModal.request.id.toString(),
             }, {
                 onSuccess: () => {
@@ -143,9 +142,8 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
         if (rejectModal.request) {
             setProcessingRequestId(rejectModal.request.id);
             rejectMutation.mutate({
-                type: rejectModal.request.type,
                 id: rejectModal.request.id.toString(),
-                payload: { rejected_reason: reason },
+                reason: reason,
             }, {
                 onSuccess: () => {
                     setRejectModal({ isOpen: false, request: null });
@@ -156,17 +154,6 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                 },
             });
         }
-    };
-
-    const getTypeEndpoint = (type: string) => {
-        const typeMap: Record<string, string> = {
-            'remote_work': "remote-work",
-            'day_off': "day-off",
-            'overtime': "overtime",
-            'late_early': "late-early",
-            'forgot_checkin': "forgot-checkin",
-        };
-        return typeMap[type] || type.toLowerCase();
     };
 
     const getTypeLabel = (type: REQUEST_TYPE) => {
@@ -339,7 +326,7 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                                                         gửi:
                                                         <span>
                                                             {
-                                                                request.user?.user_information?.name
+                                                                request.user_name
                                                             }
                                                         </span>
                                                     </RequestMetaItem>

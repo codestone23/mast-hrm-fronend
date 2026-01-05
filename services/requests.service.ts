@@ -22,6 +22,7 @@ export interface Request {
   rejected_reason?: string | null;
   approved_at?: string | null;
   approved_by?: number | null;
+  user_name?: string;
   approved_by_user?: {
     id: number;
     email: string;
@@ -58,7 +59,12 @@ export interface RequestParams {
 }
 
 export interface ApproveRejectPayload {
-  rejected_reason?: string;
+  reason?: string;
+}
+
+export interface RequestActionPayload {
+  action: 'approve' | 'reject';
+  reason?: string;
 }
 
 export interface UpdateRequestPayload {
@@ -107,12 +113,8 @@ class RequestsService {
         return response.data;
     }
 
-    async approveRequest(type: string, id: string): Promise<void> {
-        await axiosInstance.post(`/requests/${type}/${id}/approve`);
-    }
-
-    async rejectRequest(type: string, id: string, payload: ApproveRejectPayload = {}): Promise<void> {
-        await axiosInstance.post(`/requests/${type}/${id}/reject`, payload);
+    async actionRequest(id: string, payload: RequestActionPayload): Promise<void> {
+        await axiosInstance.patch(`/requests/${id}/action`, payload);
     }
 
     async updateRequest(type: string, id: string, payload: UpdateRequestPayload): Promise<void> {

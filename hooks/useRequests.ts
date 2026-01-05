@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import requestsService, { Request, RequestParams, ApproveRejectPayload, UpdateRequestPayload } from '@/services/requests.service';
+import requestsService, { Request, RequestParams, ApproveRejectPayload, UpdateRequestPayload, RequestActionPayload } from '@/services/requests.service';
 import { useToast } from '@/hooks/useToast';
 
 export const useMyRequests = (params: RequestParams = {}) => {
@@ -36,8 +36,8 @@ export const useApproveRequest = () => {
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: ({ type, id }: { type: string; id: string }) => 
-      requestsService.approveRequest(type, id),
+    mutationFn: ({ id }: { id: string }) => 
+      requestsService.actionRequest(id, { action: 'approve' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myRequests'] });
       queryClient.invalidateQueries({ queryKey: ['adminRequests'] });
@@ -62,8 +62,8 @@ export const useRejectRequest = () => {
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: ({ type, id, payload }: { type: string; id: string; payload: ApproveRejectPayload }) => 
-      requestsService.rejectRequest(type, id, payload),
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) => 
+      requestsService.actionRequest(id, { action: 'reject', reason }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myRequests'] });
       queryClient.invalidateQueries({ queryKey: ['adminRequests'] });

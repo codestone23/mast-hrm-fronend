@@ -88,9 +88,12 @@ const LanguageManagement: React.FC = () => {
     if (!validateForm()) return;
     createLanguage({
       name: formData.name.trim()
+    }, {
+      onSuccess: () => {
+        setIsCreateModalOpen(false);
+        setFormData({ name: "", code: "", description: "" });
+      }
     });
-    setIsCreateModalOpen(false);
-    setFormData({ name: "", code: "", description: "" });
   };
 
   const handleSubmitEdit = () => {
@@ -107,9 +110,12 @@ const LanguageManagement: React.FC = () => {
 
   const handleConfirmDelete = () => {
     if (!selectedLanguage?.id) return;
-    deleteLanguage(selectedLanguage.id);
-    setIsDeleteModalOpen(false);
-    setSelectedLanguage(null);
+    deleteLanguage(selectedLanguage.id, {
+      onSuccess: () => {
+        setIsDeleteModalOpen(false);
+        setSelectedLanguage(null);
+      }
+    });
   };
 
   const columns: TableColumn<Language>[] = [
@@ -119,30 +125,12 @@ const LanguageManagement: React.FC = () => {
       width: "2fr",
     },
     {
-      key: "_count",
-      label: "Số người dùng",
-      width: "1fr",
-      align: "center",
-      render: (value, row) => row._count?.user_languages || 0,
-    },
-    {
       key: "actions",
       label: "Thao tác",
       width: "1.5fr",
       align: "center",
       render: (value, row) => (
         <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={<Eye size={16} />}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleView(row);
-            }}
-          >
-            <span style={{ display: "none" }}>Xem</span>
-          </Button>
           <Button
             variant="ghost"
             size="sm"

@@ -96,9 +96,12 @@ const PositionManagement: React.FC = () => {
       name: formData.name.trim(),
       level_id: formData.level_id ? Number(formData.level_id) : undefined,
       description: formData.description.trim() || undefined,
+    }, {
+      onSuccess: () => {
+        setIsCreateModalOpen(false);
+        setFormData({ name: "", level_id: "", description: "" });
+      }
     });
-    setIsCreateModalOpen(false);
-    setFormData({ name: "", level_id: "", description: "" });
   };
 
   const handleSubmitEdit = () => {
@@ -117,9 +120,12 @@ const PositionManagement: React.FC = () => {
 
   const handleConfirmDelete = () => {
     if (!selectedPosition?.id) return;
-    deletePosition(selectedPosition.id);
-    setIsDeleteModalOpen(false);
-    setSelectedPosition(null);
+    deletePosition(selectedPosition.id, {
+      onSuccess: () => {
+        setIsDeleteModalOpen(false);
+        setSelectedPosition(null);
+      }
+    });
   };
 
   const columns: TableColumn<Position>[] = [
@@ -142,17 +148,6 @@ const PositionManagement: React.FC = () => {
       align: "center",
       render: (value, row) => (
         <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={<Eye size={16} />}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleView(row);
-            }}
-          >
-            <span style={{ display: "none" }}>Xem</span>
-          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -247,14 +242,6 @@ const PositionManagement: React.FC = () => {
             required
             fullWidth
           />
-          <Select
-            label="Cấp độ"
-            options={levelOptions}
-            value={formData.level_id ? Number(formData.level_id) : undefined}
-            onChange={(value) => setFormData({ ...formData, level_id: value.toString() })}
-            placeholder="Chọn cấp độ (tùy chọn)"
-            fullWidth
-          />
           <Input
             label="Mô tả"
             value={formData.description}
@@ -338,9 +325,6 @@ const PositionManagement: React.FC = () => {
             )}
             <div>
               <strong>Số người dùng:</strong> {detailData.data._count?.user_information || 0}
-            </div>
-            <div>
-              <strong>Số kỹ năng:</strong> {detailData.data._count?.skills || 0}
             </div>
             {detailData.data.created_at && (
               <div>

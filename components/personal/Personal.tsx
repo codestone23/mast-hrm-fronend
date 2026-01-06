@@ -75,16 +75,20 @@ import { useMobile } from "@/hooks/useMobile";
 
 const Personal: React.FC = () => {
 	const router = useRouter();
-	const isMobile = useMobile();
 	const { user } = usePersonal();
 	const now = new Date();
 	const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 	const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
+	const startDate = new Date(startOfMonth);
+	startDate.setDate(startDate.getDate() + 1);
+	const endDate = new Date(endOfMonth);
+	endDate.setDate(endDate.getDate() + 1);
+
 	const { data: attendanceReport, isLoading: isLoadingReport } =
 		usePersonalAttendanceStats({
-			start_date: startOfMonth.toISOString().split("T")[0],
-			end_date: endOfMonth.toISOString().split("T")[0],
+			start_date: startDate.toISOString().split("T")[0],
+			end_date: endDate.toISOString().split("T")[0],
 		});
 
 	// Fetch latest 3 approved news
@@ -188,10 +192,10 @@ const Personal: React.FC = () => {
 	const getAttendanceStatsData = () => {
 		if (isLoadingReport) {
 			return {
+				expectedWorkDays: "...",
 				totalWorkDays: "...",
 				overtimeHours: "...",
 				lateMinutes: "...",
-				violationTime: "...",
 				paidLeaveHours: "...",
 				unpaidLeaveHours: "...",
 			};
@@ -199,10 +203,10 @@ const Personal: React.FC = () => {
 
 		if (attendanceReport) {
 			return {
-				totalWorkDays: attendanceReport.total_work_days || "0/0",
+				expectedWorkDays: attendanceReport.expected_work_days || "0",
+				totalWorkDays: attendanceReport.total_work_days || "0",
 				overtimeHours: attendanceReport.overtime_hours || 0,
 				lateMinutes: attendanceReport.late_minutes || 0,
-				violationTime: attendanceReport.violation_time || "0/0",
 				paidLeaveHours: attendanceReport.paid_leave_hours || 0,
 				unpaidLeaveHours: attendanceReport.unpaid_leave_hours || 0,
 			};
@@ -210,10 +214,10 @@ const Personal: React.FC = () => {
 
 		// Default values when no data
 		return {
-			totalWorkDays: "0/0",
+			expectedWorkDays: "0",
+			totalWorkDays: "0",
 			overtimeHours: 0,
 			lateMinutes: 0,
-			violationTime: "0/0",
 			paidLeaveHours: 0,
 			unpaidLeaveHours: 0,
 		};
@@ -325,7 +329,7 @@ const Personal: React.FC = () => {
 						<AssetsListTitle>
 							<strong>Danh sách thiết bị</strong>
 						</AssetsListTitle>
-						{user?.assigned_devices
+						{user?.assigned_devices && user?.assigned_devices?.length > 0 && user?.assigned_devices
 							?.slice(0, 3)
 							.map((device: any) => (
 								<AssetsItem
@@ -335,7 +339,12 @@ const Personal: React.FC = () => {
 									{device.name}
 								</AssetsItem>
 							))}
-						{user?.assigned_devices?.length &&
+						{user?.assigned_devices && user?.assigned_devices?.length === 0 && (
+							<div>
+								<p>Bạn chưa được cấp thiết bị</p>
+							</div>
+						)}
+						{!!user?.assigned_devices?.length &&
 							user?.assigned_devices?.length > 3 && (
 								<div
 									style={{
@@ -408,7 +417,7 @@ const Personal: React.FC = () => {
 												Tổng số công
 											</div>
 											<div className="value">
-												{Number(statsData.totalWorkDays.split("/")[0] || 0)}
+												{statsData.totalWorkDays ?? "0"}/{statsData.expectedWorkDays ?? "0"}
 											</div>
 										</div>
 										<div className="metric-item">
@@ -438,7 +447,7 @@ const Personal: React.FC = () => {
 										</div>
 										<div className="metric-item">
 											<div className="label">
-												Nghỉ có phép (giờ)
+												Nghỉ có lương (giờ)
 											</div>
 											<div className="value">
 												{statsData.paidLeaveHours}
@@ -446,7 +455,7 @@ const Personal: React.FC = () => {
 										</div>
 										<div className="metric-item">
 											<div className="label">
-												Nghỉ không phép (giờ)
+												Nghỉ không lương (giờ)
 											</div>
 											<div className="value">
 												{statsData.unpaidLeaveHours}

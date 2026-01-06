@@ -27,7 +27,6 @@ interface DataItem {
 }
 
 const masterDataItems: DataItem[] = [
-  { id: "level", name: "Trình độ", icon: <GraduationCap size={20} /> },
   { id: "position", name: "Vị trí", icon: <Briefcase size={20} /> },
   { id: "language", name: "Ngôn ngữ", icon: <Languages size={20} /> },
   { id: "skill", name: "Kỹ năng", icon: <Brain size={20} /> },
@@ -37,8 +36,7 @@ const masterDataItems: DataItem[] = [
 ];
 
 const Settings: React.FC = () => {
-  const isMobile = useMobile();
-  const [activeItem, setActiveItem] = useState<string>("level");
+  const [activeItem, setActiveItem] = useState<string>(masterDataItems[0].id);
 
   const handleItemChange = (itemId: string) => {
     setActiveItem(itemId);
@@ -65,7 +63,6 @@ const Settings: React.FC = () => {
         </Sidebar>
         <MainContent>
           {/* Content will be rendered based on activeItem */}
-          {activeItem === "level" && <LevelManagement />}
           {activeItem === "position" && <PositionManagement />}
           {activeItem === "language" && <LanguageManagement />}
           {activeItem === "skill" && <SkillManagement />}

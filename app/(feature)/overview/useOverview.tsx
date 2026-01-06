@@ -25,7 +25,7 @@ export const useOverview = () => {
     }, [isInitialized, data]);
 
     return {
-        data: data || user,
+        data: !!data?.id ? data : user,
         isLoading,
         error,
         isInitialized,

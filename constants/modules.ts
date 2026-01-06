@@ -57,7 +57,7 @@ export const MODULE_DEFINITIONS: Omit<Module, "icon">[] = [
     description: "Cài đặt hệ thống và cấu hình",
     color: "#6b7280",
     path: ROUTERS.SETTINGS.BASE,
-    allowedRoles: [ROLE_NAMES.ADMIN],
+    allowedRoles: [ROLE_NAMES.ADMIN, ROLE_NAMES.HR_MANAGER],
   },
 ];
 

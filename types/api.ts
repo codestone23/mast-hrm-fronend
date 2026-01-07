@@ -157,8 +157,16 @@ export interface User {
   name: string;
   remember_token: string | null;
   updated_at: string;
-  register_face_url?: string;
-  register_face_at?: string;
+  user_embeddings?: {
+    id: number;
+    image_url: string;
+    public_id: string;
+    embedding: string;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+    user_id: number;
+  }
   user_information?: {
     id: number;
     user_id: number;

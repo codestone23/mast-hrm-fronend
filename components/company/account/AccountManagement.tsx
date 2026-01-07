@@ -379,7 +379,7 @@ const AccountManagement: React.FC = () => {
       label: "Đăng ký khuôn mặt",
       width: "150px",
       render: (_, row) => {
-        const isRegistered = !!(row.register_face_url && row.register_face_at);
+        const isRegistered = !!(row.user_embeddings.length > 0);
         return (
           <FaceRegistrationBadge $isRegistered={isRegistered}>
             {isRegistered ? "Đã đăng ký" : "Chưa đăng ký"}

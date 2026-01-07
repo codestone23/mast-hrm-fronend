@@ -75,6 +75,8 @@ import {
 } from "./timeSheetStyle";
 import { useTimeSheet } from "./useTimeSheet";
 import { WEEK_DAYS } from "@/constants/constants";
+import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
+import { usePersonalAttendanceStats } from "@/hooks/useAttendanceStats";
 
 interface TimeSheetRequest {
   id: number;
@@ -201,18 +203,39 @@ const TimeSheets: React.FC = () => {
   };
 
   const { data: timeSheetData, isLoading, setPayload } = useTimeSheet();
+  const userData = LocalStorageUtil.getItemObject(LOCAL_KEY.USER);
 
-  useEffect(() => {
+  // Tính toán start_date và end_date cho tháng hiện tại
+  const monthDateRange = useMemo(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    const startDate = new Date(year, month, 1).toISOString().split("T")[0];
-    const endDate = new Date(year, month + 1, 0).toISOString().split("T")[0];
+    const startOfMonth = new Date(year, month, 1);
+    const endOfMonth = new Date(year, month + 1, 0);
+    
+    // Thêm 1 ngày vào cả start và end
+    const startDate = new Date(startOfMonth);
+    startDate.setDate(startDate.getDate() + 1);
+    const endDate = new Date(endOfMonth);
+    endDate.setDate(endDate.getDate() + 1);
+    
+    return {
+      start_date: startDate.toISOString().split("T")[0],
+      end_date: endDate.toISOString().split("T")[0],
+    };
+  }, [currentDate]);
 
+  // Lấy thống kê từ API
+  const { data: attendanceStats, isLoading: isLoadingStats } = usePersonalAttendanceStats({
+    start_date: monthDateRange.start_date,
+    end_date: monthDateRange.end_date,
+  });
+
+  useEffect(() => {
     setPayload({
-      start_date: startDate,
-      end_date: endDate,
+      start_date: monthDateRange.start_date,
+      end_date: monthDateRange.end_date,
     });
-  }, [currentDate, setPayload]);
+  }, [currentDate, setPayload, monthDateRange]);
 
   const tabs = useMemo(() => {
     const baseTabs = ["BẢNG CHẤM CÔNG"];
@@ -634,12 +657,10 @@ const TimeSheets: React.FC = () => {
                       {day.isCurrentMonth && (
                         <DayStatus>
                           {hasNoData ? (
-                            <>
-                              <TimeDisplay>
-                                <span>Vào: 00:00</span>
-                                <span>Ra: 00:00</span>
-                              </TimeDisplay>
-                            </>
+                            <TimeDisplay>
+                              <span>Vào: 00:00</span>
+                              <span>Ra: 00:00</span>
+                            </TimeDisplay>
                           ) : dayData ? (
                             <>
                               <div>
@@ -655,10 +676,15 @@ const TimeSheets: React.FC = () => {
                                   </span>
                                 )}
                               </div>
-                              {dayData.timeIn && dayData.timeIn !== "Không có" && ( 
+                              {(dayData.timeIn && dayData.timeIn !== "Không có") ? ( 
                                 <TimeDisplay>
-                                  <span>In: {dayData.timeIn}</span>
-                                  <span>Out: {dayData.timeOut || "Không có"}</span>
+                                  <span>Vào: {dayData.timeIn}</span>
+                                  <span>Ra: {dayData.timeOut || "Không có"}</span>
+                                </TimeDisplay>
+                              ) : (
+                                <TimeDisplay>
+                                  <span>Vào: 00:00</span>
+                                  <span>Ra: 00:00</span>
                                 </TimeDisplay>
                               )}
                             </>
@@ -675,7 +701,7 @@ const TimeSheets: React.FC = () => {
               <SidebarCard>
                 <SidebarTitle>Ca làm chuẩn</SidebarTitle>
                 <SidebarContent>
-                  <WorkSchedule>08:00 - 12:00</WorkSchedule>
+                  <WorkSchedule>08:30 - 12:00</WorkSchedule>
                   <WorkScheduleTime>13:30 - 17:30</WorkScheduleTime>
                 </SidebarContent>
               </SidebarCard>
@@ -686,7 +712,7 @@ const TimeSheets: React.FC = () => {
                   Số giờ phép còn lại
                 </SidebarTitle>
                 <SidebarContent>
-                  <LeaveHours>14</LeaveHours>
+                  <LeaveHours>{userData?.remaining_leave_days || 0}</LeaveHours>
                 </SidebarContent>
               </SidebarCard>
 
@@ -694,34 +720,20 @@ const TimeSheets: React.FC = () => {
                 <SidebarTitle>Tổng số công</SidebarTitle>
                 <SidebarContent>
                   <TotalWork>
-                    {isLoading
-                      ? "..."
-                      : Object.values(timeSheetData)
-                          .reduce(
-                            (
-                              total: number,
-                              day: ProcessedTimeSheetData[string]
-                            ) => total + (day.hours || 0),
-                            0
-                          )
-                          .toFixed(1)}
-                    /168
-                  </TotalWork>
-                </SidebarContent>
-              </SidebarCard>
+                      {isLoadingStats
+                        ? "..."
+                        : Math.round(attendanceStats?.total_work_hours || 0)}
+                      /{(attendanceStats?.expected_work_days || 0) * 8}
+                    </TotalWork>
+                  </SidebarContent>
+                </SidebarCard>
 
               <StatsGrid>
                 <StatItem>
                   <StatNumber>
-                    {isLoading
+                    {isLoadingStats
                       ? "..."
-                      : Object.values(timeSheetData).reduce(
-                          (
-                            total: number,
-                            day: ProcessedTimeSheetData[string]
-                          ) => total + (day.lateTime || 0),
-                          0
-                        )}
+                      : attendanceStats?.late_minutes || 0}
                   </StatNumber>
                   <StatLabel>Số phút muộn</StatLabel>
                 </StatItem>
@@ -742,45 +754,17 @@ const TimeSheets: React.FC = () => {
                 </StatItem>
                 <StatItem>
                   <StatNumber>
-                    {isLoading
+                    {isLoadingStats
                       ? "..."
-                      : Object.values(timeSheetData).reduce(
-                          (
-                            total: number,
-                            day: ProcessedTimeSheetData[string]
-                          ) => {
-                            const requests = getAllRequests(day.requests);
-                            const dayOffRequests = requests.filter(
-                              (req) => req.request_type === REQUEST_TYPE.DAY_OFF && 
-                              req.status === REQUEST_STATUS.APPROVED &&
-                              req.day_off?.type === "SICK"
-                            );
-                            return total + (dayOffRequests.length > 0 ? 8 : 0);
-                          },
-                          0
-                        )}
+                      : attendanceStats?.paid_leave_hours || 0}
                   </StatNumber>
                   <StatLabel>Nghỉ có lương (h)</StatLabel>
                 </StatItem>
                 <StatItem>
                   <StatNumber>
-                    {isLoading
+                    {isLoadingStats
                       ? "..."
-                      : Object.values(timeSheetData).reduce(
-                          (
-                            total: number,
-                            day: ProcessedTimeSheetData[string]
-                          ) => {
-                            const requests = getAllRequests(day.requests);
-                            const unpaidLeaveRequests = requests.filter(
-                              (req) => req.request_type === REQUEST_TYPE.DAY_OFF && 
-                              req.status === REQUEST_STATUS.APPROVED &&
-                              req.day_off?.type !== "SICK"
-                            );
-                            return total + (unpaidLeaveRequests.length > 0 ? 8 : 0);
-                          },
-                          0
-                        )}
+                      : attendanceStats?.unpaid_leave_hours || 0}
                   </StatNumber>
                   <StatLabel>Nghỉ không lương (h)</StatLabel>
                 </StatItem>

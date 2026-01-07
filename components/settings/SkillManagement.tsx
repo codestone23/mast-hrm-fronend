@@ -104,9 +104,12 @@ const SkillManagement: React.FC = () => {
     createSkill({
       name: formData.name.trim(),
       position_id: Number(formData.position_id),
+    }, {
+      onSuccess: () => {
+        setIsCreateModalOpen(false);
+        setFormData({ name: "", position_id: "" });
+      }
     });
-    setIsCreateModalOpen(false);
-    setFormData({ name: "", position_id: "" });
   };
 
   const handleSubmitEdit = () => {
@@ -124,9 +127,12 @@ const SkillManagement: React.FC = () => {
 
   const handleConfirmDelete = () => {
     if (!selectedSkill?.id) return;
-    deleteSkill(selectedSkill.id);
-    setIsDeleteModalOpen(false);
-    setSelectedSkill(null);
+    deleteSkill(selectedSkill.id, {
+      onSuccess: () => {
+        setIsDeleteModalOpen(false);
+        setSelectedSkill(null);
+      }
+    });
   };
 
   const getPositionName = (positionId: number) => {
@@ -152,17 +158,6 @@ const SkillManagement: React.FC = () => {
       align: "center",
       render: (value, row) => (
         <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={<Eye size={16} />}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleView(row);
-            }}
-          >
-            <span style={{ display: "none" }}>Xem</span>
-          </Button>
           <Button
             variant="ghost"
             size="sm"

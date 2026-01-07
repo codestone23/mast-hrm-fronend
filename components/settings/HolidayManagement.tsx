@@ -132,15 +132,18 @@ const HolidayManagement: React.FC = () => {
       start_date: formData.start_date,
       end_date: formData.end_date,
       description: formData.description.trim() || undefined,
-    });
-    setIsCreateModalOpen(false);
-    setFormData({
-      name: "",
-      type: "",
-      status: "",
-      start_date: "",
-      end_date: "",
-      description: "",
+    }, {
+      onSuccess: () => {
+        setIsCreateModalOpen(false);
+        setFormData({
+          name: "",
+          type: "",
+          status: "",
+          start_date: "",
+          end_date: "",
+          description: "",
+        });
+      }
     });
   };
 
@@ -163,9 +166,12 @@ const HolidayManagement: React.FC = () => {
 
   const handleConfirmDelete = () => {
     if (!selectedHoliday?.id) return;
-    deleteHoliday(selectedHoliday.id);
-    setIsDeleteModalOpen(false);
-    setSelectedHoliday(null);
+    deleteHoliday(selectedHoliday.id, {
+      onSuccess: () => {
+        setIsDeleteModalOpen(false);
+        setSelectedHoliday(null);
+      }
+    });
   };
 
   const formatDate = (dateString: string) => {

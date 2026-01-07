@@ -95,7 +95,7 @@ const ListAssetRequests: React.FC<ListAssetRequestsProps> = ({
           <RequestItem key={request.id} $status={request.status as REQUEST_STATUS}>
             <RequestHeader>
               <div style={{ flex: 1 }}>
-                <RequestTitle>{request.asset?.name || request.description || "Yêu cầu tài sản"}</RequestTitle>
+                <RequestTitle>{request.asset?.name || "Yêu cầu tài sản mới"}</RequestTitle>
                 <div style={{ display: "flex", alignItems: "center", marginTop: "8px" }}>
                   <div
                     style={{

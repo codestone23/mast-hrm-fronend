@@ -49,6 +49,8 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
   onReject,
 }) => {
   const { data: user } = useAppSelector((state) => state.user);
+
+  console.log(request);
   
   if (!request) return null;
   const handleApprove = () => {
@@ -152,7 +154,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
               <IconWrapper><Calendar size={12} /></IconWrapper>
               Ngày làm việc
             </InfoCardLabel>
-            <InfoCardValue>{formatDate(request.work_date)}</InfoCardValue>
+            <InfoCardValue>{request.work_date ? formatDate(request.work_date) : "..."}</InfoCardValue>
           </InfoCard>
           <InfoCard>
             <InfoCardLabel>
@@ -162,14 +164,14 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
             <InfoCardValue>{formatDateTime(request.created_at)}</InfoCardValue>
           </InfoCard>
 
-          {request?.user_id !== user?.id && (
+          {!!request?.user_id && request?.user_id !== user?.id && (
             <>
             <InfoCard>
               <InfoCardLabel>
                 <IconWrapper><User size={12} /></IconWrapper>
                 Người tạo
               </InfoCardLabel>
-              <InfoCardValue>{request?.user?.user_information?.name || request?.user?.email}</InfoCardValue>
+              <InfoCardValue>{request?.user?.user_information?.name || request?.user?.email || "..."}</InfoCardValue>
             </InfoCard>
             {request?.user?.user_information?.position && (
             <InfoCard>

@@ -24,7 +24,15 @@ export const useTimeSheet = () => {
 
     const { data, isLoading, error } = useQuery({
         queryKey: ['time-sheets', payload],
-        queryFn: () => TimekeepingService.getMyTimeSheets(payload.start_date, payload.end_date),
+        queryFn: () => {
+            const startDate = payload.start_date 
+                ? dayjs(payload.start_date).format('YYYY-MM-DD')
+                : undefined;
+            const endDate = payload.end_date 
+                ? dayjs(payload.end_date).format('YYYY-MM-DD')
+                : undefined;
+            return TimekeepingService.getMyTimeSheets(startDate, endDate);
+        },
         enabled: Boolean(payload.start_date && payload.end_date),
     });
 

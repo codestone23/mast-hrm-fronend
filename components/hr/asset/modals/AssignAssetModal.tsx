@@ -129,7 +129,7 @@ const AssignAssetModal: React.FC<AssignAssetModalProps> = ({
             </FormGroup>
 
             <div style={{ 
-              maxHeight: "300px", 
+              maxHeight: "200px", 
               overflowY: "auto",
               border: "1px solid #e5e7eb",
               borderRadius: "8px",
@@ -143,7 +143,7 @@ const AssignAssetModal: React.FC<AssignAssetModalProps> = ({
                 </div>
               ) : (
                 <>
-                  {users.map((user) => {
+                  {users.map((user, index) => {
                   const userInfo = Array.isArray(user.user_information) 
                     ? null 
                     : user.user_information as { name?: string; avatar?: string } | null;
@@ -153,7 +153,7 @@ const AssignAssetModal: React.FC<AssignAssetModalProps> = ({
 
                   return (
                     <div
-                      key={user.id}
+                      key={`${user.id}-${index}`}
                       onClick={() => setSelectedUserId(user.id)}
                       style={{
                         display: "flex",

@@ -12,8 +12,10 @@ import { timekeepingService } from '@/services/timekeeping.service';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRequestDetail, useUpdateRequest } from '@/hooks/useRequests';
 import { UpdateRequestPayload } from '@/services/requests.service';
-import { useAppSelector } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { format } from 'date-fns';
+import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
+import { fetchUserData, updateUser } from "@/store/slices/userSlice";
 
 interface PaidLeaveModalProps {
   isOpen: boolean;
@@ -39,12 +41,13 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
   requestType
 }) => {
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
   const isEdit = !!requestId && !!requestType;
   const { success: showSuccessToast, error: showErrorToast } = useToast();
   const { data: userData } = useAppSelector((state) => state.user);
   const [showInsufficientQuotaModal, setShowInsufficientQuotaModal] = useState(false);
 
-  const annualLeaveQuota = userData?.annual_leave_quota || 0;
+  const annualLeaveQuota = userData?.remaining_leave_days || 0; 
 
   const {
     register,
@@ -91,7 +94,10 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
       type: 'PAID' | 'UNPAID';
       reason: string;
     }) => timekeepingService.createDayOffRequest(payload),
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      console.log(data);
+      LocalStorageUtil.setItemObject(LOCAL_KEY.USER, { ...userData, remaining_leave_days: annualLeaveQuota - getRequiredLeaveHours(data.duration) });
+      dispatch(updateUser({ remaining_leave_days: annualLeaveQuota - getRequiredLeaveHours(data.duration) }));
       queryClient.invalidateQueries({ queryKey: ['myRequests'] });
       queryClient.invalidateQueries({ queryKey: ['myRequestsStats'] });
       queryClient.invalidateQueries({ queryKey: ['time-sheets'] });

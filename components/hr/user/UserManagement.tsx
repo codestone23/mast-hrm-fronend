@@ -323,7 +323,7 @@ const UserManagement: React.FC = () => {
       width: "120px",
       align: "center",
       render: (_, row) => (
-        <span>{row.total_work_days}/{row.expected_work_days}</span>
+        <span>{Number(row.total_work_days)}/{Number(row.expected_work_days)}</span>
       ),
     },
     {
@@ -609,14 +609,14 @@ const UserManagement: React.FC = () => {
                   <Download size={isMobile ? 18 : 20} />
                   Xuất báo cáo
                 </CreateButton>
-                <CreateButton 
+                {/* <CreateButton 
                   $isMobile={isMobile}
                   onClick={() => setIsCreateModalOpen(true)}
                   style={{ width: isMobile ? "100%" : "auto" }}
                 >
                   <Plus size={isMobile ? 18 : 20} />
                   Tạo người dùng
-                </CreateButton>
+                </CreateButton> */}
               </div>
             </HeaderRow>
             <FilterRow $isMobile={isMobile}>

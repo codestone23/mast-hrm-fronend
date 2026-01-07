@@ -750,7 +750,7 @@ const TimeSheets: React.FC = () => {
                         )}
                     /120
                   </StatNumber>
-                  <StatLabel>Quý phút đi muộn, về sớm</StatLabel>
+                  <StatLabel>Quỹ phút đi muộn, về sớm</StatLabel>
                 </StatItem>
                 <StatItem>
                   <StatNumber>

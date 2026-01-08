@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Plus, Search, Edit, Trash2, Eye } from "lucide-react";
+import { useForm, Controller } from "react-hook-form";
+import { Plus, Search, Edit, Trash2 } from "lucide-react";
 import { useSkills, useSkillDetail, useSkillMutations } from "@/hooks/useSettings";
 import { usePositions } from "@/hooks/useSettings";
 import { Skill } from "@/services/settings.service";
@@ -15,6 +16,11 @@ import Select from "@/components/common/Select/Select";
 import { Brain } from "lucide-react";
 import { ITEMS_PER_PAGE } from "@/constants/constants";
 
+interface SkillFormData {
+  name: string;
+  position_id: number | undefined;
+}
+
 const SkillManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -24,8 +30,6 @@ const SkillManagement: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
-  const [formData, setFormData] = useState({ name: "", position_id: "" });
-  const [errors, setErrors] = useState<{ name?: string; position_id?: string }>({});
 
   const { data, isLoading, error } = useSkills({
     page: currentPage,
@@ -34,8 +38,21 @@ const SkillManagement: React.FC = () => {
   });
 
   const { data: positionsData } = usePositions({ limit: 100 });
-  const { data: detailData } = useSkillDetail(selectedSkill?.id || null);
+  const { data: detailData } = useSkillDetail(selectedSkill?.skill_id || null);
   const { createSkill, updateSkill, deleteSkill, isCreating, isUpdating } = useSkillMutations();
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<SkillFormData>({
+    defaultValues: {
+      name: "",
+      position_id: undefined,
+    },
+  });
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -44,6 +61,16 @@ const SkillManagement: React.FC = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  // Reset form when modals open/close
+  useEffect(() => {
+    if (!isCreateModalOpen && !isEditModalOpen) {
+      reset({
+        name: "",
+        position_id: undefined,
+      });
+    }
+  }, [isCreateModalOpen, isEditModalOpen, reset]);
 
   const skills = data?.data.map((skill) => {
     return {
@@ -62,24 +89,20 @@ const SkillManagement: React.FC = () => {
   }, [positionsData]);
 
   const handleCreate = () => {
-    setFormData({ name: "", position_id: "" });
-    setErrors({});
+    reset({
+      name: "",
+      position_id: undefined,
+    });
     setIsCreateModalOpen(true);
   };
 
   const handleEdit = (skill: Skill) => {
-    setFormData({
+    reset({
       name: skill.name,
-      position_id: skill.position_id.toString(),
+      position_id: skill.position_id,
     });
-    setErrors({});
     setSelectedSkill(skill);
     setIsEditModalOpen(true);
-  };
-
-  const handleView = (skill: Skill) => {
-    setSelectedSkill(skill);
-    setIsDetailModalOpen(true);
   };
 
   const handleDelete = (skill: Skill) => {
@@ -87,42 +110,33 @@ const SkillManagement: React.FC = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const validateForm = () => {
-    const newErrors: { name?: string; position_id?: string } = {};
-    if (!formData.name.trim()) {
-      newErrors.name = "Tên kỹ năng là bắt buộc";
-    }
-    if (!formData.position_id) {
-      newErrors.position_id = "Vị trí là bắt buộc";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmitCreate = () => {
-    if (!validateForm()) return;
+  const onSubmitCreate = (data: SkillFormData) => {
     createSkill({
-      name: formData.name.trim(),
-      position_id: Number(formData.position_id),
+      name: data.name.trim(),
+      position_id: Number(data.position_id),
     }, {
       onSuccess: () => {
         setIsCreateModalOpen(false);
-        setFormData({ name: "", position_id: "" });
+        reset();
       }
     });
   };
 
-  const handleSubmitEdit = () => {
-    if (!validateForm() || !selectedSkill?.id) return;
+  const onSubmitEdit = (data: SkillFormData) => {
+    if (!selectedSkill?.id) return;
     updateSkill({
       id: selectedSkill.id,
       data: {
-        name: formData.name.trim(),
-        position_id: Number(formData.position_id),
+        name: data.name.trim(),
+        position_id: Number(data.position_id),
       },
+    }, {
+      onSuccess: () => {
+        setIsEditModalOpen(false);
+        setSelectedSkill(null);
+        reset();
+      }
     });
-    setIsEditModalOpen(false);
-    setSelectedSkill(null);
   };
 
   const handleConfirmDelete = () => {
@@ -233,36 +247,46 @@ const SkillManagement: React.FC = () => {
         size="md"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setIsCreateModalOpen(false)}>
+            <Button variant="ghost" onClick={() => setIsCreateModalOpen(false)} disabled={isSubmitting || isCreating}>
               Hủy
             </Button>
-            <Button variant="primary" onClick={handleSubmitCreate} loading={isCreating}>
+            <Button variant="primary" onClick={handleSubmit(onSubmitCreate)} loading={isSubmitting || isCreating}>
               Tạo
             </Button>
           </>
         }
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <Input
-            label="Tên kỹ năng"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Nhập tên kỹ năng"
-            error={errors.name}
-            required
-            fullWidth
-          />
-          <Select
-            label="Vị trí"
-            options={positionOptions}
-            value={formData.position_id ? Number(formData.position_id) : undefined}
-            onChange={(value) => setFormData({ ...formData, position_id: value.toString() })}
-            placeholder="Chọn vị trí"
-            error={errors.position_id}
-            required
-            fullWidth
-          />
-        </div>
+        <form onSubmit={handleSubmit(onSubmitCreate)}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <Input
+              label="Tên kỹ năng"
+              {...register("name", {
+                required: "Tên kỹ năng là bắt buộc",
+              })}
+              placeholder="Nhập tên kỹ năng"
+              error={errors.name?.message}
+              required
+              fullWidth
+            />
+            <Controller
+              name="position_id"
+              control={control}
+              rules={{ required: "Vị trí là bắt buộc" }}
+              render={({ field }) => (
+                <Select
+                  label="Vị trí"
+                  options={positionOptions}
+                  value={field.value}
+                  onChange={(value) => field.onChange(Number(value))}
+                  placeholder="Chọn vị trí"
+                  error={errors.position_id?.message}
+                  required
+                  fullWidth
+                />
+              )}
+            />
+          </div>
+        </form>
       </Modal>
 
       {/* Edit Modal */}
@@ -273,36 +297,46 @@ const SkillManagement: React.FC = () => {
         size="md"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
+            <Button variant="ghost" onClick={() => setIsEditModalOpen(false)} disabled={isSubmitting || isUpdating}>
               Hủy
             </Button>
-            <Button variant="primary" onClick={handleSubmitEdit} loading={isUpdating}>
+            <Button variant="primary" onClick={handleSubmit(onSubmitEdit)} loading={isSubmitting || isUpdating}>
               Cập nhật
             </Button>
           </>
         }
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <Input
-            label="Tên kỹ năng"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Nhập tên kỹ năng"
-            error={errors.name}
-            required
-            fullWidth
-          />
-          <Select
-            label="Vị trí"
-            options={positionOptions}
-            value={formData.position_id ? Number(formData.position_id) : undefined}
-            onChange={(value) => setFormData({ ...formData, position_id: value.toString() })}
-            placeholder="Chọn vị trí"
-            error={errors.position_id}
-            required
-            fullWidth
-          />
-        </div>
+        <form onSubmit={handleSubmit(onSubmitEdit)}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <Input
+              label="Tên kỹ năng"
+              {...register("name", {
+                required: "Tên kỹ năng là bắt buộc",
+              })}
+              placeholder="Nhập tên kỹ năng"
+              error={errors.name?.message}
+              required
+              fullWidth
+            />
+            <Controller
+              name="position_id"
+              control={control}
+              rules={{ required: "Vị trí là bắt buộc" }}
+              render={({ field }) => (
+                <Select
+                  label="Vị trí"
+                  options={positionOptions}
+                  value={field.value}
+                  onChange={(value) => field.onChange(Number(value))}
+                  placeholder="Chọn vị trí"
+                  error={errors.position_id?.message}
+                  required
+                  fullWidth
+                />
+              )}
+            />
+          </div>
+        </form>
       </Modal>
 
       {/* Detail Modal */}

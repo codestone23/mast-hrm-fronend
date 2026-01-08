@@ -200,9 +200,18 @@ export const ProjectInfoItem = styled.div`
   }
 `;
 
+export const HorizontalStack = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 30px;
+  margin: 0 0.5rem;
+  width: 2px;
+  background: var(--border);
+`;
+
 export const ProjectInfoLabel = styled.span`
   font-size: 0.875rem;
-  color: var(--text-secondary);
 `;
 
 export const ProjectInfoValue = styled.span`

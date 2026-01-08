@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Plus, Search, Edit, Trash2, Eye, Briefcase } from "lucide-react";
-import { usePositions, usePositionDetail, usePositionMutations, useLevels } from "@/hooks/useSettings";
+import { usePositions, usePositionDetail, usePositionMutations } from "@/hooks/useSettings";
 import { Position } from "@/services/settings.service";
 import Table, { TableColumn } from "@/components/common/Table/Table";
 import Button from "@/components/common/Button/Button";
@@ -22,7 +22,7 @@ const PositionManagement: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
-  const [formData, setFormData] = useState({ name: "", level_id: "", description: "" });
+  const [formData, setFormData] = useState({ name: "", description: "" });
   const [errors, setErrors] = useState<{ name?: string }>({});
 
   const { data, isLoading, error } = usePositions({
@@ -31,7 +31,6 @@ const PositionManagement: React.FC = () => {
     search: debouncedSearch,
   });
 
-  const { data: levelsData } = useLevels({ limit: 100 });
   const { data: detailData } = usePositionDetail(selectedPosition?.id || null);
   const { createPosition, updatePosition, deletePosition, isCreating, isUpdating, isDeleting } = usePositionMutations();
 
@@ -47,15 +46,8 @@ const PositionManagement: React.FC = () => {
   const pagination = data?.pagination || { total: 0, current_page: 1, total_pages: 1 };
   const totalPages = pagination.total_pages || Math.ceil(pagination.total / ITEMS_PER_PAGE);
 
-  const levelOptions = useMemo(() => {
-    return (levelsData?.data || []).map((level) => ({
-      value: level.id!,
-      label: `${level.name} (Cấp ${level.level})`,
-    }));
-  }, [levelsData]);
-
   const handleCreate = () => {
-    setFormData({ name: "", level_id: "", description: "" });
+    setFormData({ name: "", description: "" });
     setErrors({});
     setIsCreateModalOpen(true);
   };
@@ -63,7 +55,6 @@ const PositionManagement: React.FC = () => {
   const handleEdit = (position: Position) => {
     setFormData({
       name: position.name,
-      level_id: position.level_id?.toString() || "",
       description: position.description || "",
     });
     setErrors({});
@@ -94,12 +85,11 @@ const PositionManagement: React.FC = () => {
     if (!validateForm()) return;
     createPosition({
       name: formData.name.trim(),
-      level_id: formData.level_id ? Number(formData.level_id) : undefined,
       description: formData.description.trim() || undefined,
     }, {
       onSuccess: () => {
         setIsCreateModalOpen(false);
-        setFormData({ name: "", level_id: "", description: "" });
+        setFormData({ name: "", description: "" });
       }
     });
   };
@@ -110,7 +100,6 @@ const PositionManagement: React.FC = () => {
       id: selectedPosition.id,
       data: {
         name: formData.name.trim(),
-        level_id: formData.level_id ? Number(formData.level_id) : undefined,
         description: formData.description.trim() || undefined,
       },
     });
@@ -281,14 +270,6 @@ const PositionManagement: React.FC = () => {
             required
             fullWidth
           />
-          <Select
-            label="Cấp độ"
-            options={levelOptions}
-            value={formData.level_id ? Number(formData.level_id) : undefined}
-            onChange={(value) => setFormData({ ...formData, level_id: value.toString() })}
-            placeholder="Chọn cấp độ (tùy chọn)"
-            fullWidth
-          />
           <Input
             label="Mô tả"
             value={formData.description}
@@ -313,11 +294,6 @@ const PositionManagement: React.FC = () => {
             <div>
               <strong>Tên vị trí:</strong> {detailData.data.name}
             </div>
-            {detailData.data.level && (
-              <div>
-                <strong>Cấp độ:</strong> {detailData.data.level.name}
-              </div>
-            )}
             {detailData.data.description && (
               <div>
                 <strong>Mô tả:</strong> {detailData.data.description}

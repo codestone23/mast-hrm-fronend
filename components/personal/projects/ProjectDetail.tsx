@@ -33,6 +33,7 @@ import {
   TabsContainer,
   Tab,
   TabContent,
+  HorizontalStack,
 } from './projectDetailStyle';
 import projectService, { ProjectMember } from '@/services/project.service';
 import ROUTERS from "@/config/router";
@@ -267,29 +268,24 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, isDivision = f
                 {project.members.map((member, index) => (
                   <ProjectInfoItem key={`member-${member.id}-${index}`}>
                     <ProjectInfoLabel>
-                      {index + 1}. {member.name}
-                    </ProjectInfoLabel> 
-                    <ProjectInfoValue>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <div>
-                          <div>{member.email}</div>
-                          <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                            Vai trò: {getRoleName(member.role)}
-                          </div>
-                        </div>
-                        {canManageMembers && member.role !== ROLE_NAMES.PROJECT_MANAGER && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            icon={<Trash2 size={14} />}
-                            onClick={() => handleDeleteMember(member)}
-                            style={{ marginLeft: 'auto' }}
-                          >
-                            <span style={{ display: 'none' }}>Xóa</span>
-                          </Button>
-                        )}
+                      <div>
+                        {index + 1}. {member.name} ({member.email})
                       </div>
-                    </ProjectInfoValue>
+                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                        Vai trò: {getRoleName(member.role)}
+                      </div>
+                    </ProjectInfoLabel> 
+                    {canManageMembers && member.role !== ROLE_NAMES.PROJECT_MANAGER && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        icon={<Trash2 size={14} />}
+                        onClick={() => handleDeleteMember(member)}
+                        style={{ marginLeft: 'auto' }}
+                      >
+                        <span style={{ display: 'none' }}>Xóa</span>
+                      </Button>
+                    )}
                   </ProjectInfoItem>
                 ))}
               </ProjectInfo>

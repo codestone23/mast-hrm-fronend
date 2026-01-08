@@ -129,8 +129,12 @@ class DivisionWorkforceService {
     return response.data;
   }
 
-  async getListUserAvailableToAddToTeam(teamId: number): Promise<ApiResponse<User[]>> {
-    const response = await axiosInstance.get(`/teams/${teamId}/available-members`);
+  async getListUserAvailableToAddToTeam(teamId: number, search?: string): Promise<ApiResponse<User[]>> {
+    const params = new URLSearchParams();
+    if (search) {
+      params.append('search', search);
+    }
+    const response = await axiosInstance.get(`/teams/${teamId}/available-members?${params.toString()}`);
     return response.data;
   }
 }

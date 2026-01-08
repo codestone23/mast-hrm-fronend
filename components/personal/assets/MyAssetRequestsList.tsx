@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { AssetRequest } from "@/constants/types";
-import { REQUEST_STATUS } from "@/constants/enums";
+import { ASSET_REQUEST_STATUS, REQUEST_STATUS } from "@/constants/enums";
 import {
   RequestList,
   EmptyStateContainer,
@@ -326,27 +326,14 @@ const MyAssetRequestsList: React.FC<MyAssetRequestsListProps> = ({ requests }) =
     }
   };
 
-  const getRequestTypeText = (type: string) => {
-    switch (type) {
-      case "REQUEST":
-        return "Yêu cầu cấp phát";
-      case "RETURN":
-        return "Yêu cầu trả lại";
-      case "MAINTENANCE":
-        return "Yêu cầu bảo trì";
-      default:
-        return type;
-    }
-  };
-
   const statusOptions = [
     { value: "", label: "Tất cả trạng thái" },
-    { value: REQUEST_STATUS.PENDING, label: "Chờ duyệt" },
-    { value: REQUEST_STATUS.APPROVED, label: "Đã duyệt" },
-    { value: REQUEST_STATUS.REJECTED, label: "Từ chối" },
-    { value: "FULFILLED", label: "Đã hoàn thành" },
-    { value: "RETURNED", label: "Đã trả lại" },
-    { value: "CANCELLED", label: "Đã hủy" },
+    { value: ASSET_REQUEST_STATUS.PENDING, label: "Chờ duyệt" },
+    { value: ASSET_REQUEST_STATUS.APPROVED, label: "Đã duyệt" },
+    { value: ASSET_REQUEST_STATUS.REJECTED, label: "Từ chối" },
+    { value: ASSET_REQUEST_STATUS.FULFILLED, label: "Đã hoàn thành" },
+    { value: ASSET_REQUEST_STATUS.RETURNED, label: "Đã trả lại" },
+    { value: ASSET_REQUEST_STATUS.CANCELLED, label: "Đã hủy" },
   ];
 
   if (requests.length === 0) {
@@ -410,10 +397,6 @@ const MyAssetRequestsList: React.FC<MyAssetRequestsListProps> = ({ requests }) =
                 <AssetName>
                   {request.asset?.name || "Yêu cầu tài sản"}
                   <InfoRow>
-                    {/* <InfoBadge>
-                      <Package size={14} />
-                      <span>{getRequestTypeText(request.request_type)}</span>
-                    </InfoBadge> */}
                     {request.expected_date && (
                       <InfoBadge>
                         <Calendar size={14} />

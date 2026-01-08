@@ -119,7 +119,7 @@ export const HeaderRow = styled.div<{ $isMobile?: boolean }>`
   display: flex;
   gap: 12px;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   flex-wrap: ${props => props.$isMobile ? 'wrap' : 'nowrap'};
 `;
 

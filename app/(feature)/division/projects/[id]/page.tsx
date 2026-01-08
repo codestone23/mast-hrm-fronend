@@ -8,6 +8,6 @@ export default function ProjectDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = React.use(params); 
-  return <ProjectDetail projectId={id} />;
+  return <ProjectDetail projectId={id} isDivision={true} />;
 }
 

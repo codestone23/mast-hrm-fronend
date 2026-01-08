@@ -29,7 +29,6 @@ export default function Layout({
   const { user } = useAuthContext();
   const pathname = usePathname().split("/");
   const activeTab = pathname.slice(1, pathname.length).join("/");
-  const userData = useAppSelector((state) => state.user.data);
 
   useEffect(() => {
     if (!user) return;
@@ -44,12 +43,12 @@ export default function Layout({
 
   const roles = useMemo(() => {
     const userRoles =
-      userData?.role_assignments.map((role) => role.name?.toLowerCase()) ?? [];
+    user?.role_assignments?.map((role) => role.name?.toLowerCase()) ?? [];
     const roleNames = Object.values(ROLE_NAMES);
     return userRoles.filter((role) =>
       roleNames.includes(role?.toLowerCase() as ROLE_NAMES)
     ) as ROLE_NAMES[];
-  }, [userData]);
+  }, [user]);
 
   const allNavItems: NavItem[] = useMemo(
     () => [
@@ -162,6 +161,8 @@ export default function Layout({
       })
       .map((item) => ({ id: item.id, label: item.label }));
   }, [roles, allNavItems]);
+
+  console.log('navItems', navItems);
 
   return (
     <PersonalPageContainer>

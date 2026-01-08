@@ -43,6 +43,15 @@ export enum REQUEST_STATUS {
     REJECTED = "REJECTED",
 }
 
+export enum ASSET_REQUEST_STATUS {
+    PENDING = "PENDING",
+    APPROVED = "APPROVED",
+    REJECTED = "REJECTED",
+    FULFILLED = "FULFILLED",
+    RETURNED = "RETURNED",
+    CANCELLED = "CANCELLED",
+}
+
 export enum AssetCategory {
     LAPTOP = "LAPTOP",
     DESKTOP = "DESKTOP",

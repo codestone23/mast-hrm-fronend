@@ -3,9 +3,31 @@ import axiosInstance from "@/lib/axios";
 
 export interface ProjectMember {
   id: number;
+  user_id?: number;
   name: string;
   email: string;
   role: ROLE_NAMES;
+}
+
+export interface ProjectMemberCreateRequest {
+  user_id: number;
+}
+
+export interface AvailableMember {
+  id: number;
+  email: string;
+  name: string;
+  position: {
+    id: number;
+    name: string;
+  };
+}
+
+export interface AvailableMembersResponse {
+  projectId: number;
+  teamId: number;
+  availableMembers: AvailableMember[];
+  totalAvailable: number;
 }
 
 export interface Project {
@@ -234,6 +256,24 @@ class ProjectService {
 
   async updateProcessMilestoneProject(milestoneId: string, data: ProcessMilestoneProjectUpdateRequest): Promise<MilestoneProject> {
     const response = await axiosInstance.patch(`/milestones/${milestoneId}/progress`, data);
+    return response.data;
+  }
+
+  async addMemberToProject(projectId: string, data: ProjectMemberCreateRequest): Promise<ProjectMember> {
+    const response = await axiosInstance.post(`/projects/${projectId}/members`, data);
+    return response.data;
+  }
+
+  async removeMemberFromProject(projectId: string, userId: string): Promise<void> {
+    await axiosInstance.delete(`/projects/${projectId}/members/${userId}`);
+  }
+
+  async getAvailableMembersForProject(projectId: string, search?: string): Promise<AvailableMembersResponse> {
+    const params = new URLSearchParams();
+    if (search) {
+      params.append('search', search);
+    }
+    const response = await axiosInstance.get(`/projects/${projectId}/available-members?${params.toString()}`);
     return response.data;
   }
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { X, Search, Trash2 } from "lucide-react";
-import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Input, TextArea, Button } from "@/components/common";
 import {
   ModalOverlay,
@@ -18,10 +18,8 @@ import {
   CancelButton,
   SaveButton,
 } from "@/components/hr/asset/modals/modalStyle";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
 import divisionWorkforceService from "@/services/division_workforce.service";
-import { DivisionMemberData } from "@/types/api";
+import { User } from "@/types/api";
 import { useToast } from "@/hooks/useToast";
 import Image from "next/image";
 
@@ -40,16 +38,12 @@ interface AddMemberModalProps {
 const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, teamId }) => {
   const queryClient = useQueryClient();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
-  const selectedDivisionId = useSelector(
-    (state: RootState) => state.division.selectedDivisionId
-  );
   
   const [selectedMembers, setSelectedMembers] = useState<Map<number, SelectedMember>>(new Map());
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [editingMemberId, setEditingMemberId] = useState<number | null>(null);
   const [editingDescription, setEditingDescription] = useState("");
-  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -68,57 +62,15 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, teamId
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const {
-    data: membersData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: ["division-members", selectedDivisionId, debouncedSearch],
-    queryFn: ({ pageParam = 1 }) =>
-      divisionWorkforceService.getMembers(
-        selectedDivisionId!,
-        pageParam,
-        20,
-        debouncedSearch || undefined,
-      ),
-    enabled: isOpen && !!selectedDivisionId,
-    getNextPageParam: (lastPage) => {
-      const totalPages = lastPage.pagination?.total_pages || 0;
-      const currentPage = lastPage.pagination?.current_page || 1;
-      return currentPage < totalPages ? currentPage + 1 : undefined;
-    },
-    initialPageParam: 1,
+  const { data: availableMembersData, isLoading: isLoadingMembers } = useQuery({
+    queryKey: ["available-team-members", teamId, debouncedSearch],
+    queryFn: () => divisionWorkforceService.getListUserAvailableToAddToTeam(teamId, debouncedSearch || undefined),
+    enabled: isOpen && !!teamId,
   });
 
-  // Infinite scroll observer
-  useEffect(() => {
-    if (!sentinelRef.current || !hasNextPage || isFetchingNextPage) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  const members = useMemo(
-    () => membersData?.pages.flatMap((page) => page.data || []) || [],
-    [membersData]
-  );
-
-  // Filter out members already in the team
   const availableMembers = useMemo(() => {
-    return members.filter((member: DivisionMemberData) => 
-      !member.team_id || member.team_id !== teamId
-    );
-  }, [members, teamId]);
+    return availableMembersData?.data || [];
+  }, [availableMembersData]);
 
   const toggleMember = (userId: number) => {
     setSelectedMembers((prev) => {
@@ -222,12 +174,12 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, teamId
                   </div>
                 ) : (
                   <>
-                    {availableMembers.map((member: DivisionMemberData) => {
-                      const isSelected = selectedMembers.has(member.user_id);
-                      const memberData = selectedMembers.get(member.user_id);
+                    {availableMembers.map((member: User) => {
+                      const isSelected = selectedMembers.has(member.id!);
+                      const memberData = selectedMembers.get(member.id!);
                       return (
                         <div
-                          key={member.user_id}
+                          key={member.id}
                           style={{
                             display: "flex",
                             alignItems: "center",
@@ -254,7 +206,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, teamId
                           <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={() => toggleMember(member.user_id)}
+                            onChange={() => toggleMember(member.id!)}
                             onClick={(e) => e.stopPropagation()}
                             style={{ cursor: "pointer" }}
                           />
@@ -272,22 +224,24 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, teamId
                               flexShrink: 0,
                             }}
                           >
-                            {member.avatar && member.avatar.includes('https') ? (
+                            {member.user_information?.avatar && member.user_information.avatar.includes('https') ? (
                               <Image 
-                                src={member.avatar} 
-                                alt={member.name} 
+                                src={member.user_information.avatar} 
+                                alt={member.user_information.name || member.email} 
                                 width={40} 
                                 height={40} 
                                 style={{ width: "100%", height: "100%", objectFit: "cover" }} 
                                 loading="lazy" 
                               />
                             ) : (
-                              <span style={{ fontWeight: 500 }}>{member.name.charAt(0).toUpperCase()}</span>
+                              <span style={{ fontWeight: 500 }}>
+                                {(member.user_information?.name || member.email || 'U').charAt(0).toUpperCase()}
+                              </span>
                             )}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontWeight: 500, color: "#111827", marginBottom: "2px" }}>
-                              {member.code ? `${member.code} - ${member.name}` : member.name}
+                              {member.user_information?.code ? `${member.user_information.code} - ${member.user_information.name}` : member.user_information?.name || member.email}
                             </div>
                             <div style={{ fontSize: "12px", color: "#6b7280" }}>{member.email}</div>
                           </div>
@@ -298,7 +252,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, teamId
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setEditingMemberId(member.user_id);
+                                  setEditingMemberId(member.id!);
                                   setEditingDescription(memberData?.description || "");
                                 }}
                                 style={{ padding: "4px 8px", fontSize: "12px" }}
@@ -310,10 +264,9 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, teamId
                         </div>
                       );
                     })}
-                    <div ref={sentinelRef} style={{ height: "1px" }} />
-                    {isFetchingNextPage && (
+                    {isLoadingMembers && (
                       <div style={{ padding: "12px", textAlign: "center", color: "#6b7280" }}>
-                        Đang tải thêm thành viên...
+                        Đang tải danh sách thành viên...
                       </div>
                     )}
                   </>
@@ -332,7 +285,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, teamId
                   overflowY: "auto"
                 }}>
                   {selectedMembersList.map(([userId, memberData]) => {
-                    const member = availableMembers.find((m: DivisionMemberData) => m.user_id === userId);
+                    const member = availableMembers.find((m: User) => m.id === userId);
                     if (!member) return null;
                     
                     return (
@@ -362,23 +315,23 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, teamId
                             flexShrink: 0,
                           }}
                         >
-                          {member.avatar && member.avatar.includes('https') ? (
+                          {member.user_information?.avatar && member.user_information.avatar.includes('https') ? (
                             <Image 
-                              src={member.avatar} 
-                              alt={member.name} 
+                              src={member.user_information.avatar} 
+                              alt={member.user_information.name || member.email} 
                               width={32} 
                               height={32} 
                               style={{ width: "100%", height: "100%", objectFit: "cover" }} 
                             />
                           ) : (
                             <span style={{ fontWeight: 500, fontSize: "12px" }}>
-                              {member.name.charAt(0).toUpperCase()}
+                              {(member.user_information?.name || member.email || 'U').charAt(0).toUpperCase()}
                             </span>
                           )}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontWeight: 500, color: "#111827", fontSize: "14px" }}>
-                            {member.name}
+                            {member.user_information?.name || member.email}
                           </div>
                           {memberData.description && (
                             <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "2px" }}>
@@ -409,7 +362,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, teamId
 
             {editingMemberId && (
               <FormGroup>
-                <FormLabel>Mô tả cho {availableMembers.find((m: DivisionMemberData) => m.user_id === editingMemberId)?.name}</FormLabel>
+                <FormLabel>Mô tả cho {availableMembers.find((m: User) => m.id === editingMemberId)?.user_information?.name || availableMembers.find((m: User) => m.id === editingMemberId)?.email}</FormLabel>
                 <TextArea
                   placeholder="Nhập mô tả (tùy chọn)..."
                   value={editingDescription}

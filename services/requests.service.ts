@@ -54,7 +54,7 @@ export interface RequestParams {
   end_date?: string;
   division_id?: number;
   priority?: string;
-  leads_only?: boolean;
+  lead_only?: boolean;
   requester_role?: string;
 }
 

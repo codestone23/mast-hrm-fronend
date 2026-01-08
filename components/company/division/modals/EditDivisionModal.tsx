@@ -10,7 +10,7 @@ import { Division } from "@/constants/types";
 import { useDivisionsList } from "@/hooks/useDivisions";
 import { DivisionStatus, DivisionType } from "@/constants/enums";
 import { UpdateDivisionRequest } from "@/types/api";
-import { FormContainer } from "./modalStyle";
+import { FormContainer, FormGrid } from "./modalStyle";
 
 interface EditDivisionModalProps {
   isOpen: boolean;
@@ -89,17 +89,72 @@ const EditDivisionModal: React.FC<EditDivisionModalProps> = ({
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Chỉnh sửa phòng ban" footer={footer} size="md">
+    <Modal isOpen={isOpen} onClose={onClose} title="Chỉnh sửa phòng ban" footer={footer} size="lg">
       <FormContainer>
-        <Input
-          label="Tên phòng ban"
-          required
-          {...register("name", {
-            required: "Tên phòng ban là bắt buộc",
-          })}
-          error={errors.name?.message}
-          fullWidth
-        />
+        <FormGrid>
+          <Input
+            label="Tên phòng ban"
+            required
+            {...register("name", {
+              required: "Tên phòng ban là bắt buộc",
+            })}
+            error={errors.name?.message}
+            fullWidth
+          />
+          
+          <Controller
+            name="type"
+            control={control}
+            render={({ field }) => (
+              <Select
+                label="Loại phòng ban"
+                options={[
+                  { value: DivisionType.TECHNICAL, label: 'Kỹ thuật' },
+                  { value: DivisionType.BUSINESS, label: 'Kinh doanh' },
+                  { value: DivisionType.OPERATIONS, label: 'Vận hành' },
+                  { value: DivisionType.OTHER, label: 'Khác' },
+                ]}
+                value={field.value}
+                onChange={(v) => field.onChange(String(v))}
+                fullWidth
+              />
+            )}
+          />
+        </FormGrid>
+        
+        <FormGrid>
+          <Controller
+            name="parent_id"
+            control={control}
+            render={({ field }) => (
+              <Select
+                label="Phòng ban cha"
+                options={[{ value: '', label: 'Không có phòng ban cha' }, ...parentOptions]}
+                value={field.value ?? ''}
+                onChange={(v) => field.onChange(v ? Number(v) : undefined)}
+                placeholder="Phòng ban cha"
+                fullWidth
+              />
+            )}
+          />
+          
+          <Controller
+            name="status"
+            control={control}
+            render={({ field }) => (
+              <Select
+                label="Trạng thái"
+                options={[
+                  { value: DivisionStatus.ACTIVE, label: 'Hoạt động' },
+                  { value: DivisionStatus.INACTIVE, label: 'Không hoạt động' }
+                ]}
+                value={field.value}
+                onChange={(v) => field.onChange(String(v) as DivisionStatus)}
+                fullWidth
+              />
+            )}
+          />
+        </FormGrid>
         
         <TextArea
           label="Mô tả"
@@ -109,57 +164,6 @@ const EditDivisionModal: React.FC<EditDivisionModalProps> = ({
           })}
           error={errors.description?.message}
           fullWidth
-        />
-        
-        <Controller
-          name="type"
-          control={control}
-          render={({ field }) => (
-            <Select
-              label="Loại phòng ban"
-              options={[
-                { value: DivisionType.TECHNICAL, label: 'Kỹ thuật' },
-                { value: DivisionType.BUSINESS, label: 'Kinh doanh' },
-                { value: DivisionType.OPERATIONS, label: 'Vận hành' },
-                { value: DivisionType.OTHER, label: 'Khác' },
-              ]}
-              value={field.value}
-              onChange={(v) => field.onChange(String(v))}
-              fullWidth
-            />
-          )}
-        />
-        
-        <Controller
-          name="parent_id"
-          control={control}
-          render={({ field }) => (
-            <Select
-              label="Phòng ban cha"
-              options={[{ value: '', label: 'Không có phòng ban cha' }, ...parentOptions]}
-              value={field.value ?? ''}
-              onChange={(v) => field.onChange(v ? Number(v) : undefined)}
-              placeholder="Phòng ban cha"
-              fullWidth
-            />
-          )}
-        />
-        
-        <Controller
-          name="status"
-          control={control}
-          render={({ field }) => (
-            <Select
-              label="Trạng thái"
-              options={[
-                { value: DivisionStatus.ACTIVE, label: 'Hoạt động' },
-                { value: DivisionStatus.INACTIVE, label: 'Không hoạt động' }
-              ]}
-              value={field.value}
-              onChange={(v) => field.onChange(String(v) as DivisionStatus)}
-              fullWidth
-            />
-          )}
         />
       </FormContainer>
     </Modal>

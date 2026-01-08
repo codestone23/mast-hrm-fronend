@@ -135,7 +135,7 @@ const EditTeamModal: React.FC<Props> = ({ isOpen, onClose, team, onSave, isLoadi
       <ModalContainer size="md" onClick={(e) => e.stopPropagation()}>
         <ModalContent>
           <ModalHeader>
-            <ModalTitle>Chỉnh sửa team</ModalTitle>
+            <ModalTitle>Chỉnh sửa đội nhóm</ModalTitle>
             <ModalCloseButton onClick={onClose}>
               <X size={20} />
             </ModalCloseButton>

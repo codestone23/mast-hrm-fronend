@@ -259,11 +259,11 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ id }) => {
               <IconWrapper>
                 <Plus size={isMobile ? 18 : 20} />
               </IconWrapper>
-              <CardTitle>Thông tin team</CardTitle>
+              <CardTitle>Thông tin đội nhóm</CardTitle>
             </CardHeader>
             <DetailInfoGrid $isMobile={isMobile}>
               <div>
-                <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Tên team</div>
+                <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Tên đội nhóm</div>
                 <div style={{ fontSize: "14px", fontWeight: 500 }}>{teamData?.name}</div>
               </div>
               <div>

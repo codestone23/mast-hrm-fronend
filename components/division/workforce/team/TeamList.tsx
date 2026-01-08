@@ -368,7 +368,7 @@ const TeamList: React.FC = () => {
               <IconWrapper>
                 <Users size={20} />
               </IconWrapper>
-              <CardTitle>Danh sách team</CardTitle>
+              <CardTitle>Danh sách đội nhóm</CardTitle>
             </CardHeader>
 
             <Table

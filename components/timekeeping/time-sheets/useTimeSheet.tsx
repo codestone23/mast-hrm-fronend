@@ -90,7 +90,7 @@ export const useTimeSheet = () => {
         // 3. is_complete = false + total_work_time = null -> không có công (absent)
         if (item.is_complete === true) {
             status = 'work';
-        } else if (item.is_complete === false && item.total_work_time != null) {
+        } else if (item.is_complete === false && !!item.total_work_time) {
             status = 'late';
         } else {
             // is_complete = false && total_work_time = null

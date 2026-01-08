@@ -92,6 +92,7 @@ export const ModalBody = styled.div`
   flex: 1;
   overflow-y: auto;
   max-height: 80%;
+  padding: 1rem 1rem 0;
   &::-webkit-scrollbar {
     display: block;
     width: 10px;
@@ -111,6 +112,7 @@ export const ModalFooter = styled.div`
   justify-content: flex-end;
   gap: 12px;
   background: #f9fafb;
+  padding: 0 1rem 1rem;
 `;
 
 export const FormGroup = styled.div`

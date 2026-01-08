@@ -140,7 +140,7 @@ const AddMemberModal: React.FC<Props> = ({ isOpen, onClose, onSave, teamId, isLo
       <ModalContainer size="md" onClick={(e) => e.stopPropagation()}>
         <ModalContent>
           <ModalHeader>
-            <ModalTitle>Thêm nhân sự vào team</ModalTitle>
+            <ModalTitle>Thêm nhân sự vào đội nhóm</ModalTitle>
             <ModalCloseButton onClick={onClose}>
               <X size={20} />
             </ModalCloseButton>

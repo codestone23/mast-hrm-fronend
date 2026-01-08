@@ -3,15 +3,14 @@ import styled from "styled-components";
 export const Container = styled.div`
   background-color: var(--background-secondary);
   min-height: 100vh;
-  padding: 1rem;
+  padding: 0rem;
 `;
 
 export const CalendarContainer = styled.div`
   flex: 1;
   background: white;
   border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 0rem;
 `;
 
 export const MonthNavigation = styled.div`
@@ -270,4 +269,75 @@ export const TotalWork = styled.div`
   font-size: 20px;
   font-weight: 600;
   color: #4CAF50;
+`;
+
+export const RequestIconsContainer = styled.div`
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-left: auto;
+`;
+
+export const RequestIcon = styled.div<{ $type: string; $status?: string }>`
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: ${(props) => {
+    switch (props.$type) {
+      case 'DAY_OFF':
+        return props.$status === 'APPROVED' ? '#B3E5FC' : props.$status === 'REJECTED' ? '#FFCDD2' : '#FFF59D';
+      case 'REMOTE_WORK':
+        return props.$status === 'APPROVED' ? '#E1BEE7' : props.$status === 'REJECTED' ? '#FFCDD2' : '#FFF59D';
+      case 'OVERTIME':
+        return props.$status === 'APPROVED' ? '#C8E6C9' : props.$status === 'REJECTED' ? '#FFCDD2' : '#FFF59D';
+      case 'LATE_EARLY':
+        return props.$status === 'APPROVED' ? '#FFF59D' : props.$status === 'REJECTED' ? '#FFCDD2' : '#FFF59D';
+      case 'FORGOT_CHECKIN':
+        return props.$status === 'APPROVED' ? '#FFCDD2' : props.$status === 'REJECTED' ? '#FFCDD2' : '#FFF59D';
+      default:
+        return '#E0E0E0';
+    }
+  }};
+  color: ${(props) => {
+    switch (props.$type) {
+      case 'DAY_OFF':
+        return props.$status === 'APPROVED' ? '#0288D1' : props.$status === 'REJECTED' ? '#C62828' : '#F57C00';
+      case 'REMOTE_WORK':
+        return props.$status === 'APPROVED' ? '#6A1B9A' : props.$status === 'REJECTED' ? '#C62828' : '#F57C00';
+      case 'OVERTIME':
+        return props.$status === 'APPROVED' ? '#2E7D32' : props.$status === 'REJECTED' ? '#C62828' : '#F57C00';
+      case 'LATE_EARLY':
+        return props.$status === 'APPROVED' ? '#F57C00' : props.$status === 'REJECTED' ? '#C62828' : '#F57C00';
+      case 'FORGOT_CHECKIN':
+        return props.$status === 'APPROVED' ? '#C62828' : props.$status === 'REJECTED' ? '#C62828' : '#F57C00';
+      default:
+        return '#757575';
+    }
+  }};
+  
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  @media (max-width: 768px) {
+    width: 16px;
+    height: 16px;
+    
+    svg {
+      width: 10px;
+      height: 10px;
+    }
+  }
 `;

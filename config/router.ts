@@ -34,6 +34,7 @@ const ROUTERS = {
         BASE: "/company",
         ACCOUNTS: "/company/accounts",
         DIVISIONS: "/company/divisions",
+        REQUESTS: "/company/requests",
     },
     HR: {
         STATS: "/hr/stats",

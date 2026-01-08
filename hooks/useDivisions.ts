@@ -118,12 +118,17 @@ export function useAddMemberToDivision() {
   });
 }
 
-export function useRemoveMemberFromDivision() {
+export function useRemoveMemberFromDivision(onError: (error: string) => void) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, divisionId }: { userId: number; divisionId: number }) => divisionsService.removeMemberFromDivision(userId),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: queryKeys.members(variables.divisionId, "") });
+    },
+    onError: (error: unknown) => {
+      if (error instanceof AxiosError) {
+        onError(error.response?.data?.message || "Có lỗi xảy ra khi xóa thành viên khỏi phòng ban");
+      }
     },
   });
 }

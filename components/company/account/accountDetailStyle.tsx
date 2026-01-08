@@ -124,7 +124,7 @@ export const DetailTitle = styled.h1<{ $isMobile?: boolean }>`
 `;
 
 export const DetailContent = styled.div<{ $isMobile?: boolean }>`
-  padding: ${props => props.$isMobile ? '12px' : '20px'};
+  padding: ${props => props.$isMobile ? '12px' : '0px'};
 `;
 
 export const DetailInfoGrid = styled.div<{ $isMobile?: boolean }>`

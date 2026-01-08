@@ -39,6 +39,7 @@ import {
     DivisionInfoRow,
 } from "@/components/company/division/detailStyle";
 import { DivisionStatus } from "@/constants/enums";
+import { useToast } from "@/hooks/useToast";
 
 const DivisionDetailPage: React.FC<{ divisionId: number }> = ({
     divisionId,
@@ -48,7 +49,8 @@ const DivisionDetailPage: React.FC<{ divisionId: number }> = ({
     const [search, setSearch] = useState("");
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [page, setPage] = useState(1);
-    const [limit] = useState(10);
+    const [limit] = useState(10);   
+    const { error: showErrorToast } = useToast();
     const membersQuery = useDivisionMembersPaged(
         divisionId,
         page,
@@ -59,7 +61,9 @@ const DivisionDetailPage: React.FC<{ divisionId: number }> = ({
     const meta = membersQuery.data?.pagination;
 
     const addMutation = useAddMemberToDivision();
-    const removeMutation = useRemoveMemberFromDivision();
+    const removeMutation = useRemoveMemberFromDivision((error) => {
+        showErrorToast(error);
+    });
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [pendingRemove, setPendingRemove] = useState<{
         userId: number;

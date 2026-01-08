@@ -51,10 +51,12 @@ import { REQUEST_STATUS, REQUEST_TYPE } from "@/constants/enums";
 
 interface AdminRequestsListProps {
     onRequestClick?: (request: Request) => void;
+    isCompany?: boolean;
 }
 
 const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
     onRequestClick,
+    isCompany = false,
 }) => {
     const [filters, setFilters] = useState({
         page: 1,
@@ -62,6 +64,7 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
         status: REQUEST_STATUS.PENDING,
         start_date: undefined,
         end_date: undefined,
+        leads_only: isCompany ? false : true,
     });
 
     const [approveModal, setApproveModal] = useState<{

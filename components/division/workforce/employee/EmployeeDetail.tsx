@@ -103,12 +103,6 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ id }) => {
           >
             THÔNG TIN CÔNG VIỆC
           </TabItem>
-          <TabItem
-            $active={activeTab === "timesheet"}
-            onClick={() => setActiveTab("timesheet")}
-          >
-            BẢNG CHẤM CÔNG
-          </TabItem>
         </ContentTabs>
 
         <TabContent>

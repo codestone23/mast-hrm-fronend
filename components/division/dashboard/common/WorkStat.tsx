@@ -87,7 +87,7 @@ const WorkStat: React.FC = () => {
       ) : workDataInfo ? (
         <Grid>
           <LeftCard
-            onClick={() => setOpenModal(ModalType.WORK)}
+            // onClick={() => setOpenModal(ModalType.WORK)}
             style={{ cursor: "pointer" }}
           >
             <CardHeader>Số lượng đi làm</CardHeader>
@@ -99,13 +99,13 @@ const WorkStat: React.FC = () => {
                 </StatNumber>
               </StatBlock>
               <ArrowBtn>
-                <ArrowRight />
+                {/* <ArrowRight /> */}
               </ArrowBtn>
             </CardBody>
           </LeftCard>
 
           <RightCard
-            onClick={() => setOpenModal(ModalType.LEAVE)}
+            // onClick={() => setOpenModal(ModalType.LEAVE)}
             style={{ cursor: "pointer" }}
           >
             <CardHeader>Nhân viên nghỉ phép</CardHeader>
@@ -125,13 +125,13 @@ const WorkStat: React.FC = () => {
                 </StatGroup>
               </StatBlock>
               <ArrowBtn>
-                <ArrowRight />
+                {/* <ArrowRight /> */}
               </ArrowBtn>
             </CardBody>
           </RightCard>
 
           <BottomCard
-            onClick={() => setOpenModal(ModalType.LATE)}
+            // onClick={() => setOpenModal(ModalType.LATE)}
             style={{ cursor: "pointer" }}
           >
             <CardHeader>Thông tin đi muộn</CardHeader>
@@ -143,7 +143,7 @@ const WorkStat: React.FC = () => {
                 </StatGroup>
               </StatBlock>
               <ArrowBtn>
-                <ArrowRight />
+                {/* <ArrowRight /> */}
               </ArrowBtn>
             </CardBody>
           </BottomCard>

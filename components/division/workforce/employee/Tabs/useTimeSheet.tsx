@@ -10,15 +10,20 @@ import timezone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-export const useTimeSheet = () => {
+export const useTimeSheet = (employeeId?: string) => {
     const [payload, setPayload] = useState<{    
         start_date?: string;    
         end_date?: string;
     }>({});
 
     const { data, isLoading, error } = useQuery({
-        queryKey: ['time-sheets', payload],
-        queryFn: () => TimekeepingService.getMyTimeSheets(payload.start_date, payload.end_date),
+        queryKey: ['time-sheets', payload, employeeId],
+        queryFn: () => {
+            // Nếu có employeeId, có thể cần API riêng hoặc thêm vào params
+            // Hiện tại sử dụng getMyTimeSheets, có thể cần cập nhật sau
+            return TimekeepingService.getMyTimeSheets(payload.start_date, payload.end_date);
+        },
+        enabled: Boolean(payload.start_date && payload.end_date),
     });
 
     let rawTimeSheetData: TimeSheet[] = [];
@@ -41,16 +46,24 @@ export const useTimeSheet = () => {
         isComplete: boolean;
         type: string;
         remote: string;
+        request_type: string | null;
+        requests?: {
+            remote_work?: unknown[];
+            day_off?: unknown[];
+            overtime?: unknown[];
+            late_early?: unknown[];
+            forgot_checkin?: unknown[];
+        } | unknown[];
+        paid_leave: number | null;
+        unpaid_leave: number | null;
     }>, item: TimeSheet) => {
         // Sử dụng UTC để đảm bảo consistency với backend
         const date = dayjs.utc(item.work_date).format('YYYY-MM-DD');
         
         // Format time với timezone +7 để hiển thị đúng giờ địa phương
-        const checkinTime = item.checkin ? dayjs.utc(item.checkin)
-            .utcOffset(7).format('HH:mm') : null;
+        const checkinTime = item.checkin ? dayjs.utc(item.checkin).format('HH:mm') : null;
         
-        const checkoutTime = item.checkout ? dayjs.utc(item.checkout)
-            .utcOffset(7).format('HH:mm') : null;
+        const checkoutTime = item.checkout ? dayjs.utc(item.checkout).format('HH:mm') : null;
         
         let totalWorkHours = 0;
         if (item.checkin && item.checkout) {
@@ -59,16 +72,19 @@ export const useTimeSheet = () => {
             totalWorkHours = 4;
         }
         
-        // Xác định status dựa trên dữ liệu
+        // Xác định status dựa trên is_complete và total_work_time
         let status: string = 'absent';
-        if (item.checkin && item.checkout) {
-            status = item.late_time > 0 ? 'late' : 'work';
-        } else if (item.checkin && !item.checkout) {
+        
+        // 1. is_complete = true -> đủ công (work)
+        // 2. is_complete = false + total_work_time != null -> thiếu công (late)
+        // 3. is_complete = false + total_work_time = null -> không có công (absent)
+        if (item.is_complete === true) {
             status = 'work';
-        } else if (item.paid_leave || item.unpaid_leave) {
-            status = item.paid_leave ? 'leave' : 'holiday';
-        } else if (item.remote === 'REMOTE') {
-            status = 'remote';
+        } else if (item.is_complete === false && !!item.total_work_time) {
+            status = 'late';
+        } else {
+            // is_complete = false && total_work_time = null
+            status = 'absent';
         }
 
         acc[date] = {
@@ -81,7 +97,11 @@ export const useTimeSheet = () => {
             fines: item.fines,
             isComplete: item.is_complete,
             type: item.type,
-            remote: item.remote
+            remote: item.remote,
+            requests: item.requests,
+            request_type: item.request_type,
+            paid_leave: item.paid_leave,
+            unpaid_leave: item.unpaid_leave
         };
         
         return acc;

@@ -28,7 +28,7 @@ const MeetingDetail: React.FC<MeetingDetailProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const isMyMeeting = currentUserId && meeting.organizer_id === currentUserId;
+  const isMyMeeting = currentUserId && meeting.organizer?.id === currentUserId;
   const startDate = new Date(meeting.start_time);
   const endDate = new Date(meeting.end_time);
 
@@ -82,14 +82,14 @@ const MeetingDetail: React.FC<MeetingDetailProps> = ({
           </DetailValue>
         </DetailRow>
 
-        {meeting.organizer && (
+        {meeting?.organizer && (
           <DetailRow>
             <DetailLabel>
               <User size={18} />
               <span>Người tổ chức</span>
             </DetailLabel>
             <DetailValue>
-              {meeting.organizer.name || "Chưa xác định"}
+              {meeting.organizer.user_information.name || "Chưa xác định"}
             </DetailValue>
           </DetailRow>
         )}

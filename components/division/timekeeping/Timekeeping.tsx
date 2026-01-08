@@ -4,36 +4,13 @@ import React, { useState } from "react";
 import AdminRequestsList from "@/components/timekeeping/AdminRequestsList";
 import {
   TimekeepingContainer,
-  Header,
-  TabsContainer,
-  Tab,
-  TabContent,
 } from "./timekeepingStyle";
 
-const Tabs = ["DANH SÁCH ĐỀ XUẤT NHÂN VIÊN"];
-
 const Timekeeping: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>(Tabs[0]);
 
   return (
     <TimekeepingContainer>
-      <Header>
-        <TabsContainer>
-          {Tabs.map((tab) => (
-            <Tab
-              key={tab}
-              $active={activeTab === tab}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-            </Tab>
-          ))}
-        </TabsContainer>
-      </Header>
-
-      <TabContent>
-        {activeTab === "DANH SÁCH ĐỀ XUẤT NHÂN VIÊN" && <AdminRequestsList />}
-      </TabContent>
+      <AdminRequestsList />
     </TimekeepingContainer>
   );
 };

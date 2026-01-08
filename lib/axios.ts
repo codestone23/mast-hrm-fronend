@@ -60,7 +60,7 @@ const refreshToken = async (): Promise<string | null> => {
 // Tạo axios instance
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 50000,
   headers: {
     'Content-Type': 'application/json',
   },

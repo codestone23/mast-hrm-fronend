@@ -240,11 +240,11 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
             <RequestActions style={{ padding: '1rem' }}>
               <ApproveButton onClick={handleApprove}>
                 <CheckCircle size={18} />
-                Duyệt đề xuất
+                Duyệt yêu cầu
               </ApproveButton>
               <RejectButton onClick={handleReject}>
                 <XCircle size={18} />
-                Từ chối đề xuất
+                Từ chối yêu cầu
               </RejectButton>
             </RequestActions>
           </>

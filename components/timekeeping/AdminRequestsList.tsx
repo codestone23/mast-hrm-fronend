@@ -209,13 +209,13 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
             <ListRequestContainer>
                 <ListRequestHeader>
                     <div>
-                        <ListRequestTitle>Danh sách đề xuất</ListRequestTitle>
+                        <ListRequestTitle>Danh sách yêu cầu</ListRequestTitle>
                         <ListRequestSubtitle>
                             Tổng cộng{" "}
                             <ListRequestHighlight>
                                 {pagination?.total || 0}
                             </ListRequestHighlight>{" "}
-                            đề xuất
+                            yêu cầu
                         </ListRequestSubtitle>
                     </div>
                 </ListRequestHeader>
@@ -294,11 +294,10 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                                     <FileText size={48} />
                                 </EmptyStateIcon>
                                 <EmptyStateTitle>
-                                    Chưa có đề xuất nào
+                                    Chưa có yêu cầu nào
                                 </EmptyStateTitle>
                                 <EmptyStateDescription>
-                                    Không có đề xuất nào phù hợp với bộ lọc hiện
-                                    tại.
+                                    Không có yêu cầu nào phù hợp với bộ lọc hiện tại.
                                 </EmptyStateDescription>
                             </EmptyStateContainer>
                         ) : (
@@ -322,13 +321,8 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                                                         )}
                                                     </RequestTitle>
                                                     <RequestMetaItem>
-                                                        <User size={14} /> Người
-                                                        gửi:
-                                                        <span>
-                                                            {
-                                                                request.user_name
-                                                            }
-                                                        </span>
+                                                        <User size={14} /> Người gửi:
+                                                        <span> {request.user_name} </span>
                                                     </RequestMetaItem>
                                                     <RequestNote>
                                                         Tiêu đề: {request.title}
@@ -423,8 +417,8 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                     }
                 }}
                 onConfirm={handleConfirmApprove}
-                title="Xác nhận duyệt đề xuất"
-                message={`Bạn có chắc chắn muốn duyệt đề xuất "${
+                title="Xác nhận duyệt yêu cầu"
+                message={`Bạn có chắc chắn muốn duyệt yêu cầu "${
                     approveModal.request?.title || ""
                 }" của ${
                     approveModal.request?.user?.user_information?.name || ""
@@ -443,16 +437,16 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                 isLoading={rejectMutation.isPending && processingRequestId === rejectModal.request?.id}
                 error={
                     rejectMutation.isError && processingRequestId === rejectModal.request?.id
-                        ? "Có lỗi xảy ra khi từ chối đề xuất"
+                        ? "Có lỗi xảy ra khi từ chối yêu cầu."
                         : undefined
                 }
-                title="Từ chối đề xuất"
-                subtitle={`Bạn đang từ chối đề xuất "${
+                title="Từ chối yêu cầu"
+                subtitle={`Bạn đang từ chối yêu cầu "${
                     rejectModal.request?.title || ""
                 }" của ${
                     rejectModal.request?.user?.user_information?.name || ""
                 }`}
-                placeholder="Nhập lý do từ chối đề xuất này..."
+                placeholder="Nhập lý do từ chối yêu cầu này..."
                 confirmText="Xác nhận từ chối"
                 cancelText="Hủy"
             />

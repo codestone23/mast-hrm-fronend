@@ -379,7 +379,7 @@ const AccountManagement: React.FC = () => {
       label: "Đăng ký khuôn mặt",
       width: "150px",
       render: (_, row) => {
-        const isRegistered = !!(row.user_embeddings.length > 0);
+        const isRegistered = !!(row?.user_embeddings && row.user_embeddings?.embedding);
         return (
           <FaceRegistrationBadge $isRegistered={isRegistered}>
             {isRegistered ? "Đã đăng ký" : "Chưa đăng ký"}
@@ -507,7 +507,7 @@ const AccountManagement: React.FC = () => {
                       <span>Thu hồi vai trò</span>
                     </ActionMenuLink>
                   </ActionMenuItem>
-                  {(!row.register_face_url || !row.register_face_at) && (
+                  {(!row.user_embeddings || !row.user_embeddings.embedding) && (
                     <ActionMenuItem>
                       <ActionMenuLink
                         onClick={(e) => {

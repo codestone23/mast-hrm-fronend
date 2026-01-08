@@ -240,7 +240,7 @@ const TimeSheets: React.FC = () => {
   const tabs = useMemo(() => {
     const baseTabs = ["BẢNG CHẤM CÔNG"];
 
-    baseTabs.splice(1, 0, "DANH SÁCH ĐỀ XUẤT");
+    baseTabs.splice(1, 0, "DANH SÁCH YÊU CẦU");
 
     return baseTabs;
   }, []);
@@ -248,8 +248,8 @@ const TimeSheets: React.FC = () => {
   // Read tab from URL and set active tab
   useEffect(() => {
     const tabParam = searchParams.get("tab");
-    if (tabParam === "requests" && tabs.includes("DANH SÁCH ĐỀ XUẤT")) {
-      setActiveTab("DANH SÁCH ĐỀ XUẤT");
+    if (tabParam === "requests" && tabs.includes("DANH SÁCH YÊU CẦU")) {
+      setActiveTab("DANH SÁCH YÊU CẦU");
     }
   }, [searchParams, tabs]);
 
@@ -468,7 +468,7 @@ const TimeSheets: React.FC = () => {
       [REQUEST_TYPE.LATE_EARLY]: "late-early",
       [REQUEST_TYPE.FORGOT_CHECKIN]: "forgot-checkin",
     };
-    return typeMap[requestType] || requestType.toLowerCase();
+    return typeMap[requestType] || requestType?.toLowerCase();
   };
 
   const monthNames = [
@@ -514,7 +514,7 @@ const TimeSheets: React.FC = () => {
             }}
           >
             <Plus size={isMobile ? 14 : 16} />
-            {isMobile ? "Đề xuất" : "Tạo đề xuất"}
+            {isMobile ? "Yêu cầu" : "Tạo yêu cầu"}
           </CreateButton>
           <CreateButton 
             $isMobile={isMobile}
@@ -773,7 +773,7 @@ const TimeSheets: React.FC = () => {
           </>
         )}
 
-        {activeTab === "DANH SÁCH ĐỀ XUẤT" && (
+        {activeTab === "DANH SÁCH YÊU CẦU" && (
           <div style={{ width: "100%" }}>
             <MyRequestsList
               onRequestClick={(request) => {
@@ -922,7 +922,7 @@ const TimeSheets: React.FC = () => {
         } as Request : null)}
         canApprove={
           (selectedRequest || selectedRequestForDetail)
-            ? activeTab === "LIST ĐỀ XUẤT" &&
+            ? activeTab === "DANH SÁCH YÊU CẦU" &&
               (selectedRequest?.status || selectedRequestForDetail?.status) === REQUEST_STATUS.PENDING
             : false
         }

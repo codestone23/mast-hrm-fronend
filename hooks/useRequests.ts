@@ -69,15 +69,15 @@ export const useRejectRequest = () => {
       queryClient.invalidateQueries({ queryKey: ['adminRequests'] });
       showToast({
         type: 'success',
-        title: 'Từ chối request thành công',
-        message: 'Từ chối request thành công',
+        title: 'Từ chối yêu cầu thành công',
+        message: 'Từ chối yêu cầu thành công',
       });
     },
     onError: (error: unknown) => {
       showToast({
         type: 'error',
-        title: 'Có lỗi xảy ra khi từ chối request',
-        message: 'Có lỗi xảy ra khi từ chối request',
+        title: 'Có lỗi xảy ra khi từ chối yêu cầu',
+        message: 'Có lỗi xảy ra khi từ chối yêu cầu',
       });
     },
   });
@@ -94,10 +94,10 @@ export const useUpdateRequest = () => {
       queryClient.invalidateQueries({ queryKey: ['myRequests'] });
       queryClient.invalidateQueries({ queryKey: ['adminRequests'] });
       queryClient.invalidateQueries({ queryKey: ['requestDetail'] });
-      showSuccessToast('Cập nhật đề xuất thành công!');
+      showSuccessToast('Cập nhật yêu cầu thành công!');
     },
     onError: (error: unknown) => {
-      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật đề xuất';
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật yêu cầu.';
       showErrorToast(errorMessage);
     },
   });

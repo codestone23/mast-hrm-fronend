@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import Button from "@/components/common/Button/Button";
@@ -20,6 +20,7 @@ interface MeetingBookingProps {
   selectedDate?: Date;
   selectedTimeSlot?: { start: string; end: string };
   selectedMeeting?: Meeting | null;
+  selectedRoomIdProp?: number;
   onSubmit: (data: CreateMeetingPayload) => void;
   onCancel?: () => void;
   isLoading?: boolean;
@@ -51,16 +52,14 @@ const generateTimeSlots = (): string[] => {
 const MeetingBooking: React.FC<MeetingBookingProps> = ({
   rooms,
   selectedDate,
-  selectedTimeSlot,
   selectedMeeting,
+  selectedRoomIdProp,
   onSubmit,
   onCancel,
   isLoading = false,
   isEditMode = false,
   isReadOnly = false,
 }) => {
-  const [selectedStartHour, setSelectedStartHour] = useState<string>("");
-  const [selectedEndHour, setSelectedEndHour] = useState<string>("");
   const timeSlots = generateTimeSlots();
 
   const {
@@ -71,11 +70,11 @@ const MeetingBooking: React.FC<MeetingBookingProps> = ({
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
-      room_id: rooms[0]?.id || 0,
+      room_id: selectedRoomIdProp || rooms[0]?.id || 0,
       title: "",
       description: "",
       booking_date: selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
-      start_hour: "",
+      start_hour: selectedDate ? format(selectedDate, "HH:mm") : "",
       end_hour: "",
     },
     mode: "onChange",
@@ -83,21 +82,14 @@ const MeetingBooking: React.FC<MeetingBookingProps> = ({
 
   const bookingDate = watch("booking_date");
   const roomId = watch("room_id");
+  const selectedStartHour = watch("start_hour");
+  const selectedEndHour = watch("end_hour");
 
   useEffect(() => {
     if (selectedDate) {
       setValue("booking_date", format(selectedDate, "yyyy-MM-dd"));
     }
   }, [selectedDate, setValue]);
-
-  useEffect(() => {
-    if (selectedTimeSlot) {
-      setSelectedStartHour(selectedTimeSlot.start);
-      setSelectedEndHour(selectedTimeSlot.end);
-      setValue("start_hour", selectedTimeSlot.start);
-      setValue("end_hour", selectedTimeSlot.end);
-    }
-  }, [selectedTimeSlot, setValue]);
 
   // Điền dữ liệu từ selectedMeeting khi ở edit mode
   useEffect(() => {
@@ -111,33 +103,21 @@ const MeetingBooking: React.FC<MeetingBookingProps> = ({
       setValue("booking_date", format(meetingStart, "yyyy-MM-dd"));
       setValue("start_hour", format(meetingStart, "HH:mm"));
       setValue("end_hour", format(meetingEnd, "HH:mm"));
-      
-      setSelectedStartHour(format(meetingStart, "HH:mm"));
-      setSelectedEndHour(format(meetingEnd, "HH:mm"));
     }
   }, [isEditMode, selectedMeeting, setValue]);
 
   const handleStartHourSelect = (hour: string) => {
-    setSelectedStartHour(hour);
-    setValue("start_hour", hour);
+    setValue("start_hour", hour, { shouldValidate: true });
     if (selectedEndHour && hour >= selectedEndHour) {
-      setSelectedEndHour("");
-      setValue("end_hour", "");
+      setValue("end_hour", "", { shouldValidate: true });
     }
   };
 
   const handleEndHourSelect = (hour: string) => {
-    if (selectedStartHour && hour > selectedStartHour) {
-      setSelectedEndHour(hour);
-      setValue("end_hour", hour);
-    }
+    setValue("end_hour", hour, { shouldValidate: true });
   };
 
   const onSubmitForm = (data: FormData) => {
-    if (!selectedStartHour || !selectedEndHour) {
-      return;
-    }
-    
     // Kiểm tra lại ngày đặt không phải thứ 7 hoặc chủ nhật
     if (data.booking_date) {
       const bookingDate = new Date(data.booking_date);
@@ -147,11 +127,7 @@ const MeetingBooking: React.FC<MeetingBookingProps> = ({
       }
     }
     
-    onSubmit({
-      ...data,
-      start_hour: selectedStartHour,
-      end_hour: selectedEndHour,
-    });
+    onSubmit(data);
   };
 
   const roomOptions = rooms.map((room) => ({
@@ -204,6 +180,41 @@ const MeetingBooking: React.FC<MeetingBookingProps> = ({
         />
       </FormRow>
 
+      <FormRow $inline>
+        <Select
+          label="Giờ bắt đầu"
+          {
+            ...register("start_hour", { required: "Vui lòng chọn giờ bắt đầu" })
+          }
+          options={timeSlots.map((slot) => ({ value: slot, label: slot }))}
+          value={selectedStartHour}
+          onChange={(value) => handleStartHourSelect(value as string)}
+          placeholder="Chọn giờ bắt đầu"
+          required
+          disabled={isReadOnly}
+          error={errors.start_hour?.message}
+        />
+        <Select
+          label="Giờ kết thúc"
+          {...register("end_hour", { 
+            required: "Vui lòng chọn giờ kết thúc",
+            validate: (value) => {
+              if (selectedStartHour && value <= selectedStartHour) {
+                return "Giờ kết thúc phải sau giờ bắt đầu";
+              }
+              return true;
+            }
+          })}
+          options={availableEndSlots.map((slot) => ({ value: slot, label: slot }))}
+          value={selectedEndHour}
+          onChange={(value) => handleEndHourSelect(value as string)}
+          placeholder="Chọn giờ kết thúc"
+          required
+          disabled={isReadOnly || !selectedStartHour}
+          error={errors.end_hour?.message}
+        />
+      </FormRow>
+
       <FormRow>
         <Input
           label="Tiêu đề"
@@ -225,28 +236,6 @@ const MeetingBooking: React.FC<MeetingBookingProps> = ({
         />
       </FormRow>
 
-      <FormRow $inline>
-        <Select
-          label="Giờ bắt đầu"
-          options={timeSlots.map((slot) => ({ value: slot, label: slot }))}
-          value={selectedStartHour}
-          onChange={(value) => handleStartHourSelect(value as string)}
-          placeholder="Chọn giờ bắt đầu"
-          required
-          disabled={isReadOnly}
-        />
-        <Select
-          label="Giờ kết thúc"
-          options={availableEndSlots.map((slot) => ({ value: slot, label: slot }))}
-          value={selectedEndHour}
-          onChange={(value) => handleEndHourSelect(value as string)}
-          placeholder="Chọn giờ kết thúc"
-          required
-          disabled={isReadOnly || !selectedStartHour}
-          error={!selectedEndHour ? "Vui lòng chọn giờ kết thúc" : undefined}
-        />
-      </FormRow>
-
       {!isReadOnly && (
         <FormActions>
           {onCancel && (
@@ -258,7 +247,6 @@ const MeetingBooking: React.FC<MeetingBookingProps> = ({
             type="submit"
             variant="primary"
             loading={isLoading}
-            disabled={!selectedStartHour || !selectedEndHour}
           >
             {isEditMode ? "Cập nhật" : "Đặt phòng"}
           </Button>

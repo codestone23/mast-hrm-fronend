@@ -135,7 +135,7 @@ const Calendar: React.FC<CalendarProps> = ({
     if (isMeetingInPast(meeting)) {
       return;
     }
-    const isMyMeeting = currentUserId && meeting.organizer_id === currentUserId;
+    const isMyMeeting = currentUserId && meeting.organizer?.id === currentUserId;
     if (isMyMeeting) {
       onEventClick?.(meeting);
     }
@@ -256,8 +256,8 @@ const Calendar: React.FC<CalendarProps> = ({
                       >
                         {shouldShowMeeting && meeting && (
                           <MeetingBlock
-                            $isMyMeeting={currentUserId ? meeting.organizer_id === currentUserId : false}
-                            $isClickable={currentUserId ? meeting.organizer_id === currentUserId && !meetingInPast : false}
+                            $isMyMeeting={currentUserId ? meeting.organizer?.id === currentUserId : false}
+                            $isClickable={currentUserId ? meeting.organizer?.id === currentUserId && !meetingInPast : false}
                             style={getMeetingPosition(meeting, day, timeSlot)!}
                             onClick={(e) => handleMeetingClick(meeting, e)}
                             title={`${meeting.title} - ${meeting.room?.name || ""} (${format(new Date(meeting.start_time), "HH:mm")} - ${format(new Date(meeting.end_time), "HH:mm")})`}

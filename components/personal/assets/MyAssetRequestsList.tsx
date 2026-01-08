@@ -410,10 +410,10 @@ const MyAssetRequestsList: React.FC<MyAssetRequestsListProps> = ({ requests }) =
                 <AssetName>
                   {request.asset?.name || "Yêu cầu tài sản"}
                   <InfoRow>
-                    <InfoBadge>
+                    {/* <InfoBadge>
                       <Package size={14} />
                       <span>{getRequestTypeText(request.request_type)}</span>
-                    </InfoBadge>
+                    </InfoBadge> */}
                     {request.expected_date && (
                       <InfoBadge>
                         <Calendar size={14} />

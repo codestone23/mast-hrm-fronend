@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/useToast";
 import { useAuthContext } from "@/contexts/AuthContext";
 import Calendar from "../Calendar/Calendar";
 import MeetingDetail from "../MeetingDetail/MeetingDetail";
-import MeetingBookingModal from "../modals/MeetingBookingModal";
+import MeetingBooking from "../MeetingBooking/MeetingBooking";
 import Button from "@/components/common/Button/Button";
 import Select from "@/components/common/Select/Select";
 import { Loading, ConfirmDeleteModal } from "@/components/common";
@@ -97,7 +97,7 @@ const MeetingRooms: React.FC = () => {
   // Lọc chỉ lấy meetings của user hiện tại
   const myMeetings = useMemo(() => {
     if (!currentUserId) return [];
-    return meetings.filter((meeting) => meeting.organizer_id === currentUserId);
+    return meetings.filter((meeting) => meeting.organizer?.id === currentUserId);
   }, [meetings, currentUserId]);
 
   // Create meeting mutation
@@ -218,15 +218,6 @@ const MeetingRooms: React.FC = () => {
     value: room.id.toString(),
     label: room.name,
   }));
-
-  const selectedTimeSlot = selectedMeeting
-    ? {
-        start: format(new Date(selectedMeeting.start_time), "HH:mm"),
-        end: format(new Date(selectedMeeting.end_time), "HH:mm"),
-      }
-    : undefined;
-
-  console.log(meetings);
 
   return (
     <MeetingRoomsContainer>
@@ -364,7 +355,7 @@ const MeetingRooms: React.FC = () => {
       </Modal>
 
       {/* Modal đặt phòng/chỉnh sửa */}
-      <MeetingBookingModal
+      <Modal
         isOpen={isBookingModalOpen}
         onClose={() => {
           setIsBookingModalOpen(false);
@@ -373,18 +364,30 @@ const MeetingRooms: React.FC = () => {
           setIsEditMode(false);
           setSelectedDate(undefined);
         }}
-        selectedDate={selectedDate}
-        selectedTimeSlot={selectedTimeSlot}
-        selectedMeeting={selectedMeeting}
-        onSubmit={handleBookingSubmit}
-        onCancel={() => {
-          setIsBookingModalOpen(false);
-          setSelectedMeeting(null);
-          setIsEditMode(false);
-        }}
-        isLoading={createMutation.isPending || updateMutation.isPending}
-        isEditMode={isEditMode && selectedMeeting ? true : false}
-      />
+        title={
+          isEditMode && selectedMeeting
+            ? "Cập nhật lịch đặt phòng"
+            : "Đặt phòng họp"
+        }
+        size="lg"
+      >
+        <MeetingBooking
+          rooms={rooms}
+          selectedDate={selectedDate}
+          selectedMeeting={selectedMeeting}
+          selectedRoomIdProp={selectedRoomId}
+          onSubmit={handleBookingSubmit}
+          onCancel={() => {
+            setIsBookingModalOpen(false);
+            setSelectedMeeting(null);
+            setIsEditMode(false);
+          }}
+          isLoading={createMutation.isPending || updateMutation.isPending}
+          isEditMode={isEditMode && selectedMeeting ? true : false}
+          isReadOnly={false}
+        />
+      </Modal>
+
 
       {/* Modal xác nhận xóa */}
       <ConfirmDeleteModal

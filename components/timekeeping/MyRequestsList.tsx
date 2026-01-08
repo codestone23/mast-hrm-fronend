@@ -57,7 +57,7 @@ const getRequestTypeEndpoint = (requestType: REQUEST_TYPE): string => {
         [REQUEST_TYPE.LATE_EARLY]: "late-early",
         [REQUEST_TYPE.FORGOT_CHECKIN]: "forgot-checkin",
     };
-    return typeMap[requestType] || requestType.toLowerCase();
+    return typeMap[requestType] || requestType?.toLowerCase();
 };
 
 const MyRequestsList: React.FC<MyRequestsListProps> = ({ onRequestClick, onEditRequest }) => {
@@ -145,13 +145,13 @@ const MyRequestsList: React.FC<MyRequestsListProps> = ({ onRequestClick, onEditR
 
         setIsDeleting(true);
         try {
-            await requestsService.deleteRequest(deleteRequestId.type, String(deleteRequestId.id));
-            showSuccessToast("Xóa đề xuất thành công");
+            await requestsService.deleteRequest(String(deleteRequestId.id));
+            showSuccessToast("Xóa yêu cầu thành công");
             queryClient.invalidateQueries({ queryKey: ["myRequests"] });
             setIsDeleteModalOpen(false);
             setDeleteRequestId(null);
         } catch (error) {
-            showErrorToast("Có lỗi xảy ra khi xóa đề xuất");
+            showErrorToast("Có lỗi xảy ra khi xóa yêu cầu");
             console.error("Error deleting request:", error);
         } finally {
             setIsDeleting(false);
@@ -178,14 +178,14 @@ const MyRequestsList: React.FC<MyRequestsListProps> = ({ onRequestClick, onEditR
             <ListRequestHeader>
                 <div>
                     <ListRequestTitle>
-                        Danh sách đề xuất của tôi
+                        Danh sách yêu cầu của tôi
                     </ListRequestTitle>
                     <ListRequestSubtitle>
                         Tổng cộng{" "}
                         <ListRequestHighlight>
                             {pagination?.total || 0}
                         </ListRequestHighlight>{" "}
-                        đề xuất
+                        yêu cầu
                     </ListRequestSubtitle>
                 </div>
             </ListRequestHeader>
@@ -265,10 +265,10 @@ const MyRequestsList: React.FC<MyRequestsListProps> = ({ onRequestClick, onEditR
                                 <FileText size={48} />
                             </EmptyStateIcon>
                             <EmptyStateTitle>
-                                Chưa có đề xuất nào
+                                Chưa có yêu cầu nào
                             </EmptyStateTitle>
                             <EmptyStateDescription>
-                                Bạn chưa tạo đề xuất nào hoặc không có đề xuất
+                                Bạn chưa tạo yêu cầu nào hoặc không có yêu cầu
                                 nào phù hợp với bộ lọc hiện tại.
                             </EmptyStateDescription>
                         </EmptyStateContainer>
@@ -289,7 +289,7 @@ const MyRequestsList: React.FC<MyRequestsListProps> = ({ onRequestClick, onEditR
                                                 <RequestTitle>
                                                     Loại:{" "}
                                                     {getTypeLabel(
-                                                        request.request_type as REQUEST_TYPE
+                                                        request.type as REQUEST_TYPE
                                                     )}
                                                 </RequestTitle>
                                                 <RequestNote>
@@ -417,8 +417,8 @@ const MyRequestsList: React.FC<MyRequestsListProps> = ({ onRequestClick, onEditR
                     }
                 }}
                 onConfirm={handleDeleteRequest}
-                title="Xóa đề xuất"
-                message="Bạn có chắc chắn muốn xóa đề xuất này? Hành động này không thể hoàn tác."
+                title="Xóa yêu cầu"
+                message="Bạn có chắc chắn muốn xóa yêu cầu này? Hành động này không thể hoàn tác."
                 isLoading={isDeleting}
             />
         </ListRequestContainer>

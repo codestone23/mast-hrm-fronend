@@ -202,7 +202,7 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
           <>
             <InfoBanner>
               <div>Chọn giờ checkin checkout để sửa thông tin chấm công của bạn</div>
-              <div>Số đề xuất được thực hiện trong tháng: <span style={{ color: '#ef4444', fontWeight: 'bold' }}>3</span></div>
+              <div>Số yêu cầu được thực hiện trong tháng: <span style={{ color: '#ef4444', fontWeight: 'bold' }}>3</span></div>
             </InfoBanner>
             
             <FormSection>

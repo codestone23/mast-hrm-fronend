@@ -68,12 +68,12 @@ const RequestTypeModal: React.FC<RequestTypeModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Gợi ý đề xuất"
+      title="Gợi ý loại yêu cầu"
       size="md"
     >
       <ModalContent>
         <div style={{ marginBottom: '16px', color: '#6b7280', fontSize: '14px' }}>
-          Chọn loại đề xuất cho ngày {selectedDate}
+          Chọn loại yêu cầu cho ngày {selectedDate}
         </div>
         
         <RequestTypeList>

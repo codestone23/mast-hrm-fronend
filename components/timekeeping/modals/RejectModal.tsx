@@ -38,7 +38,7 @@ const RejectModal: React.FC<RejectModalProps> = ({
   error,
   success,
   title = "Lý do từ chối",
-  subtitle = "Vui lòng nhập lý do từ chối đề xuất này",
+  subtitle = "Vui lòng nhập lý do từ chối yêu cầu này",
   placeholder = "Nhập lý do từ chối...",
   confirmText = "Xác nhận từ chối",
   cancelText = "Hủy",

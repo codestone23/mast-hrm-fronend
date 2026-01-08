@@ -23,7 +23,7 @@ import { AssetCategory, AssetStatus } from "@/constants/enums";
 import { useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import assetsService from "@/services/assets.service";
 import { useToast } from "@/hooks/useToast";
-import { Select, DatePicker } from "@/components/common";
+import { Select, DatePicker, Modal } from "@/components/common";
 import { Asset } from "@/constants/types";
 import { formatDateForAPI } from "@/utils/dateUtils";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -185,184 +185,184 @@ const CreateAssetRequestModal: React.FC<CreateAssetRequestModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <ModalOverlay onClick={handleClose}>
-      <ModalContainer size="lg" onClick={(e) => e.stopPropagation()}>
-        <ModalContent>
-          <ModalHeader>
-            <ModalTitle>Tạo yêu cầu tài sản</ModalTitle>
-            <ModalCloseButton onClick={handleClose}>
-              <X size={20} />
-            </ModalCloseButton>
-          </ModalHeader>
+    <Modal 
+      isOpen={isOpen}
+      onClose={handleClose}
+      size="xl"
+      title="Tạo yêu cầu tài sản"
+      footer={
+        <>
+          <CancelButton
+            onClick={handleClose}
+            disabled={isSubmitting || createRequestMutation.isPending}
+          >
+            Hủy
+          </CancelButton>
+          <SaveButton
+            onClick={handleSubmit(onSubmit)}
+            disabled={isSubmitting || createRequestMutation.isPending}
+          >
+            {isSubmitting || createRequestMutation.isPending ? "Đang tạo..." : "Tạo yêu cầu"}
+          </SaveButton>
+        </>
+      }
+    >
+      <ModalBody>
+        {error && (
+          <div
+            style={{
+              padding: "12px",
+              background: "#fee2e2",
+              color: "#dc2626",
+              borderRadius: "8px",
+              marginBottom: "16px",
+              fontSize: "14px",
+            }}
+          >
+            {error}
+          </div>
+        )}
 
-          <ModalBody>
-            {error && (
-              <div
-                style={{
-                  padding: "12px",
-                  background: "#fee2e2",
-                  color: "#dc2626",
-                  borderRadius: "8px",
-                  marginBottom: "16px",
-                  fontSize: "14px",
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <FormRow>
+            {/* <FormGroup>
+              <FormLabel>
+                Loại yêu cầu <span style={{ color: "#ef4444" }}>*</span>
+              </FormLabel>
+              <Select
+                options={requestTypeOptions}
+                value={requestTypeValue}
+                onChange={(value) => {
+                  setValue("request_type", value as "REQUEST" | "RETURN" | "MAINTENANCE", { shouldValidate: true });
                 }}
-              >
-                {error}
-              </div>
+                placeholder="Chọn loại yêu cầu"
+                fullWidth
+              />
+              {errors.request_type && (
+                <span style={{ color: "#ef4444", fontSize: "12px" }}>
+                  {errors.request_type.message}
+                </span>
+              )}
+              <input
+                type="hidden"
+                {...register("request_type", { required: "Vui lòng chọn loại yêu cầu" })}
+              />
+            </FormGroup> */}
+
+            <FormGroup>
+              <FormLabel>
+                Danh mục <span style={{ color: "#ef4444" }}>*</span>
+              </FormLabel>
+              <Select
+                options={categoryOptions}
+                value={categoryValue}
+                onChange={(value) => {
+                  setValue("category", String(value), { shouldValidate: true });
+                }}
+                placeholder="Chọn danh mục"
+                fullWidth
+              />
+              {errors.category && (
+                <span style={{ color: "#ef4444", fontSize: "12px" }}>
+                  {errors.category.message}
+                </span>
+              )}
+              <input
+                type="hidden"
+                {...register("category", { required: "Vui lòng chọn danh mục" })}
+              />
+            </FormGroup>
+          </FormRow>
+
+          <FormGroup>
+            <FormLabel>
+              Lý do <span style={{ color: "#ef4444" }}>*</span>
+            </FormLabel>
+            <FormTextArea
+              {...register("justification", {
+                required: "Vui lòng nhập lý do",
+              })}
+              placeholder="Nhập lý do yêu cầu..."
+              $hasError={!!errors.justification}
+              disabled={isSubmitting || createRequestMutation.isPending}
+            />
+            {errors.justification && (
+              <span style={{ color: "#ef4444", fontSize: "12px" }}>
+                {errors.justification.message}
+              </span>
             )}
+          </FormGroup>
 
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <FormRow>
-                {/* <FormGroup>
-                  <FormLabel>
-                    Loại yêu cầu <span style={{ color: "#ef4444" }}>*</span>
-                  </FormLabel>
-                  <Select
-                    options={requestTypeOptions}
-                    value={requestTypeValue}
-                    onChange={(value) => {
-                      setValue("request_type", value as "REQUEST" | "RETURN" | "MAINTENANCE", { shouldValidate: true });
-                    }}
-                    placeholder="Chọn loại yêu cầu"
-                    fullWidth
-                  />
-                  {errors.request_type && (
-                    <span style={{ color: "#ef4444", fontSize: "12px" }}>
-                      {errors.request_type.message}
-                    </span>
-                  )}
-                  <input
-                    type="hidden"
-                    {...register("request_type", { required: "Vui lòng chọn loại yêu cầu" })}
-                  />
-                </FormGroup> */}
+          <FormRow>
+            <FormGroup>
+              <FormLabel>
+                Ngày mong muốn <span style={{ color: "#ef4444" }}>*</span>
+              </FormLabel>
+              <DatePicker
+                value={expectedDateValue ? new Date(expectedDateValue) : null}
+                onChange={(date) => {
+                  const dateStr = date ? formatDateForAPI(date) : "";
+                  setValue("expected_date", dateStr, { shouldValidate: true });
+                }}
+                placeholder="Chọn ngày mong muốn"
+                required
+                disabled={isSubmitting || createRequestMutation.isPending}
+                error={errors.expected_date?.message}
+              />
+              <input
+                type="hidden"
+                {...register("expected_date", {
+                  required: "Vui lòng chọn ngày mong muốn",
+                  validate: (value) => {
+                    if (new Date(value).setHours(0,0,0,0) < new Date().setHours(0,0,0,0)) {
+                      return "Ngày mong muốn không được trong quá khứ";
+                    }
+                  }
+                })}
+              />
+            </FormGroup>
 
-                <FormGroup>
-                  <FormLabel>
-                    Danh mục <span style={{ color: "#ef4444" }}>*</span>
-                  </FormLabel>
-                  <Select
-                    options={categoryOptions}
-                    value={categoryValue}
-                    onChange={(value) => {
-                      setValue("category", String(value), { shouldValidate: true });
-                    }}
-                    placeholder="Chọn danh mục"
-                    fullWidth
-                  />
-                  {errors.category && (
-                    <span style={{ color: "#ef4444", fontSize: "12px" }}>
-                      {errors.category.message}
-                    </span>
-                  )}
-                  <input
-                    type="hidden"
-                    {...register("category", { required: "Vui lòng chọn danh mục" })}
-                  />
-                </FormGroup>
-              </FormRow>
+            <FormGroup>
+              <FormLabel>Chọn tài sản (nếu có)</FormLabel>
+              <Select
+                options={assetOptions}
+                value={assetIdValue || ""}
+                onChange={(value) => {
+                  setValue("asset_id", String(value || ""), { shouldValidate: true });
+                }}
+                placeholder="Chọn tài sản (tùy chọn)"
+                fullWidth
+                searchable={true}
+                onSearchChange={setAssetSearchTerm}
+                hasNextPage={hasNextPage}
+                isFetchingNextPage={isFetchingNextPage}
+                fetchNextPage={fetchNextPage}
+                loadingText="Đang tải thêm tài sản..."
+                disabled={isSubmitting || createRequestMutation.isPending || isLoadingAssets}
+              />
+              {isLoadingAssets && (
+                <span style={{ fontSize: "12px", color: "#6b7280", marginTop: "4px" }}>
+                  Đang tải danh sách tài sản...
+                </span>
+              )}
+              <input
+                type="hidden"
+                {...register("asset_id")}
+              />
+            </FormGroup>
+          </FormRow>
 
-              <FormGroup>
-                <FormLabel>
-                  Lý do <span style={{ color: "#ef4444" }}>*</span>
-                </FormLabel>
-                <FormTextArea
-                  {...register("justification", {
-                    required: "Vui lòng nhập lý do",
-                  })}
-                  placeholder="Nhập lý do yêu cầu..."
-                  $hasError={!!errors.justification}
-                  disabled={isSubmitting || createRequestMutation.isPending}
-                />
-                {errors.justification && (
-                  <span style={{ color: "#ef4444", fontSize: "12px" }}>
-                    {errors.justification.message}
-                  </span>
-                )}
-              </FormGroup>
-
-              <FormRow>
-                <FormGroup>
-                  <FormLabel>
-                    Ngày mong muốn <span style={{ color: "#ef4444" }}>*</span>
-                  </FormLabel>
-                  <DatePicker
-                    value={expectedDateValue ? new Date(expectedDateValue) : null}
-                    onChange={(date) => {
-                      const dateStr = date ? formatDateForAPI(date) : "";
-                      setValue("expected_date", dateStr, { shouldValidate: true });
-                    }}
-                    placeholder="Chọn ngày mong muốn"
-                    required
-                    disabled={isSubmitting || createRequestMutation.isPending}
-                    error={errors.expected_date?.message}
-                  />
-                  <input
-                    type="hidden"
-                    {...register("expected_date", {
-                      required: "Vui lòng chọn ngày mong muốn",
-                    })}
-                  />
-                </FormGroup>
-
-                <FormGroup>
-                  <FormLabel>Chọn tài sản (nếu có)</FormLabel>
-                  <Select
-                    options={assetOptions}
-                    value={assetIdValue || ""}
-                    onChange={(value) => {
-                      setValue("asset_id", String(value || ""), { shouldValidate: true });
-                    }}
-                    placeholder="Chọn tài sản (tùy chọn)"
-                    fullWidth
-                    searchable={true}
-                    onSearchChange={setAssetSearchTerm}
-                    hasNextPage={hasNextPage}
-                    isFetchingNextPage={isFetchingNextPage}
-                    fetchNextPage={fetchNextPage}
-                    loadingText="Đang tải thêm tài sản..."
-                    disabled={isSubmitting || createRequestMutation.isPending || isLoadingAssets}
-                  />
-                  {isLoadingAssets && (
-                    <span style={{ fontSize: "12px", color: "#6b7280", marginTop: "4px" }}>
-                      Đang tải danh sách tài sản...
-                    </span>
-                  )}
-                  <input
-                    type="hidden"
-                    {...register("asset_id")}
-                  />
-                </FormGroup>
-              </FormRow>
-
-              <FormGroup>
-                <FormLabel>Ghi chú</FormLabel>
-                <FormTextArea
-                  {...register("notes")}
-                  placeholder="Nhập ghi chú (tùy chọn)..."
-                  disabled={isSubmitting || createRequestMutation.isPending}
-                />
-              </FormGroup>
-            </form>
-          </ModalBody>
-
-          <ModalFooter>
-            <CancelButton
-              onClick={handleClose}
+          <FormGroup>
+            <FormLabel>Ghi chú</FormLabel>
+            <FormTextArea
+              {...register("notes")}
+              placeholder="Nhập ghi chú (tùy chọn)..."
               disabled={isSubmitting || createRequestMutation.isPending}
-            >
-              Hủy
-            </CancelButton>
-            <SaveButton
-              onClick={handleSubmit(onSubmit)}
-              disabled={isSubmitting || createRequestMutation.isPending}
-            >
-              {isSubmitting || createRequestMutation.isPending ? "Đang tạo..." : "Tạo yêu cầu"}
-            </SaveButton>
-          </ModalFooter>
-        </ModalContent>
-      </ModalContainer>
-    </ModalOverlay>
+            />
+          </FormGroup>
+        </form>
+      </ModalBody>
+    </Modal>
   );
 };
 

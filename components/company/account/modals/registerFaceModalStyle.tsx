@@ -1,7 +1,8 @@
 import styled, { keyframes } from "styled-components";
 
 export const VideoWrapper = styled.div`
-  width: 100%;
+  width: 25rem;
+  margin: 0 auto;
   aspect-ratio: 4 / 3;
   background: #000;
   border-radius: 8px;

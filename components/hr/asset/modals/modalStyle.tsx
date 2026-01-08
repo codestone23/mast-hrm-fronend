@@ -89,7 +89,6 @@ export const ModalCloseButton = styled.button`
 `;
 
 export const ModalBody = styled.div`
-  padding: 1.5rem;
   flex: 1;
   overflow-y: auto;
   max-height: 80%;
@@ -111,8 +110,6 @@ export const ModalFooter = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  padding: 16px 24px;
-  border-top: 1px solid #e5e7eb;
   background: #f9fafb;
 `;
 

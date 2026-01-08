@@ -121,8 +121,8 @@ class RequestsService {
         await axiosInstance.patch(`/requests/${type}/${id}`, payload);
     }
 
-    async deleteRequest(type: string, id: string): Promise<void> {
-        await axiosInstance.delete(`/requests/${type}/${id}`);
+    async deleteRequest(id: string): Promise<void> {
+        await axiosInstance.delete(`/requests/${id}`);
     }
 }
 

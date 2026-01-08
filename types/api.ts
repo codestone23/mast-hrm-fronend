@@ -791,7 +791,12 @@ export interface Meeting {
   description: string;
   start_time: string;
   end_time: string;
-  organizer_id: number;
+  organizer: {
+    id: number;
+    user_information: {
+      name: string;
+    };
+  }
   created_at: string;
   updated_at: string;
   deleted_at: string | null;

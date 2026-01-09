@@ -22,7 +22,6 @@ interface RegularOvertimeModalProps {
 
 interface OvertimeFormData {
   title: string;
-  projectId: string;
   workDate: string;
   startTime: string;
   endTime: string;
@@ -40,7 +39,6 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
   const isEdit = !!requestId && !!requestType;
   const [formData, setFormData] = useState<OvertimeFormData>({
     title: '',
-    projectId: '',
     workDate: selectedDate,
     startTime: '',
     endTime: '',
@@ -48,23 +46,6 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
   });
   const [error, setError] = useState('');
   const { success: showSuccessToast, error: showErrorToast } = useToast();
-
-  // Fetch projects using useQuery
-  const { data: projectsResponse, isLoading: isLoadingProjects } = useQuery({
-    queryKey: ['projects', 'timekeeping'],
-    queryFn: () => timekeepingService.getProjects(),
-    enabled: isOpen,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  const projectOptions = useMemo(() => {
-    if (!projectsResponse?.data) return [];
-    return projectsResponse.data.map(project => ({
-      value: project.id.toString(),
-      label: project.name
-    }));
-  }, [projectsResponse]);
-
   // Fetch request data when in edit mode using useQuery
   const shouldFetchRequest = isOpen && isEdit && !!requestId && !!requestType;
   const { data: requestData, isLoading: isLoadingRequest } = useRequestDetail(
@@ -77,7 +58,6 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
   const createOvertimeMutation = useMutation({
     mutationFn: (payload: {
       title: string;
-      project_id: number;
       work_date: string;
       start_time: string;
       end_time: string;
@@ -106,7 +86,6 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
       if (isEdit && requestData) {
         setFormData({
           title: requestData.title || '',
-          projectId: requestData.project_id ? String(requestData.project_id) : '',
           workDate: requestData.work_date || selectedDate,
           startTime: requestData.start_time || '',
           endTime: requestData.end_time || '',
@@ -116,7 +95,6 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
         // Reset form when creating new request
         setFormData({
           title: '',
-          projectId: '',
           workDate: selectedDate,
           startTime: '',
           endTime: '',
@@ -130,11 +108,6 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
   const validateForm = (): boolean => {
     if (!formData.title.trim()) {
       setError('Vui lòng nhập tiêu đề');
-      return false;
-    }
-
-    if (!formData.projectId) {
-      setError('Vui lòng chọn dự án');
       return false;
     }
 
@@ -155,7 +128,6 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
 
     const payload = {
       title: formData.title,
-      project_id: parseInt(formData.projectId),
       work_date: formData.workDate,
       start_time: formData.startTime,
       end_time: formData.endTime,
@@ -165,7 +137,6 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
     if (isEdit && requestId && requestType) {
       const updatePayload: UpdateRequestPayload = {
         title: formData.title,
-        project_id: parseInt(formData.projectId),
         work_date: formData.workDate,
         start_time: formData.startTime,
         end_time: formData.endTime,
@@ -194,7 +165,6 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
     setError('');
     setFormData({
       title: '',
-      projectId: '',
       workDate: selectedDate,
       startTime: '',
       endTime: '',
@@ -212,7 +182,7 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
   };
 
   const isLoading = createOvertimeMutation.isPending || updateRequestMutation.isPending;
-  const isFetching = isLoadingRequest || isLoadingProjects;
+  const isFetching = isLoadingRequest;
 
   return (
     <Modal
@@ -229,7 +199,7 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
             variant="primary"
             onClick={handleSubmit}
             loading={isLoading}
-            disabled={isLoading || isFetching || !formData.title.trim() || !formData.projectId || !formData.reason.trim()}
+            disabled={isLoading || isFetching || !formData.title.trim() || !formData.reason.trim()}
           >
             {isLoading ? 'Đang xử lý...' : isEdit ? 'Cập nhật' : 'Tạo đơn'}
           </Button>
@@ -257,17 +227,7 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
                   disabled={isLoading}
                 />
               </div>
-              
-              <Select
-                label="Dự án"
-                value={formData.projectId}
-                onChange={(value: string | number) => handleInputChange('projectId', value.toString())}
-                options={projectOptions}
-                placeholder="Chọn dự án"
-                required
-                disabled={isLoading}
-              />
-              
+
               <DatePicker
                 label="Ngày làm thêm giờ"
                 value={formData.workDate ? new Date(formData.workDate) : null}

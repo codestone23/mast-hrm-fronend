@@ -454,8 +454,11 @@ const TimeSheets: React.FC = () => {
   };
 
   // Handle request icon click
-  const handleRequestIconClick = (request: TimeSheetRequest) => {
-    setSelectedRequestForDetail(request);
+  const handleRequestIconClick = (request: TimeSheetRequest, date: string) => {
+    setSelectedRequestForDetail({
+      ...request,
+      work_date: date,
+    });
     setIsDetailModalOpen(true);
   };
 
@@ -637,7 +640,7 @@ const TimeSheets: React.FC = () => {
                                   $status={request.status}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleRequestIconClick(request);
+                                    handleRequestIconClick(request, day.fullDate);
                                   }}
                                   title={getRequestTypeLabel(request.request_type)}
                                 >
@@ -736,21 +739,6 @@ const TimeSheets: React.FC = () => {
                       : attendanceStats?.late_minutes || 0}
                   </StatNumber>
                   <StatLabel>Số phút muộn</StatLabel>
-                </StatItem>
-                <StatItem>
-                  <StatNumber>
-                    {isLoading
-                      ? "..."
-                      : Object.values(timeSheetData).reduce(
-                          (
-                            total: number,
-                            day: ProcessedTimeSheetData[string]
-                          ) => total + (day.earlyTime || 0),
-                          0
-                        )}
-                    /120
-                  </StatNumber>
-                  <StatLabel>Quỹ phút đi muộn, về sớm</StatLabel>
                 </StatItem>
                 <StatItem>
                   <StatNumber>

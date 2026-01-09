@@ -157,6 +157,7 @@ export interface User {
   name: string;
   remember_token: string | null;
   updated_at: string;
+  role_assignments?: UserRoleAssignment[];
   user_embeddings?: {
     id: number;
     image_url: string;
@@ -266,6 +267,8 @@ export interface UserRoleAssignment {
     id: number;
     name: ROLE_NAMES;
   };
+  id?: number;
+  name?: string;
   role_name: ROLE_NAMES;
   scope_id: number | null;
   scope_type: ScopeType;

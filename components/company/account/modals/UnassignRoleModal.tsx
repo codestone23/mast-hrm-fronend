@@ -67,7 +67,7 @@ const UnassignRoleModal: React.FC<UnassignRoleModalProps> = ({
   const roleOptions: SelectOption[] = useMemo(() => {
     const roleMap = new Map<number, { roleId: number; roleName: string }>();
     existingRoles.forEach((assignment) => {
-      if (!roleMap.has(assignment.role.id)) {
+      if (!roleMap.has(assignment.role.id) && assignment.role.name !== ROLE_NAMES.EMPLOYEE) {
         roleMap.set(assignment.role.id, {
           roleId: assignment.role.id,
           roleName: assignment.role.name,

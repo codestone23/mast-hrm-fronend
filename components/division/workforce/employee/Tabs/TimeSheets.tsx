@@ -152,12 +152,6 @@ const TimeSheets: React.FC<TimeSheetsProps> = ({ employeeId }) => {
     };
   }, [currentDate]);
 
-  // Lấy thống kê từ API
-  const { data: attendanceStats, isLoading: isLoadingStats } = usePersonalAttendanceStats({
-    start_date: monthDateRange.start_date,
-    end_date: monthDateRange.end_date,
-  });
-
   useEffect(() => {
     setPayload({
       start_date: monthDateRange.start_date,
@@ -206,6 +200,8 @@ const TimeSheets: React.FC<TimeSheetsProps> = ({ employeeId }) => {
     return allRequests;
   };
 
+  console.log(selectedRequestForDetail);
+
   // Helper function to get icon for request type
   const getRequestIcon = (requestType: string) => {
     switch (requestType.toUpperCase()) {
@@ -243,8 +239,11 @@ const TimeSheets: React.FC<TimeSheetsProps> = ({ employeeId }) => {
   };
 
   // Handle request icon click
-  const handleRequestIconClick = (request: TimeSheetRequest) => {
-    setSelectedRequestForDetail(request);
+  const handleRequestIconClick = (request: TimeSheetRequest, date: string) => {
+    setSelectedRequestForDetail({
+      ...request,
+      work_date: date,
+    });
     setIsDetailModalOpen(true);
   };
 
@@ -403,6 +402,8 @@ const TimeSheets: React.FC<TimeSheetsProps> = ({ employeeId }) => {
           {getCurrentMonthDays().map((day, index) => {
             const dayData = timeSheetData[day.fullDate];
 
+            console.log(dayData, day);
+
             const todayString = getTodayInVietnamTimezone();
             const isToday = day.fullDate === todayString;
 
@@ -444,7 +445,7 @@ const TimeSheets: React.FC<TimeSheetsProps> = ({ employeeId }) => {
                             $status={request.status}
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleRequestIconClick(request);
+                              handleRequestIconClick(request, day.fullDate);
                             }}
                             title={getRequestTypeLabel(request.request_type)}
                           >

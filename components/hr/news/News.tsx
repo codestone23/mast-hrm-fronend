@@ -34,16 +34,20 @@ import {
 } from './hrNewsStyle';
 import { ITEMS_PER_PAGE } from '@/constants/constants';
 
+enum NEWS_MODAL_TYPE {
+    CREATE = 'create',
+    EDIT = 'edit',
+    DELETE = 'delete',
+    SUBMIT = 'submit',
+    DETAIL = 'detail',
+}
+
 export default function HRNewsPage() {
     const queryClient = useQueryClient();
     const { success: showSuccessToast, error: showErrorToast } = useToast();
     const isMobile = useMobile();
 
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-    const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+    const [modalType, setModalType] = useState<NEWS_MODAL_TYPE | null>(null);
     const [selectedNews, setSelectedNews] = useState<News | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -51,7 +55,7 @@ export default function HRNewsPage() {
         queryKey: ['hr-news', currentPage],
         queryFn: () => newsService.getNews(currentPage, ITEMS_PER_PAGE),
     });
-
+    
     const newsList = data?.data || [];
     const pagination = data?.pagination || {
         total: 0,
@@ -101,7 +105,7 @@ export default function HRNewsPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['hr-news'] });
             showSuccessToast('Gửi duyệt tin tức thành công');
-            setIsSubmitModalOpen(false);
+            setModalType(null);
             setSelectedNews(null);
         },
         onError: () => {
@@ -115,7 +119,7 @@ export default function HRNewsPage() {
 
     const handleEdit = (news: News) => {
         setSelectedNews(news);
-        setIsEditModalOpen(true);
+        setModalType(NEWS_MODAL_TYPE.EDIT);
     };
 
     const handleUpdate = async (id: number, data: UpdateNewsRequest) => {
@@ -130,7 +134,7 @@ export default function HRNewsPage() {
             return;
         }
         setSelectedNews(news);
-        setIsDeleteModalOpen(true);
+        setModalType(NEWS_MODAL_TYPE.DELETE);
     };
 
     const handleConfirmDelete = () => {
@@ -139,19 +143,19 @@ export default function HRNewsPage() {
                 showErrorToast(
                     'Không thể xóa tin tức đã được duyệt hoặc đang chờ duyệt'
                 );
-                setIsDeleteModalOpen(false);
+                setModalType(null);
                 setSelectedNews(null);
                 return;
             }
             deleteMutation.mutate(selectedNews.id);
-            setIsDeleteModalOpen(false);
+            setModalType(null);
             setSelectedNews(null);
         }
     };
 
     const handleSubmit = (news: News) => {
         setSelectedNews(news);
-        setIsSubmitModalOpen(true);
+        setModalType(NEWS_MODAL_TYPE.SUBMIT);
     };
 
     const handleConfirmSubmit = () => {
@@ -162,7 +166,7 @@ export default function HRNewsPage() {
 
     const handleViewDetail = (news: News) => {
         setSelectedNews(news);
-        setIsDetailModalOpen(true);
+        setModalType(NEWS_MODAL_TYPE.DETAIL);
     };
 
     const canEdit = (news: News) => {
@@ -187,23 +191,13 @@ export default function HRNewsPage() {
         );
     };
 
-    return (
-        <HRNewsContainer>
-            <HRNewsHeader>
-                <HRNewsTitle>Quản lý tin tức</HRNewsTitle>
-                <HRNewsActions>
-                    <Button
-                        onClick={() => setIsCreateModalOpen(true)}
-                        icon={<Plus size={18} />}
-                        iconPosition='left'>
-                        Tạo tin tức mới
-                    </Button>
-                </HRNewsActions>
-            </HRNewsHeader>
+    const renderContent = () => {
+        if (isLoading) {
+            return <Loading />;
+        }
 
-            {isLoading ? (
-                <Loading />
-            ) : newsList.length === 0 ? (
+        if (newsList.length === 0) {
+            return (
                 <div style={{ textAlign: 'center', padding: isMobile ? '2rem 1rem' : '3rem' }}>
                     <FileText
                         size={isMobile ? 40 : 48}
@@ -211,81 +205,101 @@ export default function HRNewsPage() {
                     />
                     <p style={{ fontSize: isMobile ? '14px' : '16px' }}>Chưa có tin tức nào</p>
                 </div>
-            ) : (
-                <>
-                    <NewsGridWithActions>
-                        {newsList.map((news) => (
-                            <NewsCardWithActions key={news.id}>
-                                <div
-                                    onClick={() => handleViewDetail(news)}
-                                    style={{
-                                        cursor: 'pointer',
-                                        height: '100%',
-                                    }}>
-                                    <NewsCard news={news} showStatus={true} />
-                                </div>
-                                {(canSubmit(news) ||
-                                    canEdit(news) ||
-                                    canDelete(news)) && (
-                                    <ActionButtons>
-                                        <>
-                                            {canEdit(news) && (
-                                                <Button
-                                                    size='sm'
-                                                    variant='outline'
-                                                    onClick={() =>
-                                                        handleEdit(news)
-                                                    }
-                                                    icon={<Edit size={16} />}
-                                                    iconPosition='left'>
-                                                    Sửa
-                                                </Button>
-                                            )}
-                                            {canDelete(news) && (
-                                                <Button
-                                                    size='sm'
-                                                    variant='outline'
-                                                    onClick={() =>
-                                                        handleDelete(news)
-                                                    }
-                                                    icon={<Trash2 size={16} />}
-                                                    iconPosition='left'>
-                                                    Xóa
-                                                </Button>
-                                            )}
-                                        </>
-                                        {canSubmit(news) && (
+            );
+        }
+
+        return (
+            <>
+                <NewsGridWithActions>
+                    {newsList.map((news) => (
+                        <NewsCardWithActions key={news.id}>
+                            <div
+                                onClick={() => handleViewDetail(news)}
+                                style={{
+                                    cursor: 'pointer',
+                                    height: '100%',
+                                }}>
+                                <NewsCard news={news} showStatus={true} />
+                            </div>
+                            {(canSubmit(news) ||
+                                canEdit(news) ||
+                                canDelete(news)) && (
+                                <ActionButtons>
+                                    <>
+                                        {canEdit(news) && (
                                             <Button
                                                 size='sm'
-                                                variant='primary'
+                                                variant='outline'
                                                 onClick={() =>
-                                                    handleSubmit(news)
+                                                    handleEdit(news)
                                                 }
-                                                icon={<Send size={16} />}
+                                                icon={<Edit size={16} />}
                                                 iconPosition='left'>
-                                                Gửi duyệt
+                                                Sửa
                                             </Button>
                                         )}
-                                    </ActionButtons>
-                                )}
-                            </NewsCardWithActions>
-                        ))}
-                    </NewsGridWithActions>
-                    {newsList.length > 0 && totalPages > 1 && (
-                        <Pagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            totalItems={pagination.total}
-                            itemsPerPage={ITEMS_PER_PAGE}
-                            onPageChange={setCurrentPage}
-                        />
-                    )}
-                </>
-            )}
+                                        {canDelete(news) && (
+                                            <Button
+                                                size='sm'
+                                                variant='outline'
+                                                onClick={() =>
+                                                    handleDelete(news)
+                                                }
+                                                icon={<Trash2 size={16} />}
+                                                iconPosition='left'>
+                                                Xóa
+                                            </Button>
+                                        )}
+                                    </>
+                                    {canSubmit(news) && (
+                                        <Button
+                                            size='sm'
+                                            variant='primary'
+                                            onClick={() =>
+                                                handleSubmit(news)
+                                            }
+                                            icon={<Send size={16} />}
+                                            iconPosition='left'>
+                                            Gửi duyệt
+                                        </Button>
+                                    )}
+                                </ActionButtons>
+                            )}
+                        </NewsCardWithActions>
+                    ))}
+                </NewsGridWithActions>
+                {newsList.length > 0 && totalPages > 1 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalItems={pagination.total}
+                        itemsPerPage={ITEMS_PER_PAGE}
+                        onPageChange={setCurrentPage}
+                    />
+                )}
+            </>
+        );
+    };
+
+    return (
+        <HRNewsContainer>
+            <HRNewsHeader>
+                <HRNewsTitle>Quản lý tin tức</HRNewsTitle>
+                <HRNewsActions>
+                    <Button
+                        onClick={() => setModalType(NEWS_MODAL_TYPE.CREATE)}
+                        icon={<Plus size={18} />}
+                        iconPosition='left'>
+                        Tạo tin tức mới
+                    </Button>
+                </HRNewsActions>
+            </HRNewsHeader>
+
+            {renderContent()}
 
             <CreateNewsModal
-                isOpen={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
+                isOpen={modalType === NEWS_MODAL_TYPE.CREATE}
+                onClose={() => setModalType(null)}
                 onCreate={handleCreate}
                 isLoading={createMutation.isPending}
             />
@@ -293,9 +307,9 @@ export default function HRNewsPage() {
             {selectedNews && (
                 <>
                     <EditNewsModal
-                        isOpen={isEditModalOpen}
+                        isOpen={modalType === NEWS_MODAL_TYPE.EDIT}
                         onClose={() => {
-                            setIsEditModalOpen(false);
+                            setModalType(null);
                             setSelectedNews(null);
                         }}
                         onUpdate={handleUpdate}
@@ -304,9 +318,9 @@ export default function HRNewsPage() {
                     />
 
                     <ConfirmDeleteModal
-                        isOpen={isDeleteModalOpen}
+                        isOpen={modalType === NEWS_MODAL_TYPE.DELETE}
                         onClose={() => {
-                            setIsDeleteModalOpen(false);
+                            setModalType(null);
                             setSelectedNews(null);
                         }}
                         onConfirm={handleConfirmDelete}
@@ -316,9 +330,9 @@ export default function HRNewsPage() {
                     />
 
                     <ConfirmApproveModal
-                        isOpen={isSubmitModalOpen}
+                        isOpen={modalType === NEWS_MODAL_TYPE.SUBMIT}
                         onClose={() => {
-                            setIsSubmitModalOpen(false);
+                            setModalType(null);
                             setSelectedNews(null);
                         }}
                         onConfirm={handleConfirmSubmit}
@@ -329,9 +343,9 @@ export default function HRNewsPage() {
                     />
 
                     <NewsDetailModal
-                        isOpen={isDetailModalOpen}
+                        isOpen={modalType === NEWS_MODAL_TYPE.DETAIL}
                         onClose={() => {
-                            setIsDetailModalOpen(false);
+                            setModalType(null);
                             setSelectedNews(null);
                         }}
                         news={selectedNews}

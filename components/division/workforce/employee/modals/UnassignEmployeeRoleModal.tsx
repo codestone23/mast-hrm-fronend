@@ -19,6 +19,7 @@ import {
   RoleBadge,
   RolesLabel,
 } from "./unassignEmployeeRoleModalStyle";
+import { ROLE_NAMES } from "@/constants/enums";
 
 interface UnassignEmployeeRoleModalProps {
   isOpen: boolean;
@@ -52,24 +53,38 @@ const UnassignEmployeeRoleModal: React.FC<UnassignEmployeeRoleModalProps> = ({
     mode: "onChange",
   });
 
+  const getScopeName = (scopeType: ScopeType) => {
+    switch (scopeType) {
+      case ScopeType.DIVISION:
+        return "Phòng ban";
+      case ScopeType.PROJECT:
+        return "Dự án";
+      case ScopeType.TEAM:
+        return "Đội nhóm";
+    }
+  };
+
   // Get user's existing DIVISION and PROJECT scope role assignments
-  const existingAssignments = user?.user_role_assignments?.filter(
+  const existingAssignments = user?.role_assignments?.filter(
     (assignment) => 
       assignment.scope_type === ScopeType.DIVISION || 
       assignment.scope_type === ScopeType.PROJECT ||
       assignment.scope_type === ScopeType.TEAM
   ) || [];
 
-  // Create options from existing assignments
-  const assignmentOptions: SelectOption[] = existingAssignments.map((assignment, index) => {
-    const scopeInfo = assignment.scope_id 
-      ? ` (${assignment.scope_type} #${assignment.scope_id})`
-      : ` (${assignment.scope_type})`;
+
+  const assignmentOptions: SelectOption[] = existingAssignments.filter((assignment, index) => {
+    return assignment?.name !== ROLE_NAMES.EMPLOYEE;
+  }).map((assignment, index) => {
     return {
       value: index,
-      label: `${getRoleName(assignment.role.name)}${scopeInfo}`,
+      label: `${getRoleName(assignment?.name as ROLE_NAMES)}${assignment.scope_id ? 
+        ` (${getScopeName(assignment.scope_type as ScopeType)} #${assignment.scope_id})` 
+        : ` (${getScopeName(assignment.scope_type as ScopeType)})`}`,
     };
   });
+
+  console.log(assignmentOptions);
 
   // Reset form when modal closes
   useEffect(() => {
@@ -106,7 +121,10 @@ const UnassignEmployeeRoleModal: React.FC<UnassignEmployeeRoleModalProps> = ({
     },
   });
 
+
+  console.log(existingAssignments, user);
   const onSubmit = (data: UnassignRoleFormData) => {
+    console.log(data);
     if (!user || data.assignmentIndex < 0) {
       showErrorToast("Vui lòng chọn vai trò cần thu hồi");
       return;
@@ -120,7 +138,7 @@ const UnassignEmployeeRoleModal: React.FC<UnassignEmployeeRoleModalProps> = ({
 
     unassignRoleMutation.mutate({
       userId: Number(user.id),
-      roleId: assignment.role.id,
+      roleId: assignment?.id as number,
       scopeType: assignment.scope_type,
       scopeId: assignment.scope_id,
     });
@@ -190,7 +208,7 @@ const UnassignEmployeeRoleModal: React.FC<UnassignEmployeeRoleModalProps> = ({
                   label="Vai trò cần thu hồi"
                   options={assignmentOptions}
                   value={field.value >= 0 ? field.value : ""}
-                  onChange={(value) => field.onChange(value ? Number(value) : -1)}
+                  onChange={(value) => field.onChange((!!value || value === 0) ? Number(value) : -1)}
                   placeholder="Chọn vai trò cần thu hồi"
                   required
                   fullWidth
@@ -205,11 +223,11 @@ const UnassignEmployeeRoleModal: React.FC<UnassignEmployeeRoleModalProps> = ({
               <RolesContainer>
                 {existingAssignments.map((assignment, index) => {
                   const scopeInfo = assignment.scope_id 
-                    ? ` (${assignment.scope_type} #${assignment.scope_id})`
-                    : ` (${assignment.scope_type})`;
+                    ? ` (${getScopeName(assignment.scope_type as ScopeType)} #${assignment.scope_id})`
+                    : ` (${getScopeName(assignment.scope_type as ScopeType)})`;
                   return (
                     <RoleBadge key={index}>
-                      {getRoleName(assignment.role.name)}{scopeInfo}
+                      {getRoleName(assignment?.name as ROLE_NAMES)}{scopeInfo}
                     </RoleBadge>
                   );
                 })}

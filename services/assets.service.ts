@@ -26,6 +26,7 @@ class AssetsService {
             params: {
                 page: params.page || 1,
                 limit: params.limit || 10,
+                sort_by: 'created_at',
                 ...(params.search && { search: params.search }),
                 ...(params.category && { category: params.category }),
                 ...(params.status && { status: params.status }),

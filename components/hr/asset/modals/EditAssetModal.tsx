@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { Modal, Input, Select, TextArea, Button } from "@/components/common";
+import { Modal, Input, Select, TextArea, Button, DatePicker } from "@/components/common";
 import { Asset } from "@/constants/types";
 import { AssetCategory, AssetStatus } from "@/constants/enums";
 
@@ -193,7 +193,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
             value={formData.status}
             onChange={(value) => setValue("status", value as AssetStatus)}
             fullWidth
-            disabled={isLoading}
+            disabled={isLoading || asset.status === AssetStatus.ASSIGNED}
           />
         </div>
 
@@ -216,10 +216,15 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-          <Input
+          <DatePicker
             label="Ngày mua"
-            type="date"
-            {...register("purchase_date")}
+            value={formData.purchase_date?.trim() ? new Date(formData.purchase_date) : null}
+            onChange={(date) => {
+              setValue(
+                "purchase_date",
+                date ? date.toISOString().split("T")[0] : ""
+              );
+            }}
             placeholder="Chọn ngày mua"
             fullWidth
             disabled={isLoading}
@@ -235,10 +240,15 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({
           />
         </div>
 
-        <Input
+        <DatePicker
           label="Ngày hết bảo hành"
-          type="date"
-          {...register("warranty_end_date")}
+          value={formData.warranty_end_date?.trim() ? new Date(formData.warranty_end_date) : null}
+          onChange={(date) => {
+            setValue(
+              "warranty_end_date",
+              date ? date.toISOString().split("T")[0] : ""
+            );
+          }}
           placeholder="Chọn ngày hết bảo hành"
           fullWidth
           disabled={isLoading}

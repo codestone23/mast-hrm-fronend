@@ -11,6 +11,7 @@ import { timekeepingService } from '@/services/timekeeping.service';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRequestDetail, useUpdateRequest } from '@/hooks/useRequests';
 import { UpdateRequestPayload } from '@/services/requests.service';
+import { extractTimeFromDateTime } from '@/utils/dateUtils';
 
 interface RegularOvertimeModalProps {
   isOpen: boolean;
@@ -49,7 +50,6 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
   // Fetch request data when in edit mode using useQuery
   const shouldFetchRequest = isOpen && isEdit && !!requestId && !!requestType;
   const { data: requestData, isLoading: isLoadingRequest } = useRequestDetail(
-    requestType || '',
     String(requestId || ''),
     { enabled: shouldFetchRequest }
   );
@@ -87,8 +87,8 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
         setFormData({
           title: requestData.title || '',
           workDate: requestData.work_date || selectedDate,
-          startTime: requestData.start_time || '',
-          endTime: requestData.end_time || '',
+          startTime: extractTimeFromDateTime(requestData.overtime?.start_time || ''),
+          endTime: extractTimeFromDateTime(requestData.overtime?.end_time || ''),
           reason: requestData.reason || ''
         });
       } else if (!isEdit) {

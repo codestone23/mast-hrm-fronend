@@ -19,14 +19,13 @@ export const useAdminRequests = (params: RequestParams = {}) => {
 };
 
 export const useRequestDetail = (
-  type: string,
   id: string,
   options?: { enabled?: boolean }
 ) => {
   return useQuery({
-    queryKey: ['requestDetail', type, id],
-    queryFn: () => requestsService.getRequestById(type, id),
-    enabled: options?.enabled !== undefined ? options.enabled : (!!type && !!id),
+    queryKey: ['requestDetail', id],
+    queryFn: () => requestsService.getRequestById(id),
+    enabled: options?.enabled !== undefined ? options.enabled : (!!id),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

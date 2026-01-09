@@ -64,7 +64,7 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
         status: REQUEST_STATUS.PENDING,
         start_date: undefined,
         end_date: undefined,
-        lead_only: isCompany ? false : true,
+        lead_only: isCompany ? true : false,
     });
 
     const [approveModal, setApproveModal] = useState<{

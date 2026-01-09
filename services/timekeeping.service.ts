@@ -236,7 +236,6 @@ class TimekeepingService {
   // Overtime Request APIs
   async createOvertimeRequest(requestData: {
     title: string;
-    project_id: number;
     work_date: string;
     start_time: string;
     end_time: string;

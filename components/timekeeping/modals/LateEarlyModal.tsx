@@ -13,6 +13,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRequestDetail, useUpdateRequest } from '@/hooks/useRequests';
 import { UpdateRequestPayload } from '@/services/requests.service';
 import { format } from 'date-fns';
+import { REQUEST_TYPE } from '@/constants/enums';
 
 interface LateEarlyModalProps {
   isOpen: boolean;
@@ -39,6 +40,7 @@ const LateEarlyModal: React.FC<LateEarlyModalProps> = ({
   requestType
 }) => {
   const queryClient = useQueryClient();
+  console.log(requestId, requestType);
   const isEdit = !!requestId && !!requestType;
   const { success: showSuccessToast, error: showErrorToast } = useToast();
 
@@ -67,9 +69,8 @@ const LateEarlyModal: React.FC<LateEarlyModalProps> = ({
   ];
 
   // Fetch request data when in edit mode using useQuery
-  const shouldFetchRequest = isOpen && isEdit && !!requestId && !!requestType;
+  const shouldFetchRequest = isOpen && isEdit && !!requestId;
   const { data: requestData, isLoading: isLoadingRequest } = useRequestDetail(
-    requestType || '',
     String(requestId || ''),
     { enabled: shouldFetchRequest }
   );
@@ -105,22 +106,16 @@ const LateEarlyModal: React.FC<LateEarlyModalProps> = ({
     if (isOpen) {
       if (isEdit && requestData) {
         // Determine request type based on late_minutes and early_minutes
-        let reqType: 'LATE' | 'EARLY' | 'BOTH' = 'LATE';
-        if (requestData.late_minutes && requestData.late_minutes > 0 && requestData.early_minutes && requestData.early_minutes > 0) {
-          reqType = 'BOTH';
-        } else if (requestData.early_minutes && requestData.early_minutes > 0) {
-          reqType = 'EARLY';
-        }
-
         reset({
           title: requestData.title || '',
           workDate: requestData.work_date ? new Date(requestData.work_date) : new Date(selectedDate),
-          requestType: reqType,
-          lateMinutes: requestData.late_minutes || 0,
-          earlyMinutes: requestData.early_minutes || 0,
+          requestType: requestData?.late_early_request?.request_type || 'LATE',
+          lateMinutes: requestData?.late_early_request?.late_minutes || 0,
+          earlyMinutes: requestData?.late_early_request?.early_minutes || 0,
           reason: requestData.reason || ''
         });
-      } else if (!isEdit) {
+      } 
+      else if (!isEdit) {
         reset({
           title: '',
           workDate: selectedDate ? new Date(selectedDate) : null,
@@ -165,7 +160,9 @@ const LateEarlyModal: React.FC<LateEarlyModalProps> = ({
 
     if (isEdit && requestId && requestType) {
       const updatePayload: UpdateRequestPayload = {
+        user_id: requestData?.user_id,
         work_date: format(data.workDate, 'yyyy-MM-dd'),
+        request_type: data.requestType,
         title: data.title,
         late_minutes: data.lateMinutes,
         early_minutes: data.earlyMinutes,
@@ -173,10 +170,9 @@ const LateEarlyModal: React.FC<LateEarlyModalProps> = ({
       };
       
       updateRequestMutation.mutate(
-        { type: requestType, id: String(requestId), payload: updatePayload },
+        { type: 'late-early', id: String(requestId), payload: updatePayload },
         {
           onSuccess: () => {
-            showSuccessToast('Cập nhật đơn xin đi muộn/về sớm thành công!');
             handleClose();
           },
           onError: (error: unknown) => {
@@ -252,12 +248,8 @@ const LateEarlyModal: React.FC<LateEarlyModalProps> = ({
         
         {!isFetching && (
           <>
-            <InfoBanner>
-              Số phút còn lại có thể đăng ký: 120 phút
-            </InfoBanner>
-            
             <FormSection>
-              <form onSubmit={handleSubmit(onSubmit)}>
+              <form>
                 <FormGrid>
                   <div style={{ gridColumn: '1 / -1' }}>
                     <Input

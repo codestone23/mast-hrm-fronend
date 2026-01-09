@@ -64,7 +64,6 @@ const RemoteWorkModal: React.FC<RemoteWorkModalProps> = ({
   // Fetch request data when in edit mode using useQuery
   const shouldFetchRequest = isOpen && isEdit && !!requestId && !!requestType;
   const { data: requestData, isLoading: isLoadingRequest } = useRequestDetail(
-    requestType || '',
     String(requestId || ''),
     { enabled: shouldFetchRequest }
   );
@@ -101,7 +100,7 @@ const RemoteWorkModal: React.FC<RemoteWorkModalProps> = ({
         reset({
           title: requestData.title || '',
           workDate: requestData.work_date ? new Date(requestData.work_date) : new Date(selectedDate),
-          duration: (requestData.duration as 'FULL_DAY' | 'MORNING' | 'AFTERNOON') || 'FULL_DAY',
+          duration: (requestData.remote_work_request?.duration as 'FULL_DAY' | 'MORNING' | 'AFTERNOON') || 'FULL_DAY',
           reason: requestData.reason || ''
         });
       } else if (!isEdit) {

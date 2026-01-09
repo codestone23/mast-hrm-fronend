@@ -78,9 +78,8 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
   ];
 
   // Fetch request data when in edit mode using useQuery
-  const shouldFetchRequest = isOpen && isEdit && !!requestId && !!requestType;
+  const shouldFetchRequest = isOpen && isEdit && !!requestId;
   const { data: requestData, isLoading: isLoadingRequest } = useRequestDetail(
-    requestType || '',
     String(requestId || ''),
     { enabled: shouldFetchRequest }
   );
@@ -120,7 +119,7 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
         reset({
           title: requestData.title || '',
           leaveType: ((requestData as { type?: 'PAID' | 'UNPAID' }).type || 'PAID') as 'PAID' | 'UNPAID',
-          duration: (requestData.duration as 'FULL_DAY' | 'MORNING' | 'AFTERNOON') || 'FULL_DAY',
+          duration: (requestData.day_off?.duration as 'FULL_DAY' | 'MORNING' | 'AFTERNOON') || 'FULL_DAY',
           workDate: requestData.work_date ? new Date(requestData.work_date) : new Date(selectedDate),
           reason: requestData.reason || ''
         });
@@ -185,7 +184,6 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
         { type: requestType, id: String(requestId), payload: updatePayload },
         {
           onSuccess: () => {
-            showSuccessToast('Cập nhật đơn xin nghỉ phép thành công!');
             handleClose();
           },
           onError: (error: unknown) => {
@@ -276,6 +274,15 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
                       required
                       disabled={isLoading}
                     />
+
+                    <DatePicker
+                      label="Ngày nghỉ"
+                      value={workDate}
+                      onChange={(value) => setValue('workDate', value)}
+                      required
+                      disabled={isLoading}
+                      error={errors.workDate?.message}
+                    />
                     
                     <Select
                       label="Thời gian nghỉ"
@@ -285,15 +292,6 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
                       placeholder="Chọn thời gian nghỉ"
                       required
                       disabled={isLoading}
-                    />
-                    
-                    <DatePicker
-                      label="Ngày nghỉ"
-                      value={workDate}
-                      onChange={(value) => setValue('workDate', value)}
-                      required
-                      disabled={isLoading}
-                      error={errors.workDate?.message}
                     />
                     
                     <div style={{ gridColumn: '1 / -1' }}>

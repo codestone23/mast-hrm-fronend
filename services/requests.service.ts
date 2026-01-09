@@ -23,27 +23,98 @@ export interface Request {
   approved_at?: string | null;
   approved_by?: number | null;
   user_name?: string;
-  approved_by_user?: {
+}
+
+export interface RequestDetail {
     id: number;
-    email: string;
-    user_information: {
-      name: string;
-      code?: string;
+    user_id: number;
+    timesheet_id: number;
+    work_date: string;
+    request_type: REQUEST_TYPE;
+    type?: string;
+    title: string;
+    reason: string;
+    status: REQUEST_STATUS;
+    approved_by: number | null;
+    approved_at: string | null;
+    rejected_reason: string | null;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+    
+    user: {
+        id: number;
+        email: string;
+        user_information: {
+            name: string;
+        };
     };
-  } | null;
-  user: {
-    id: number;
-    email: string;
-    user_information: {
-      name: string;
-      position: string;
+    approved_by_user: {
+        id: number;
+        email: string;
+        user_information: {
+            name: string;
+        };
+    } | null;
+    timesheet: {
+      id: number;
+      user_id: number;
+      work_date: string;
+      type: string;
+      checkin: string | null;
+      checkout: string | null;
+      remote: string;
+      total_work_time: string | null;
+      is_complete: boolean;
+      created_at: string;
+      updated_at: string;
+      deleted_at: string | null;
     };
-    user_roles?: Array<{
-      role: {
-        name: string;
-      };
-    }>;
-  };
+    late_early_request?: {
+      request_id: number;
+      request_type: 'LATE' | 'EARLY' | 'BOTH';
+      late_minutes: number | null;
+      early_minutes: number | null;
+      created_at: string;
+      updated_at: string;
+      deleted_at: string | null;
+    };
+
+    overtime?: {
+      request_id: number;
+      start_time: string;
+      end_time: string;
+      created_at: string;
+      updated_at: string;
+      deleted_at: string | null;
+    };
+
+    remote_work_request?: {
+      request_id: number;
+      remote_type: string;
+      duration: string;
+      created_at: string;
+      updated_at: string;
+      deleted_at: string | null;
+    };
+
+    day_off?: {
+      request_id: number;
+      duration: string;
+      type: string;
+      created_at: string;
+      updated_at: string;
+      deleted_at: string | null;
+    };
+
+    forgot_checkin_request?: {
+      request_id: number;
+      checkin_time: string | null;
+      checkout_time: string | null;
+      created_at: string;
+      updated_at: string;
+      deleted_at: string | null;
+    };
 }
 
 export interface RequestParams {
@@ -68,6 +139,8 @@ export interface RequestActionPayload {
 }
 
 export interface UpdateRequestPayload {
+  user_id?: number;
+  request_type?: string;
   title?: string;
   reason?: string;
   work_date?: string;
@@ -103,8 +176,9 @@ class RequestsService {
         return response.data;
     }
 
-    async getRequestById(type: string, id: string): Promise<Request> {
-        const response = await axiosInstance.get(`/requests/${type}/${id}`);
+    async getRequestById(id: string): Promise<RequestDetail> {
+      console
+        const response = await axiosInstance.get(`/requests/${id}`);
         return response.data;
     }
 

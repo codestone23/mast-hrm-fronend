@@ -13,6 +13,7 @@ import { useRequestDetail, useUpdateRequest } from '@/hooks/useRequests';
 import { UpdateRequestPayload } from '@/services/requests.service';
 import { timekeepingService } from '@/services/timekeeping.service';
 import { format } from 'date-fns';
+import { extractTimeFromDateTime } from '@/utils/dateUtils';
 
 interface ForgotTimekeepingModalProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
   requestType
 }) => {
   const queryClient = useQueryClient();
+    console.log(requestId, requestType);
   const isEdit = !!requestId && !!requestType;
   const { success: showSuccessToast, error: showErrorToast } = useToast();
 
@@ -59,9 +61,8 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
   });
 
   // Fetch request data when in edit mode using useQuery
-  const shouldFetchRequest = isOpen && isEdit && !!requestId && !!requestType;
+  const shouldFetchRequest = isOpen && isEdit && !!requestId;
   const { data: requestData, isLoading: isLoadingRequest } = useRequestDetail(
-    requestType || '',
     String(requestId || ''),
     { enabled: shouldFetchRequest }
   );
@@ -98,8 +99,8 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
         reset({
           title: requestData.title || '',
           applicationDate: requestData.work_date ? new Date(requestData.work_date) : new Date(selectedDate),
-          checkinTime: requestData.start_time || '08:00',
-          checkoutTime: requestData.end_time || '17:30',
+          checkinTime: extractTimeFromDateTime(requestData.forgot_checkin_request?.checkin_time) || '08:00',
+          checkoutTime: extractTimeFromDateTime(requestData.forgot_checkin_request?.checkout_time) || '17:30',
           reason: requestData.reason || ''
         });
       } else if (!isEdit) {
@@ -200,11 +201,6 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
         
         {!isFetching && (
           <>
-            <InfoBanner>
-              <div>Chọn giờ checkin checkout để sửa thông tin chấm công của bạn</div>
-              <div>Số yêu cầu được thực hiện trong tháng: <span style={{ color: '#ef4444', fontWeight: 'bold' }}>3</span></div>
-            </InfoBanner>
-            
             <FormSection>
               <form onSubmit={handleSubmit(onSubmit)}>
                 <FormGrid>
@@ -226,6 +222,8 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
                     disabled={isLoading}
                     error={errors.applicationDate?.message}
                   />
+                  
+                  <br/>
                   
                   <TimePicker
                     label="Thời gian checkin"

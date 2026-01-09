@@ -234,7 +234,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
         )}
 
         {/* Action Buttons for Pending Requests */}
-        {canApprove && request.status === REQUEST_STATUS.PENDING && (
+        {/* {canApprove && request.status === REQUEST_STATUS.PENDING && (
           <>
             <Divider />
             <RequestActions style={{ padding: '1rem' }}>
@@ -248,7 +248,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
               </RejectButton>
             </RequestActions>
           </>
-        )}
+        )} */}
       </ModalContent>
     </Modal>
   );

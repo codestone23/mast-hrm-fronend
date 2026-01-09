@@ -1,7 +1,6 @@
 import React from 'react';
 import { Clock, Home, Calendar, Briefcase, AlertCircle } from 'lucide-react';
 import { Modal } from '@/components/common';
-import { RequestModalType } from './modalTypes';
 import {
   ModalContent,
   RequestTypeList,
@@ -10,6 +9,7 @@ import {
   RequestTypeText,
   RequestTypeCount
 } from './requestModalStyles';
+import { REQUEST_TYPE } from '@/constants/enums';
 
 interface RequestType {
   id: string;
@@ -27,27 +27,27 @@ interface RequestTypeModalProps {
 
 const requestTypes: RequestType[] = [
   {
-    id: RequestModalType.LATE_EARLY,
+    id: REQUEST_TYPE.LATE_EARLY,
     name: 'Đi muộn/Về sớm',
     icon: <Clock size={20} />
   },
   {
-    id: RequestModalType.REMOTE_WORK,
+    id: REQUEST_TYPE.REMOTE_WORK,
     name: 'Làm việc từ xa',
     icon: <Home size={20} />
   },
   {
-    id: RequestModalType.PAID_LEAVE,
+    id: REQUEST_TYPE.DAY_OFF,
     name: 'Nghỉ phép (có lương/không lương)',
     icon: <Calendar size={20} />
   },
   {
-    id: RequestModalType.REGULAR_OVERTIME,
+    id: REQUEST_TYPE.OVERTIME,
     name: 'Làm thêm giờ',
     icon: <Briefcase size={20} />
   },
   {
-    id: RequestModalType.FORGOT_TIMEKEEPING,
+    id: REQUEST_TYPE.FORGOT_CHECKIN,
     name: 'Quên chấm công',
     icon: <AlertCircle size={20} />
   }

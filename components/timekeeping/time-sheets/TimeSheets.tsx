@@ -23,15 +23,14 @@ import { useSearchParams } from "next/navigation";
 import { useMobile } from "@/hooks/useMobile";
 import FaceIdentify from "../face-identify/FaceIdentify";
 import CreateRequestModal from "../modals/CreateRequestModal";
-import ForgotTimekeepingModal from "../modals/ForgotTimekeepingModal";
+import ForgotTimekeepingModal from "../modals/ForgotCheckin";
 import LateEarlyModal from "../modals/LateEarlyModal";
-import { RequestModalState, RequestModalType } from "../modals/modalTypes";
-import PaidLeaveModal from "../modals/PaidLeaveModal";
-import RegularOvertimeModal from "../modals/RegularOvertimeModal";
+import PaidLeaveModal from "../modals/DayoffModal";
+import RegularOvertimeModal from "../modals/OvertimeModal";
 import RemoteWorkModal from "../modals/RemoteWorkModal";
 import RequestDetailModal from "../modals/RequestDetailModal";
 import RequestTypeModal from "../modals/RequestTypeModal";
-import MyRequestsList from "../MyRequestsList";
+import MyRequestsList from "./MyRequestsList";
 import RegisterFace from "../register-face/RegisterFace";
 import {
   CalendarContainer,
@@ -77,6 +76,8 @@ import { useTimeSheet } from "./useTimeSheet";
 import { WEEK_DAYS } from "@/constants/constants";
 import LocalStorageUtil, { LOCAL_KEY } from "@/utils/LocalStorageUtil";
 import { usePersonalAttendanceStats } from "@/hooks/useAttendanceStats";
+
+
 
 interface TimeSheetRequest {
   id: number;
@@ -149,6 +150,12 @@ interface TimeSheetRequest {
   } | null;
 }
 
+interface RequestModalState {
+  isRequestTypeModalOpen: boolean;
+  activeModal: REQUEST_TYPE | null;
+  selectedDate: string;
+}
+
 interface RequestsStructure {
   remote_work?: TimeSheetRequest[];
   day_off?: TimeSheetRequest[];
@@ -190,7 +197,7 @@ const TimeSheets: React.FC = () => {
   const [requestModalState, setRequestModalState] = useState<RequestModalState>(
     {
       isRequestTypeModalOpen: false,
-      activeModal: RequestModalType.NONE,
+      activeModal: null,
       selectedDate: "",
     }
   );
@@ -349,23 +356,14 @@ const TimeSheets: React.FC = () => {
   const handleDayMenuClick = (date: string) => {
     setRequestModalState({
       isRequestTypeModalOpen: true,
-      activeModal: RequestModalType.NONE,
+      activeModal: null,
       selectedDate: date,
     });
   };
 
-  // Handle request actions
-  const handleApproveRequest = (requestId: string) => {
-    console.log("Approve request:", requestId);
-  };
-
-  const handleRejectRequest = (requestId: string) => {
-    console.log("Reject request:", requestId);
-  };
-
   // Handle request type selection
   const handleSelectRequestType = (requestType: string) => {
-    const modalType = requestType as RequestModalType;
+    const modalType = requestType as REQUEST_TYPE;
     setEditRequest(null); // Reset editRequest when creating new request
     setRequestModalState((prev) => {
       const newState = {
@@ -381,7 +379,7 @@ const TimeSheets: React.FC = () => {
   const closeAllModals = () => {
     setRequestModalState({
       isRequestTypeModalOpen: false,
-      activeModal: RequestModalType.NONE,
+      activeModal: null,
       selectedDate: "",
     });
     setEditRequest(null);
@@ -462,18 +460,6 @@ const TimeSheets: React.FC = () => {
     setIsDetailModalOpen(true);
   };
 
-  // Helper function to map REQUEST_TYPE to API endpoint type
-  const getRequestTypeEndpoint = (requestType: REQUEST_TYPE): string => {
-    const typeMap: Record<REQUEST_TYPE, string> = {
-      [REQUEST_TYPE.REMOTE_WORK]: "remote-work",
-      [REQUEST_TYPE.DAY_OFF]: "day-off",
-      [REQUEST_TYPE.OVERTIME]: "overtime",
-      [REQUEST_TYPE.LATE_EARLY]: "late-early",
-      [REQUEST_TYPE.FORGOT_CHECKIN]: "forgot-checkin",
-    };
-    return typeMap[requestType] || requestType?.toLowerCase();
-  };
-
   const monthNames = [
     "Tháng 01",
     "Tháng 02",
@@ -511,7 +497,7 @@ const TimeSheets: React.FC = () => {
               const today = getTodayInVietnamTimezone();
               setRequestModalState({
                 isRequestTypeModalOpen: true,
-                activeModal: RequestModalType.NONE,
+                activeModal: null,
                 selectedDate: today,
               });
             }}
@@ -532,7 +518,7 @@ const TimeSheets: React.FC = () => {
       <RequestTypeModal
         isOpen={Boolean(
           requestModalState.isRequestTypeModalOpen &&
-            requestModalState.activeModal === RequestModalType.NONE &&
+            requestModalState.activeModal === null &&
             requestModalState.selectedDate
         )}
         onClose={closeAllModals}
@@ -768,21 +754,12 @@ const TimeSheets: React.FC = () => {
                 setSelectedRequest(request);
                 setIsDetailModalOpen(true);
               }}
-              onEditRequest={(request) => {
+              onEditRequest={(request: any) => {
                 setEditRequest(request);
-                const endpointType = getRequestTypeEndpoint(request.request_type as REQUEST_TYPE);
-                const modalTypeMap: Record<string, RequestModalType> = {
-                  'remote-work': RequestModalType.REMOTE_WORK,
-                  'day-off': RequestModalType.PAID_LEAVE,
-                  'overtime': RequestModalType.REGULAR_OVERTIME,
-                  'late-early': RequestModalType.LATE_EARLY,
-                  'forgot-checkin': RequestModalType.FORGOT_TIMEKEEPING,
-                };
-                const modalType = modalTypeMap[endpointType];
-                if (modalType) {
+                if (request?.type) {
                   setRequestModalState({
                     isRequestTypeModalOpen: false,
-                    activeModal: modalType,
+                    activeModal: request.type as REQUEST_TYPE,
                     selectedDate: request.work_date || "",
                   });
                 }
@@ -813,41 +790,41 @@ const TimeSheets: React.FC = () => {
 
       {/* Specific Request Modals */}
       <LateEarlyModal
-        isOpen={requestModalState.activeModal === RequestModalType.LATE_EARLY}
+        isOpen={requestModalState.activeModal === REQUEST_TYPE.LATE_EARLY}
         onClose={() => {
           closeAllModals();
           setEditRequest(null);
         }}
         selectedDate={requestModalState.selectedDate}
         requestId={editRequest?.id}
-        requestType={editRequest ? getRequestTypeEndpoint(editRequest.request_type as REQUEST_TYPE) : undefined}
+        requestType={editRequest ? editRequest.type : undefined}
       />
 
       <RemoteWorkModal
-        isOpen={requestModalState.activeModal === RequestModalType.REMOTE_WORK}
+        isOpen={requestModalState.activeModal === REQUEST_TYPE.REMOTE_WORK}
         onClose={() => {
           closeAllModals();
           setEditRequest(null);
         }}
         selectedDate={requestModalState.selectedDate}
         requestId={editRequest?.id}
-        requestType={editRequest ? getRequestTypeEndpoint(editRequest.request_type as REQUEST_TYPE) : undefined}
+        requestType={editRequest ? editRequest.type : undefined}
       />
 
       <PaidLeaveModal
-        isOpen={requestModalState.activeModal === RequestModalType.PAID_LEAVE}
+        isOpen={requestModalState.activeModal === REQUEST_TYPE.DAY_OFF}
         onClose={() => {
           closeAllModals();
           setEditRequest(null);
         }}
         selectedDate={requestModalState.selectedDate}
         requestId={editRequest?.id}
-        requestType={editRequest ? getRequestTypeEndpoint(editRequest.request_type as REQUEST_TYPE) : undefined}
+        requestType={editRequest ? editRequest.type : undefined}
       />
 
       <RegularOvertimeModal
         isOpen={
-          requestModalState.activeModal === RequestModalType.REGULAR_OVERTIME
+          requestModalState.activeModal === REQUEST_TYPE.OVERTIME
         }
         onClose={() => {
           closeAllModals();
@@ -855,12 +832,12 @@ const TimeSheets: React.FC = () => {
         }}
         selectedDate={requestModalState.selectedDate}
         requestId={editRequest?.id}
-        requestType={editRequest ? getRequestTypeEndpoint(editRequest.request_type as REQUEST_TYPE) : undefined}
+        requestType={editRequest ? editRequest.type : undefined}
       />
 
       <ForgotTimekeepingModal
         isOpen={
-          requestModalState.activeModal === RequestModalType.FORGOT_TIMEKEEPING
+          requestModalState.activeModal === REQUEST_TYPE.FORGOT_CHECKIN
         }
         onClose={() => {
           closeAllModals();
@@ -868,7 +845,7 @@ const TimeSheets: React.FC = () => {
         }}
         selectedDate={requestModalState.selectedDate}
         requestId={editRequest?.id}
-        requestType={editRequest ? getRequestTypeEndpoint(editRequest.request_type as REQUEST_TYPE) : undefined}
+        requestType={editRequest ? editRequest.type : undefined}
       />
 
       <RequestDetailModal
@@ -907,15 +884,13 @@ const TimeSheets: React.FC = () => {
               position: "",
             },
           },
-        } as Request : null)}
+        } as any : null)}
         canApprove={
           (selectedRequest || selectedRequestForDetail)
             ? activeTab === "DANH SÁCH YÊU CẦU" &&
               (selectedRequest?.status || selectedRequestForDetail?.status) === REQUEST_STATUS.PENDING
             : false
         }
-        onApprove={handleApproveRequest}
-        onReject={handleRejectRequest}
       />
     </TimeSheetsContainer>
   );

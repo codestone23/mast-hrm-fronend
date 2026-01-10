@@ -70,8 +70,8 @@ const MyRequestsList: React.FC<MyRequestsListProps> = ({
     page: 1,
     limit: 10,
     status: undefined,
-    start_date: undefined,
-    end_date: undefined,
+    start_date: "",
+    end_date: "",
   });
   const [deleteRequestId, setDeleteRequestId] = useState<{
     type: string;
@@ -105,8 +105,8 @@ const MyRequestsList: React.FC<MyRequestsListProps> = ({
       ...prev,
       page: 1,
       status: undefined,
-      start_date: undefined,
-      end_date: undefined,
+      start_date: "",
+      end_date: "",
     }));
   };
 

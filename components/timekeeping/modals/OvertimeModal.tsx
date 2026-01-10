@@ -11,7 +11,6 @@ import { timekeepingService } from '@/services/timekeeping.service';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRequestDetail, useUpdateRequest } from '@/hooks/useRequests';
 import { UpdateRequestPayload } from '@/services/requests.service';
-import { extractTimeFromDateTime } from '@/utils/dateUtils';
 
 interface RegularOvertimeModalProps {
   isOpen: boolean;
@@ -80,6 +79,15 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
   // Update request mutation
   const updateRequestMutation = useUpdateRequest();
 
+  const extractDateTime = (dateTimeString: string | null | undefined): string => {
+    if (!dateTimeString) return '';
+    try {
+      const date = new Date(dateTimeString);
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (error) {
+      return '';
+    }
+  };
   // Update form data when request data is loaded or when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -87,8 +95,8 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
         setFormData({
           title: requestData.title || '',
           workDate: requestData.work_date || selectedDate,
-          startTime: extractTimeFromDateTime(requestData.overtime?.start_time || ''),
-          endTime: extractTimeFromDateTime(requestData.overtime?.end_time || ''),
+          startTime: extractDateTime(requestData.overtime?.start_time || ''),
+          endTime: extractDateTime(requestData.overtime?.end_time || ''),
           reason: requestData.reason || ''
         });
       } else if (!isEdit) {
@@ -136,6 +144,7 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
 
     if (isEdit && requestId && requestType) {
       const updatePayload: UpdateRequestPayload = {
+        user_id: requestData?.user.id,
         title: formData.title,
         work_date: formData.workDate,
         start_time: formData.startTime,
@@ -144,7 +153,7 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
       };
       
       updateRequestMutation.mutate(
-        { type: requestType, id: String(requestId), payload: updatePayload },
+        { type: 'overtime', id: String(requestId), payload: updatePayload },
         {
           onSuccess: () => {
             showSuccessToast('Cập nhật đơn xin làm thêm giờ thành công!');
@@ -236,6 +245,8 @@ const RegularOvertimeModal: React.FC<RegularOvertimeModalProps> = ({
                 disabled={isLoading}
               />
               
+              <br/>
+
               <TimePicker
                 label="Thời gian bắt đầu"
                 value={formData.startTime}

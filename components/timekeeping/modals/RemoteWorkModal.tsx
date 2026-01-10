@@ -130,17 +130,18 @@ const RemoteWorkModal: React.FC<RemoteWorkModalProps> = ({
 
     if (isEdit && requestId && requestType) {
       const updatePayload: UpdateRequestPayload = {
+        user_id: requestData?.user.id,
         work_date: format(data.workDate, 'yyyy-MM-dd'),
+        remote_type: 'REMOTE',
         title: data.title,
         reason: data.reason,
         duration: data.duration
       };
       
       updateRequestMutation.mutate(
-        { type: requestType, id: String(requestId), payload: updatePayload },
+        { type: 'remote-work', id: String(requestId), payload: updatePayload },
         {
           onSuccess: () => {
-            showSuccessToast('Cập nhật đơn xin làm việc từ xa thành công!');
             handleClose();
           },
           onError: (error: unknown) => {

@@ -71,17 +71,4 @@ export const formatDateTimeForApi = (date: Date | string): string => {
 export const parseApiDate = (dateString: string): Date => {
   return new Date(dateString);
 };
-// Extract time from datetime string (e.g., "1970-01-01 09:01:00" -> "09:01")
-export const extractTimeFromDateTime = (dateTimeString: string | null | undefined): string => {
-  if (!dateTimeString) return '';
-  try {
-    // Handle format: "1970-01-01 09:01:00", "09:01:00", or "09:01"
-    const timePart = dateTimeString.includes(' ') 
-      ? dateTimeString.split(' ')[1]
-      : dateTimeString;
-    // Return HH:mm format
-    return timePart.substring(0, 5);
-  } catch (error) {
-    return '';
-  }
-};
+

@@ -149,6 +149,8 @@ export interface UpdateRequestPayload {
   remote_type?: string;
   late_minutes?: number;
   early_minutes?: number;
+  checkin_time?: string;
+  checkout_time?: string;
   start_time?: string;
   end_time?: string;
   project_id?: number;
@@ -163,10 +165,12 @@ export interface RequestStats {
 
 class RequestsService {
     async getMyRequests(params: RequestParams = {}): Promise<PaginatedResponse<Request>> {
+        // Filter out undefined values
+        const filteredParams = Object.fromEntries(
+          Object.entries(params).filter(([, value]) => value !== undefined && value !== '')
+        );
         const response = await axiosInstance.get(`/requests/my`, { 
-          params: {
-            ...params,
-          },
+          params: filteredParams,
          });
         return response.data;
     }

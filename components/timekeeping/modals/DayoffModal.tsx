@@ -173,6 +173,7 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
 
     if (isEdit && requestId && requestType) {
       const updatePayload: UpdateRequestPayload = {
+        user_id: requestData?.user.id,
         work_date: format(data.workDate, 'yyyy-MM-dd'),
         title: data.title,
         reason: data.reason,
@@ -181,7 +182,7 @@ const PaidLeaveModal: React.FC<PaidLeaveModalProps> = ({
       };
       
       updateRequestMutation.mutate(
-        { type: requestType, id: String(requestId), payload: updatePayload },
+        { type: 'day-off', id: String(requestId), payload: updatePayload },
         {
           onSuccess: () => {
             handleClose();

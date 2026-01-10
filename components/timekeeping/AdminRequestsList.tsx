@@ -234,7 +234,7 @@ const AdminRequestsList: React.FC<AdminRequestsListProps> = ({
                                     handleFilterChange("status", value)
                                 }
                                 options={[
-                                    { value: "", label: "Tất cả" },
+                                    { value: undefined, label: "Tất cả" },
                                     {
                                         value: REQUEST_STATUS.PENDING,
                                         label: "Chờ duyệt",

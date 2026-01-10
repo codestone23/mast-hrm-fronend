@@ -99,8 +99,15 @@ const DatePicker: React.FC<DatePickerProps> = ({
   }, [mode]);
 
   useEffect(() => {
-    if (value) {
-      const date = typeof value === 'string' ? new Date(value) : value;
+    // Allow parent to clear the selected date by passing empty, null, or undefined
+    if (value === undefined || value === null || value === '') {
+      setSelectedDate(null);
+      setInputValue('');
+      return;
+    }
+
+    const date = typeof value === 'string' ? new Date(value) : value;
+    if (!isNaN(date.getTime())) {
       setSelectedDate(date);
       setViewDate(date);
       setInputValue(formatDate(date));

@@ -13,7 +13,6 @@ import { useRequestDetail, useUpdateRequest } from '@/hooks/useRequests';
 import { UpdateRequestPayload } from '@/services/requests.service';
 import { timekeepingService } from '@/services/timekeeping.service';
 import { format } from 'date-fns';
-import { extractTimeFromDateTime } from '@/utils/dateUtils';
 
 interface ForgotTimekeepingModalProps {
   isOpen: boolean;
@@ -92,6 +91,15 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
   // Update request mutation
   const updateRequestMutation = useUpdateRequest();
 
+  const extractDateTime = (dateTimeString: string | null | undefined): string => {
+    if (!dateTimeString) return '';
+    try {
+      const date = new Date(dateTimeString);
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (error) {
+      return '';
+    }
+  };
   // Update form data when request data is loaded or when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -99,8 +107,8 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
         reset({
           title: requestData.title || '',
           applicationDate: requestData.work_date ? new Date(requestData.work_date) : new Date(selectedDate),
-          checkinTime: extractTimeFromDateTime(requestData.forgot_checkin_request?.checkin_time) || '08:00',
-          checkoutTime: extractTimeFromDateTime(requestData.forgot_checkin_request?.checkout_time) || '17:30',
+          checkinTime: extractDateTime(requestData.forgot_checkin_request?.checkin_time) || '08:00',
+          checkoutTime: extractDateTime(requestData.forgot_checkin_request?.checkout_time) || '17:30',
           reason: requestData.reason || ''
         });
       } else if (!isEdit) {
@@ -123,18 +131,18 @@ const ForgotTimekeepingModal: React.FC<ForgotTimekeepingModalProps> = ({
 
     if (isEdit && requestId && requestType) {
       const updatePayload: UpdateRequestPayload = {
+        user_id: requestData?.user.id,
         title: data.title,
         work_date: format(data.applicationDate, 'yyyy-MM-dd'),
-        start_time: data.checkinTime,
-        end_time: data.checkoutTime,
+        checkin_time: data.checkinTime,
+        checkout_time: data.checkoutTime,
         reason: data.reason
       };
       
       updateRequestMutation.mutate(
-        { type: requestType, id: String(requestId), payload: updatePayload },
+        { type: 'forgot-checkin', id: String(requestId), payload: updatePayload },
         {
           onSuccess: () => {
-            showSuccessToast('Cập nhật đơn quên chấm công thành công!');
             handleClose();
           },
           onError: (error: unknown) => {
